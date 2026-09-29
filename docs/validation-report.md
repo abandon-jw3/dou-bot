@@ -11,18 +11,24 @@
 
 ## 本地检查
 
-| 检查                | 结果                                                                                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run check`     | 通过：类型、ESLint、格式、文档、构建、135 项自动测试、独立打包消费者                                                                           |
-| 类型契约            | 源码导出与契约 1.4 一致；Guard 结果、上下文、令牌和冷却范围有类型反例；继续校验参数 API 和拒绝模板 API                                         |
-| 独立 npm 包消费者   | 93 个允许分发的文件；独立安装/编译/执行装饰器、DI、参数、帮助、Guard 拒绝/放行和冷却，未依赖上级目录的 @types/ws                               |
-| 离线示例            | example:business、example:query、example:offline 通过；未加载 .env 或发送真实消息                                                              |
-| 凭证扫描            | 打包文件与本地 QQ Secret 的匹配扫描通过；包不包含 .env、work 或测试日志                                                                        |
-| `npm run coverage`  | 0.1.1 历史基线：105 项通过；行/语句 98.24%，分支 85.44%，函数 96.32%；本轮未重测覆盖率                                                         |
-| `npm run benchmark` | 0.1.1 历史合成输入基线，见 performance-baseline.json；本轮未重跑性能或持续负载                                                                 |
-| CI                  | Windows/Linux 工作流已提供；当前实际运行环境为 Windows、Node 24.21.0、npm 11.19.0，用户已确认 Windows 为首版验收环境；Linux 与远端 CI 留待后续 |
+| 检查                | 结果                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`     | 通过：类型、ESLint、格式、文档、构建、135 项自动测试、独立打包消费者                                                      |
+| 类型契约            | 源码导出与契约 1.4 一致；Guard 结果、上下文、令牌和冷却范围有类型反例；继续校验参数 API 和拒绝模板 API                    |
+| 独立 npm 包消费者   | 93 个允许分发的文件；独立安装/编译/执行装饰器、DI、参数、帮助、Guard 拒绝/放行和冷却，未依赖上级目录的 @types/ws          |
+| 离线示例            | example:business、example:query、example:offline 通过；未加载 .env 或发送真实消息                                         |
+| 凭证扫描            | 打包文件与本地 QQ Secret 的匹配扫描通过；包不包含 .env、work 或测试日志                                                   |
+| `npm run coverage`  | 0.3.0 已在 Windows/Linux CI 中执行并通过；此前 0.1.1 的行/语句 98.24%、分支 85.44%、函数 96.32% 仅为历史基线              |
+| `npm run benchmark` | 0.1.1 历史合成输入基线，见 performance-baseline.json；本轮未重跑性能或持续负载                                            |
+| CI                  | GitHub Actions 的 ubuntu-latest / windows-latest 两组均成功完成 npm ci、check 和 coverage；配置 Node 24.21.0、npm 11.19.0 |
 
 覆盖率说明当前测试覆盖范围，不能替代平台验收。内部时钟可注入，期限、TTL、刷新退避与关闭边界已用 FakeClock 验证；真实本机 HTTP/WS 用例仍使用网络事件循环。
+
+## GitHub 仓库与远端 CI
+
+2026-09-30，已创建 [abandon-jw3/dd-bot 私有仓库](https://github.com/abandon-jw3/dd-bot)，默认分支为 main，首次提交为 `f81c9d1230f5a697818fbec46f3d0d699faae794`。102 个源码、测试、示例与文档文件已推送；本地凭证、依赖、生成产物和临时工作文件未进入 Git。
+
+[首次 CI](https://github.com/abandon-jw3/dd-bot/actions/runs/36611267768) 已完成，结论为 success。`verify (ubuntu-latest)` 和 `verify (windows-latest)` 均成功执行 `npm run check` 及 `npm run coverage`。这完成了远端 CI 与 Linux 自动测试验证；QQ 实机联调记录仍对应 Windows 环境。
 
 ## 0.3.0 执行控制与业务示例验证
 
@@ -144,10 +150,10 @@ WS 恢复测试验证了会话恢复和恢复后的心跳，没有断言断线�
 
 ## 首版验收结论与后续部署
 
-按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成。逐项证据见 [实现审计](./implementation-audit.md)。源码与可安装 SDK 保持 private，未向 npm 发布或创建远端仓库。
+按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。源码与可安装 SDK 保持 private，尚未向 npm 发布。
 
 - 公网 HTTPS Webhook、QQ 管理端地址验证及真实回调重试：按用户选择留待部署入口就绪。
-- Linux/远端 CI、更长时间和实际生产负载：属于后续环境验证。
+- 更长时间和实际生产负载：属于后续运行验收；Windows/Linux 远端 CI 已通过。
 - WS 已确认 RESUME 与恢复后的心跳；不对服务端断线窗口内的业务重放完整性作保证。
 - 正式公开分发前由项目所有者确定包名与许可证。
 

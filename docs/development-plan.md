@@ -27,7 +27,7 @@
 
 首版不包含 QQ 频道、跨平台适配、Koishi/Satori 兼容、插件市场、数据库抽象、任务调度、请求作用域 DI、JSX 消息渲染。业务代码可以自行引入数据库等依赖。
 
-首版部署验收环境由用户确认为 Windows。Webhook 本轮完成本地真实 HTTP 与签名验收，公网 QQ 回调按用户选择留待 HTTPS 入口就绪；Linux 工作流保留为后续验证，不作为本次 Windows 交付的前置条件。
+首版部署验收环境由用户确认为 Windows。Webhook 本轮完成本地真实 HTTP 与签名验收，公网 QQ 回调按用户选择留待 HTTPS 入口就绪。GitHub 私有仓库建立后，Windows/Linux CI 已通过完整检查和覆盖率测试，证据见 [验证记录](./validation-report.md)。
 
 “轻量”落实为：启动时解析一次元数据；按需创建上下文；Provider 默认单例；事件队列、缓存和冷却记录有容量限制；不将完整 NestJS 或 Satori 作为依赖。
 

@@ -154,7 +154,7 @@ try {
 
 ## 验证命令与限制
 
-`npm run check` 执行类型、Lint、格式、文档链接、构建、测试和打包消费者检查；`npm run coverage` 生成映射至原始 TS 的覆盖率。首版按 Windows 验收；Windows/Linux CI 工作流已提供，远端运行留待仓库接入。
+`npm run check` 执行类型、Lint、格式、文档链接、构建、测试和打包消费者检查；`npm run coverage` 生成映射至原始 TS 的覆盖率。首版按 Windows 验收；[首次 GitHub CI](https://github.com/abandon-jw3/dd-bot/actions/runs/36611267768) 已在 Windows、Linux 上通过完整 check 和 coverage。源码位于 [GitHub 私有仓库](https://github.com/abandon-jw3/dd-bot)。
 
 `npm run benchmark` 在离线模式测量冷导入、合成指令吞吐和采样 RSS，原始 JSON 写入 work/benchmark-latest.json；不读取真实凭证。公开 API 按设计契约 1.4 维护，当前检查结果见 [验证记录](docs/validation-report.md)。
 
