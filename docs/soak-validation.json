@@ -1,0 +1,134 @@
+{
+  "success": true,
+  "generatedAt": "2026-09-29T14:07:15.010Z",
+  "durationMs": 180023,
+  "platform": "win32",
+  "node": "v24.21.0",
+  "accepted": 393088,
+  "handled": 393088,
+  "duplicates": 43677,
+  "overloaded": 12284,
+  "tokenRequests": 76,
+  "sends": 393032,
+  "uploads": 20810,
+  "acknowledgments": 39309,
+  "injectedFailures": 451,
+  "reportedFailures": 451,
+  "unexpectedErrors": 0,
+  "maximumFrameworkTimers": 8,
+  "final": {
+    "pending": 0,
+    "active": 0,
+    "retainedBytes": 0,
+    "dedup": 0,
+    "replyScopes": 0,
+    "tasks": 0,
+    "signals": 0,
+    "timers": 0
+  },
+  "samples": [
+    {
+      "elapsedMs": 21,
+      "accepted": 64,
+      "overloaded": 2,
+      "heapUsed": 9588728,
+      "rss": 76656640,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 64,
+        "replyScopes": 57,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    },
+    {
+      "elapsedMs": 30008,
+      "accepted": 65472,
+      "overloaded": 2046,
+      "heapUsed": 10581880,
+      "rss": 213393408,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 1152,
+        "replyScopes": 2016,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    },
+    {
+      "elapsedMs": 60028,
+      "accepted": 131200,
+      "overloaded": 4100,
+      "heapUsed": 11121120,
+      "rss": 213823488,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 1152,
+        "replyScopes": 2016,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    },
+    {
+      "elapsedMs": 90034,
+      "accepted": 196032,
+      "overloaded": 6126,
+      "heapUsed": 11393336,
+      "rss": 217419776,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 1128,
+        "replyScopes": 2016,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    },
+    {
+      "elapsedMs": 120027,
+      "accepted": 261760,
+      "overloaded": 8180,
+      "heapUsed": 10900656,
+      "rss": 217567232,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 1152,
+        "replyScopes": 2016,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    },
+    {
+      "elapsedMs": 150016,
+      "accepted": 327552,
+      "overloaded": 10236,
+      "heapUsed": 11207056,
+      "rss": 218218496,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 1122,
+        "replyScopes": 2016,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 1
+      }
+    }
+  ],
+  "scope": "Native-clock local sustained run with simulated HTTP and transport, deliberately short TTLs and injected errors; sampling forces GC. No QQ connection or credentials are used."
+}

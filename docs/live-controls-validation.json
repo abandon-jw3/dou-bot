@@ -1,0 +1,40 @@
+{
+  "frameworkVersion": "0.3.0",
+  "testedOn": "2026-09-30",
+  "transport": "ws",
+  "acknowledgmentMode": "manual",
+  "commandCooldownMs": 30000,
+  "startedAtUtc": "2026-09-29T16:40:52.278Z",
+  "finishedAtUtc": "2026-09-29T16:45:09.305Z",
+  "backendComplete": true,
+  "outcomes": {
+    "private": {
+      "guard-denied": true,
+      "input-rejected": true,
+      "query": true,
+      "cooldown": true,
+      "allow-ack": true,
+      "deny-ack": true,
+      "allow-hint": true,
+      "deny-hint": true
+    },
+    "group": {
+      "guard-denied": true,
+      "input-rejected": true,
+      "query": true,
+      "cooldown": true,
+      "allow-ack": true,
+      "deny-ack": true,
+      "allow-hint": true,
+      "deny-hint": true
+    }
+  },
+  "unexpectedErrors": 0,
+  "expectedParameterErrors": 2,
+  "queryExecutions": 2,
+  "acceptedButtonExecutions": 2,
+  "acknowledgedButtonEvents": 5,
+  "heartbeatAcknowledgments": 6,
+  "clientVisualConfirmation": "pending",
+  "connectionClosed": true
+}

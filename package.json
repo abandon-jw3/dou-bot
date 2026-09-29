@@ -1,0 +1,69 @@
+{
+  "name": "dd-bot",
+  "version": "0.3.0",
+  "private": true,
+  "description": "A lightweight decorator-based framework for official QQ bots.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.19.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "NOTICE"
+  ],
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests examples --max-warnings 0",
+    "format": "prettier --write src tests examples scripts docs *.json *.mjs .github",
+    "format:check": "prettier --check src tests examples scripts docs *.json *.mjs .github",
+    "test:compile": "node scripts/compile-tests.mjs",
+    "pretest": "npm run test:compile",
+    "test": "node --test \".test-build/tests/**/*.test.js\"",
+    "precoverage": "npm run test:compile",
+    "coverage": "c8 --all --src src --extension .ts --include \"src/**/*.ts\" --exclude-after-remap --reporter text --reporter lcov --reporter json-summary node --test \".test-build/tests/**/*.test.js\"",
+    "test:package": "node scripts/test-package.mjs",
+    "test:docs": "node scripts/check-docs.mjs",
+    "example:offline": "node scripts/run-example.mjs offline",
+    "example:query": "node scripts/run-example.mjs query",
+    "example:business": "node scripts/run-example.mjs business",
+    "example:business:qq": "node scripts/run-example.mjs business-qq",
+    "example:qq": "node scripts/run-example.mjs qq",
+    "diagnose:auth": "node scripts/run-example.mjs diagnose auth",
+    "diagnose:ws": "node scripts/run-example.mjs diagnose ws",
+    "probe:live": "node scripts/run-example.mjs live-probe",
+    "probe:media": "node scripts/run-example.mjs live-media",
+    "probe:reconnect": "node scripts/run-example.mjs live-reconnect",
+    "probe:controls": "node scripts/run-example.mjs live-controls",
+    "benchmark": "node scripts/run-example.mjs benchmark",
+    "soak": "node scripts/run-example.mjs soak",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "reflect-metadata": "0.2.2",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.0",
+    "@types/ws": "8.18.2",
+    "c8": "12.0.0",
+    "eslint": "10.11.0",
+    "prettier": "3.9.9",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.0"
+  }
+}

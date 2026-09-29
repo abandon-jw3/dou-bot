@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-09-29T13:21:50.179Z",
+  "node": "v24.21.0",
+  "platform": "win32",
+  "architecture": "x64",
+  "cpu": "AMD Ryzen 7 8745HS w/ Radeon 780M Graphics     ",
+  "importMs": 43.5479,
+  "rssBeforeImportBytes": 59011072,
+  "workload": "Serial synthetic QQ dispatch; native Response bodies with no real network; default queue/cache capacities; sampled RSS includes Node and retained dedup/reply state.",
+  "samples": [
+    {
+      "command": "noop",
+      "warmup": 200,
+      "iterations": 5000,
+      "createMs": 1.3849000000000018,
+      "startMs": 2.9517999999999915,
+      "durationMs": 62.07009999999998,
+      "eventsPerSecond": 80554.08320592364,
+      "sampledPeakRssBytes": 81985536,
+      "queue": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0
+      }
+    },
+    {
+      "command": "reply",
+      "warmup": 200,
+      "iterations": 5000,
+      "createMs": 0.31030000000001223,
+      "startMs": 0.5430999999999813,
+      "durationMs": 263.7424,
+      "eventsPerSecond": 18957.892246373736,
+      "sampledPeakRssBytes": 143917056,
+      "queue": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0
+      }
+    }
+  ]
+}
