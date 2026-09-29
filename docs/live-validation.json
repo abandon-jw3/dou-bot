@@ -1,0 +1,60 @@
+{
+  "applicationVersion": "0.1.0",
+  "sdkVersion": "0.3.0",
+  "applicationCodeCommit": "6f93a9d63ddc04c6057b197662969ed4477f8b1d",
+  "sdkSourceCommit": "3b8bf81e34d90826ce11a2961d18f7de297cb2fe",
+  "provider": "Open-Meteo",
+  "transport": "ws",
+  "startedAt": "2026-09-29T18:51:41.12Z",
+  "finishedAt": "2026-09-29T18:54:42.456Z",
+  "complete": true,
+  "queryScenes": ["group", "private"],
+  "refreshScenes": ["private", "group"],
+  "failures": 0,
+  "heartbeats": 4,
+  "successfulForecastRequests": 3,
+  "results": [
+    {
+      "scene": "group",
+      "city": "北京",
+      "time": "2026-09-30T02:45",
+      "temperature": 16.4,
+      "unit": "°C",
+      "day": "今天",
+      "cached": false,
+      "fresh": false
+    },
+    {
+      "scene": "private",
+      "city": "北京",
+      "time": "2026-09-30T02:45",
+      "temperature": 16.4,
+      "unit": "°C",
+      "day": "今天",
+      "cached": true,
+      "fresh": false
+    },
+    {
+      "scene": "private",
+      "city": "北京",
+      "time": "2026-09-30T02:45",
+      "temperature": 16.4,
+      "unit": "°C",
+      "day": "今天",
+      "cached": false,
+      "fresh": true
+    },
+    {
+      "scene": "group",
+      "city": "北京",
+      "time": "2026-09-30T02:45",
+      "temperature": 16.4,
+      "unit": "°C",
+      "day": "今天",
+      "cached": false,
+      "fresh": true
+    }
+  ],
+  "clientVisualConfirmation": "pending",
+  "connectionClosed": true
+}
