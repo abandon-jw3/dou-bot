@@ -4,6 +4,12 @@
 
 当前开发版 0.3.0 提供可运行 SDK、离线测试入口和 WS / Webhook 实现，包含无序 Slot、Rest、选项、帮助、Guard、命令冷却及完整业务示例。项目暂为 private；正式公开分发的包名和许可证由项目所有者确定。
 
+## 配套开发技能
+
+[dd-bot skill](skills/dd-bot/SKILL.md) 为开发助手提供本框架的使用约定，包含模块与 DI、Slot/Rest/Option、Guard/冷却、消息按钮和联调参考。将整个 skills/dd-bot 目录放入个人技能目录后，可用 `$dd-bot` 调用；它不会自行授权真实 QQ 连接或发布操作。
+
+技能的两个 TypeScript 示例会在独立 SDK 安装包消费者中编译并执行测试，随 npm run check 验证，避免文档示例与实际 API 脱节。
+
 ## 快速验证
 
 ```sh

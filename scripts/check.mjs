@@ -10,6 +10,7 @@ const checks = [
     'examples',
     'scripts',
     'docs',
+    'skills',
     '*.json',
     '*.mjs',
     '.github',

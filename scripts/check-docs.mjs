@@ -2,11 +2,22 @@ import { readFile, readdir, access } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { root } from './paths.mjs';
 
+async function skillDocuments(directory) {
+  const names = [];
+  for (const item of await readdir(resolve(root, directory), { withFileTypes: true })) {
+    const name = `${directory}/${item.name}`;
+    if (item.isDirectory()) names.push(...(await skillDocuments(name)));
+    else if (item.isFile() && item.name.endsWith('.md')) names.push(name);
+  }
+  return names;
+}
+
 const documents = [
   'README.md',
   ...(await readdir(resolve(root, 'docs')))
     .filter((name) => name.endsWith('.md'))
     .map((name) => `docs/${name}`),
+  ...(await skillDocuments('skills')),
 ];
 let links = 0;
 for (const name of documents) {

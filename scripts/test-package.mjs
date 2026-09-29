@@ -147,7 +147,17 @@ const compilerOptions = {
   outDir: resolve(consumer, 'out'),
   skipLibCheck: false,
 };
-const program = ts.createProgram([resolve(consumer, 'consumer.ts')], compilerOptions);
+const skillExamples = ['minimal-module.ts', 'minimal-module.test.ts'];
+for (const name of skillExamples) {
+  await writeFile(
+    resolve(consumer, name),
+    await readFile(resolve(root, 'skills', 'dd-bot', 'assets', name)),
+  );
+}
+const program = ts.createProgram(
+  [resolve(consumer, 'consumer.ts'), ...skillExamples.map((name) => resolve(consumer, name))],
+  compilerOptions,
+);
 const diagnostics = ts.getPreEmitDiagnostics(program);
 if (diagnostics.length) {
   throw new Error(
@@ -173,4 +183,5 @@ for (const file of program.getSourceFiles()) {
 }
 program.emit();
 await runNode([resolve(consumer, 'out', 'consumer.js')], { cwd: consumer });
+await runNode(['--test', resolve(consumer, 'out', 'minimal-module.test.js')], { cwd: consumer });
 console.log(`Package consumer passed; ${pack.files.length} allowed files, no credential matches.`);
