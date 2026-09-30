@@ -6,7 +6,7 @@
 
 运行环境为 Node.js 24+、ESM，TypeScript 使用 **5.9.3**。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
 
-npm 包名是 **`dou-bot`**，开发仓库仍名为 `dd-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
+npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
 
 ## 安装
 
@@ -182,6 +182,6 @@ WS 已在 Windows 上完成真实 QQ 群聊和私聊验证；Webhook 完成本�
 
 ## 源码与许可
 
-[源码仓库](https://github.com/abandon-jw3/dd-bot) 和 [带注释的独立示例](https://github.com/abandon-jw3/dd-bot-example) 当前需要仓库访问权限；安装和基本使用不依赖这些权限。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
+[源码仓库](https://github.com/abandon-jw3/dou-bot) 已公开；[历史独立示例](https://github.com/abandon-jw3/dd-bot-example) 仍需仓库访问权限。公开可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot-docs/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
 
 采用 [MIT 许可证](LICENSE)。适用的上游版权及许可保留在 [NOTICE](NOTICE) 中。

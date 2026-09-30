@@ -196,7 +196,7 @@ WS 恢复测试验证了会话恢复和恢复后的心跳，没有断言断线�
 
 ## 首版验收结论与后续部署
 
-按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。GitHub 源码仓库保持 private；SDK 已以 dou-bot@0.6.0 和 MIT 发布到 npm，并通过匿名下载与独立编译运行验证。
+按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。GitHub 框架仓库现已改名为 [dou-bot](https://github.com/abandon-jw3/dou-bot) 并公开；SDK 已以 dou-bot@0.6.0 和 MIT 发布到 npm，并通过匿名下载与独立编译运行验证。
 
 - 公网 HTTPS Webhook、QQ 管理端地址验证及真实回调重试：按用户选择留待部署入口就绪。
 - 更长时间和实际生产负载：属于后续运行验收；Windows/Linux 远端 CI 已通过。

@@ -5,11 +5,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abandon-jw3/dd-bot.git"
+    "url": "git+https://github.com/abandon-jw3/dou-bot.git"
   },
-  "homepage": "https://github.com/abandon-jw3/dd-bot#readme",
+  "homepage": "https://github.com/abandon-jw3/dou-bot#readme",
   "bugs": {
-    "url": "https://github.com/abandon-jw3/dd-bot/issues"
+    "url": "https://github.com/abandon-jw3/dou-bot/issues"
   },
   "keywords": [
     "qq",
