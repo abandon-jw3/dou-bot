@@ -2,6 +2,8 @@
 
 框架、独立业务示例和用户文档站统一在 [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot) 维护。原 `dou-bot-example` 与 `dou-bot-docs` 仓库只保留历史和迁移入口。
 
+换设备或交给新的开发对话时，先阅读 [跨设备开发交接](handoff.md)，按其中步骤恢复环境并核对当前状态。
+
 ## 三个工程的边界
 
 | 目录            | 职责                                                 | 依赖与产物                                                              |
