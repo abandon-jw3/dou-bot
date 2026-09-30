@@ -1,0 +1,34 @@
+{
+  "name": "dou-bot-docs",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "dev": "vitepress dev docs --host 127.0.0.1",
+    "build": "vitepress build docs && node scripts/check-built.mjs",
+    "preview": "vitepress preview docs --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.examples.json --noEmit && tsc -p tsconfig.site.json",
+    "examples:build": "node scripts/build-examples.mjs",
+    "test": "npm run examples:build && node --test \".examples-build/tests/*.test.js\"",
+    "test:browser": "playwright test",
+    "check:content": "node scripts/check-content.mjs",
+    "format": "prettier --write docs examples tests browser-tests scripts *.json *.ts *.md .github",
+    "format:check": "prettier --check docs examples tests browser-tests scripts *.json *.ts *.md .github",
+    "check": "npm run typecheck && npm run format:check && npm run api:check && npm run check:content && npm test && npm run build",
+    "api:generate": "node scripts/generate-api.mjs",
+    "api:check": "node scripts/generate-api.mjs --check"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.19.0",
+    "dou-bot": "0.6.0",
+    "prettier": "3.9.9",
+    "typescript": "5.9.3",
+    "vitepress": "1.6.4"
+  }
+}

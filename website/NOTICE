@@ -1,0 +1,6 @@
+Documentation and examples for dou-bot 0.6.0 are distributed under the MIT
+License. See LICENSE. Public API declaration excerpts and the deterministic PNG
+fixture are derived from the MIT-licensed dou-bot project.
+
+The website is built with VitePress, which is distributed under the MIT License.
+Its bundled dependencies retain their applicable licenses and notices.
