@@ -14,7 +14,7 @@ description: '使用 dou-bot SDK 开发、修改和测试 QQ 官方机器人业�
 - 检查目标项目的 package.json、锁文件、tsconfig、启动和测试脚本，确认 dou-bot 的来源与版本。普通业务使用 `dou-bot`，离线测试使用 `dou-bot/testing`；业务代码不导入框架内部路径或本机另一份源码。
 - 基线为 Node.js 24+、TypeScript 5.9.3、ESM 和传统参数装饰器。构造注入依赖运行时元数据，不能只凭 TypeScript 类型推断启动成功。
 - SDK 当前仅面向 QQ 官方群聊和私聊，每个应用选择 WS 或 Webhook。保留用户选定的业务、前缀、权限及部署方式；天气、城市词典、白名单和空前缀都是示例选择，不是框架要求。
-- npm 分发名已确定为 dou-bot，采用 MIT；当前为 0.6.0 发布候选，是否已上架应按 registry 和项目锁文件核实。npm 上的 dd-bot 是其他项目。先复用项目已有依赖；未上架时使用来源明确的 dou-bot tgz，不替换为其他同名包。
+- dou-bot@0.6.0 已以 MIT 发布到官方 npm registry，公开下载与独立消费者已验证。npm 上的 dd-bot 是其他项目。先核对项目当前依赖；新项目可使用 `npm install --save-exact dou-bot@0.6.0`，不要把发布标签当作固定版本。
 
 需要更新知识时，优先读取已安装 SDK 的导出声明，以及可访问的框架源码/文档。维护参考为 [框架仓库](https://github.com/abandon-jw3/dd-bot) 和 [独立业务示例](https://github.com/abandon-jw3/dd-bot-example)；它们可能需要仓库访问权限，不是执行本技能的硬性联网前提。
 

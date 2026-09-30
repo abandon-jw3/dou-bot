@@ -1,6 +1,6 @@
 # dd-bot 开发与联调验证记录
 
-更新日期：2026-09-30。版本：开发版 0.6.0，公开设计契约 1.7。下列结果区分本地测试、QQ 实机验证和后续部署验收；尚未正式发布 npm 包。此前 QQ 实机及基线数据采集于 2026-09-29，新增执行控制 WS 验收于 2026-09-30 完成后台验证。
+更新日期：2026-09-30。版本：开发版 0.6.0，公开设计契约 1.7。下列结果区分本地测试、QQ 实机验证和后续部署验收；现已将 dou-bot@0.6.0 公开发布到 npm。此前 QQ 实机及基线数据采集于 2026-09-29，新增执行控制 WS 验收于 2026-09-30 完成后台验证。
 
 ## 已确认的范围
 
@@ -29,6 +29,10 @@
 2026-09-30，已创建 [abandon-jw3/dd-bot 私有仓库](https://github.com/abandon-jw3/dd-bot)，默认分支为 main，首次提交为 `f81c9d1230f5a697818fbec46f3d0d699faae794`。102 个源码、测试、示例与文档文件已推送；本地凭证、依赖、生成产物和临时工作文件未进入 Git。
 
 [首次 CI](https://github.com/abandon-jw3/dd-bot/actions/runs/36611267768) 已完成，结论为 success。`verify (ubuntu-latest)` 和 `verify (windows-latest)` 均成功执行 `npm run check` 及 `npm run coverage`。这完成了远端 CI 与 Linux 自动测试验证；QQ 实机联调记录仍对应 Windows 环境。
+
+## dou-bot@0.6.0 公开发布验证
+
+2026-09-30，使用 fine_wei 账号公开发布已验收候选。官方 registry 的 integrity 与候选一致；空用户配置、全新缓存的独立消费者成功下载，README 编译与离线运行、两项技能测试及依赖隔离检查均通过。发布参数为 next，registry 实际同时保留 latest；移除 latest 返回 HTTP 400，已如实记录。完整数据见 [发行记录](npm-release-0.6.0.json)。原有平台待验项不因 npm 发布而自动完成。
 
 ## dou-bot@0.6.0 发布候选本地验证
 
@@ -180,11 +184,11 @@ WS 恢复测试验证了会话恢复和恢复后的心跳，没有断言断线�
 
 ## 首版验收结论与后续部署
 
-按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。GitHub 源码仓库保持 private；SDK 已按 dou-bot 与 MIT 整理发行配置，尚未向 npm 发布。
+按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。GitHub 源码仓库保持 private；SDK 已以 dou-bot@0.6.0 和 MIT 发布到 npm，并通过匿名下载与独立编译运行验证。
 
 - 公网 HTTPS Webhook、QQ 管理端地址验证及真实回调重试：按用户选择留待部署入口就绪。
 - 更长时间和实际生产负载：属于后续运行验收；Windows/Linux 远端 CI 已通过。
 - WS 已确认 RESUME 与恢复后的心跳；不对服务端断线窗口内的业务重放完整性作保证。
-- 包名 dou-bot 与 MIT 已由项目所有者确定；正式发布仍需 npm 登录、最终确认和发布后 registry 安装验证，见 [发布准备](npm-release.md)。
+- npm 登录、明确发布授权、公开上传与 registry 安装验证均已完成，实际标签与校验记录见 [发布记录](npm-release.md)。
 
 框架使用进程内有界队列与去重；进程崩溃可能丢失已经确认但未处理的事件。关闭期限可取消受管请求和协作任务，不能硬终止不响应 signal 的用户 JavaScript。

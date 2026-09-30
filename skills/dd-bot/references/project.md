@@ -6,7 +6,7 @@
 
 公开入口只有 `dou-bot` 和 `dou-bot/testing`。根入口加载 reflect-metadata/lite；业务无需添加框架内部的 RuntimePorts、Container 或 WebSocket 类型依赖。
 
-框架的 npm 包名为 dou-bot、许可为 MIT，GitHub 仓库仍为 private。是否已发布 registry 版本需核实；候选包可以本地安装。已有项目使用本地 SDK tgz 时，保留 vendor 包、来源提交、SHA-256 和 package-lock.json；不要替换成不明来源的同名 npm 包。参考消费者的依赖形式是 `"dou-bot": "file:vendor/dou-bot-0.6.0.tgz"`，路径和版本应按实际包调整。
+框架 dou-bot@0.6.0 已以 MIT 发布到官方 npm registry，GitHub 仓库仍为 private。新项目可声明 `"dou-bot": "0.6.0"` 并提交锁文件。已有本地 tgz 项目迁移时显式执行 `npm install --save-exact dou-bot@0.6.0`，核对锁文件的 resolved 已改为官方 registry URL，保留原包来源与校验记录；不要安装其他项目占用的 dd-bot 包。
 
 业务开发依赖通常包含 TypeScript 与 @types/node，生产依赖只需声明自己使用的 SDK 和业务库。框架内部的 ws 不意味着消费者必须安装 @types/ws。
 

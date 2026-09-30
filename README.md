@@ -8,16 +8,16 @@ npm 包名是 **`dou-bot`**，开发仓库仍名为 `dd-bot`。npm 上的 `dd-bo
 
 ## 安装
 
-早期发行使用 `next` 标签。对应版本发布后，在自己的机器人项目中运行：
+[dou-bot@0.6.0](https://www.npmjs.com/package/dou-bot/v/0.6.0) 已发布。建议项目依赖锁定精确版本，在自己的机器人项目中运行：
 
 ```sh
 npm init -y
 npm pkg set type=module
-npm install --save-exact dou-bot@next
+npm install --save-exact dou-bot@0.6.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
-尚未上架的候选包可以通过 `npm install ./dou-bot-0.6.0.tgz --save-exact` 本地安装；两种方式均从 `dou-bot` 导入。
+也可通过 `dou-bot@next` 安装对应标签版本；标签可能随后续发行变化。旧本地 tgz 项目迁移时执行 `npm install --save-exact dou-bot@0.6.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
 
 创建 `tsconfig.json`：
 
