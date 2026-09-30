@@ -42,7 +42,9 @@ export class SettingsController {
 }
 ```
 
-填入的 ID 是当前机器人从 QQ 收到的 OpenID，不是日常 QQ 号。未指定 scene/groupId 时，对所有会话做精确字符串匹配；它不转换、合并或推断群聊和私聊身份。需要限定场景时显式配置 scope 或叠加 GroupOnly/PrivateOnly。多机器人各自配置对应的 OpenID。
+填入的 ID 是当前机器人从 QQ 收到的 OpenID，不是日常 QQ 号。未指定 scene/groupId 时，对所有会话做精确字符串匹配；它不转换、合并或推断群聊和私聊身份。需要限定场景时显式配置 scene/groupId 或叠加 GroupOnly/PrivateOnly。多机器人各自配置对应的 OpenID。
+
+从 0.6.0 开始，这些装饰器也可以写在模块类上，规则只传递给本模块直接注册的控制器。具体顺序和边界见 [模块 Guard 指南](./module-guards.md)。
 
 ## 作用范围与执行规则
 

@@ -1,5 +1,5 @@
 /**
- * dd-bot v0.5 public API design contract, revision 1.6 — NOT a runtime implementation.
+ * dd-bot v0.6 public API design contract, revision 1.7 — NOT a runtime implementation.
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24+, TypeScript legacy decorators, ESM.
  */
@@ -29,6 +29,7 @@ export interface ModuleMetadata {
   controllers?: readonly Type[];
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
+  guards?: readonly InjectionToken<CanActivate>[];
 }
 export interface OnModuleInit {
   onModuleInit(signal: AbortSignal): Awaitable<void>;

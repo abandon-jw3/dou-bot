@@ -8,6 +8,7 @@ import {
   Controller,
   Ctx,
   GroupManagersOnly,
+  Injectable,
   Module,
   OnButton,
   button,
@@ -15,10 +16,23 @@ import {
   keyboard,
   markdown,
 } from '../src/index.js';
-import type { ButtonContext, MessageContext, QQDispatch } from '../src/index.js';
+import type {
+  ButtonContext,
+  CanActivate,
+  GuardContext,
+  GuardResult,
+  MessageContext,
+  QQDispatch,
+} from '../src/index.js';
 import { qqServer, serve, until } from './helpers.js';
 
 await test('identical private/group messages and buttons produce identical behavior through real WS and Webhook HTTP', async () => {
+  @Injectable()
+  class ModuleGate implements CanActivate {
+    canActivate(ctx: GuardContext): GuardResult {
+      return ctx.userId !== 'blocked' || { allow: false, message: 'module denied' };
+    }
+  }
   @Controller()
   class Commands {
     readonly calls: string[] = [];
@@ -61,7 +75,7 @@ await test('identical private/group messages and buttons produce identical behav
       await ctx.send('selected');
     }
   }
-  @Module({ controllers: [Commands] })
+  @Module({ controllers: [Commands], providers: [ModuleGate], guards: [ModuleGate] })
   class Root {}
   const secret = '0123456789abcdef';
   const backends = [await qqServer(), await qqServer()];
@@ -179,6 +193,15 @@ await test('identical private/group messages and buttons produce identical behav
       },
     },
   );
+  events.push({
+    op: 0,
+    t: 'C2C_MESSAGE_CREATE',
+    d: {
+      id: 'module-blocked',
+      author: { user_openid: 'blocked' },
+      content: '/echo should-not-run',
+    },
+  });
   try {
     await Promise.all(apps.map((app) => app.start()));
     for (const [index, event] of events.entries()) {
@@ -210,6 +233,7 @@ await test('identical private/group messages and buttons produce identical behav
       '/v2/users/user/messages',
       '/v2/groups/group/messages',
       ...Array<string>(6).fill('/v2/groups/group/messages'),
+      '/v2/users/blocked/messages',
     ]);
     assert.equal(
       wsBackend.messages[6]?.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
@@ -221,6 +245,11 @@ await test('identical private/group messages and buttons produce identical behav
     assert.equal(wsBackend.messages[10]?.content, 'prompt-question');
     assert.equal(wsBackend.messages[11]?.msg_id, 'prompt-answer');
     assert.equal(wsBackend.messages[11]?.content, 'prompt-answer:plain input');
+    assert.equal(wsBackend.messages[12]?.content, 'module denied');
+    assert.equal(
+      ws.get(Commands).calls.some((call) => call.includes('should-not-run')),
+      false,
+    );
     await until(() =>
       apps.every(
         (app) => app.snapshot().prompts.pending === 0 && app.snapshot().queue.active === 0,

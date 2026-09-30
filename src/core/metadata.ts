@@ -57,6 +57,12 @@ function metadata<T>(key: symbol | string, target: object, method?: string): T |
 }
 
 export function Module(data: ModuleMetadata): ClassDecorator {
+  const input: unknown = data;
+  if (!isRecord(input)) throw new FrameworkError('CONFIG', '@Module requires metadata');
+  const guards: unknown = data.guards === undefined ? [] : data.guards;
+  if (!Array.isArray(guards) || !Array.from(guards as unknown[]).every(isGuardToken))
+    throw new FrameworkError('CONFIG', 'Module guards must be an array of provider tokens');
+  const guardSnapshot = Object.freeze([...(guards as InjectionToken<CanActivate>[])]);
   return (target) => {
     if (metadata(MODULE, target)) throw new FrameworkError('CONFIG', 'Duplicate @Module');
     Reflect.defineMetadata(
@@ -66,6 +72,7 @@ export function Module(data: ModuleMetadata): ClassDecorator {
         providers: Object.freeze([...(data.providers ?? [])]),
         controllers: Object.freeze([...(data.controllers ?? [])]),
         exports: Object.freeze([...(data.exports ?? [])]),
+        guards: guardSnapshot,
       }),
       target,
     );
@@ -133,20 +140,16 @@ export const Command = (name: string, options?: CommandOptions): MethodDecorator
 export const On = (eventName: string): MethodDecorator => handler('event', eventName);
 export const OnButton = (buttonId: string): MethodDecorator => handler('button', buttonId);
 
+function isGuardToken(token: unknown): token is InjectionToken<CanActivate> {
+  return (
+    typeof token === 'symbol' || (typeof token === 'string' && token.length > 0) || isType(token)
+  );
+}
+
 export function UseGuards(
   ...guards: readonly InjectionToken<CanActivate>[]
 ): ClassDecorator & MethodDecorator {
-  if (
-    !guards.length ||
-    guards.some(
-      (token) =>
-        !(
-          typeof token === 'symbol' ||
-          (typeof token === 'string' && token.length > 0) ||
-          isType(token)
-        ),
-    )
-  )
+  if (!guards.length || !guards.every(isGuardToken))
     throw new FrameworkError('CONFIG', '@UseGuards requires provider tokens');
   return guardDecorator([...guards]);
 }
@@ -216,6 +219,13 @@ function classGuards(type: Type): readonly GuardDeclaration[] {
     current = Object.getPrototypeOf(current);
   }
   return result;
+}
+
+/** Module configuration precedes decorators on the module class; neither propagates through imports. */
+export function readModuleGuards(type: Type): readonly GuardDeclaration[] {
+  const guards = Object.freeze([...(readModule(type).guards ?? []), ...classGuards(type)]);
+  validateAccessRules(guards);
+  return guards;
 }
 
 function snapshot<T extends object>(options: T): T {
@@ -308,10 +318,13 @@ export function constructorTokens(type: Type, controller = false): InjectionToke
   });
 }
 
-export function readHandlers(type: Type): HandlerMetadata[] {
+export function readHandlers(
+  type: Type,
+  moduleGuards: readonly GuardDeclaration[] = [],
+): HandlerMetadata[] {
   const result: HandlerMetadata[] = [];
   const seen = new Set<string>();
-  const controllerGuards = classGuards(type);
+  const controllerGuards = [...moduleGuards, ...classGuards(type)];
   validateAccessRules(controllerGuards);
   let prototype: object | null = type.prototype as object;
   while (prototype && prototype !== Object.prototype) {

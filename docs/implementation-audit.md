@@ -1,12 +1,14 @@
 # dd-bot 当前实现审计
 
-日期：2026-09-30。本表对应开发方案 1.6 和当前源码，目的是让已验证内容与剩余验收可逐项定位。测试数量、平台结果和性能原始数据以 [验证记录](./validation-report.md) 为准。
+日期：2026-09-30。本表对应开发方案 1.7 和当前源码，目的是让已验证内容与剩余验收可逐项定位。测试数量、平台结果和性能原始数据以 [验证记录](./validation-report.md) 为准。
 
-当前交付为 0.5.0，在访问限制基础上增加 prompt 二次输入、超时取消、多轮引用及执行槽挂起/恢复。用户已确认首版以 Windows 验收，Webhook 先完成本地验证；模板模式已从范围中移除。本表按这些明确要求核对完成状态。
+当前交付为 0.6.0，在已有类/方法 Guard 基础上增加模块统一配置和模块类装饰器支持。用户已确认首版以 Windows 验收，Webhook 先完成本地验证；模板模式已从范围中移除。本表按这些明确要求核对完成状态。
 
-本轮新增能力的证据为 access.test、api-validation.test 和扩展后的 WS/Webhook 对照测试；平台管理者按钮的实际拦截与不同角色账号的实机验收仍待执行，未沿用历史普通按钮验收代替。
+访问限制能力的证据为 access.test、api-validation.test 和扩展后的 WS/Webhook 对照测试；平台管理者按钮的实际拦截与不同角色账号的实机验收仍待执行，未沿用历史普通按钮验收代替。
 
-本轮 prompt 验证由 prompts.test、独立消费者和扩展 WS/Webhook 对照测试覆盖；真实 QQ 二次输入仍待联调。
+prompt 验证由 prompts.test、独立消费者和扩展 WS/Webhook 对照测试覆盖；用户后续已确认一轮人工测试正常，具体记录与覆盖粒度见验证记录。
+
+本轮模块 Guard 由 module-guards.test、独立消费者和 WS/Webhook 对照覆盖；不递归影响 imports。
 
 ## 用户要求与交付物
 
@@ -17,7 +19,7 @@
 | WS 和 Webhook                         | 两个 transport，共用 Execution、Dispatcher、QQClient；transport-parity 测试比较实际 HTTP/WS 输入结果 | 本地验证；WS 实机通过；Webhook 公网按用户选择待部署 |
 | 轻量、无热更新                        | 生产依赖仅 reflect-metadata 与 ws；静态初始化，没有 watch/reload 插件系统                            | 已实现；合成性能基线已记录                          |
 | TypeScript 5.9.3                      | package.json、锁文件、实际编译与独立消费者检查                                                       | 已固定                                              |
-| 完整开发方案、逐模块 API 与功能       | development-plan 的 20 节、public-api 1.6、技术选型、README、command-parameters、execution-controls  | 已提供并同步当前范围                                |
+| 完整开发方案、逐模块 API 与功能       | development-plan 的 20 节、public-api 1.7、技术选型、README、command-parameters、execution-controls  | 已提供并同步当前范围                                |
 | Guard、冷却和完整业务示例             | UseGuards/CanActivate、Cooldown、examples/business、controls.test、business.test                     | 已实现并本地验证                                    |
 | 无序参数与剩余参数                    | Slot/Rest、词序全排列、歧义/重复/缺参拒绝、原序保留；arguments.test 与 example:query                 | 已实现并离线验证                                    |
 | 类型化参数、选项、帮助与错误提示      | Arg schema / Option / HelpModule / invalidInput；类型反例、应用测试及独立消费者                      | 已实现并离线验证                                    |

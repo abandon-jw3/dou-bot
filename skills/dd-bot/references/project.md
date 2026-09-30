@@ -1,12 +1,12 @@
 # 工程、模块与依赖注入
 
-适用基线：dd-bot 0.5.0。先检查项目实际声明，保留现有结构与用户选定的版本。
+适用基线：dd-bot 0.6.0。先检查项目实际声明，保留现有结构与用户选定的版本。
 
 ## 消费 SDK
 
 公开入口只有 `dd-bot` 和 `dd-bot/testing`。根入口加载 reflect-metadata/lite；业务无需添加框架内部的 RuntimePorts、Container 或 WebSocket 类型依赖。
 
-目前框架保持 private。已有项目使用本地 SDK tgz 时，保留 vendor 包、来源提交、SHA-256 和 package-lock.json；不要替换成不明来源的同名 npm 包。参考消费者的依赖形式是 `"dd-bot": "file:vendor/dd-bot-0.5.0.tgz"`，路径和版本应按实际包调整。
+目前框架保持 private。已有项目使用本地 SDK tgz 时，保留 vendor 包、来源提交、SHA-256 和 package-lock.json；不要替换成不明来源的同名 npm 包。参考消费者的依赖形式是 `"dd-bot": "file:vendor/dd-bot-0.6.0.tgz"`，路径和版本应按实际包调整。
 
 业务开发依赖通常包含 TypeScript 与 @types/node，生产依赖只需声明自己使用的 SDK 和业务库。框架内部的 ws 不意味着消费者必须安装 @types/ws。
 
@@ -73,6 +73,8 @@ export class AppModule {}
 - QQClient、QQApi、LOGGER 是保留的内置可注入令牌，不能用普通 providers 覆盖。
 - 模块类仅承载声明，不自动实例化。继承带依赖的构造函数时，派生类应明确声明构造和注入；不要依赖被擦除的类型自动继承。
 - `app.get(Service)` 读取根模块可见服务；有需要时使用 `app.get(Service, { module: FeatureModule })`。不要绕过模块可见性直接构造另一份单例。
+
+模块可通过 `guards: [GuardToken]` 或模块类上的 `@UseGuards(...)` 声明统一检查；仅作用于自己 controllers 中的 Command/OnButton，不传播到 imports。Guard 仍需作为可见 Provider 注册；同一规则重复声明会重复执行。详细执行顺序见 [执行控制](runtime.md)。
 
 ## 创建、启动和关闭
 

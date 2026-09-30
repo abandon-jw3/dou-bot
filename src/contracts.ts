@@ -32,6 +32,8 @@ export interface ModuleMetadata {
   controllers?: readonly Type[];
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
+  /** Applied to this module's own controllers before class/method guards; imports are independent. */
+  guards?: readonly InjectionToken<CanActivate>[];
 }
 
 export interface OnModuleInit {

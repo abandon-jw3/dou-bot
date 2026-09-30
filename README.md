@@ -2,11 +2,13 @@
 
 面向 QQ 官方机器人群聊和私聊的 TypeScript 装饰器框架。Node.js 24+，TypeScript 固定为 **5.9.3**，生产依赖为 `reflect-metadata` 和 `ws`。
 
-当前开发版 0.5.0 提供可运行 SDK、离线测试入口和 WS / Webhook 实现，包含无序 Slot、Rest、选项、帮助、Guard、命令冷却及完整业务示例。项目暂为 private；正式公开分发的包名和许可证由项目所有者确定。
+当前开发版 0.6.0 提供可运行 SDK、离线测试入口和 WS / Webhook 实现，包含无序 Slot、Rest、选项、帮助、Guard、命令冷却及完整业务示例。项目暂为 private；正式公开分发的包名和许可证由项目所有者确定。
 
 新增 GroupOnly、PrivateOnly、UsersOnly、GroupRoles、GroupManagersOnly 和管理者按钮权限；用法与边界见 [访问限制指南](docs/access-control.md)。
 
 新增 `ctx.prompt()`：发送问题、等待当前用户输入，支持超时、取消、附件与多轮输入；等待期间释放执行并发名额。见 [二次输入指南](docs/prompts.md)。
+
+支持 `@Module({ guards: [...] })` 与模块类上的 `@UseGuards()`，模块、类和方法级规则按顺序累加。见 [模块 Guard 指南](docs/module-guards.md)。
 
 ## 配套开发技能
 

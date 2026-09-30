@@ -1,6 +1,6 @@
 # Guard、冷却与完整业务示例
 
-对应 dd-bot 0.5.0 / 公开契约 1.6。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
+对应 dd-bot 0.6.0 / 公开契约 1.7。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
 
 内置场景、用户、群角色限制和管理者按钮权限见 [访问限制指南](./access-control.md)，它们与 UseGuards 共用执行链。
 
@@ -8,7 +8,7 @@
 
 ## Guard 的使用
 
-Guard 是注册在 providers 中的可注入服务，通过 `canActivate(ctx)` 返回是否允许执行。类和方法均可声明 `@UseGuards(...)`。
+Guard 是注册在 providers 中的可注入服务，通过 `canActivate(ctx)` 返回是否允许执行。模块类、控制器类和方法均可声明 `@UseGuards(...)`；模块也可通过 `@Module({ guards: [...] })` 统一配置。完整作用范围见 [模块 Guard 指南](./module-guards.md)。
 
 ```ts
 import { Command, Controller, Injectable, Module, UseGuards } from 'dd-bot';
@@ -45,13 +45,13 @@ GuardContext 共用字段为 appId、eventName、eventId（可选）、receivedA
 
 GuardContext 及其目标快照在运行时冻结；raw/attachments 仍遵守已有上下文的 readonly 契约，业务不得修改。需要读取 QQ API 时可显式注入 QQApi 等服务，传入 ctx.signal，并自行 await；注入服务发起的请求不自动成为上下文发送操作。
 
-`@UseGuards(A, B)` 按 A、B 顺序执行。类级先于方法级；同一位置叠加多个 UseGuards 时按代码从上到下执行。基类的类级 Guard 先于派生类的类级 Guard；继承方法保留方法级声明，覆写方法使用覆写后的方法声明，不叠加基类方法策略。未重新注册的覆写方法沿用现有规则：不会成为路由。
+`@UseGuards(A, B)` 按 A、B 顺序执行。模块级先于控制器类级，类级先于方法级；同一位置叠加多个 UseGuards 时按代码从上到下执行。基类的类级 Guard 先于派生类的类级 Guard；继承方法保留方法级声明，覆写方法使用覆写后的方法声明，不叠加基类方法策略。未重新注册的覆写方法沿用现有规则：不会成为路由。
 
 所有 Guard 必须通过才调用业务；拒绝或异常立即停止后续 Guard。正常拒绝不是错误，不调用 onError，不增加 failed；提示发送失败仍按 send 错误处理。Guard 抛错、返回 undefined/数字/非法对象是执行错误，只上报，不把异常原文回复给用户。对象放行形式 `{ allow: true }` 不属于 API，请返回 true。
 
 Guard 从 Controller 所属模块解析，遵守 imports/exports 和普通 Provider 生命周期。未注册、不可见或歧义的令牌在实例构造前报错；实例/异步工厂结果没有 canActivate 时，在 create 返回前报错并执行初始化回滚。默认单例，因此将当前请求状态留在方法局部变量，不放在实例字段。
 
-类级 Guard 作用于该 Controller 的 Command 和 OnButton；原始 On 观察器仍独立执行，便于记录原始事件。在 On 方法上显式加 Guard/Cooldown 会在启动时报 CONFIG。HelpModule 的列表不执行被列出命令的 Guard，不自动隐藏受限命令；实际调用仍检查权限。
+模块 Guard 作用于本模块直接注册的 Controller，类级 Guard 作用于该 Controller 的 Command 和 OnButton；原始 On 观察器仍独立执行，便于记录原始事件。在 On 方法上显式加 Guard/Cooldown 会在启动时报 CONFIG。HelpModule 的列表不执行被列出命令的 Guard，不自动隐藏受限命令；实际调用仍检查权限。
 
 ## 命令冷却
 

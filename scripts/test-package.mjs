@@ -97,6 +97,9 @@ import { Arg, Command, Controller, Cooldown, Ctx, GroupManagersOnly, HelpModule,
 import type { CanActivate, GuardContext, GuardResult, MessageContext } from 'dd-bot';
 import { createTestApplication } from 'dd-bot/testing';
 @Injectable() class Greeter { hello(name: string) { return 'Hello ' + name; } }
+@Injectable() class ModuleGate implements CanActivate {
+  canActivate(ctx: GuardContext): GuardResult { return ctx.userId !== 'module-blocked' || { allow: false, message: 'module denied' }; }
+}
 @Injectable() class Guard implements CanActivate {
   canActivate(ctx: GuardContext): GuardResult { return ctx.userId === 'u' || { allow: false, message: 'blocked' }; }
 }
@@ -117,7 +120,7 @@ import { createTestApplication } from 'dd-bot/testing';
     @Option('page', { type: 'integer', alias: 'p', min: 1, default: 1 }) page: number,
   ) { return JSON.stringify({ city, topic, page, rest }); }
 }
-@Module({ imports: [HelpModule], providers: [Greeter, Guard], controllers: [Commands] }) class Root {}
+@Module({ imports: [HelpModule], providers: [Greeter, Guard, ModuleGate], guards: [ModuleGate], controllers: [Commands] }) class Root {}
 const harness = await createTestApplication(Root, { commands: { prefix: '', invalidInput: 'reply' } });
 await harness.app.start();
 try {
@@ -143,6 +146,8 @@ try {
   await Promise.all([question.done, answer.done]);
   assert.equal(harness.messages[9]?.payload.content, 'plain input');
   assert.equal(harness.messages[9]?.payload.msg_id, 'package-answer');
+  await harness.dispatch({ op: 0, t: 'C2C_MESSAGE_CREATE', d: { id: 'package-module-guard', author: { id: 'module-blocked' }, content: 'hello blocked' } });
+  assert.equal(harness.messages[10]?.payload.content, 'module denied');
   assert.ok(import.meta.resolve('dd-bot').includes('consumer/node_modules/dd-bot/'));
 } finally { await harness.app.close(); }
 `,

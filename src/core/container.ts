@@ -1,6 +1,7 @@
 import type { InjectionToken, ModuleMetadata, Provider, Type } from '../contracts.js';
 import { FrameworkError } from './errors.js';
-import { constructorTokens, isController, readModule } from './metadata.js';
+import { constructorTokens, isController, readModule, readModuleGuards } from './metadata.js';
+import type { GuardDeclaration } from './access.js';
 import { bounded, callable, isObject, isType, own, throwIfAborted, tokenName } from './utils.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
@@ -18,6 +19,7 @@ interface ModuleNode {
   metadata: ModuleMetadata;
   imports: ModuleNode[];
   bindings: Map<InjectionToken, Binding>;
+  guards: readonly GuardDeclaration[];
 }
 interface Binding {
   token: InjectionToken;
@@ -31,6 +33,7 @@ interface Binding {
 export interface ControllerBinding {
   type: Type;
   module: Type;
+  moduleGuards: readonly GuardDeclaration[];
   instance(): object;
 }
 
@@ -85,7 +88,13 @@ export class Container {
       const existing = this.modules.get(type);
       if (existing) return existing;
       const metadata = readModule(type);
-      const node: ModuleNode = { type, metadata, imports: [], bindings: new Map() };
+      const node: ModuleNode = {
+        type,
+        metadata,
+        imports: [],
+        bindings: new Map(),
+        guards: readModuleGuards(type),
+      };
       this.modules.set(type, node);
       modulePath.push(type);
       node.imports = [...new Set(metadata.imports ?? [])].map(visit);
@@ -256,6 +265,10 @@ export class Container {
     };
   }
 
+  moduleGuards(): { module: Type; guards: readonly GuardDeclaration[] }[] {
+    return [...this.modules.values()].map((node) => ({ module: node.type, guards: node.guards }));
+  }
+
   controllers(): ControllerBinding[] {
     const ordered: ModuleNode[] = [];
     const visited = new Set<ModuleNode>();
@@ -272,6 +285,7 @@ export class Container {
         .map((binding) => ({
           type: binding.token as Type,
           module: node.type,
+          moduleGuards: node.guards,
           instance: () => {
             if (!binding.ready || !isObject(binding.value))
               throw new FrameworkError('INVALID_STATE', 'Controller is not initialized');

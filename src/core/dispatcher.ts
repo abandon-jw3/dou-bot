@@ -31,6 +31,7 @@ export class Dispatcher {
   private readonly commands = new Map<string, Route>();
   private readonly buttons = new Map<string, Route>();
   private readonly events = new Map<string, Route[]>();
+  private readonly moduleGuardChecks: (() => CanActivate)[] = [];
   private readonly clock: Clock;
   private readonly cooldowns: CooldownStore;
   private readonly acknowledge: 'auto' | 'manual';
@@ -44,9 +45,14 @@ export class Dispatcher {
     this.clock = controls.clock ?? systemClock;
     this.cooldowns = new CooldownStore(controls.cooldownMaxEntries ?? 10000, this.clock);
     this.acknowledge = controls.acknowledge ?? 'auto';
+    // Validate all module declarations, even when a module currently has no command routes.
+    for (const { module, guards } of container.moduleGuards())
+      for (const declaration of guards)
+        if (!isBuiltinGuard(declaration))
+          this.moduleGuardChecks.push(container.reference(declaration, module));
     let nextId = 0;
     for (const binding of container.controllers())
-      for (const metadata of readHandlers(binding.type)) {
+      for (const metadata of readHandlers(binding.type, binding.moduleGuards)) {
         const route: Route = {
           binding,
           metadata,
@@ -86,6 +92,7 @@ export class Dispatcher {
   }
 
   validateGuards(): void {
+    for (const reference of this.moduleGuardChecks) assertGuard(reference());
     for (const route of new Set([...this.commands.values(), ...this.buttons.values()]))
       for (const reference of route.guards) assertGuard(reference());
   }

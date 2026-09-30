@@ -117,3 +117,10 @@ function inspectPrompt(
   ctx.prompt('问题', { timeoutMs: '30000' }).catch(() => {});
 }
 void inspectPrompt;
+
+runtime.Module({ guards: ['guard-token', Symbol('guard')] });
+runtime.Module({ guards: [] });
+// @ts-expect-error Module guards accept provider tokens, not guard instances.
+runtime.Module({ guards: [guard] });
+// @ts-expect-error Apply built-in guard decorators to the module class instead.
+runtime.Module({ guards: [runtime.GroupOnly()] });
