@@ -1,6 +1,6 @@
 # dd-bot-example
 
-使用 [dd-bot](https://github.com/abandon-jw3/dd-bot) 开发 QQ 官方机器人的最小初始项目。通过 WebSocket 接收群聊和私聊消息，只演示模块注册、命令装饰器、参数绑定和文本回复。
+使用 [dd-bot](https://github.com/abandon-jw3/dd-bot) 开发 QQ 官方机器人的初始项目，通过 WebSocket 接收群聊和私聊消息。`/hello` 展示最简单的用法，独立的 `ExampleModule` 演示全部装饰器，并附有中文注释。
 
 ## 启动
 
@@ -57,6 +57,14 @@ export class BotController {
 
 继续开发时，可以直接在 `BotController` 中添加命令方法；新增控制器后，将它加入 `AppModule` 的 `controllers`。
 
+## 全部装饰器示例
+
+[src/example/](src/example/README.md) 中的独立模块覆盖 SDK 的 **15 个公开装饰器**，已通过 `AppModule.imports` 注册。发送 `/example` 或 `/示例` 查看入口，发送 `/help example-slot` 查看参数帮助。
+
+示例包括构造注入、位置参数、选项、Slot/Rest、手动回复、类级和方法级 Guard、冷却、原始事件及按钮回调。每处声明都有中文注释，完整的装饰器索引和可复制命令见 [示例模块说明](src/example/README.md)。
+
+如果只需要 `/hello`，移除 `AppModule` 中 `ExampleModule` 的导入和 `imports` 项即可。
+
 ## 目录说明
 
 ```text
@@ -64,9 +72,18 @@ dd-bot-example/
 ├─ src/                       # 机器人源代码
 │  ├─ main.ts                 # 读取凭证、创建应用、连接与关闭
 │  ├─ app.module.ts           # 注册控制器的根模块
-│  └─ bot.controller.ts       # hello 命令
+│  ├─ bot.controller.ts       # 最小 hello 命令
+│  └─ example/                # 全部装饰器的独立示例模块（含中文注释）
+│     ├─ example.module.ts    # 模块组合、Provider 注册和服务导出
+│     ├─ example.service.ts   # Injectable、Inject 与共享服务
+│     ├─ example.guard.ts     # 群聊 / 私聊 Guard
+│     ├─ example.controller.ts # 参数、上下文、方法级 Guard、冷却与按钮
+│     ├─ example-private.controller.ts # 类级 Guard
+│     ├─ example-events.controller.ts  # 原始 QQ 事件观察器
+│     └─ README.md            # 15 个装饰器索引和命令说明
 ├─ tests/                     # 使用 dd-bot/testing 的离线测试
-│  └─ application.test.ts     # 验证私聊、群聊、默认参数和文本回复
+│  ├─ application.test.ts     # 最小 hello 命令回归
+│  └─ example.test.ts         # 全部装饰器示例的行为验证
 ├─ scripts/                   # 构建、测试和 SDK 校验脚本
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
 │  └─ verify-sdk.mjs          # 检查 SDK 安装包及公开 API 导入
