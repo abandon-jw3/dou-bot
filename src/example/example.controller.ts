@@ -48,6 +48,9 @@ export class ExampleController {
       '/example-owner、/example-managers：群角色限制',
       '/example-users：指定 OpenID（需先修改示例名单）',
       '/example-manager-button：管理者按钮',
+      '/example-prompt：两轮文字输入',
+      '/example-prompt-image：等待图片',
+      '/example-prompt-timeout：5 秒超时或取消',
       '/help example-slot：查看参数帮助',
     ].join('\n');
   }

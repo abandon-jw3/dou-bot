@@ -2,6 +2,7 @@ import { HelpModule, Module } from 'dd-bot';
 import { ExampleController } from './example.controller.js';
 import { ExampleEventsController } from './example-events.controller.js';
 import { ExamplePrivateController } from './example-private.controller.js';
+import { ExamplePromptController } from './example-prompt.controller.js';
 import {
   ExampleGroupAccessController,
   ExamplePrivateAccessController,
@@ -21,6 +22,7 @@ import type { ExampleSettings } from './example.service.js';
     ExamplePrivateController,
     ExampleGroupAccessController,
     ExamplePrivateAccessController,
+    ExamplePromptController,
   ],
   // providers 注册服务、Guard 与配置；useValue 的令牌供 @Inject 使用。
   providers: [

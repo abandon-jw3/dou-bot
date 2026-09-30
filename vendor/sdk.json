@@ -1,8 +1,8 @@
 {
   "package": "dd-bot",
-  "version": "0.4.0",
-  "file": "dd-bot-0.4.0.tgz",
-  "sha256": "6289be1ba7207cffaca81d90e9cae0b4feb6ac961f3b7fbbb9dbb9ef0992a54e",
+  "version": "0.5.0",
+  "file": "dd-bot-0.5.0.tgz",
+  "sha256": "feb20a937cba621e8ace348f19f6bffec556dfd1ac9eeefadeee5a6f48fb0f2d",
   "repository": "https://github.com/abandon-jw3/dd-bot",
-  "sourceCommit": "6ab8c719005ac5cff51e3cb0d0df992bf3c1404b"
+  "sourceCommit": "738f46bb38e00028af49e4c8f11f21e162441c72"
 }

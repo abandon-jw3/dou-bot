@@ -1,6 +1,6 @@
 # 全部装饰器示例
 
-本模块覆盖项目当前安装的 **dd-bot 0.4.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
+本模块覆盖项目当前安装的 **dd-bot 0.5.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
 
 `AppModule` 已导入 `ExampleModule`，按根目录 README 启动后即可发送 `/example` 或 `/示例` 查看入口。最小的 `/hello` 示例仍在模块外。
 
@@ -69,6 +69,24 @@
 角色装饰器只用于命令，直接或通过类级声明作用于 OnButton 会在启动时报错。管理者按钮使用 `permission: { type: 'managers' }`，映射原生 type=1；发送到私聊会在请求前被拒绝。命令按钮对应的命令若需要权限，也要声明自己的规则。
 
 原有 example-group/example-private 保留自定义 UseGuards 的写法，用来对照内置装饰器。离线测试不验证 QQ 对真实点击者的拦截，该项仍需实机验收。
+
+## 二次输入与多轮会话
+
+[example-prompt.controller.ts](example-prompt.controller.ts) 演示上下文方法 `ctx.prompt()`，它不增加装饰器，现有 20 个装饰器示例保持完整。
+
+| 命令                      | 使用方式                                                             |
+| ------------------------- | -------------------------------------------------------------------- |
+| `/example-prompt`         | 按提示输入角色名，再输入服务器；每轮默认等待 60 秒，可发送“取消”退出 |
+| `/example-prompt-image`   | 按提示发送一张图片，展示附件信息                                     |
+| `/example-prompt-timeout` | 5 秒内输入文字，或发送“取消”/cancel；示例会明确回复超时/取消结果     |
+
+prompt 必须 await，返回 received、timeout 或 cancelled。received.message 是新输入的消息上下文，包含文字、附件和可选群角色；多轮时用它的 prompt/reply 引用最新输入。方法最后返回 void，不能在发问后再返回字符串触发自动回复。
+
+群里只匹配同一用户、同一群，不会拿其他人的回答填入；等待期间释放执行并发名额。被捕获的回答即使像命令也不会继续执行 Command/On 观察器，取消词优先识别。群消息能否无需 @ 投递仍取决于 QQ 的能力和权限。
+
+[tests/prompt.test.ts](../../tests/prompt.test.ts) 使用 enqueue 发起命令，等到问题发送记录出现后再 enqueue 回答，最后等待整个流程完成。不能先 await 首条交互命令的 dispatch，也不能在两轮之间 await 第一条回答的 done，否则测试驱动会等待自己尚未送入的下一条消息。
+
+完整配置、生命周期与资源说明见 [框架二次输入指南](https://github.com/abandon-jw3/dd-bot/blob/main/docs/prompts.md)。本轮只做离线和本机协议验证，未连接真实 QQ。
 
 ## 阅读时注意
 

@@ -9,6 +9,7 @@ export class ExampleEventsController {
   // @On 精确监听 QQ 原始事件名，而不是通用的 "message" 事件。
   // 观察器只接受 @Ctx，返回 void；不能添加命令参数、Guard 或 Cooldown。
   // QQEventContext 可读 eventName/raw/signal，但没有消息上下文的 reply。
+  // 已被 prompt 接管的回答不会再次进入这些观察器。
   @On('C2C_MESSAGE_CREATE')
   privateMessage(@Ctx() ctx: QQEventContext): void {
     this.examples.recordMessage(ctx.eventName);
