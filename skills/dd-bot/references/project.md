@@ -1,12 +1,12 @@
 # 工程、模块与依赖注入
 
-适用基线：dd-bot 0.3.0。先检查项目实际声明，保留现有结构与用户选定的版本。
+适用基线：dd-bot 0.4.0。先检查项目实际声明，保留现有结构与用户选定的版本。
 
 ## 消费 SDK
 
 公开入口只有 `dd-bot` 和 `dd-bot/testing`。根入口加载 reflect-metadata/lite；业务无需添加框架内部的 RuntimePorts、Container 或 WebSocket 类型依赖。
 
-目前框架保持 private。已有项目使用本地 SDK tgz 时，保留 vendor 包、来源提交、SHA-256 和 package-lock.json；不要替换成不明来源的同名 npm 包。参考消费者的依赖形式是 `"dd-bot": "file:vendor/dd-bot-0.3.0.tgz"`，路径和版本应按实际包调整。
+目前框架保持 private。已有项目使用本地 SDK tgz 时，保留 vendor 包、来源提交、SHA-256 和 package-lock.json；不要替换成不明来源的同名 npm 包。参考消费者的依赖形式是 `"dd-bot": "file:vendor/dd-bot-0.4.0.tgz"`，路径和版本应按实际包调整。
 
 业务开发依赖通常包含 TypeScript 与 @types/node，生产依赖只需声明自己使用的 SDK 和业务库。框架内部的 ws 不意味着消费者必须安装 @types/ws。
 

@@ -18,6 +18,7 @@ import type { Clock } from '../core/clock.js';
 import type { TokenManager } from './token.js';
 import type { HttpRuntime } from './http.js';
 import { lifetimeSeconds } from './lifetime.js';
+import { assertKeyboardScene } from '../message/index.js';
 
 function segment(value: string): string {
   if (
@@ -267,9 +268,11 @@ export class HttpQQApi extends QQApi {
   private async send(
     path: string,
     payload: QQMessagePayload,
+    scene: 'group' | 'private',
     options?: RequestOptions,
   ): Promise<SendResult> {
     validateMessagePayload(payload);
+    assertKeyboardScene(payload.keyboard, scene);
     const { data, traceId } = await this.request('POST', path, { ...options, body: payload });
     if (!isRecord(data)) throw new FrameworkError('PROTOCOL', 'Invalid QQ send response');
     const tracing = traceId === undefined ? {} : { traceId };
@@ -297,14 +300,14 @@ export class HttpQQApi extends QQApi {
     payload: QQMessagePayload,
     options?: RequestOptions,
   ): Promise<SendResult> {
-    return this.send(`/v2/groups/${segment(id)}/messages`, payload, options);
+    return this.send(`/v2/groups/${segment(id)}/messages`, payload, 'group', options);
   }
   override sendPrivateMessage(
     id: string,
     payload: QQMessagePayload,
     options?: RequestOptions,
   ): Promise<SendResult> {
-    return this.send(`/v2/users/${segment(id)}/messages`, payload, options);
+    return this.send(`/v2/users/${segment(id)}/messages`, payload, 'private', options);
   }
   private async upload(
     path: string,

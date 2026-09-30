@@ -20,6 +20,9 @@ export function guardContext(
       ? {
           scene: 'group' as const,
           groupId: event.target.groupId,
+          ...(event.kind !== 'message' || event.memberRole === undefined
+            ? {}
+            : { memberRole: event.memberRole }),
           target: Object.freeze({ ...event.target }),
         }
       : { scene: 'private' as const, target: Object.freeze({ ...event.target }) };

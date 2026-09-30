@@ -142,6 +142,7 @@ export class EventTask {
           ...shared,
           scene: 'group',
           groupId: event.target.groupId,
+          ...(event.memberRole === undefined ? {} : { memberRole: event.memberRole }),
           target: event.target,
         })
       : Object.freeze({ ...shared, scene: 'private', target: event.target });

@@ -49,6 +49,19 @@ export interface CommandOptions {
 
 export type GuardResult = boolean | { readonly allow: false; readonly message?: string };
 
+/** QQ group message author.member_role; missing/unknown values remain undefined. */
+export type GroupRole = 'member' | 'admin' | 'owner';
+export interface AccessOptions {
+  /** Omit for the default denial hint; false denies silently. */
+  message?: string | false;
+}
+export interface UsersOnlyOptions extends AccessOptions {
+  /** Compare OpenIDs only in this scene when supplied. */
+  scene?: 'group' | 'private';
+  /** Restrict to one group; implies scene=group. */
+  groupId?: string;
+}
+
 /** Read-only request information. Return a decision instead of sending messages from a guard. */
 export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly userId: string;
@@ -60,6 +73,8 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
     | {
         readonly scene: 'group';
         readonly groupId: string;
+        /** Present only for group message commands with a recognized author role. */
+        readonly memberRole?: GroupRole;
         readonly target: Extract<MessageTarget, { scene: 'group' }>;
       }
     | { readonly scene: 'private'; readonly target: Extract<MessageTarget, { scene: 'private' }> }
@@ -298,6 +313,7 @@ export interface MessageContextBase extends QQEventContext {
 export interface GroupMessageContext extends MessageContextBase {
   readonly scene: 'group';
   readonly groupId: string;
+  readonly memberRole?: GroupRole;
   readonly target: Extract<
     MessageTarget,
     {
@@ -383,6 +399,10 @@ export type MessageInput = string | OutgoingMessage;
 export type ButtonPermission =
   | {
       readonly type: 'everyone';
+    }
+  | {
+      /** QQ permission.type=1; only supported for group targets. */
+      readonly type: 'managers';
     }
   | {
       readonly type: 'users';

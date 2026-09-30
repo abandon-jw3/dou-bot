@@ -17,6 +17,11 @@ export {
   Slot,
   Rest,
   UseGuards,
+  GroupOnly,
+  PrivateOnly,
+  UsersOnly,
+  GroupRoles,
+  GroupManagersOnly,
   Cooldown,
 } from './core/metadata.js';
 export { HelpModule } from './core/help.js';

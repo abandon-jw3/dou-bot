@@ -125,7 +125,9 @@ export function encodeKeyboard(value: Keyboard): QQKeyboardPayload {
             const permission = options.permission ?? { type: 'everyone' };
             if (
               !isRecord(permission) ||
-              (permission.type !== 'everyone' && permission.type !== 'users')
+              (permission.type !== 'everyone' &&
+                permission.type !== 'users' &&
+                permission.type !== 'managers')
             )
               bad('Invalid button permission');
             let userIds: string[] | undefined;
@@ -162,7 +164,7 @@ export function encodeKeyboard(value: Keyboard): QQKeyboardPayload {
                 data,
                 ...(item.type === 'command' ? { enter: item.enter } : {}),
                 permission: {
-                  type: permission.type === 'everyone' ? 2 : 0,
+                  type: permission.type === 'everyone' ? 2 : permission.type === 'managers' ? 1 : 0,
                   ...(userIds ? { specify_user_ids: userIds } : {}),
                 },
               },
@@ -172,6 +174,20 @@ export function encodeKeyboard(value: Keyboard): QQKeyboardPayload {
       }),
     },
   };
+}
+
+/** Called after keyboard validation, before any QQ request. */
+export function assertKeyboardScene(
+  keyboard: QQKeyboardPayload | undefined,
+  scene: 'group' | 'private',
+): void {
+  if (
+    scene === 'private' &&
+    keyboard?.content.rows.some((row) =>
+      row.buttons.some((button) => button.action.permission.type === 1),
+    )
+  )
+    bad('Manager-only buttons require a group target');
 }
 
 export function snapshotMessage(input: MessageInput, maxUploadBytes = 10485760): OutgoingMessage {

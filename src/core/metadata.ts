@@ -1,19 +1,24 @@
 import 'reflect-metadata/lite';
 import type {
   ArgumentOptions,
+  AccessOptions,
   CommandOptions,
   CanActivate,
   CooldownOptions,
+  GroupRole,
   InjectionToken,
   ModuleMetadata,
   OptionOptions,
   RestOptions,
   SlotOptions,
   Type,
+  UsersOnlyOptions,
 } from '../contracts.js';
 import { FrameworkError } from './errors.js';
 import { cooldownOptions } from './cooldown.js';
 import { isRecord, isType, tokenName } from './utils.js';
+import { rolesGuard, sceneGuard, usersGuard, validateAccessRules } from './access.js';
+import type { GuardDeclaration } from './access.js';
 
 const MODULE = Symbol('module');
 const INJECTABLE = Symbol('injectable');
@@ -38,7 +43,7 @@ export interface HandlerMetadata {
   name: string;
   options: CommandOptions;
   parameters: readonly ParameterBinding[];
-  guards: readonly InjectionToken<CanActivate>[];
+  guards: readonly GuardDeclaration[];
   cooldown?: Readonly<CooldownOptions>;
 }
 type HandlerDeclaration = Omit<HandlerMetadata, 'parameters' | 'guards' | 'cooldown'>;
@@ -143,7 +148,10 @@ export function UseGuards(
     )
   )
     throw new FrameworkError('CONFIG', '@UseGuards requires provider tokens');
-  const copied = [...guards];
+  return guardDecorator([...guards]);
+}
+
+function guardDecorator(guards: readonly GuardDeclaration[]): ClassDecorator & MethodDecorator {
   return (target: object, key?: string | symbol, descriptor?: PropertyDescriptor) => {
     const classLevel = key === undefined && typeof target === 'function';
     if (
@@ -152,12 +160,38 @@ export function UseGuards(
         typeof key !== 'string' ||
         typeof descriptor?.value !== 'function')
     )
-      throw new FrameworkError('CONFIG', '@UseGuards requires a class or named instance method');
-    const previous = metadata<readonly InjectionToken<CanActivate>[]>(GUARDS, target, key) ?? [];
-    const value = Object.freeze([...copied, ...previous]);
+      throw new FrameworkError(
+        'CONFIG',
+        'Guard decorators require a class or named instance method',
+      );
+    const previous = metadata<readonly GuardDeclaration[]>(GUARDS, target, key) ?? [];
+    const value = Object.freeze([...guards, ...previous]);
     if (classLevel) Reflect.defineMetadata(GUARDS, value, target);
     else Reflect.defineMetadata(GUARDS, value, target, key!);
   };
+}
+
+export function GroupOnly(options: AccessOptions = {}): ClassDecorator & MethodDecorator {
+  return guardDecorator([sceneGuard('group', options)]);
+}
+export function PrivateOnly(options: AccessOptions = {}): ClassDecorator & MethodDecorator {
+  return guardDecorator([sceneGuard('private', options)]);
+}
+export function UsersOnly(
+  userIds: readonly string[],
+  options: UsersOnlyOptions = {},
+): ClassDecorator & MethodDecorator {
+  return guardDecorator([usersGuard(userIds, options)]);
+}
+export function GroupRoles(...roles: readonly GroupRole[]): ClassDecorator & MethodDecorator {
+  return guardDecorator([rolesGuard(roles)]);
+}
+export function GroupManagersOnly(options: AccessOptions = {}): ClassDecorator & MethodDecorator {
+  // Validate before adding the default, so malformed input is never silently ignored.
+  const rule = rolesGuard(['owner', 'admin'], options);
+  return guardDecorator([
+    Object.freeze({ ...rule, message: options.message ?? '此操作仅限群主或管理员。' }),
+  ]);
 }
 
 export function Cooldown(options: CooldownOptions): MethodDecorator {
@@ -174,11 +208,11 @@ export function Cooldown(options: CooldownOptions): MethodDecorator {
   };
 }
 
-function classGuards(type: Type): readonly InjectionToken<CanActivate>[] {
-  const result: InjectionToken<CanActivate>[] = [];
+function classGuards(type: Type): readonly GuardDeclaration[] {
+  const result: GuardDeclaration[] = [];
   let current: unknown = type;
   while (isType(current)) {
-    result.unshift(...(metadata<readonly InjectionToken<CanActivate>[]>(GUARDS, current) ?? []));
+    result.unshift(...(metadata<readonly GuardDeclaration[]>(GUARDS, current) ?? []));
     current = Object.getPrototypeOf(current);
   }
   return result;
@@ -278,6 +312,7 @@ export function readHandlers(type: Type): HandlerMetadata[] {
   const result: HandlerMetadata[] = [];
   const seen = new Set<string>();
   const controllerGuards = classGuards(type);
+  validateAccessRules(controllerGuards);
   let prototype: object | null = type.prototype as object;
   while (prototype && prototype !== Object.prototype) {
     const declarations = metadata<HandlerDeclaration[]>(HANDLERS, prototype) ?? [];
@@ -314,20 +349,18 @@ export function readHandlers(type: Type): HandlerMetadata[] {
         );
       }
       const cooldown = metadata<Readonly<CooldownOptions>>(COOLDOWN, prototype, entry.method);
+      const guards =
+        entry.kind === 'event'
+          ? []
+          : [
+              ...controllerGuards,
+              ...(metadata<readonly GuardDeclaration[]>(GUARDS, prototype, entry.method) ?? []),
+            ];
+      if (entry.kind !== 'event') validateAccessRules(guards, entry.kind);
       result.push({
         ...entry,
         parameters: [...parameters].sort((a, b) => a.index - b.index),
-        guards:
-          entry.kind === 'event'
-            ? []
-            : [
-                ...controllerGuards,
-                ...(metadata<readonly InjectionToken<CanActivate>[]>(
-                  GUARDS,
-                  prototype,
-                  entry.method,
-                ) ?? []),
-              ],
+        guards,
         ...(cooldown === undefined ? {} : { cooldown }),
       });
     }

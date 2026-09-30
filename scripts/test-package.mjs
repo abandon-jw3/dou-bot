@@ -93,7 +93,7 @@ await writeFile(
   resolve(consumer, 'consumer.ts'),
   `
 import assert from 'node:assert/strict';
-import { Arg, Command, Controller, Cooldown, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dd-bot';
+import { Arg, Command, Controller, Cooldown, GroupManagersOnly, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dd-bot';
 import type { CanActivate, GuardContext, GuardResult } from 'dd-bot';
 import { createTestApplication } from 'dd-bot/testing';
 @Injectable() class Greeter { hello(name: string) { return 'Hello ' + name; } }
@@ -105,6 +105,7 @@ import { createTestApplication } from 'dd-bot/testing';
   @Command('hello') hello(@Arg(0) name: string) { return this.service.hello(name); }
   @UseGuards(Guard) @Cooldown({ scope: 'user', durationMs: 60000, message: 'wait' })
   @Command('controlled') controlled() { return 'allowed'; }
+  @Command('manage') @GroupManagersOnly() manage() { return 'manager'; }
   @Command('query') query(
     @Rest() rest: string[],
     @Slot('city', { choices: ['北京'], required: true }) city: string,
@@ -128,6 +129,8 @@ try {
   for (const [id, user] of [['deny', 'other'], ['allow', 'u'], ['cooldown', 'u']])
     await harness.dispatch({ op: 0, t: 'C2C_MESSAGE_CREATE', d: { id, author: { id: user }, content: 'controlled' } });
   assert.deepEqual(harness.messages.slice(4).map(m => m.payload.content), ['blocked', 'allowed', 'wait']);
+  await harness.dispatch({ op: 0, t: 'GROUP_MESSAGE_CREATE', d: { id: 'package-manager', group_openid: 'g', author: { member_openid: 'u', member_role: 'owner' }, content: 'manage' } });
+  assert.equal(harness.messages[7]?.payload.content, 'manager');
   assert.ok(import.meta.resolve('dd-bot').includes('consumer/node_modules/dd-bot/'));
 } finally { await harness.app.close(); }
 `,

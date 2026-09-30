@@ -7,6 +7,7 @@ import {
   Command,
   Controller,
   Ctx,
+  GroupManagersOnly,
   Module,
   OnButton,
   button,
@@ -21,6 +22,17 @@ await test('identical private/group messages and buttons produce identical behav
   @Controller()
   class Commands {
     readonly calls: string[] = [];
+    @Command('manage')
+    @GroupManagersOnly({ message: 'denied' })
+    manage(@Ctx() ctx: MessageContext) {
+      const role = ctx.scene === 'group' ? ctx.memberRole : undefined;
+      this.calls.push(`manage:${role}`);
+      return markdown(`manager:${role}`, {
+        keyboard: keyboard([
+          [button.callback('press', '管理', 'managed', { permission: { type: 'managers' } })],
+        ]),
+      });
+    }
     @Command('echo') echo(@Arg(0) text: string, @Ctx() ctx: MessageContext): string {
       this.calls.push(`${ctx.scene}:echo:${text}`);
       return text;
@@ -124,6 +136,18 @@ await test('identical private/group messages and buttons produce identical behav
       },
     },
   ];
+  for (const [index, role] of ['owner', 'member', undefined, 'admin'].entries()) {
+    events.push({
+      op: 0,
+      t: index === 3 ? 'GROUP_AT_MESSAGE_CREATE' : 'GROUP_MESSAGE_CREATE',
+      d: {
+        id: `role-${index}`,
+        group_openid: 'group',
+        author: { member_openid: 'member', ...(role === undefined ? {} : { member_role: role }) },
+        content: '/manage',
+      },
+    });
+  }
   try {
     await Promise.all(apps.map((app) => app.start()));
     for (const [index, event] of events.entries()) {
@@ -154,7 +178,15 @@ await test('identical private/group messages and buttons produce identical behav
       '/v2/groups/group/messages',
       '/v2/users/user/messages',
       '/v2/groups/group/messages',
+      ...Array<string>(4).fill('/v2/groups/group/messages'),
     ]);
+    assert.equal(
+      wsBackend.messages[6]?.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
+      1,
+    );
+    assert.equal(wsBackend.messages[7]?.content, 'denied');
+    assert.equal(wsBackend.messages[8]?.content, 'denied');
+    assert.equal(wsBackend.messages[9]?.markdown?.content, 'manager:admin');
     assert.equal(wsBackend.messages[4]?.msg_id, undefined);
     assert.equal(wsBackend.messages[5]?.event_id, undefined);
     assert.deepEqual(errors, []);

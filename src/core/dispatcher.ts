@@ -9,6 +9,7 @@ import { CommandInputError } from './input-error.js';
 import { CommandCatalog } from './help.js';
 import { CooldownStore } from './cooldown.js';
 import { assertGuard, guardContext, runGuard } from './guards.js';
+import { createBuiltinGuard, isBuiltinGuard } from './access.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
 import type { EventTask, HandlerLocation } from './execution.js';
@@ -50,7 +51,12 @@ export class Dispatcher {
           binding,
           metadata,
           id: nextId++,
-          guards: metadata.guards.map((token) => container.reference(token, binding.module)),
+          guards: metadata.guards.map((declaration) => {
+            if (!isBuiltinGuard(declaration))
+              return container.reference(declaration, binding.module);
+            const guard = createBuiltinGuard(declaration);
+            return () => guard;
+          }),
         };
         if (metadata.kind === 'command') {
           route.arguments = new CommandArguments(metadata.parameters);

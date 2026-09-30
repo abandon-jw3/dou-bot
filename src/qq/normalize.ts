@@ -1,4 +1,5 @@
-import type { Attachment, MessageTarget, QQDispatch } from '../contracts.js';
+import type { Attachment, GroupRole, MessageTarget, QQDispatch } from '../contracts.js';
+import { isGroupRole } from '../core/access.js';
 import { isRecord, own } from '../core/utils.js';
 import { systemClock } from '../core/clock.js';
 
@@ -9,6 +10,7 @@ export type NormalizedEvent =
       receivedAt: number;
       target: MessageTarget;
       userId: string;
+      memberRole?: GroupRole;
       messageId: string;
       content: string;
       attachments: readonly Attachment[];
@@ -129,6 +131,10 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
           ?.slice(8)
       : undefined;
     const time = timestamp(data.timestamp);
+    const memberRole =
+      scene === 'group' && isGroupRole(data.author.member_role)
+        ? data.author.member_role
+        : undefined;
     return {
       status: 'ok',
       ...(conflictingFields.length ? { conflictingFields } : {}),
@@ -138,6 +144,7 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
         receivedAt,
         target,
         userId,
+        ...(memberRole === undefined ? {} : { memberRole }),
         messageId,
         content:
           typeof data.content !== 'string'

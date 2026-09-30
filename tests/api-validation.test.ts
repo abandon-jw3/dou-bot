@@ -7,6 +7,70 @@ import type { TestRequest } from '../src/testing/index.js';
 
 @Module({})
 class Root {}
+
+await test('manager buttons encode QQ permission 1 for all button kinds and reject private targets before HTTP', async (t) => {
+  let requests = 0;
+  const bot = await createTestApplication(Root, {
+    respond: () => {
+      requests++;
+      return undefined;
+    },
+  });
+  t.after(() => bot.app.close());
+  const card = markdown('管理', {
+    keyboard: keyboard([
+      [button.callback('manage', '管理', 'data', { permission: { type: 'managers' } })],
+      [button.command('设置', '/settings', { permission: { type: 'managers' } })],
+      [button.link('链接', 'https://example.com', { permission: { type: 'managers' } })],
+    ]),
+  });
+  await assert.rejects(
+    bot.app.client.sendMessage({ scene: 'private', userId: 'u' }, card),
+    /group target/u,
+  );
+  const raw: QQMessagePayload = {
+    msg_type: 2,
+    markdown: { content: '管理' },
+    keyboard: {
+      content: {
+        rows: [
+          {
+            buttons: [
+              {
+                id: 'manage',
+                render_data: { label: '管理' },
+                action: { type: 1, data: '', permission: { type: 1 } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+  await assert.rejects(bot.app.client.api.sendPrivateMessage('u', raw), /group target/u);
+  assert.equal(requests, 0);
+  await bot.app.start();
+  await bot.app.client.sendMessage({ scene: 'group', groupId: 'g' }, card);
+  const sent = bot.messages[0]?.payload;
+  assert.equal(sent?.msg_type, 2);
+  assert.deepEqual(
+    sent?.keyboard?.content.rows.map((row) => row.buttons[0]?.action.permission),
+    [{ type: 1 }, { type: 1 }, { type: 1 }],
+  );
+  await bot.app.client.api.sendGroupMessage('g', raw);
+  assert.equal(
+    bot.messages[1]?.payload.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
+    1,
+  );
+  for (const permission of [{ type: 'everyone' }, { type: 'users', userIds: ['u'] }] as const)
+    await bot.app.client.sendMessage(
+      { scene: 'private', userId: 'u' },
+      markdown('允许', {
+        keyboard: keyboard([[button.callback('allowed', '允许', '', { permission })]]),
+      }),
+    );
+  assert.equal(bot.messages.length, 4);
+});
 const rawButton = () => ({
   id: 'x',
   render_data: { label: 'X', style: 1 },

@@ -61,3 +61,28 @@ function inspectGuardContext(ctx: runtime.GuardContext): void {
   if (ctx.scene === 'group') void ctx.groupId;
 }
 void inspectGuardContext;
+
+runtime.GroupOnly({ message: false });
+runtime.PrivateOnly();
+runtime.UsersOnly(['openid'], { scene: 'group', groupId: 'group' });
+runtime.GroupRoles('owner', 'admin');
+runtime.GroupManagersOnly({ message: '仅群管理者' });
+runtime.button.callback('manage', '管理', '', { permission: { type: 'managers' } });
+// @ts-expect-error QQ group roles are not arbitrary application role names.
+runtime.GroupRoles('superuser');
+// @ts-expect-error OpenIDs are strings, not numeric QQ account numbers.
+runtime.UsersOnly([123]);
+// @ts-expect-error The SDK does not support channel scope.
+runtime.UsersOnly(['u'], { scene: 'channel' });
+// @ts-expect-error There is no native owner-only button permission.
+runtime.button.callback('owner', '群主', '', { permission: { type: 'owner' } });
+function inspectGroupRole(ctx: runtime.MessageContext): void {
+  if (ctx.scene === 'group') {
+    const role: runtime.GroupRole | undefined = ctx.memberRole;
+    void role;
+  } else {
+    // @ts-expect-error Private messages have no group role.
+    void ctx.memberRole;
+  }
+}
+void inspectGroupRole;

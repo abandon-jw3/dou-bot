@@ -2,6 +2,14 @@
 
 ## Guard 与执行顺序
 
+0.4.0 提供无需注册 Provider 的 GroupOnly、PrivateOnly、UsersOnly、GroupRoles、GroupManagersOnly，均可从 dd-bot 导入。它们与 UseGuards 混合时保持类/方法、继承与代码声明顺序；GroupOnly/PrivateOnly 冲突及空角色交集在启动时报 CONFIG。
+
+- `@UsersOnly(['openid'], { scene: 'private', message: false })` 精确匹配名单，可指定 scene 或 groupId（隐含 group）。未指定范围时匹配所有会话，不转换跨场景 OpenID；动态名单仍用业务 Guard。
+- `@GroupRoles('owner')` 仅群主；`@GroupManagersOnly()` 为 owner 或 admin；只读取当前群消息 author.member_role，缺失/未知时拒绝。GroupMessageContext/群消息 GuardContext 暴露可选 memberRole，私聊不携带。
+- 群角色规则仅用于命令；类级或方法级角色规则作用到 OnButton 会报 CONFIG。按钮点击使用 `permission: { type: 'managers' }`，映射 QQ permission.type=1，只能发到群聊。QQClient 和具名私聊 API 在请求前拒绝该权限。
+- GroupOnly、PrivateOnly、UsersOnly 可保护 Command/OnButton。类级规则不限制 On 观察器；不能把规则直接写在 On 方法上。
+- 不从回调、引用作者、mentions 或昵称猜测群角色，不用发送按钮的那个人代替点击者。原生按钮权限不等于可复用的业务授权；命令按钮对应的命令若有权限要求仍声明自己的规则。
+
 命令/按钮按 Guard → 命令参数绑定（仅命令）→ 冷却占用 → 业务方法执行。原始 On 观察器仍先独立执行，不能靠它拒绝后续命令。
 
 ```ts

@@ -13,7 +13,13 @@ import type {
 } from '../contracts.js';
 import type { ResolvedOptions } from '../core/config.js';
 import { FrameworkError } from '../core/errors.js';
-import { copyTarget, encodeKeyboard, snapshotMessage, targetKey } from '../message/index.js';
+import {
+  assertKeyboardScene,
+  copyTarget,
+  encodeKeyboard,
+  snapshotMessage,
+  targetKey,
+} from '../message/index.js';
 import { systemClock } from '../core/clock.js';
 import type { Clock } from '../core/clock.js';
 
@@ -71,6 +77,7 @@ export class DefaultQQClient extends QQClient {
         media: { file_info: uploaded.fileInfo },
       };
     }
+    assertKeyboardScene(payload.keyboard, target.scene);
     return target.scene === 'group'
       ? this.api.sendGroupMessage(target.groupId, payload, options)
       : this.api.sendPrivateMessage(target.userId, payload, options);

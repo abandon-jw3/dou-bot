@@ -1,5 +1,5 @@
 /**
- * dd-bot v0.3 public API design contract, revision 1.4 — NOT a runtime implementation.
+ * dd-bot v0.4 public API design contract, revision 1.5 — NOT a runtime implementation.
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24+, TypeScript legacy decorators, ESM.
  */
@@ -46,6 +46,14 @@ export interface CommandOptions {
   description?: string;
 }
 export type GuardResult = boolean | { readonly allow: false; readonly message?: string };
+export type GroupRole = 'member' | 'admin' | 'owner';
+export interface AccessOptions {
+  message?: string | false;
+}
+export interface UsersOnlyOptions extends AccessOptions {
+  scene?: 'group' | 'private';
+  groupId?: string;
+}
 export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly userId: string;
   readonly controller: Type;
@@ -55,6 +63,7 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
     | {
         readonly scene: 'group';
         readonly groupId: string;
+        readonly memberRole?: GroupRole;
         readonly target: Extract<MessageTarget, { scene: 'group' }>;
       }
     | { readonly scene: 'private'; readonly target: Extract<MessageTarget, { scene: 'private' }> }
@@ -85,6 +94,18 @@ export declare function UseGuards(
   ...guards: readonly InjectionToken<CanActivate>[]
 ): ClassDecorator & MethodDecorator;
 export declare function Cooldown(options: CooldownOptions): MethodDecorator;
+export declare function GroupOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
+export declare function PrivateOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
+export declare function UsersOnly(
+  userIds: readonly string[],
+  options?: UsersOnlyOptions,
+): ClassDecorator & MethodDecorator;
+export declare function GroupRoles(
+  ...roles: readonly GroupRole[]
+): ClassDecorator & MethodDecorator;
+export declare function GroupManagersOnly(
+  options?: AccessOptions,
+): ClassDecorator & MethodDecorator;
 export declare function Command(name: string, options?: CommandOptions): MethodDecorator;
 export declare function On(eventName: string): MethodDecorator;
 export declare function OnButton(buttonId: string): MethodDecorator;
@@ -263,6 +284,7 @@ export interface MessageContextBase extends QQEventContext {
 export interface GroupMessageContext extends MessageContextBase {
   readonly scene: 'group';
   readonly groupId: string;
+  readonly memberRole?: GroupRole;
   readonly target: Extract<MessageTarget, { scene: 'group' }>;
 }
 export interface PrivateMessageContext extends MessageContextBase {
@@ -312,7 +334,9 @@ export interface MarkdownMessage {
 export type OutgoingMessage = TextMessage | ImageMessage | MarkdownMessage;
 export type MessageInput = string | OutgoingMessage;
 export type ButtonPermission =
-  { readonly type: 'everyone' } | { readonly type: 'users'; readonly userIds: readonly string[] };
+  | { readonly type: 'everyone' }
+  | { readonly type: 'managers' }
+  | { readonly type: 'users'; readonly userIds: readonly string[] };
 export interface ButtonOptions {
   readonly id?: string;
   /** Label after clicking; defaults to the original label. An explicit '' is preserved. */
