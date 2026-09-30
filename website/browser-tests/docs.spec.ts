@@ -1,4 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function waitForClient(page: Page): Promise<void> {
+  // VitePress 在异步加载首个页面后才挂载 Vue；load 事件并不保证按钮已绑定事件。
+  // 等待锁定版本 Vue 的挂载标记，避免公网首次加载时点击到静态 HTML。
+  await page.waitForFunction(() => {
+    const app = document.querySelector('#app');
+    return app !== null && '__vue_app__' in app;
+  });
+}
 
 test('首页、快速开始、主题切换与手机导航', async ({ page, isMobile }) => {
   const errors: string[] = [];
@@ -7,6 +16,7 @@ test('首页、快速开始、主题切换与手机导航', async ({ page, isMob
     if (message.type() === 'error') errors.push(message.text());
   });
   await page.goto('./');
+  await waitForClient(page);
   await expect(page).toHaveTitle(/dou-bot/);
   await expect(page.locator('h1')).toContainText('用装饰器编写 QQ 机器人');
   await page.locator('.VPHero').getByRole('link', { name: '快速开始', exact: true }).click();
@@ -24,6 +34,7 @@ test('首页、快速开始、主题切换与手机导航', async ({ page, isMob
     .poll(async () => (await page.locator('html').getAttribute('class')) ?? '')
     .not.toBe(initial);
   await page.reload();
+  await waitForClient(page);
   await expect
     .poll(async () => (await page.locator('html').getAttribute('class')) ?? '')
     .not.toBe(initial);
@@ -37,6 +48,7 @@ test('首页、快速开始、主题切换与手机导航', async ({ page, isMob
 for (const query of ['二次输入', '管理员', 'UseGuards', 'Slot']) {
   test(`本地搜索：${query}`, async ({ page }) => {
     await page.goto('./');
+    await waitForClient(page);
     await page.getByRole('button', { name: '搜索文档' }).click();
     const input = page.locator('.VPLocalSearchBox input');
     await input.fill(query);
@@ -54,6 +66,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   const response = await page.goto('guide/quick-start.html');
   expect(response?.status()).toBe(200);
   await page.reload();
+  await waitForClient(page);
   await expect(page.locator('h1')).toHaveText('快速开始');
   await expect(page.getByRole('link', { name: '在 GitHub 上编辑此页' })).toHaveAttribute(
     'href',
@@ -66,6 +79,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toContain('npm install --save-exact dou-bot@0.6.0');
   await page.goto('guide/guards.html#模块统一配置');
+  await waitForClient(page);
   await expect(page.locator('#模块统一配置')).toBeInViewport();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
