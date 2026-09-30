@@ -1,6 +1,6 @@
 # 全部装饰器示例
 
-本模块覆盖项目当前安装的 **dd-bot 0.5.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
+本模块覆盖项目当前安装的 **dd-bot 0.6.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
 
 `AppModule` 已导入 `ExampleModule`，按根目录 README 启动后即可发送 `/example` 或 `/示例` 查看入口。最小的 `/hello` 示例仍在模块外。
 
@@ -19,7 +19,7 @@
 | `@Slot`              | 按 match 或 choices 匹配任意位置的分词          | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
 | `@Rest`              | 按原顺序收集尚未消费的普通分词                  | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
 | `@Ctx`               | 注入命令、按钮或原始事件各自的上下文            | [example.controller.ts](example.controller.ts) 的 `context`、`confirmButton`                                                  |
-| `@UseGuards`         | 方法级或类级的调用条件检查                      | [example.controller.ts](example.controller.ts) 的 `groupOnly`、[example-private.controller.ts](example-private.controller.ts) |
+| `@UseGuards`         | 模块、类和方法级的调用条件检查                  | [example.controller.ts](example.controller.ts) 的 `groupOnly`、[example-private.controller.ts](example-private.controller.ts) |
 | `@Cooldown`          | 按用户、会话或处理器限制调用频率                | [example.controller.ts](example.controller.ts) 的 `cooldown`                                                                  |
 | `@On`                | 精确监听 QQ 原始事件名                          | [example-events.controller.ts](example-events.controller.ts)                                                                  |
 | `@OnButton`          | 根据 callback 按钮 ID 处理点击                  | [example.controller.ts](example.controller.ts) 的 `confirmButton`                                                             |
@@ -69,6 +69,22 @@
 角色装饰器只用于命令，直接或通过类级声明作用于 OnButton 会在启动时报错。管理者按钮使用 `permission: { type: 'managers' }`，映射原生 type=1；发送到私聊会在请求前被拒绝。命令按钮对应的命令若需要权限，也要声明自己的规则。
 
 原有 example-group/example-private 保留自定义 UseGuards 的写法，用来对照内置装饰器。离线测试不验证 QQ 对真实点击者的拦截，该项仍需实机验收。
+
+## 模块、类和方法级 Guard
+
+[module-guards/](module-guards/module-guards.module.ts) 是单独注册的功能模块。它在 `@Module({ guards: [ModuleGroupGuard] })` 中统一限制群聊，因此两个控制器都受到保护；管理控制器再声明类级 Guard，群主操作额外声明方法级 Guard。
+
+| 命令                       | 规则                             |
+| -------------------------- | -------------------------------- |
+| `/example-module-info`     | 模块级：当前群内成员可用         |
+| `/example-module-settings` | 模块级 + 类级：当前群主或管理员  |
+| `/example-module-owner`    | 模块级 + 类级 + 方法级：当前群主 |
+
+私聊会先被模块 Guard 拒绝；群内普通成员会在管理控制器的类级检查被拒绝；管理员执行 owner 命令则被方法级检查拒绝。每个 Guard 和注册位置都有中文注释。
+
+模块规则不传播到 imports、父模块或其他模块，所以原来的 hello、其他装饰器示例和帮助命令仍可按自身规则使用。配置只接受 Provider 令牌，Guard 要在本模块注册或通过导入模块导出；模块类上的 `@UseGuards()` 也是有效写法。
+
+若同时配置模块 guards 与模块类装饰器，则先执行配置项，再执行模块类装饰器，然后是控制器类和方法。规则累加且不自动去重。完整范围与继承行为见 [框架模块 Guard 指南](https://github.com/abandon-jw3/dd-bot/blob/main/docs/module-guards.md)。
 
 ## 二次输入与多轮会话
 

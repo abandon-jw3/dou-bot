@@ -20,7 +20,7 @@
     "verify:sdk": "node scripts/verify-sdk.mjs"
   },
   "dependencies": {
-    "dd-bot": "file:vendor/dd-bot-0.5.0.tgz"
+    "dd-bot": "file:vendor/dd-bot-0.6.0.tgz"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

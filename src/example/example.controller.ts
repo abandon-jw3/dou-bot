@@ -51,6 +51,9 @@ export class ExampleController {
       '/example-prompt：两轮文字输入',
       '/example-prompt-image：等待图片',
       '/example-prompt-timeout：5 秒超时或取消',
+      '/example-module-info：模块级 Guard',
+      '/example-module-settings：模块 + 类级 Guard',
+      '/example-module-owner：模块 + 类 + 方法级 Guard',
       '/help example-slot：查看参数帮助',
     ].join('\n');
   }

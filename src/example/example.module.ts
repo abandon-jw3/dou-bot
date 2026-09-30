@@ -3,6 +3,7 @@ import { ExampleController } from './example.controller.js';
 import { ExampleEventsController } from './example-events.controller.js';
 import { ExamplePrivateController } from './example-private.controller.js';
 import { ExamplePromptController } from './example-prompt.controller.js';
+import { ModuleGuardsExampleModule } from './module-guards/module-guards.module.js';
 import {
   ExampleGroupAccessController,
   ExamplePrivateAccessController,
@@ -14,7 +15,7 @@ import type { ExampleSettings } from './example.service.js';
 // @Module 声明一个功能模块；模块类本身只承载配置，不作为服务实例化。
 @Module({
   // imports 引入其他模块；HelpModule 提供 /help 和 /帮助，展示参数声明。
-  imports: [HelpModule],
+  imports: [HelpModule, ModuleGuardsExampleModule],
   // controllers 注册命令、按钮与事件处理器。
   controllers: [
     ExampleController,

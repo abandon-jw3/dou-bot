@@ -65,6 +65,8 @@ export class BotController {
 
 如果只需要 `/hello`，移除 `AppModule` 中 `ExampleModule` 的导入和 `imports` 项即可。
 
+模块、类和方法三级 Guard 的组合见 [module-guards/](src/example/module-guards/module-guards.module.ts)，可运行 `/example-module-info`、`/example-module-settings`、`/example-module-owner`。模块规则只保护该模块直接注册的控制器。
+
 ## 目录说明
 
 二次输入示例位于 [example-prompt.controller.ts](src/example/example-prompt.controller.ts)：`/example-prompt` 演示角色名与服务器两轮输入，`/example-prompt-image` 接收图片，`/example-prompt-timeout` 演示 5 秒等待与取消。每一步都有中文注释。
@@ -82,6 +84,10 @@ dd-bot-example/
 │     ├─ example.controller.ts # 参数、上下文、方法级 Guard、冷却与按钮
 │     ├─ example-access.controller.ts  # 内置场景、用户、群角色及管理者按钮
 │     ├─ example-prompt.controller.ts  # 二次输入、多轮引用、图片和取消
+│     ├─ module-guards/       # 独立模块的统一 Guard 与类/方法级组合
+│     │  ├─ module-guards.module.ts     # providers 和模块 guards 配置
+│     │  ├─ module-guards.controller.ts # 两个控制器与三级规则演示
+│     │  └─ module-guards.guard.ts      # 模块、类和方法使用的 Guard
 │     ├─ example-private.controller.ts # 类级 Guard
 │     ├─ example-events.controller.ts  # 原始 QQ 事件观察器
 │     └─ README.md            # 20 个装饰器索引和命令说明
@@ -89,6 +95,7 @@ dd-bot-example/
 │  ├─ application.test.ts     # 最小 hello 命令回归
 │  ├─ access.test.ts          # 内置访问限制与管理者按钮
 │  ├─ prompt.test.ts          # 通过 enqueue 驱动多轮交互测试
+│  ├─ module-guards.test.ts   # 模块覆盖、层级顺序及导入隔离
 │  └─ example.test.ts         # 全部装饰器示例的行为验证
 ├─ scripts/                   # 构建、测试和 SDK 校验脚本
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
@@ -116,4 +123,4 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 
 `npm run format` 可以统一格式。GitHub Actions 在 Windows 和 Linux 上执行相同的完整检查。
 
-SDK 尚未发布到 npm，因此通过 `vendor/dd-bot-0.5.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。
+SDK 尚未发布到 npm，因此通过 `vendor/dd-bot-0.6.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。
