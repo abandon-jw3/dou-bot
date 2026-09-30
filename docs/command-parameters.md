@@ -4,13 +4,13 @@
 
 ## 可运行示例
 
-以下 npm 脚本在框架源码目录执行，源码链接需要仓库访问权限。独立应用可直接使用下面的公开 API 代码。
+以下 npm 脚本在公开的框架源码仓库目录执行，源码链接可直接访问。独立应用可直接使用下面的公开 API 代码。
 
 ```sh
 npm run example:query
 ```
 
-[examples/query.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/query.ts) 使用测试入口运行真实装饰器、参数解析和消息编码，不读取 `.env`，不发真实 QQ 消息。示例返回解析结果；业务查询服务由应用自行接入。
+[examples/query.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/query.ts) 使用测试入口运行真实装饰器、参数解析和消息编码，不读取 `.env`，不发真实 QQ 消息。示例返回解析结果；业务查询服务由应用自行接入。
 
 业务使用方式：
 
@@ -158,4 +158,4 @@ await app.start();
 
 只有框架解析阶段产生的输入错误可自动回复；自定义匹配器抛错、返回 Promise/非布尔值、业务异常及接口错误仅上报。回复通过原有发送跟踪和回复序号机制；重复平台投递不会重复回复。任务已取消时不追加输入错误回复。
 
-声明错误（重复 Slot 名、多个 Rest、重复 Option 名/别名、重复位置消费、默认值不合法等）在应用初始化时拒绝，先于实例构造和网络连接。完整类型由 `dou-bot` 包入口提供；源码验证覆盖见 [验证记录](https://github.com/abandon-jw3/dd-bot/blob/main/docs/validation-report.md)。
+声明错误（重复 Slot 名、多个 Rest、重复 Option 名/别名、重复位置消费、默认值不合法等）在应用初始化时拒绝，先于实例构造和网络连接。完整类型由 `dou-bot` 包入口提供；源码验证覆盖见 [验证记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md)。

@@ -93,7 +93,7 @@ query(@City() city: string): string {
 
 ## 完整业务例子
 
-本节文件链接及验证记录位于源码仓库，需要访问权限；以下 npm 命令在源码目录执行。已安装 SDK 的独立应用可参考前文实现自己的模块。
+本节文件链接及验证记录位于公开的源码仓库，可直接访问；以下 npm 命令在源码目录执行。已安装 SDK 的独立应用可参考前文实现自己的模块。
 
 ```sh
 npm run example:business
@@ -101,20 +101,20 @@ npm run example:business
 
 该离线入口不加载 .env，不连接 QQ。它运行真实模块、DI、装饰器和消息编码，展示无权限、缺参、成功查询、别名冷却、群聊查询、按钮刷新和帮助。天气与空气质量均明确标注为本地合成演示数据，不是实时查询。
 
-| 文件                                                                                                                     | 职责                                                    |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [city.decorator.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/city.decorator.ts)                 | 用 Slot 封装可复用的 City 装饰器                        |
-| [permission.service.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/permission.service.ts)         | 通过注入配置检查私聊及群内用户白名单                    |
-| [query-permission.guard.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/query-permission.guard.ts) | 使用权限服务，返回放行或拒绝提示                        |
-| [query.service.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/query.service.ts)                   | 演示数据查询与结果格式化，业务数据源替换点              |
-| [query.controller.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/query.controller.ts)             | City/Slot/Rest/Option、类级 Guard、方法冷却、消息与按钮 |
-| [app.module.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business/app.module.ts)                         | 组装 HelpModule、配置令牌、Providers 和 Controller      |
-| [business.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business.ts)                                      | 离线启动并投递示例事件                                  |
-| [business-qq.ts](https://github.com/abandon-jw3/dd-bot/blob/main/examples/business-qq.ts)                                | 复用同一业务模块的真实 WS / Webhook 启动入口            |
-| [business.test.ts](https://github.com/abandon-jw3/dd-bot/blob/main/tests/business.test.ts)                               | 对真实业务模块进行离线验收                              |
+| 文件                                                                                                                      | 职责                                                    |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [city.decorator.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/city.decorator.ts)                 | 用 Slot 封装可复用的 City 装饰器                        |
+| [permission.service.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/permission.service.ts)         | 通过注入配置检查私聊及群内用户白名单                    |
+| [query-permission.guard.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/query-permission.guard.ts) | 使用权限服务，返回放行或拒绝提示                        |
+| [query.service.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/query.service.ts)                   | 演示数据查询与结果格式化，业务数据源替换点              |
+| [query.controller.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/query.controller.ts)             | City/Slot/Rest/Option、类级 Guard、方法冷却、消息与按钮 |
+| [app.module.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business/app.module.ts)                         | 组装 HelpModule、配置令牌、Providers 和 Controller      |
+| [business.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business.ts)                                      | 离线启动并投递示例事件                                  |
+| [business-qq.ts](https://github.com/abandon-jw3/dou-bot/blob/main/examples/business-qq.ts)                                | 复用同一业务模块的真实 WS / Webhook 启动入口            |
+| [business.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/tests/business.test.ts)                               | 对真实业务模块进行离线验收                              |
 
 真实入口运行命令为 `npm run example:business:qq`。它从本地环境读取已有 QQ_APP_ID / QQ_APP_SECRET；另配置 DEMO_PRIVATE_USERS（私聊 user_openid，逗号分隔）、DEMO_GROUP_ID（group_openid）及 DEMO_GROUP_USERS（该群的 member_openid，逗号分隔）。未配置白名单则拒绝查询。填写事件提供的实际 OpenID，不使用日常 QQ 号推测身份；这些配置不是 QQ 群管理员身份查询。
 
 QQ_TRANSPORT=webhook 时使用已有 PORT 与 /qq 配置，否则 WS。源码工程示例通过相对路径引用 SDK；复制到独立业务工程后，安装 SDK 并将这些导入改为 dou-bot，测试入口改为 dou-bot/testing。按既定方案由宿主处理退出信号并等待 close。
 
-初次交付完成离线示例与自动测试，随后于 2026-09-30 使用 `probe:controls` 在授权机器人的群聊与私聊验证了 Guard、参数、冷却、允许/拒绝按钮及 manual 兜底确认。探针复用 City 和 QueryService，使用临时绑定会话控制测试范围；business-qq 常驻入口本轮未运行。具体后台结果与客户端确认状态见 [验证记录](https://github.com/abandon-jw3/dd-bot/blob/main/docs/validation-report.md)。公网 Webhook 验收仍等待 HTTPS 部署入口。
+初次交付完成离线示例与自动测试，随后于 2026-09-30 使用 `probe:controls` 在授权机器人的群聊与私聊验证了 Guard、参数、冷却、允许/拒绝按钮及 manual 兜底确认。探针复用 City 和 QueryService，使用临时绑定会话控制测试范围；business-qq 常驻入口本轮未运行。具体后台结果与客户端确认状态见 [验证记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md)。公网 Webhook 验收仍等待 HTTPS 部署入口。

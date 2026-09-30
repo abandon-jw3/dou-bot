@@ -4,7 +4,7 @@
 
 ## 启动
 
-环境：Node.js **24.21.0+**、npm **11.19.0**；项目固定使用 TypeScript **5.9.3**。
+环境：Node.js **24.x（最低 24.21.0）**、npm **11.19.0**；项目固定使用 TypeScript **5.9.3**。仓库开发版本由根目录 `.nvmrc` 指定。
 
 ```sh
 git clone https://github.com/abandon-jw3/dou-bot.git

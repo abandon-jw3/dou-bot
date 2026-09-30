@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=24.21.0"
+    "node": ">=24.21.0 <25"
   },
   "packageManager": "npm@11.19.0",
   "scripts": {
@@ -22,6 +22,11 @@
     "check": "npm run typecheck && npm run format:check && npm run api:check && npm run check:content && npm test && npm run build",
     "api:generate": "node scripts/generate-api.mjs",
     "api:check": "node scripts/generate-api.mjs --check"
+  },
+  "overrides": {
+    "vitepress": {
+      "vite": "6.4.3"
+    }
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

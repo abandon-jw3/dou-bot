@@ -1,6 +1,6 @@
 # 源码开发与联调
 
-npm 包名为 `dou-bot`，GitHub 框架仓库现为公开的 `dou-bot`，本地工程目录仍为 `dd-bot`。安装及业务用法见 [README](../README.md)。以下命令在框架源码根目录执行，不属于安装包中的消费者命令。
+npm 包名为 `dou-bot`，框架、业务示例与文档站统一维护于公开的 `dou-bot` 仓库。安装及业务用法见 [README](../README.md)。以下命令在框架源码根目录执行，不属于安装包中的消费者命令。
 
 业务示例与文档站也在本仓库中，分别位于 `apps/example/`、`website/`。三工程安装、统一检查、Pages 部署及迁移说明见 [仓库维护指南](repository.md)；下文聚焦 SDK 本身。
 
@@ -15,7 +15,7 @@ npm run example:query
 npm run example:business
 ```
 
-`check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及历史消费者对当前安装包的兼容检查。`npm run test:compat` 另从 registry 安装已发布的 0.6.0 验证历史消费者；先完成 build/check。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.21.0 上运行这两项检查；TypeScript 固定为 5.9.3。
+`check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及历史消费者对当前安装包的兼容检查。`npm run test:compat` 另从 registry 安装已发布的 0.6.0 验证历史消费者；先完成 build/check。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.0.0 最低版本及 `.nvmrc` 开发版本上运行这两项检查；源码支持范围为 Node 24.x，TypeScript 固定为 5.9.3。
 
 离线示例不读取凭证或连接 QQ。`query` 展示无序 Slot、Rest、Option 与帮助；`business` 组合自定义 City 装饰器、可注入权限服务、Guard、冷却、Markdown 和按钮。天气等数据是本地合成示例。源码示例允许相对导入 `src`；复制到独立应用时改用 `dou-bot` 和 `dou-bot/testing`。
 

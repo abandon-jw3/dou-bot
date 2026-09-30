@@ -4,9 +4,11 @@
 
 基于 VitePress 1.6.4 默认主题的中文使用手册，面向 QQ 官方机器人群聊和私聊。API 和示例以公开发布的 dou-bot 0.6.0 为准。
 
+工具依赖通过 scoped override 固定 Vite 6.4.3，锁文件使用 esbuild 0.25.12；版本评估与维护条件见 [文档工具依赖维护](../docs/repository.md#文档工具依赖维护)。
+
 ## 本地开发
 
-环境：Node.js 24.21.0、npm 11.19.0。示例编译器固定为 TypeScript 5.9.3。在主仓库的 `website` 目录执行：
+环境：Node.js 24.x（最低 24.21.0）、npm 11.19.0；仓库开发版本由根目录 `.nvmrc` 指定。示例编译器固定为 TypeScript 5.9.3。在主仓库的 `website` 目录执行：
 
 ```sh
 npm ci
@@ -44,6 +46,7 @@ npm run preview
 
 ```sh
 npm run format
+npm audit --audit-level=moderate
 npm run check
 npx playwright install chromium
 npm run test:browser

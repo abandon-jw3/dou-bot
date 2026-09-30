@@ -1,7 +1,7 @@
 /**
  * dd-bot v0.6 public API design contract, revision 1.7 — NOT a runtime implementation.
  * This declaration is the normative companion to development-plan.md.
- * Target: Node.js 24+, TypeScript legacy decorators, ESM.
+ * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
  */
 import type { RequestListener } from 'node:http';
 

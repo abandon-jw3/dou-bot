@@ -4,7 +4,9 @@
 
 [完整中文用户文档](https://abandon-jw3.github.io/dou-bot/) · [公开示例与文档反馈](https://github.com/abandon-jw3/dou-bot/tree/main/website)
 
-运行环境为 Node.js 24+、ESM，TypeScript 使用 **5.9.3**。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
+当前源码支持 Node.js **24.x（最低 24.0.0）**、ESM，TypeScript 使用 **5.9.3**。开发统一使用 24.21.0；SDK 的 CI 覆盖最低版本及开发版本。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
+
+已发布的 `dou-bot@0.6.0` 元数据仍声明 Node.js `>=24`。源码中的 `<25` 上界将在后续发行中生效；使用 Node.js 25 及更高主版本的应用升级前需切换到支持的 24.x。
 
 npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
 
@@ -98,7 +100,7 @@ dou-bot/
 
 依赖、构建产物、缓存和临时目录已被 Git 忽略。清理构建产物后，需要重新执行相应构建命令再启动应用或预览文档。
 
-开发整个仓库时，使用 Node.js 24.21.0、npm 11.19.0，先运行 `npm run install:all`，再运行 `npm run check:all`。文档浏览器验收使用 `npm run docs:test:browser`；完整说明见 [仓库维护指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/repository.md)。只使用 SDK 时，按下面的安装步骤即可。
+开发整个仓库时，使用根目录 `.nvmrc` 声明的 Node.js 24.21.0 和 npm 11.19.0；CI 也从该文件读取 Node 版本。先运行 `npm run install:all`，再运行 `npm run check:all`。文档浏览器验收使用 `npm run docs:test:browser`；完整说明见 [仓库维护指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/repository.md)。只使用 SDK 时，按下面的安装步骤即可。
 
 ## 安装
 

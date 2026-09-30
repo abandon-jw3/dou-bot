@@ -18,7 +18,13 @@
 
 ## 安装与开发
 
-统一使用 Node.js **24.21.0**、npm **11.19.0**、TypeScript **5.9.3**。在主仓库根目录运行：
+统一使用 Node.js **24.21.0**、npm **11.19.0**、TypeScript **5.9.3**。根目录 `.nvmrc` 声明开发用 Node 版本，三个工程的开发版本 CI 统一读取此文件。使用 nvm 时，可在仓库根目录执行 `nvm install` 和 `nvm use` 安装并切换到该版本。
+
+当前源码正式支持 Node.js **24.x**：SDK 的 `engines.node` 为 `>=24.0.0 <25`；业务示例与文档工具工程为 `>=24.21.0 <25`。SDK 的最低版本 24.0.0 用于兼容性验证，日常开发与部署使用 24.21.0 或后续 24.x 安全补丁。其他主版本需单独验证后再扩展范围，不能根据旧的 `>=24` 声明推定已经支持。
+
+已发布的 `dou-bot@0.6.0` 仍保留原来的 `>=24` 元数据；本轮增加的 `<25` 上界只会随新 SDK 版本发布。网站面向 0.6.0 的安装说明继续描述已发布包，后续发行同步调整。
+
+在主仓库根目录运行：
 
 ```sh
 npm run install:all
@@ -41,7 +47,7 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 
 ## CI 与文档部署
 
-唯一工作流为 [ci.yml](../.github/workflows/ci.yml)。每次提交或 PR 分别在 Windows 和 Linux 上检查三个工程；SDK 保留覆盖率与短时持续运行检查，文档增加 Linux Chromium 浏览器测试。
+唯一工作流为 [ci.yml](../.github/workflows/ci.yml)。每次提交或 PR 分别在 Windows 和 Linux 上检查三个工程；SDK 对最低版本 24.0.0 和 `.nvmrc` 开发版本分别执行完整检查、覆盖率和 30 秒持续运行检查。持续运行报告按系统与版本档位分别命名。业务示例、文档工具使用开发版本；文档同时执行依赖审计和 Linux Chromium 浏览器测试。
 
 只有 `main` 的非 PR 工作流在全部检查成功后部署 Pages。部署产物为 `website/docs/.vitepress/dist`，Pages Source 使用 GitHub Actions，环境为 `github-pages`。
 
@@ -65,4 +71,10 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 
 ## 文档工具依赖维护
 
-2026-09-30 的 `npm audit` 对沿用的 VitePress 1.6.4 工具依赖报告 3 项问题（1 项 high、2 项 moderate），涉及 Vite、esbuild 及 VitePress 的依赖关系，当前结果未提供自动修复方案。此次迁移保持原先锁定的版本；后续工具升级应单独评估并重复站点与浏览器验收。这些工具只安装在 `website` 工程，SDK 发包检查会拒绝携带它们。
+2026-09-30 的 `npm audit` 对沿用的 VitePress 1.6.4 工具依赖报告 3 项问题（1 项 high、2 项 moderate），涉及 Vite、esbuild 及 VitePress 的依赖关系，当时没有自动修复方案。
+
+2026-10-01 评估后保留 VitePress **1.6.4** 与默认主题，在 `website/package.json` 中仅对它的 Vite 依赖设置精确 override **6.4.3**，锁文件将 esbuild 更新为 **0.25.12**。VitePress 稳定版仍为 1.6.4，下一版为 2.0.0-alpha.20；本轮采用已修复问题的稳定 Vite 6，而非更换文档框架。现有 `@vitejs/plugin-vue@5.2.4` 的 peer 范围包含 Vite 6，安装依赖树无冲突。
+
+该 override 超出 VitePress 原先声明的 Vite 5 范围，是本仓库维护的兼容组合。已核对 [Vite 6 迁移说明](https://github.com/vitejs/vite/blob/v6.4.3/docs/guide/migration.md) 和 [Vite 官方修复公告](https://github.com/vitejs/vite/security/advisories/GHSA-fx2h-pf6j-xcff)；当前站点没有自定义 Sass、PostCSS 配置或条件解析。本轮已通过文档类型检查、发布包 API 索引、14 项示例测试、生产构建、12 项生产预览浏览器测试，以及开发服务器桌面/手机渲染、导航、搜索、刷新和控制台检查。后续升级应重复这些验收。
+
+本次 `npm audit` 已降为 **0 项告警**。CI 增加 `npm audit --audit-level=moderate`；后续 VitePress 稳定版正式采用已修复的 Vite 后，移除 override 并重新验收。工具依赖只安装在 `website` 工程，SDK 发包检查继续拒绝携带它们。
