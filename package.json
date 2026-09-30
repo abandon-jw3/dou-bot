@@ -2,7 +2,7 @@
   "name": "dd-bot-example",
   "version": "0.1.0",
   "private": true,
-  "description": "An independent QQ weather bot built with the dd-bot SDK.",
+  "description": "A minimal QQ bot starter built with the dd-bot SDK.",
   "type": "module",
   "engines": {
     "node": ">=24.21.0"
@@ -10,13 +10,11 @@
   "packageManager": "npm@11.19.0",
   "scripts": {
     "build": "node scripts/tasks.mjs build",
-    "start": "node --use-env-proxy --env-file-if-exists=.env dist/main.js",
-    "live": "node scripts/tasks.mjs live",
-    "weather:live": "node scripts/tasks.mjs weather",
+    "start": "node --env-file-if-exists=.env dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests --max-warnings 0",
-    "format": "prettier --write src tests scripts docs *.json *.mjs *.md .github",
-    "format:check": "prettier --check src tests scripts docs *.json *.mjs *.md .github",
+    "format": "prettier --write src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
+    "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
     "test": "node scripts/tasks.mjs test",
     "check": "node scripts/tasks.mjs check",
     "verify:sdk": "node scripts/verify-sdk.mjs"

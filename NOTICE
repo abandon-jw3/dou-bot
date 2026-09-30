@@ -2,6 +2,4 @@ dd-bot-example is a private development example. Its distribution license will
 be selected by the project owner before public distribution.
 
 The vendored dd-bot SDK retains its own NOTICE, including applicable upstream
-attributions. Weather data is obtained from Open-Meteo; geocoding data is based
-on GeoNames. This example uses the public non-commercial service endpoints.
-See README.md for source documentation and service links.
+attributions.

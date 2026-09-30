@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import { realpath, rm, readdir, readFile, access } from 'node:fs/promises';
-import { dirname, resolve, relative, isAbsolute } from 'node:path';
+import { realpath, rm } from 'node:fs/promises';
+import { resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -34,36 +34,12 @@ async function test() {
   await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json']);
   await run(['--test', '.test-build/tests/**/*.test.js']);
 }
-async function docs() {
-  for (const name of [
-    'README.md',
-    ...(await readdir(resolve(root, 'docs')))
-      .filter((p) => p.endsWith('.md'))
-      .map((p) => `docs/${p}`),
-  ]) {
-    const path = resolve(root, name);
-    const content = await readFile(path, 'utf8');
-    for (const match of content.matchAll(/\]\(([^\s)]+)\)/gu)) {
-      const link = match[1].split('#')[0];
-      if (!link || /^[a-z][a-z\d+.-]*:/iu.test(link)) continue;
-      await access(resolve(dirname(path), link));
-    }
-  }
-}
 switch (process.argv[2]) {
   case 'build':
     await build();
     break;
   case 'test':
     await test();
-    break;
-  case 'live':
-    await build();
-    await run(['--use-env-proxy', '--env-file=.env', 'dist/live.js']);
-    break;
-  case 'weather':
-    await build();
-    await run(['--use-env-proxy', 'dist/weather-live.js', ...process.argv.slice(3)]);
     break;
   case 'check':
     await run(['scripts/verify-sdk.mjs']);
@@ -75,13 +51,13 @@ switch (process.argv[2]) {
       'src',
       'tests',
       'scripts',
-      'docs',
+      'vendor/*.json',
+      'vendor/*.md',
       '*.json',
       '*.mjs',
       '*.md',
       '.github',
     ]);
-    await docs();
     await build();
     await test();
     break;
