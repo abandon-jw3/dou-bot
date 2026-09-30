@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile, realpath, access } from 'node:fs/promises';
-import { dirname, resolve, relative, isAbsolute } from 'node:path';
+import { dirname, resolve, relative, isAbsolute, posix } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { parseEnv } from 'node:util';
@@ -50,28 +50,64 @@ function npm(args, cwd, capture = false) {
 const pack = JSON.parse(
   await npm(['pack', '--json', '--ignore-scripts', '--pack-destination', output], root, true),
 )[0];
+const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+if (pack.name !== 'dou-bot' || manifest.private || manifest.license !== 'MIT')
+  throw new Error('Package identity, visibility or license is not ready for distribution');
+const publicGuides = [
+  'docs/command-parameters.md',
+  'docs/execution-controls.md',
+  'docs/access-control.md',
+  'docs/prompts.md',
+  'docs/module-guards.md',
+];
+const packagePaths = new Set(pack.files.map((file) => file.path));
+for (const required of [
+  'LICENSE',
+  'NOTICE',
+  'README.md',
+  'package.json',
+  ...publicGuides,
+  ...Object.values(manifest.exports).flatMap((entry) => [entry.types, entry.import]),
+]) {
+  if (!packagePaths.has(required.replace(/^\.\//u, '')))
+    throw new Error(`Missing required package file: ${required}`);
+}
 const env = await readFile(resolve(root, '.env'), 'utf8').catch((error) => {
   if (error.code === 'ENOENT') return '';
   throw error;
 });
 const secrets = [parseEnv(env).QQ_APP_SECRET, process.env.QQ_APP_SECRET].filter(Boolean);
 for (const file of pack.files) {
-  if (!/^(dist\/|package\.json$|README\.md$|NOTICE$)/.test(file.path))
+  if (
+    !/^(dist\/|package\.json$|README\.md$|LICENSE$|NOTICE$)/.test(file.path) &&
+    !publicGuides.includes(file.path)
+  )
     throw new Error(`Unexpected package file: ${file.path}`);
   const content = await readFile(resolve(root, file.path));
   for (const secret of secrets)
     if (secret && content.includes(Buffer.from(secret)))
       throw new Error(`Credential detected in package file: ${file.path}`);
+  if (file.path.endsWith('.md')) {
+    for (const match of content.toString('utf8').matchAll(/\]\((?:<([^>]+)>|([^\s)]+))\)/g)) {
+      const target = match[1] ?? match[2];
+      if (!target || /^(?:[a-z][a-z\d+.-]*:|#)/i.test(target)) continue;
+      const local = decodeURIComponent(target.split('#')[0].split('?')[0]);
+      if (!local) continue;
+      const linked = posix.normalize(posix.join(posix.dirname(file.path), local));
+      if (!packagePaths.has(linked))
+        throw new Error(`Document link leaves the installed package: ${file.path} -> ${target}`);
+    }
+  }
 }
 const tarball = resolve(output, pack.filename);
 await writeFile(
   resolve(consumer, 'package.json'),
   JSON.stringify(
     {
-      name: 'dd-bot-independent-consumer',
+      name: 'dou-bot-independent-consumer',
       private: true,
       type: 'module',
-      dependencies: { 'dd-bot': `file:${relative(consumer, tarball).replaceAll('\\', '/')}` },
+      dependencies: { 'dou-bot': `file:${relative(consumer, tarball).replaceAll('\\', '/')}` },
       devDependencies: { '@types/node': '24.19.0' },
     },
     null,
@@ -93,9 +129,9 @@ await writeFile(
   resolve(consumer, 'consumer.ts'),
   `
 import assert from 'node:assert/strict';
-import { Arg, Command, Controller, Cooldown, Ctx, GroupManagersOnly, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dd-bot';
-import type { CanActivate, GuardContext, GuardResult, MessageContext } from 'dd-bot';
-import { createTestApplication } from 'dd-bot/testing';
+import { Arg, Command, Controller, Cooldown, Ctx, GroupManagersOnly, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dou-bot';
+import type { CanActivate, GuardContext, GuardResult, MessageContext } from 'dou-bot';
+import { createTestApplication } from 'dou-bot/testing';
 @Injectable() class Greeter { hello(name: string) { return 'Hello ' + name; } }
 @Injectable() class ModuleGate implements CanActivate {
   canActivate(ctx: GuardContext): GuardResult { return ctx.userId !== 'module-blocked' || { allow: false, message: 'module denied' }; }
@@ -148,7 +184,7 @@ try {
   assert.equal(harness.messages[9]?.payload.msg_id, 'package-answer');
   await harness.dispatch({ op: 0, t: 'C2C_MESSAGE_CREATE', d: { id: 'package-module-guard', author: { id: 'module-blocked' }, content: 'hello blocked' } });
   assert.equal(harness.messages[10]?.payload.content, 'module denied');
-  assert.ok(import.meta.resolve('dd-bot').includes('consumer/node_modules/dd-bot/'));
+  assert.ok(import.meta.resolve('dou-bot').includes('consumer/node_modules/dou-bot/'));
 } finally { await harness.app.close(); }
 `,
 );

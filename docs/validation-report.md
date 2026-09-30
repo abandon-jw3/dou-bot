@@ -18,7 +18,7 @@
 | 独立 npm 包消费者   | 允许分发文件经扫描；独立安装/编译/执行装饰器、DI、参数、帮助、Guard 拒绝/放行和冷却，未依赖上级目录的 @types/ws           |
 | 离线示例            | example:business、example:query、example:offline 通过；未加载 .env 或发送真实消息                                         |
 | 凭证扫描            | 打包文件与本地 QQ Secret 的匹配扫描通过；包不包含 .env、work 或测试日志                                                   |
-| `npm run coverage`  | 0.3.0 已在 Windows/Linux CI 中执行并通过；此前 0.1.1 的行/语句 98.24%、分支 85.44%、函数 96.32% 仅为历史基线              |
+| `npm run coverage`  | 0.6.0 发布候选在 Windows 本地通过：行/语句 98.61%、分支 89.42%、函数 97.31%                                               |
 | `npm run benchmark` | 0.1.1 历史合成输入基线，见 performance-baseline.json；本轮未重跑性能或持续负载                                            |
 | CI                  | GitHub Actions 的 ubuntu-latest / windows-latest 两组均成功完成 npm ci、check 和 coverage；配置 Node 24.21.0、npm 11.19.0 |
 
@@ -29,6 +29,14 @@
 2026-09-30，已创建 [abandon-jw3/dd-bot 私有仓库](https://github.com/abandon-jw3/dd-bot)，默认分支为 main，首次提交为 `f81c9d1230f5a697818fbec46f3d0d699faae794`。102 个源码、测试、示例与文档文件已推送；本地凭证、依赖、生成产物和临时工作文件未进入 Git。
 
 [首次 CI](https://github.com/abandon-jw3/dd-bot/actions/runs/36611267768) 已完成，结论为 success。`verify (ubuntu-latest)` 和 `verify (windows-latest)` 均成功执行 `npm run check` 及 `npm run coverage`。这完成了远端 CI 与 Linux 自动测试验证；QQ 实机联调记录仍对应 Windows 环境。
+
+## dou-bot@0.6.0 发布候选本地验证
+
+- 用户已确定 npm 包名 dou-bot 和 MIT 许可证。原 npm 名 dd-bot 属于其他项目；registry 暂未查到 dou-bot，但并未预留名称。
+- 完整 check 通过 180 项框架测试，以及实际 tgz 独立消费者和 2 项技能示例测试。许可、公开导出、文档相对链接和分发白名单均纳入包检查；105 个包内文件未匹配本地已知 QQ 密钥。
+- 从安装后的 README 提取 tsconfig 和三个 TS 文件，使用 TypeScript 5.9.3 编译；执行离线示例，断言 `/hello 小明` 的回复及错误收集结果通过。真实连接入口只编译，不启动测试机器人。
+- `npm audit --omit=dev` 返回 0 个已知生产依赖漏洞；这只代表 registry 在检查时的数据库结果。
+- 本节为本地证据。实际候选包、来源提交和独立示例记录随发行准备保存；正式 npm 上传、registry 下载及公网 Webhook 均不包含在此结论中。流程见 [发布准备](npm-release.md)。
 
 ## 0.6.0 模块 Guard 验证
 
@@ -172,11 +180,11 @@ WS 恢复测试验证了会话恢复和恢复后的心跳，没有断言断线�
 
 ## 首版验收结论与后续部署
 
-按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。源码与可安装 SDK 保持 private，尚未向 npm 发布。
+按用户确认的 Windows 首版范围，开发、文档、本地验收和可执行的 QQ WS 联调已完成；后续创建了 GitHub 私有仓库，并通过 Windows/Linux 远端 CI。逐项证据见 [实现审计](./implementation-audit.md)。GitHub 源码仓库保持 private；SDK 已按 dou-bot 与 MIT 整理发行配置，尚未向 npm 发布。
 
 - 公网 HTTPS Webhook、QQ 管理端地址验证及真实回调重试：按用户选择留待部署入口就绪。
 - 更长时间和实际生产负载：属于后续运行验收；Windows/Linux 远端 CI 已通过。
 - WS 已确认 RESUME 与恢复后的心跳；不对服务端断线窗口内的业务重放完整性作保证。
-- 正式公开分发前由项目所有者确定包名与许可证。
+- 包名 dou-bot 与 MIT 已由项目所有者确定；正式发布仍需 npm 登录、最终确认和发布后 registry 安装验证，见 [发布准备](npm-release.md)。
 
 框架使用进程内有界队列与去重；进程崩溃可能丢失已经确认但未处理的事件。关闭期限可取消受管请求和协作任务，不能硬终止不响应 signal 的用户 JavaScript。

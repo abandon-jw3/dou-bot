@@ -285,7 +285,7 @@ Windows 上已验证 Node 24 能处理上述带引号的测试 glob。不要依�
 }
 ```
 
-这是开发期模板，包名可用性和许可证由正式发行流程确认；private 保留到明确发行时。packageManager 记录版本，CI 还需显式采用该 npm 版本，该字段不是自动的全局版本管理器。
+以上保留开发期模板作为选型记录。2026-09-30 已确定 npm 名称为 dou-bot、许可证为 MIT，并移除包的 private 发布阻止项；当前发行配置以 [package.json](../package.json) 和 [发布准备](npm-release.md) 为准。packageManager 记录版本，CI 还需显式采用该 npm 版本，该字段不是自动的全局版本管理器。
 
 CI 目标为 Windows 与 Linux 的 Node 24：npm ci → 类型检查 → ESLint → Prettier check → 构建 → 测试与覆盖率 → npm pack 检查。必须从打包结果建立独立消费者测试，防止引用源码路径或漏发类型文件。`.github/workflows/ci.yml` 已接入 GitHub；[首次运行](https://github.com/abandon-jw3/dd-bot/actions/runs/36611267768) 的 Windows/Linux 两组 check 与 coverage 均通过，包含独立打包消费者检查。
 

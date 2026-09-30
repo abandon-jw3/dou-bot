@@ -19,7 +19,7 @@
 ## 无序 Slot 与业务装饰器
 
 ```ts
-import { Slot } from 'dd-bot';
+import { Slot } from 'dou-bot';
 
 const cityWords = new Set(['北京', '上海', '深圳']);
 

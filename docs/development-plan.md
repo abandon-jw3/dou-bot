@@ -604,7 +604,7 @@ import {
   keyboard,
   button,
   type ButtonContext,
-} from 'dd-bot';
+} from 'dou-bot';
 
 @Injectable()
 class PreferenceService {

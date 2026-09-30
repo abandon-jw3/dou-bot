@@ -7,7 +7,7 @@
 使用 `createTestApplication`，让真实模块、装饰器、DI、参数与消息编码运行，仅替换 QQ 网络。需要完整起点时，参考 [minimal-module.test.ts](../assets/minimal-module.test.ts)。
 
 ```ts
-import { createTestApplication } from 'dd-bot/testing';
+import { createTestApplication } from 'dou-bot/testing';
 
 const harness = await createTestApplication(AppModule, {
   commands: { prefix: '', invalidInput: 'reply' },
@@ -75,7 +75,7 @@ try {
 
 ## 独立消费者验证
 
-新建应用应能在自己的目录 npm ci、编译和运行，SDK 从该目录 node_modules/dd-bot 解析，业务不依赖框架 checkout。验证 tgz/锁文件来源和公开导出；没有声明的父目录依赖（尤其 @types/ws）不应让编译碰巧成功。
+新建应用应能在自己的目录 npm ci、编译和运行，SDK 从该目录 node_modules/dou-bot 解析，业务不依赖框架 checkout。验证 tgz/锁文件来源和公开导出；没有声明的父目录依赖（尤其 @types/ws）不应让编译碰巧成功。
 
 ## QQ 实机验证
 

@@ -1,18 +1,20 @@
 ---
 name: dd-bot
-description: '使用 dd-bot SDK 开发、修改和测试 QQ 官方机器人业务。适用于 dd-bot 模块与依赖注入、命令装饰器、Slot/Rest/Option、Guard/冷却、消息按钮和 WS/Webhook 接入；不用于无关的 NestJS、Koishi 或其他平台机器人项目。'
+description: '使用 dou-bot SDK 开发、修改和测试 QQ 官方机器人业务。适用于 dou-bot 模块与依赖注入、命令装饰器、Slot/Rest/Option、Guard/冷却、消息按钮和 WS/Webhook 接入；不用于无关的 NestJS、Koishi 或其他平台机器人项目。'
 ---
 
-# 使用 dd-bot 开发机器人
+# 使用 dou-bot 开发机器人
 
-以用户当前业务项目为工作对象，通过 SDK 的公开 API 完成功能和对应验证。本技能按 dd-bot **0.6.0 / 契约 1.7** 核对；项目实际安装的版本、类型声明和用户要求优先，不为套用示例而降级依赖或修改框架内核。
+以用户当前业务项目为工作对象，通过 SDK 的公开 API 完成功能和对应验证。本技能按 dou-bot **0.6.0 / 契约 1.7** 核对；项目实际安装的版本、类型声明和用户要求优先，不为套用示例而降级依赖或修改框架内核。
+
+技能调用名和目录保留为 `$dd-bot`；npm 包、代码导入和安装目录使用 `dou-bot`。
 
 ## 先确认项目边界
 
-- 检查目标项目的 package.json、锁文件、tsconfig、启动和测试脚本，确认 dd-bot 的来源与版本。普通业务使用 `dd-bot`，离线测试使用 `dd-bot/testing`；业务代码不导入框架内部路径或本机另一份源码。
+- 检查目标项目的 package.json、锁文件、tsconfig、启动和测试脚本，确认 dou-bot 的来源与版本。普通业务使用 `dou-bot`，离线测试使用 `dou-bot/testing`；业务代码不导入框架内部路径或本机另一份源码。
 - 基线为 Node.js 24+、TypeScript 5.9.3、ESM 和传统参数装饰器。构造注入依赖运行时元数据，不能只凭 TypeScript 类型推断启动成功。
 - SDK 当前仅面向 QQ 官方群聊和私聊，每个应用选择 WS 或 Webhook。保留用户选定的业务、前缀、权限及部署方式；天气、城市词典、白名单和空前缀都是示例选择，不是框架要求。
-- 本项目尚未公开发布到 npm。先复用项目已有依赖；新消费者应安装来源明确的 SDK 包并锁定，不要假定 npm 上的同名包就是本框架。
+- npm 分发名已确定为 dou-bot，采用 MIT；当前为 0.6.0 发布候选，是否已上架应按 registry 和项目锁文件核实。npm 上的 dd-bot 是其他项目。先复用项目已有依赖；未上架时使用来源明确的 dou-bot tgz，不替换为其他同名包。
 
 需要更新知识时，优先读取已安装 SDK 的导出声明，以及可访问的框架源码/文档。维护参考为 [框架仓库](https://github.com/abandon-jw3/dd-bot) 和 [独立业务示例](https://github.com/abandon-jw3/dd-bot-example)；它们可能需要仓库访问权限，不是执行本技能的硬性联网前提。
 

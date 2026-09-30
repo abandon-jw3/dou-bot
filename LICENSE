@@ -1,11 +1,6 @@
-dou-bot (previously developed as dd-bot) is distributed under the MIT License.
-See LICENSE for the project license. The upstream notice below is retained for
-applicable portions of this distribution.
+MIT License
 
-QQ protocol behavior was studied using @satorijs/adapter-qq 5.0.0-alpha.0.
-For portions adapted from that MIT-licensed project:
-
-Copyright (c) 2019-present Shigma
+Copyright (c) 2026 dou-bot contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

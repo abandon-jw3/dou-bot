@@ -6,7 +6,7 @@
 
 模块 Guard 从所属模块的 providers/imports/exports 解析，不能传实例或把 GroupOnly() 等装饰器放入 guards 数组。缺失、歧义、Controller 令牌和非法工厂结果会在启动时拒绝，即使模块暂无控制器也会检查。内置规则跨层合并做场景/角色冲突校验；含 OnButton 的模块不能整体使用 GroupRoles/GroupManagersOnly，应把角色规则放到专门的命令控制器。
 
-0.4.0 提供无需注册 Provider 的 GroupOnly、PrivateOnly、UsersOnly、GroupRoles、GroupManagersOnly，均可从 dd-bot 导入。它们与 UseGuards 混合时保持类/方法、继承与代码声明顺序；GroupOnly/PrivateOnly 冲突及空角色交集在启动时报 CONFIG。
+0.4.0 提供无需注册 Provider 的 GroupOnly、PrivateOnly、UsersOnly、GroupRoles、GroupManagersOnly，均可从 dou-bot 导入。它们与 UseGuards 混合时保持类/方法、继承与代码声明顺序；GroupOnly/PrivateOnly 冲突及空角色交集在启动时报 CONFIG。
 
 - `@UsersOnly(['openid'], { scene: 'private', message: false })` 精确匹配名单，可指定 scene 或 groupId（隐含 group）。未指定范围时匹配所有会话，不转换跨场景 OpenID；动态名单仍用业务 Guard。
 - `@GroupRoles('owner')` 仅群主；`@GroupManagersOnly()` 为 owner 或 admin；只读取当前群消息 author.member_role，缺失/未知时拒绝。GroupMessageContext/群消息 GuardContext 暴露可选 memberRole，私聊不携带。
@@ -17,8 +17,8 @@
 命令/按钮按 Guard → 命令参数绑定（仅命令）→ 冷却占用 → 业务方法执行。原始 On 观察器仍先独立执行，不能靠它拒绝后续命令。
 
 ```ts
-import { Injectable } from 'dd-bot';
-import type { CanActivate, GuardContext, GuardResult } from 'dd-bot';
+import { Injectable } from 'dou-bot';
+import type { CanActivate, GuardContext, GuardResult } from 'dou-bot';
 
 @Injectable()
 export class GroupOnlyGuard implements CanActivate {
@@ -63,8 +63,8 @@ execution.cooldownMaxEntries 默认 10000。容量满时清理过期项，仍满
 常用构建器的参数顺序：
 
 ```ts
-import { text, image, markdown, keyboard, button } from 'dd-bot';
-import type { ImageSource } from 'dd-bot';
+import { text, image, markdown, keyboard, button } from 'dou-bot';
+import type { ImageSource } from 'dou-bot';
 
 export function renderExamples(source: ImageSource) {
   return [

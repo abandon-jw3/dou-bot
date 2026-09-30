@@ -1,13 +1,31 @@
 {
-  "name": "dd-bot",
+  "name": "dou-bot",
   "version": "0.6.0",
-  "private": true,
   "description": "A lightweight decorator-based framework for official QQ bots.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abandon-jw3/dd-bot.git"
+  },
+  "homepage": "https://github.com/abandon-jw3/dd-bot#readme",
+  "bugs": {
+    "url": "https://github.com/abandon-jw3/dd-bot/issues"
+  },
+  "keywords": [
+    "qq",
+    "bot",
+    "decorators",
+    "typescript",
+    "websocket",
+    "webhook"
+  ],
   "type": "module",
   "engines": {
     "node": ">=24"
   },
   "packageManager": "npm@11.19.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,15 +39,28 @@
   "files": [
     "dist",
     "README.md",
-    "NOTICE"
+    "LICENSE",
+    "NOTICE",
+    "docs/command-parameters.md",
+    "docs/execution-controls.md",
+    "docs/access-control.md",
+    "docs/prompts.md",
+    "docs/module-guards.md"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  },
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests examples --max-warnings 0",
-    "format": "prettier --write src tests examples scripts docs skills *.json *.mjs .github",
-    "format:check": "prettier --check src tests examples scripts docs skills *.json *.mjs .github",
+    "format": "prettier --write src tests examples scripts docs skills *.json *.mjs *.md .github",
+    "format:check": "prettier --check src tests examples scripts docs skills *.json *.mjs *.md .github",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check",
     "test:compile": "node scripts/compile-tests.mjs",
     "pretest": "npm run test:compile",
     "test": "node --test \".test-build/tests/**/*.test.js\"",

@@ -13,6 +13,7 @@ const checks = [
     'skills',
     '*.json',
     '*.mjs',
+    '*.md',
     '.github',
   ],
   ['scripts/check-docs.mjs'],

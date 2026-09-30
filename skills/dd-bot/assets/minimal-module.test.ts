@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setImmediate as tick } from 'node:timers/promises';
-import type { GuardContext, GuardResult, QQDispatch } from 'dd-bot';
-import { createTestApplication } from 'dd-bot/testing';
+import type { GuardContext, GuardResult, QQDispatch } from 'dou-bot';
+import { createTestApplication } from 'dou-bot/testing';
 import { createQueryModule } from './minimal-module.js';
 
 function policy(ctx: GuardContext): GuardResult {

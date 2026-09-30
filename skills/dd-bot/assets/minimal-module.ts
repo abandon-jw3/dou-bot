@@ -10,8 +10,8 @@ import {
   Rest,
   Slot,
   UseGuards,
-} from 'dd-bot';
-import type { Awaitable, CanActivate, GuardContext, GuardResult, Type } from 'dd-bot';
+} from 'dou-bot';
+import type { Awaitable, CanActivate, GuardContext, GuardResult, Type } from 'dou-bot';
 
 export type QueryPolicy = (context: GuardContext) => Awaitable<GuardResult>;
 const POLICY = Symbol('query-policy');

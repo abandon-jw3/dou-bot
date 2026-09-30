@@ -1,6 +1,6 @@
 # 内置访问限制与管理者按钮
 
-适用于 dd-bot **0.4.0 / 契约 1.5**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
+适用于 dou-bot **0.6.0 / 契约 1.7**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
 
 ## API
 
@@ -17,7 +17,14 @@
 `UsersOnlyOptions` 另支持 `scene?: 'group' | 'private'` 与 `groupId?: string`。groupId 隐含群聊限制，不能与 private 同时配置。数组至少包含一个非空字符串；配置和名单会复制冻结，之后修改原对象不会改变权限。动态权限使用可注入的自定义 Guard。
 
 ```ts
-import { Command, Controller, GroupManagersOnly, GroupRoles, PrivateOnly, UsersOnly } from 'dd-bot';
+import {
+  Command,
+  Controller,
+  GroupManagersOnly,
+  GroupRoles,
+  PrivateOnly,
+  UsersOnly,
+} from 'dou-bot';
 
 @Controller()
 export class SettingsController {
@@ -67,7 +74,7 @@ export class SettingsController {
 ## 管理者按钮
 
 ```ts
-import { button, keyboard, markdown } from 'dd-bot';
+import { button, keyboard, markdown } from 'dou-bot';
 
 const card = markdown('**群管理**', {
   keyboard: keyboard([

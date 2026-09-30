@@ -1,12 +1,12 @@
 # 二次输入与多轮会话
 
-dd-bot **0.5.0 / 契约 1.6** 为命令消息上下文提供 `ctx.prompt(question, options?)`。它先登记等待项，再发送问题，等待同一机器人、同一场景/会话、同一用户 OpenID 的下一条消息。只提供进程内的短会话，不持久化或跨进程恢复。
+dou-bot **0.6.0 / 契约 1.7** 为命令消息上下文提供 `ctx.prompt(question, options?)`。它先登记等待项，再发送问题，等待同一机器人、同一场景/会话、同一用户 OpenID 的下一条消息。只提供进程内的短会话，不持久化或跨进程恢复。
 
 ## 使用方式
 
 ```ts
-import { Command, Controller, Ctx } from 'dd-bot';
-import type { MessageContext } from 'dd-bot';
+import { Command, Controller, Ctx } from 'dou-bot';
+import type { MessageContext } from 'dou-bot';
 
 @Controller()
 export class DialogController {
@@ -101,6 +101,6 @@ maxPending 是等待项上限，实际可用容量还受 queueMaxBytes、maxEven
 
 交互测试先用 `harness.enqueue()` 发起命令，等待模拟发送记录出现后，再 enqueue 回答；最后等待这些 Admission.done 或调用 flush。直接顺序 `await harness.dispatch(首条事件)` 再发送回答，会把测试驱动卡在尚未完成的会话上。
 
-捕获回答的 done 与父流程一起完成，不能用它等待“第一轮已处理”再驱动第二轮；应观察下一条问题发送记录。可运行的完整测试见 [prompts.test.ts](../tests/prompts.test.ts)，包括 FakeClock 超时、多轮引用、并发、重复、失败回退与关闭路径。
+捕获回答的 done 与父流程一起完成，不能用它等待“第一轮已处理”再驱动第二轮；应观察下一条问题发送记录。可运行的完整测试（需要源码仓库访问权限）见 [prompts.test.ts](https://github.com/abandon-jw3/dd-bot/blob/main/tests/prompts.test.ts)，包括 FakeClock 超时、多轮引用、并发、重复、失败回退与关闭路径。
 
 本地测试和本机 WS/Webhook 测试不会连接真实 QQ。实际消息展示、消息投递权限与客户端操作仍需要专门联调。

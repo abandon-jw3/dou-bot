@@ -1,6 +1,6 @@
 # 二次输入与会话
 
-适用 dd-bot 0.5.0。`MessageContext.prompt(question, options?)` 发问并等待同一应用、会话和用户的下一条消息；不需要新装饰器。ButtonContext/QQEventContext 没有 prompt。
+适用 dou-bot 0.6.0。`MessageContext.prompt(question, options?)` 发问并等待同一应用、会话和用户的下一条消息；不需要新装饰器。ButtonContext/QQEventContext 没有 prompt。
 
 ```ts
 const answer = await ctx.prompt('请输入角色名，发送取消退出：', {
