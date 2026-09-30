@@ -40,7 +40,7 @@ dou-bot/
 ├─ scripts/                          # SDK 构建、测试、API 契约、文档及发包校验脚本
 │  └─ fixtures/                      # 用于验证兼容性的历史版本消费者代码
 ├─ skills/                           # 配套的 AI 开发技能
-│  └─ dd-bot/                        # dou-bot 使用技能，调用名仍为 $dd-bot
+│  └─ dou-bot/                       # dou-bot 使用技能，调用名为 $dou-bot
 │     ├─ agents/                     # 技能在工具中的展示与调用配置
 │     ├─ assets/                     # 可复制的最小业务模块及离线测试
 │     └─ references/                 # 模块、参数、权限、prompt 与测试的技能参考
@@ -272,6 +272,6 @@ WS 已在 Windows 上完成真实 QQ 群聊和私聊验证；Webhook 完成本�
 
 ## 源码与许可
 
-[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example) 现统一维护于本仓库。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
+[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example) 现统一维护于本仓库。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot/examples/hello.html)。仓库中的 `skills/dou-bot` 为配套使用技能，调用名为 `$dou-bot`，其代码使用 `dou-bot` 包。
 
 采用 [MIT 许可证](LICENSE)。适用的上游版权及许可保留在 [NOTICE](NOTICE) 中。

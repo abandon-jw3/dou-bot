@@ -1,4 +1,4 @@
 interface:
   display_name: 'dou-bot 框架开发'
   short_description: '使用 dou-bot SDK 开发 QQ 机器人，处理装饰器、权限、冷却、消息与测试'
-  default_prompt: '使用 $dd-bot 按当前项目的 SDK 版本实现机器人业务，并补充相关验证。'
+  default_prompt: '使用 $dou-bot 按当前项目的 SDK 版本实现机器人业务，并补充相关验证。'

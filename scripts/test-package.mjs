@@ -169,7 +169,7 @@ export function completion(harness: TestHarness, result: TestAdmission): Promise
 for (const name of skillExamples) {
   await writeFile(
     resolve(consumer, name),
-    await readFile(resolve(root, 'skills', 'dd-bot', 'assets', name)),
+    await readFile(resolve(root, 'skills', 'dou-bot', 'assets', name)),
   );
 }
 const program = ts.createProgram(

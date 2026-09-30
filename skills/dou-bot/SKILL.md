@@ -1,5 +1,5 @@
 ---
-name: dd-bot
+name: dou-bot
 description: '使用 dou-bot SDK 开发、修改和测试 QQ 官方机器人业务。适用于 dou-bot 模块与依赖注入、命令装饰器、Slot/Rest/Option、Guard/冷却、消息按钮和 WS/Webhook 接入；不用于无关的 NestJS、Koishi 或其他平台机器人项目。'
 ---
 
@@ -7,7 +7,7 @@ description: '使用 dou-bot SDK 开发、修改和测试 QQ 官方机器人业�
 
 以用户当前业务项目为工作对象，通过 SDK 的公开 API 完成功能和对应验证。本技能按 dou-bot **0.6.0 / 契约 1.7** 核对；项目实际安装的版本、类型声明和用户要求优先，不为套用示例而降级依赖或修改框架内核。
 
-技能调用名和目录保留为 `$dd-bot`；npm 包、代码导入和安装目录使用 `dou-bot`。
+技能调用名为 `$dou-bot`，技能目录、npm 包和代码导入统一使用 `dou-bot`。
 
 ## 先确认项目边界
 

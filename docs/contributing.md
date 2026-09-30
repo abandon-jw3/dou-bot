@@ -46,4 +46,4 @@ npm run example:business
 
 - [开发方案](development-plan.md)、[公开设计契约](public-api.d.ts)、[审查记录](review-report.md)、[技术选型](technology-selection.md)。设计契约不是运行时入口，消费者使用随包生成的类型声明。
 - [发布准备与流程](npm-release.md)。本仓库 CI 只验证，不自动发布 npm。
-- [使用技能](../skills/dd-bot/SKILL.md)。两个技能示例会在独立包消费者中编译及运行，技能调用名保持 `$dd-bot`。
+- [使用技能](../skills/dou-bot/SKILL.md)。两个技能示例会在独立包消费者中编译及运行，技能调用名为 `$dou-bot`。

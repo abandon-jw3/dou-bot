@@ -4,7 +4,7 @@
 
 ## 已确定的发行内容
 
-- 原开发名 dd-bot 在 npm 上属于其他项目；新包名为 dou-bot，代码导入为 `dou-bot`、`dou-bot/testing`。GitHub 框架仓库后续更名为 dou-bot，`$dd-bot` 技能调用名保留。
+- 原开发名 dd-bot 在 npm 上属于其他项目；新包名为 dou-bot，代码导入为 `dou-bot`、`dou-bot/testing`。GitHub 框架仓库后续更名为 dou-bot，技能调用名现统一为 `$dou-bot`。
 - TypeScript 5.9.3、Node.js 24+、ESM。生产直接依赖仍只有 reflect-metadata 和 ws，版本沿用锁定配置。
 - 包内包含 dist 的 JavaScript、类型声明及源码映射，README、MIT LICENSE、NOTICE 和五份使用指南。源码映射包含框架源代码；不包含凭证、测试日志、开发脚本或设计草案。
 - 保留 @satorijs/adapter-qq 的适用 MIT 声明。独立示例应用的 `package.json` 保留 `"private": true` 以禁止误发布到 npm；该字段不影响 GitHub 仓库可见性，框架许可证不自动变更该应用的许可。
