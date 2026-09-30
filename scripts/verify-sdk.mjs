@@ -1,14 +1,20 @@
 import { readFile, realpath, readdir } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const metadata = JSON.parse(await readFile(resolve(root, 'vendor/sdk.json'), 'utf8'));
 if (metadata.package !== 'dou-bot') throw new Error('Unexpected SDK package name');
-const bytes = await readFile(resolve(root, 'vendor', metadata.file));
-if (createHash('sha256').update(bytes).digest('hex') !== metadata.sha256)
-  throw new Error('SDK archive hash mismatch');
+const project = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+const lock = JSON.parse(await readFile(resolve(root, 'package-lock.json'), 'utf8'));
+const locked = lock.packages?.['node_modules/dou-bot'];
+if (
+  project.dependencies?.['dou-bot'] !== metadata.version ||
+  locked?.version !== metadata.version ||
+  locked?.resolved !== metadata.tarball ||
+  locked?.integrity !== metadata.integrity
+)
+  throw new Error('SDK dependency and lockfile must match the recorded npm release');
 const sdkRoot = resolve(root, 'node_modules/dou-bot');
 const installed = JSON.parse(await readFile(resolve(sdkRoot, 'package.json'), 'utf8'));
 if (installed.name !== metadata.package || installed.version !== metadata.version)
@@ -35,4 +41,4 @@ for (const directory of ['src', 'tests']) {
   }
   await inspect(resolve(root, directory));
 }
-console.log('SDK archive integrity and independent public imports verified.');
+console.log('Published SDK lock integrity and independent public imports verified.');

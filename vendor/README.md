@@ -1,7 +1,9 @@
-# SDK 依赖
+# SDK 来源与校验记录
 
-项目通过 `file:vendor/dou-bot-0.6.0.tgz` 安装 SDK，业务代码只使用 `dou-bot` 和 `dou-bot/testing` 的公开入口。
+项目通过 npm 官方 registry 安装精确版本 `dou-bot@0.6.0`，业务代码只使用 `dou-bot` 和 `dou-bot/testing` 的公开入口。克隆后运行 `npm ci --ignore-scripts` 即可安装，无需本机框架源码或本地 tgz。
 
-SDK 尚未发布 npm，因此在私有示例仓库保存经过凭证检查的安装包，配合 package-lock.json 保证克隆后能够直接 npm ci。无需跨私有仓库下载权限，也不依赖本机框架源码目录。来源提交与校验值在 sdk.json 中。
+[sdk.json](sdk.json) 保存发布包版本、registry 下载地址、SHA-512 integrity、来源提交及原候选包 SHA-256。原候选 tgz 已从本项目移除，其内容与 npm 上的发布包一致；来源历史仍保留在 Git 和记录中。SDK 采用 MIT，随包分发 LICENSE 与适用的上游 NOTICE。
 
-更新时用框架工程的 npm pack 生成新安装包，更新依赖路径、sdk.json 和锁文件，再运行 npm run check。SDK 已采用 MIT，随包分发 LICENSE 与适用的上游 NOTICE。当前验证 dou-bot@0.6.0 发布候选；正式上架并完成 registry 安装验证后，可切换为精确 npm 版本依赖。
+`scripts/verify-sdk.mjs` 检查精确依赖、锁文件中的官方 tarball 地址与 integrity、已安装包的名称和版本，以及业务使用的公开导入。npm ci 负责下载与完整性校验。
+
+升级时选择明确版本，更新 package.json、package-lock.json 和 sdk.json 中的来源记录，再运行 npm run check。不要仅修改版本字符串而保留旧 integrity。

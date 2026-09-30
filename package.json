@@ -20,7 +20,7 @@
     "verify:sdk": "node scripts/verify-sdk.mjs"
   },
   "dependencies": {
-    "dou-bot": "file:vendor/dou-bot-0.6.0.tgz"
+    "dou-bot": "0.6.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

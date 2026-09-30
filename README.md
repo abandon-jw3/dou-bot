@@ -100,7 +100,7 @@ dd-bot-example/
 ├─ scripts/                   # 构建、测试和 SDK 校验脚本
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
 │  └─ verify-sdk.mjs          # 检查 SDK 安装包及公开 API 导入
-├─ vendor/                    # 固定版本 SDK 安装包、来源和校验信息
+├─ vendor/                    # 已发布 SDK 的来源和校验记录（安装从 npm 下载）
 ├─ .github/workflows/         # Windows / Linux 的 GitHub Actions 检查
 ├─ .env.example               # 本地凭证配置模板
 ├─ package.json               # 依赖和 npm 命令
@@ -123,4 +123,4 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 
 `npm run format` 可以统一格式。GitHub Actions 在 Windows 和 Linux 上执行相同的完整检查。
 
-SDK 已确定 npm 包名为 dou-bot、许可证为 MIT。当前验证 0.6.0 发布候选，尚未上架，因此通过 `vendor/dou-bot-0.6.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。
+SDK 已以 MIT 许可发布到 [npm](https://www.npmjs.com/package/dou-bot/v/0.6.0)。本项目锁定 `dou-bot@0.6.0`，从官方 registry 安装；无需本地 tgz 或另一份框架源码。来源及升级方式见 [vendor/README.md](vendor/README.md)。
