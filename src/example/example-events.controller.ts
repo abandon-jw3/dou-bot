@@ -1,5 +1,5 @@
-import { Controller, Ctx, On } from 'dd-bot';
-import type { QQEventContext } from 'dd-bot';
+import { Controller, Ctx, On } from 'dou-bot';
+import type { QQEventContext } from 'dou-bot';
 import { ExampleService } from './example.service.js';
 
 @Controller()

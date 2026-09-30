@@ -1,5 +1,5 @@
-import { Injectable } from 'dd-bot';
-import type { CanActivate, GuardContext, GuardResult } from 'dd-bot';
+import { Injectable } from 'dou-bot';
+import type { CanActivate, GuardContext, GuardResult } from 'dou-bot';
 
 // Guard 也是 Provider，使用 @Injectable 并在模块中注册。
 // canActivate 在参数绑定和冷却之前执行；ctx 中还没有解析后的命令参数。

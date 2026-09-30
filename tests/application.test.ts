@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createTestApplication } from 'dd-bot/testing';
+import { createTestApplication } from 'dou-bot/testing';
 import { AppModule } from '../src/app.module.js';
 
 await test('私聊 /hello 使用默认称呼并自动回复', async (t) => {

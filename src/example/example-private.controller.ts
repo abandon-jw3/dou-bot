@@ -1,4 +1,4 @@
-import { Command, Controller, UseGuards } from 'dd-bot';
+import { Command, Controller, UseGuards } from 'dou-bot';
 import { PrivateOnlyGuard } from './example.guard.js';
 
 // @UseGuards 也可以写在类上，保护此类的所有 Command 和 OnButton。

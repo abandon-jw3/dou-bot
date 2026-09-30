@@ -1,6 +1,6 @@
 # dd-bot-example
 
-使用 [dd-bot](https://github.com/abandon-jw3/dd-bot) 开发 QQ 官方机器人的初始项目，通过 WebSocket 接收群聊和私聊消息。`/hello` 展示最简单的用法，独立的 `ExampleModule` 演示全部装饰器，并附有中文注释。
+使用 [dou-bot](https://github.com/abandon-jw3/dd-bot) 开发 QQ 官方机器人的初始项目，通过 WebSocket 接收群聊和私聊消息。`/hello` 展示最简单的用法，独立的 `ExampleModule` 演示全部装饰器，并附有中文注释。
 
 ## 启动
 
@@ -38,7 +38,7 @@ npm start
 [src/bot.controller.ts](src/bot.controller.ts)：
 
 ```ts
-import { Arg, Command, Controller } from 'dd-bot';
+import { Arg, Command, Controller } from 'dou-bot';
 
 @Controller()
 export class BotController {
@@ -91,7 +91,7 @@ dd-bot-example/
 │     ├─ example-private.controller.ts # 类级 Guard
 │     ├─ example-events.controller.ts  # 原始 QQ 事件观察器
 │     └─ README.md            # 20 个装饰器索引和命令说明
-├─ tests/                     # 使用 dd-bot/testing 的离线测试
+├─ tests/                     # 使用 dou-bot/testing 的离线测试
 │  ├─ application.test.ts     # 最小 hello 命令回归
 │  ├─ access.test.ts          # 内置访问限制与管理者按钮
 │  ├─ prompt.test.ts          # 通过 enqueue 驱动多轮交互测试
@@ -123,4 +123,4 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 
 `npm run format` 可以统一格式。GitHub Actions 在 Windows 和 Linux 上执行相同的完整检查。
 
-SDK 尚未发布到 npm，因此通过 `vendor/dd-bot-0.6.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。
+SDK 已确定 npm 包名为 dou-bot、许可证为 MIT。当前验证 0.6.0 发布候选，尚未上架，因此通过 `vendor/dou-bot-0.6.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。

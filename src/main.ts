@@ -1,4 +1,4 @@
-import { BotFactory } from 'dd-bot';
+import { BotFactory } from 'dou-bot';
 import { AppModule } from './app.module.js';
 
 async function main(): Promise<void> {

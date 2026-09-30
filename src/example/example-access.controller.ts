@@ -11,8 +11,8 @@ import {
   button,
   keyboard,
   markdown,
-} from 'dd-bot';
-import type { ButtonContext, GroupMessageContext, MarkdownMessage } from 'dd-bot';
+} from 'dou-bot';
+import type { ButtonContext, GroupMessageContext, MarkdownMessage } from 'dou-bot';
 
 // @GroupOnly 写在类上，限制本类所有命令与按钮回调；无需注册 Guard Provider。
 // 私聊会收到默认拒绝提示，且不会执行方法或占用冷却。

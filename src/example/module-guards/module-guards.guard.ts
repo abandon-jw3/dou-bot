@@ -1,5 +1,5 @@
-import { Injectable } from 'dd-bot';
-import type { CanActivate, GuardContext, GuardResult } from 'dd-bot';
+import { Injectable } from 'dou-bot';
+import type { CanActivate, GuardContext, GuardResult } from 'dou-bot';
 
 // 模块级 Guard：这个功能模块的所有命令都只能在群聊中使用。
 // 注册到 providers 后，由 @Module({ guards: [...] }) 统一引用。

@@ -1,4 +1,4 @@
-import { Arg, Command, Controller } from 'dd-bot';
+import { Arg, Command, Controller } from 'dou-bot';
 
 @Controller()
 export class BotController {

@@ -1,4 +1,4 @@
-import { HelpModule, Module } from 'dd-bot';
+import { HelpModule, Module } from 'dou-bot';
 import { ExampleController } from './example.controller.js';
 import { ExampleEventsController } from './example-events.controller.js';
 import { ExamplePrivateController } from './example-private.controller.js';

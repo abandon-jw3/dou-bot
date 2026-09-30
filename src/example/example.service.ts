@@ -1,4 +1,4 @@
-import { Inject, Injectable } from 'dd-bot';
+import { Inject, Injectable } from 'dou-bot';
 
 // 接口在编译后会消失，因此用 Symbol 作为配置的运行时注入令牌。
 export const EXAMPLE_SETTINGS = Symbol('EXAMPLE_SETTINGS');

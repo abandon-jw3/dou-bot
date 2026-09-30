@@ -1,4 +1,4 @@
-import { Module } from 'dd-bot';
+import { Module } from 'dou-bot';
 import { BotController } from './bot.controller.js';
 import { ExampleModule } from './example/example.module.js';
 

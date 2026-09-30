@@ -2,7 +2,7 @@
   "name": "dd-bot-example",
   "version": "0.1.0",
   "private": true,
-  "description": "A QQ bot starter with annotated examples of every dd-bot decorator.",
+  "description": "A QQ bot starter with annotated examples of every dou-bot decorator.",
   "type": "module",
   "engines": {
     "node": ">=24.21.0"
@@ -20,7 +20,7 @@
     "verify:sdk": "node scripts/verify-sdk.mjs"
   },
   "dependencies": {
-    "dd-bot": "file:vendor/dd-bot-0.6.0.tgz"
+    "dou-bot": "file:vendor/dou-bot-0.6.0.tgz"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

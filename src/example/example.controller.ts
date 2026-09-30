@@ -13,8 +13,8 @@ import {
   button,
   keyboard,
   markdown,
-} from 'dd-bot';
-import type { ButtonContext, MarkdownMessage, MessageContext } from 'dd-bot';
+} from 'dou-bot';
+import type { ButtonContext, MarkdownMessage, MessageContext } from 'dou-bot';
 import { GroupOnlyGuard } from './example.guard.js';
 // 类依赖必须使用值导入；import type 会使构造注入所需的运行时类型丢失。
 import { ExampleService } from './example.service.js';

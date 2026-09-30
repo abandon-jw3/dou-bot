@@ -1,6 +1,6 @@
 # 全部装饰器示例
 
-本模块覆盖项目当前安装的 **dd-bot 0.6.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
+本模块覆盖项目当前安装的 **dou-bot 0.6.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
 
 `AppModule` 已导入 `ExampleModule`，按根目录 README 启动后即可发送 `/example` 或 `/示例` 查看入口。最小的 `/hello` 示例仍在模块外。
 
@@ -116,6 +116,6 @@ prompt 必须 await，返回 received、timeout 或 cancelled。received.message
 
 ## 离线验证
 
-根目录运行 `npm test` 或 `npm run check`。[tests/example.test.ts](../../tests/example.test.ts) 通过已安装 SDK 的 `dd-bot/testing` 验证上述行为，不使用真实凭证或 QQ 网络。
+根目录运行 `npm test` 或 `npm run check`。[tests/example.test.ts](../../tests/example.test.ts) 通过已安装 SDK 的 `dou-bot/testing` 验证上述行为，不使用真实凭证或 QQ 网络。
 
 只需要最小初始项目时，移除根模块中 `ExampleModule` 的导入和 `imports` 项即可停用全部示例；该目录集中保存了所有演示代码。

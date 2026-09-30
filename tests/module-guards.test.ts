@@ -1,8 +1,8 @@
 import test from 'node:test';
 import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import type { QQDispatch } from 'dd-bot';
-import { createTestApplication } from 'dd-bot/testing';
+import type { QQDispatch } from 'dou-bot';
+import { createTestApplication } from 'dou-bot/testing';
 import { AppModule } from '../src/app.module.js';
 
 let next = 0;

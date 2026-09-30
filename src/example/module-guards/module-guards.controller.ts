@@ -1,4 +1,4 @@
-import { Command, Controller, UseGuards } from 'dd-bot';
+import { Command, Controller, UseGuards } from 'dou-bot';
 import { ControllerManagersGuard, MethodOwnerGuard } from './module-guards.guard.js';
 
 @Controller()

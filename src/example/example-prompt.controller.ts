@@ -1,5 +1,5 @@
-import { Command, Controller, Ctx } from 'dd-bot';
-import type { MessageContext } from 'dd-bot';
+import { Command, Controller, Ctx } from 'dou-bot';
+import type { MessageContext } from 'dou-bot';
 
 @Controller()
 export class ExamplePromptController {
