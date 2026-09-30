@@ -625,6 +625,7 @@ export declare class FrameworkError extends Error {
   constructor(code: FrameworkErrorCode, message: string, options?: ErrorOptions);
 }
 export declare class QQApiError extends FrameworkError {
+  readonly name: 'QQApiError';
   readonly httpStatus?: number;
   readonly qqCode?: number | string;
   readonly traceId?: string;

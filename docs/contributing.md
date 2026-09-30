@@ -13,7 +13,7 @@ npm run example:query
 npm run example:business
 ```
 
-`check` 执行类型、ESLint、格式、文档链接、构建、自动测试及独立安装包消费者检查。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.21.0 上运行这两项检查；TypeScript 固定为 5.9.3。
+`check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及历史消费者对当前安装包的兼容检查。`npm run test:compat` 另从 registry 安装已发布的 0.6.0 验证历史消费者；先完成 build/check。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.21.0 上运行这两项检查；TypeScript 固定为 5.9.3。
 
 离线示例不读取凭证或连接 QQ。`query` 展示无序 Slot、Rest、Option 与帮助；`business` 组合自定义 City 装饰器、可注入权限服务、Guard、冷却、Markdown 和按钮。天气等数据是本地合成示例。源码示例允许相对导入 `src`；复制到独立应用时改用 `dou-bot` 和 `dou-bot/testing`。
 
@@ -36,9 +36,9 @@ npm run example:business
 
 ## 性能与持续运行
 
-`npm run benchmark` 离线测量冷导入、合成指令吞吐与采样 RSS，输出 `work/benchmark-latest.json`。`npm run soak -- 180000` 进行三分钟持续运行，混合消息、按钮、重复投递、过载和接口故障，输出 `work/soak-latest.json`。它们使用模拟网络，不读取 QQ 凭证。
+`npm run benchmark` 离线测量冷导入、合成指令吞吐与采样 RSS，输出 `work/benchmark-latest.json`。`npm run soak -- 180000` 进行三分钟持续运行，混合消息、按钮、重复投递、过载、接口故障以及 Guard/参数/冷却/prompt 组合，输出 `work/soak-latest.json` 和每次独立的 JSON 记录。时长允许 30 秒～72 小时，采样最多保留 240 个点；CI 在 Windows/Linux 跑 30 秒。它们使用模拟网络，不读取 QQ 凭证。
 
-历史持续负载结果仅代表记录中的版本，不等于最新版本已重新完成相同验收。具体证据见 [验证记录](validation-report.md) 和 [实现审计](implementation-audit.md)。
+本轮当前源码新增三分钟组合验证；旧 0.1.x 数据仍作为历史基线保留。具体覆盖、报告字段和长跑命令见 [1.0 审查与测试说明](api-review-1.0.md)。具体证据见 [验证记录](validation-report.md) 和 [实现审计](implementation-audit.md)。
 
 ## 设计与发行
 

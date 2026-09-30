@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "success": true,
+  "generatedAt": "2026-09-30T06:45:51.717Z",
+  "requestedDurationMs": 180000,
+  "durationMs": 180084,
+  "platform": "win32",
+  "node": "v24.21.0",
+  "sdkVersion": "0.6.0",
+  "source": {
+    "commit": "fb2b3eed1830a4796db5d1fce89c5635691e63b6",
+    "dirty": true,
+    "sha256": "a3bd1cf83c3f57beadc1b016d108ed6772d660c0daa5e7d9b1325737199374b4"
+  },
+  "events": {
+    "accepted": 217982,
+    "duplicates": 51132,
+    "rejected": 4844,
+    "failed": 9865
+  },
+  "bulk": {
+    "accepted": 155008,
+    "handled": 155008,
+    "duplicates": 17224,
+    "overloaded": 4844,
+    "tokenRequests": 76,
+    "sends": 154986,
+    "uploads": 8207,
+    "acknowledgments": 15501,
+    "injectedFailures": 181,
+    "reportedFailures": 181
+  },
+  "controls": {
+    "cycles": 2422,
+    "accepted": 62974,
+    "duplicates": 33908,
+    "moduleDenied": 4844,
+    "classDenied": 4844,
+    "methodDenied": 4844,
+    "parameterErrors": 4844,
+    "queries": 4844,
+    "cooldownDenied": 4844,
+    "promptReceived": 4844,
+    "promptCancelled": 4844,
+    "promptTimeout": 4844,
+    "promptSendFailures": 4844,
+    "shutdownCancelled": 2,
+    "shutdownErrorsReported": 2,
+    "questionFailuresInjected": 4844,
+    "questionFailuresReported": 4844
+  },
+  "unexpectedErrors": 0,
+  "maximumFrameworkTimers": 9,
+  "maximumHeapUsed": 12517544,
+  "maximumRss": 205795328,
+  "sampleCount": 7,
+  "droppedSamples": 0,
+  "final": {
+    "pending": 0,
+    "active": 0,
+    "retainedBytes": 0,
+    "dedup": 0,
+    "replyScopes": 0,
+    "tasks": 0,
+    "signals": 0,
+    "timers": 0,
+    "prompts": 0,
+    "cooldowns": 0
+  },
+  "samples": [
+    {
+      "elapsedMs": 64,
+      "accepted": 64,
+      "overloaded": 2,
+      "heapUsed": 10300768,
+      "rss": 68333568,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 90,
+        "replyScopes": 83,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 2
+      }
+    },
+    {
+      "elapsedMs": 30045,
+      "accepted": 26112,
+      "overloaded": 816,
+      "heapUsed": 11374568,
+      "rss": 199102464,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 644,
+        "replyScopes": 1214,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 816
+      }
+    },
+    {
+      "elapsedMs": 60062,
+      "accepted": 52288,
+      "overloaded": 1634,
+      "heapUsed": 11715584,
+      "rss": 202809344,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 639,
+        "replyScopes": 1254,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 1634
+      }
+    },
+    {
+      "elapsedMs": 90029,
+      "accepted": 78208,
+      "overloaded": 2444,
+      "heapUsed": 12517544,
+      "rss": 202887168,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 720,
+        "replyScopes": 1200,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 1642
+      }
+    },
+    {
+      "elapsedMs": 120034,
+      "accepted": 103808,
+      "overloaded": 3244,
+      "heapUsed": 11962920,
+      "rss": 204644352,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 555,
+        "replyScopes": 1059,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 1620
+      }
+    },
+    {
+      "elapsedMs": 150013,
+      "accepted": 129344,
+      "overloaded": 4042,
+      "heapUsed": 12107672,
+      "rss": 204234752,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 689,
+        "replyScopes": 1220,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 1604
+      }
+    },
+    {
+      "elapsedMs": 180050,
+      "accepted": 155008,
+      "overloaded": 4844,
+      "heapUsed": 12182272,
+      "rss": 205795328,
+      "resources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 626,
+        "replyScopes": 1087,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 2,
+        "prompts": 0,
+        "cooldowns": 1602
+      }
+    }
+  ],
+  "scope": "Native-clock local sustained run with simulated HTTP and transport, short TTLs and injected errors. Includes guards, slot/rest/option, cooldown, private/group multi-turn prompts, cancellation, timeout, question failure and shutdown. Samples force GC and retain at most 240 points. This is not QQ platform or multi-day production acceptance."
+}

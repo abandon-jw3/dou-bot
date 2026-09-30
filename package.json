@@ -67,6 +67,8 @@
     "precoverage": "npm run test:compile",
     "coverage": "c8 --all --src src --extension .ts --include \"src/**/*.ts\" --exclude-after-remap --reporter text --reporter lcov --reporter json-summary node --test \".test-build/tests/**/*.test.js\"",
     "test:package": "node scripts/test-package.mjs",
+    "test:api": "node scripts/check-api.mjs",
+    "test:compat": "node scripts/test-package.mjs --released-baseline",
     "test:docs": "node scripts/check-docs.mjs",
     "example:offline": "node scripts/run-example.mjs offline",
     "example:query": "node scripts/run-example.mjs query",

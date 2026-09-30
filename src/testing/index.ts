@@ -8,7 +8,6 @@ import type {
   Type,
 } from '../contracts.js';
 import { Application } from '../core/application.js';
-import type { Admission } from '../core/execution.js';
 import type { FetchPort } from '../qq/http.js';
 import { isRecord } from '../core/utils.js';
 
@@ -26,13 +25,18 @@ export interface TestOptions extends Omit<BotOptions, 'appId' | 'secret' | 'tran
   appId?: string;
   respond?: (request: TestRequest) => Response | Promise<Response> | undefined;
 }
+/** Event admission is independent of business success; inspect errors after completion. */
+export type TestAdmission =
+  | { status: 'accepted' | 'duplicate'; done: Promise<void> }
+  | { status: 'ignored' | 'overloaded' | 'stopping' | 'failed' };
+
 export interface TestHarness {
   app: BotApplication;
   messages: readonly RecordedMessage[];
   acknowledgments: readonly { interactionId: string; code: number }[];
   errors: readonly { error: Error; context: ErrorContext }[];
-  enqueue(payload: QQDispatch): Admission;
-  dispatch(payload: QQDispatch): Promise<Admission['status']>;
+  enqueue(payload: QQDispatch): TestAdmission;
+  dispatch(payload: QQDispatch): Promise<TestAdmission['status']>;
   flush(): Promise<void>;
 }
 
@@ -111,7 +115,7 @@ export async function createTestApplication(
       transport: () => ({ start: () => Promise.resolve(), stop: () => Promise.resolve() }),
     },
   );
-  const enqueue = (payload: QQDispatch): Admission => {
+  const enqueue = (payload: QQDispatch): TestAdmission => {
     const bytes = JSON.stringify(payload);
     const copy: unknown = JSON.parse(bytes);
     return app.execution.accept(copy, Buffer.byteLength(bytes));

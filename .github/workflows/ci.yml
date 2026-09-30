@@ -19,3 +19,14 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run coverage
+      - name: Sustained workload regression
+        run: npm run soak -- 30000
+        timeout-minutes: 2
+      - name: Save sustained workload report
+        if: ${{ always() && hashFiles('work/soak-latest.json') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-${{ matrix.os }}
+          path: work/soak-latest.json
+          retention-days: 14
+          if-no-files-found: error

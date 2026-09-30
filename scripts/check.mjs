@@ -1,6 +1,7 @@
 import { runNode } from './paths.mjs';
 const checks = [
   ['node_modules/typescript/bin/tsc', '-p', 'tsconfig.json', '--noEmit'],
+  ['scripts/check-api.mjs'],
   ['node_modules/eslint/bin/eslint.js', 'src', 'tests', 'examples', '--max-warnings', '0'],
   [
     'node_modules/prettier/bin/prettier.cjs',
