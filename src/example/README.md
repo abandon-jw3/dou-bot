@@ -84,7 +84,7 @@
 
 模块规则不传播到 imports、父模块或其他模块，所以原来的 hello、其他装饰器示例和帮助命令仍可按自身规则使用。配置只接受 Provider 令牌，Guard 要在本模块注册或通过导入模块导出；模块类上的 `@UseGuards()` 也是有效写法。
 
-若同时配置模块 guards 与模块类装饰器，则先执行配置项，再执行模块类装饰器，然后是控制器类和方法。规则累加且不自动去重。完整范围与继承行为见 [框架模块 Guard 指南](https://github.com/abandon-jw3/dd-bot/blob/main/docs/module-guards.md)。
+若同时配置模块 guards 与模块类装饰器，则先执行配置项，再执行模块类装饰器，然后是控制器类和方法。规则累加且不自动去重。完整范围与继承行为见 [框架模块 Guard 指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/module-guards.md)。
 
 ## 二次输入与多轮会话
 
@@ -102,7 +102,7 @@ prompt 必须 await，返回 received、timeout 或 cancelled。received.message
 
 [tests/prompt.test.ts](../../tests/prompt.test.ts) 使用 enqueue 发起命令，等到问题发送记录出现后再 enqueue 回答，最后等待整个流程完成。不能先 await 首条交互命令的 dispatch，也不能在两轮之间 await 第一条回答的 done，否则测试驱动会等待自己尚未送入的下一条消息。
 
-完整配置、生命周期与资源说明见 [框架二次输入指南](https://github.com/abandon-jw3/dd-bot/blob/main/docs/prompts.md)。本轮只做离线和本机协议验证，未连接真实 QQ。
+完整配置、生命周期与资源说明见 [框架二次输入指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/prompts.md)。本轮只做离线和本机协议验证，未连接真实 QQ。
 
 ## 阅读时注意
 

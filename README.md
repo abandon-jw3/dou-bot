@@ -1,6 +1,6 @@
-# dd-bot-example
+# dou-bot-example
 
-使用 [dou-bot](https://github.com/abandon-jw3/dd-bot) 开发 QQ 官方机器人的初始项目，通过 WebSocket 接收群聊和私聊消息。`/hello` 展示最简单的用法，独立的 `ExampleModule` 演示全部装饰器，并附有中文注释。
+使用 [dou-bot](https://github.com/abandon-jw3/dou-bot) 开发 QQ 官方机器人的初始项目，通过 WebSocket 接收群聊和私聊消息。`/hello` 展示最简单的用法，独立的 `ExampleModule` 演示全部装饰器，并附有中文注释。
 
 ## 启动
 
@@ -72,7 +72,7 @@ export class BotController {
 二次输入示例位于 [example-prompt.controller.ts](src/example/example-prompt.controller.ts)：`/example-prompt` 演示角色名与服务器两轮输入，`/example-prompt-image` 接收图片，`/example-prompt-timeout` 演示 5 秒等待与取消。每一步都有中文注释。
 
 ```text
-dd-bot-example/
+dou-bot-example/
 ├─ src/                       # 机器人源代码
 │  ├─ main.ts                 # 读取凭证、创建应用、连接与关闭
 │  ├─ app.module.ts           # 注册控制器的根模块

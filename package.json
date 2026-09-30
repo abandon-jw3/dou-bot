@@ -1,5 +1,5 @@
 {
-  "name": "dd-bot-example",
+  "name": "dou-bot-example",
   "version": "0.1.0",
   "private": true,
   "description": "A QQ bot starter with annotated examples of every dou-bot decorator.",
