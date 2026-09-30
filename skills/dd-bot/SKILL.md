@@ -16,7 +16,7 @@ description: '使用 dou-bot SDK 开发、修改和测试 QQ 官方机器人业�
 - SDK 当前仅面向 QQ 官方群聊和私聊，每个应用选择 WS 或 Webhook。保留用户选定的业务、前缀、权限及部署方式；天气、城市词典、白名单和空前缀都是示例选择，不是框架要求。
 - dou-bot@0.6.0 已以 MIT 发布到官方 npm registry，公开下载与独立消费者已验证。npm 上的 dd-bot 是其他项目。先核对项目当前依赖；新项目可使用 `npm install --save-exact dou-bot@0.6.0`，不要把发布标签当作固定版本。
 
-需要更新知识时，优先读取已安装 SDK 的导出声明，以及可访问的框架源码/文档。维护参考为 [框架仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立业务示例](https://github.com/abandon-jw3/dd-bot-example)。框架源码已公开，历史独立示例仍需仓库权限；新用户可使用 [公开文档与示例](https://abandon-jw3.github.io/dou-bot-docs/)。联网查阅不是执行本技能的硬性前提。
+需要更新知识时，优先读取已安装 SDK 的导出声明，以及可访问的框架源码/文档。维护参考为 [框架仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立业务示例](https://github.com/abandon-jw3/dou-bot-example)，两个仓库均已公开；新用户可使用 [公开文档与示例](https://abandon-jw3.github.io/dou-bot-docs/)。联网查阅不是执行本技能的硬性前提。
 
 ## 按任务读取参考
 

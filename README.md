@@ -182,6 +182,6 @@ WS 已在 Windows 上完成真实 QQ 群聊和私聊验证；Webhook 完成本�
 
 ## 源码与许可
 
-[源码仓库](https://github.com/abandon-jw3/dou-bot) 已公开；[历史独立示例](https://github.com/abandon-jw3/dd-bot-example) 仍需仓库访问权限。公开可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot-docs/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
+[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot-example) 均已公开。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot-docs/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
 
 采用 [MIT 许可证](LICENSE)。适用的上游版权及许可保留在 [NOTICE](NOTICE) 中。
