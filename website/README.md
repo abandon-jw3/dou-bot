@@ -1,19 +1,19 @@
 # dou-bot 用户文档
 
-[在线手册](https://abandon-jw3.github.io/dou-bot-docs/) · [npm 0.6.0](https://www.npmjs.com/package/dou-bot/v/0.6.0) · [问题反馈](https://github.com/abandon-jw3/dou-bot-docs/issues)
+[在线手册](https://abandon-jw3.github.io/dou-bot/) · [npm 0.6.0](https://www.npmjs.com/package/dou-bot/v/0.6.0) · [问题反馈](https://github.com/abandon-jw3/dou-bot/issues)
 
 基于 VitePress 1.6.4 默认主题的中文使用手册，面向 QQ 官方机器人群聊和私聊。API 和示例以公开发布的 dou-bot 0.6.0 为准。
 
 ## 本地开发
 
-环境：Node.js 24.21.0、npm 11.19.0。示例编译器固定为 TypeScript 5.9.3。
+环境：Node.js 24.21.0、npm 11.19.0。示例编译器固定为 TypeScript 5.9.3。在主仓库的 `website` 目录执行：
 
 ```sh
 npm ci
 npm run dev
 ```
 
-终端会显示本地地址，站点基础路径为 /dou-bot-docs/。生产构建与预览：
+终端会显示本地地址，站点基础路径为 /dou-bot/。生产构建与预览：
 
 ```sh
 npm run build
@@ -33,7 +33,7 @@ npm run preview
 | tests/                 | 使用已安装 SDK 的离线业务断言，不需要真实 QQ 凭证        |
 | browser-tests/         | 桌面与手机的导航、搜索、主题、复制和直接访问检查         |
 | scripts/               | 示例构建、公共 API 索引生成及内容/产物链接校验           |
-| .github/workflows/     | Windows/Linux 检查和仅 main 分支的 Pages 部署            |
+| ../.github/workflows/  | 主仓库统一的 Windows/Linux 检查和 Pages 部署             |
 | tsconfig.examples.json | 传统装饰器及元数据的 Node ESM 编译配置                   |
 | tsconfig.site.json     | 文档配置与浏览器测试的类型检查                           |
 | package-lock.json      | 锁定站点、SDK 和测试工具依赖                             |
@@ -64,8 +64,10 @@ check 包含类型、格式、API 索引、链接、示例测试和站点构建�
 
 ## 部署
 
-公开仓库的 Pages Source 设为 GitHub Actions。每次 main 提交先完成双平台检查和 Linux 浏览器测试，再将 docs/.vitepress/dist 部署到 Pages；PR 只检查，不部署。
+主仓库 `abandon-jw3/dou-bot` 的 Pages Source 设为 GitHub Actions。每次 main 提交先完成 SDK、独立示例、文档的双平台检查和 Linux 浏览器测试，再将 `website/docs/.vitepress/dist` 部署到 Pages；PR 只检查，不部署。
 
-固定 base 为 /dou-bot-docs/。如果以后改变仓库名或使用独立域名，需要同步 base、站点 hostname、favicon 和浏览器 baseURL，再验证所有深层页面。
+固定 base 为 /dou-bot/。如果以后改变仓库名或使用独立域名，需要同步 base、站点 hostname、favicon 和浏览器 baseURL，再验证所有深层页面。
+
+在主仓库根目录也可以使用 `npm run docs:dev`、`npm run docs:build`、`npm run docs:check` 和 `npm run docs:test:browser`。本站仍独立安装 npm 上的 `dou-bot@0.6.0`，不会自动链接当前 SDK 源码。原 `/dou-bot-docs/` 地址保留页面跳转，新内容统一在本目录维护。
 
 文档与新编写示例采用 [MIT](LICENSE)。框架协议与权限的验收边界见在线手册，不将离线断言视为所有账号都已通过实机测试。

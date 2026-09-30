@@ -44,7 +44,7 @@ for (const query of ['二次输入', '管理员', 'UseGuards', 'Slot']) {
     await expect(result).toBeVisible();
     await expect(result).toContainText(new RegExp(query === '管理员' ? '管理' : query));
     await result.click();
-    await expect(page).toHaveURL(/\/dou-bot-docs\/(?:guide|api|examples)\//);
+    await expect(page).toHaveURL(/\/dou-bot\/(?:guide|api|examples)\//);
     await expect(page.locator('h1')).toBeVisible();
   });
 }
@@ -55,6 +55,10 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   expect(response?.status()).toBe(200);
   await page.reload();
   await expect(page.locator('h1')).toHaveText('快速开始');
+  await expect(page.getByRole('link', { name: '在 GitHub 上编辑此页' })).toHaveAttribute(
+    'href',
+    'https://github.com/abandon-jw3/dou-bot/edit/main/website/docs/guide/quick-start.md',
+  );
   const code = page.locator('div[class*="language-sh"]').first();
   if (!isMobile) await code.hover();
   await code.locator('button.copy').click({ force: true });

@@ -8,7 +8,7 @@
 - TypeScript 5.9.3、Node.js 24+、ESM。生产直接依赖仍只有 reflect-metadata 和 ws，版本沿用锁定配置。
 - 包内包含 dist 的 JavaScript、类型声明及源码映射，README、MIT LICENSE、NOTICE 和五份使用指南。源码映射包含框架源代码；不包含凭证、测试日志、开发脚本或设计草案。
 - 保留 @satorijs/adapter-qq 的适用 MIT 声明。独立示例应用的 `package.json` 保留 `"private": true` 以禁止误发布到 npm；该字段不影响 GitHub 仓库可见性，框架许可证不自动变更该应用的许可。
-- 0.6.0 发布时，GitHub 框架和示例仓库均为私有。之后两个仓库已分别改名为 [dou-bot](https://github.com/abandon-jw3/dou-bot) 和 [dou-bot-example](https://github.com/abandon-jw3/dou-bot-example) 并公开；公开教程和更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot-docs/)。
+- 0.6.0 发布时，GitHub 框架和示例仓库均为私有。之后两个仓库分别更名并公开，随后示例和文档站统一并入 [dou-bot](https://github.com/abandon-jw3/dou-bot) 的 `apps/example/` 与 `website/`，原仓库保留迁移入口与历史。公开教程和更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot/)。
 
 本次命令明确使用 `--tag next`，但 registry 返回的实际状态为 `next`、`latest` 都指向 0.6.0。完成账号验证后尝试移除 latest，registry 返回 HTTP 400，复查标签未变。此结果已记录，不将其写成“只有 next”。项目使用精确依赖 `dou-bot@0.6.0`；0.6.0 不带 prerelease 后缀，标签本身不构成生产验收承诺。
 

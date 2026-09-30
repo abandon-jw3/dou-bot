@@ -41,4 +41,4 @@ npm install --save-exact dou-bot@0.6.0
 - **查询细节**：[20 个装饰器](./api/decorators.md)、[应用 API](./api/application.md)、[错误与日志](./api/errors.md)。
 - **准备运行**：[WS](./guide/ws.md)、[Webhook](./guide/webhook.md)、[Windows 部署](./guide/deployment.md)。
 
-本手册及示例公开可读，代码以 npm 上的 0.6.0 为准。[反馈文档问题](https://github.com/abandon-jw3/dou-bot-docs/issues)。
+本手册及示例公开可读，代码以 npm 上的 0.6.0 为准。[反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。

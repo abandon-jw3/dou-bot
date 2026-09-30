@@ -2,6 +2,8 @@
 
 npm 包名为 `dou-bot`，GitHub 框架仓库现为公开的 `dou-bot`，本地工程目录仍为 `dd-bot`。安装及业务用法见 [README](../README.md)。以下命令在框架源码根目录执行，不属于安装包中的消费者命令。
 
+业务示例与文档站也在本仓库中，分别位于 `apps/example/`、`website/`。三工程安装、统一检查、Pages 部署及迁移说明见 [仓库维护指南](repository.md)；下文聚焦 SDK 本身。
+
 ## 开发检查
 
 ```sh

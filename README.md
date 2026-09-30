@@ -2,11 +2,23 @@
 
 面向 **QQ 官方机器人群聊和私聊** 的轻量 TypeScript 装饰器框架，支持 WS 与 Webhook。提供类似 NestJS 的模块、依赖注入和装饰器开发方式。
 
-[完整中文用户文档](https://abandon-jw3.github.io/dou-bot-docs/) · [公开示例与文档反馈](https://github.com/abandon-jw3/dou-bot-docs)
+[完整中文用户文档](https://abandon-jw3.github.io/dou-bot/) · [公开示例与文档反馈](https://github.com/abandon-jw3/dou-bot/tree/main/website)
 
 运行环境为 Node.js 24+、ESM，TypeScript 使用 **5.9.3**。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
 
 npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
+
+## 仓库结构
+
+框架、业务示例与文档站统一维护在本仓库。三个工程独立安装依赖和构建；示例及文档使用已发布的 `dou-bot@0.6.0`。
+
+| 位置                                                                          | 内容                                   | 常用命令（在仓库根目录执行） |
+| ----------------------------------------------------------------------------- | -------------------------------------- | ---------------------------- |
+| 根目录 `src/`、`tests/`                                                       | SDK 源码、测试和 npm 发包配置          | `npm run check`              |
+| [apps/example](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example) | 可独立使用的机器人初始项目与装饰器示例 | `npm run example:check`      |
+| [website](https://github.com/abandon-jw3/dou-bot/tree/main/website)           | VitePress 中文文档站及文档示例         | `npm run docs:dev`           |
+
+开发整个仓库时，使用 Node.js 24.21.0、npm 11.19.0，先运行 `npm run install:all`，再运行 `npm run check:all`。文档浏览器验收使用 `npm run docs:test:browser`；完整说明见 [仓库维护指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/repository.md)。只使用 SDK 时，按下面的安装步骤即可。
 
 ## 安装
 
@@ -182,6 +194,6 @@ WS 已在 Windows 上完成真实 QQ 群聊和私聊验证；Webhook 完成本�
 
 ## 源码与许可
 
-[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot-example) 均已公开。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot-docs/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
+[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example) 现统一维护于本仓库。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot/examples/hello.html)。仓库中的 `skills/dd-bot` 为配套使用技能，调用名仍是 `$dd-bot`，其代码使用 `dou-bot` 包。
 
 采用 [MIT 许可证](LICENSE)。适用的上游版权及许可保留在 [NOTICE](NOTICE) 中。

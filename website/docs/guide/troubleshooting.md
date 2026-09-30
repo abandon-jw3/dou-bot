@@ -28,4 +28,4 @@ QQApiError 提供 httpStatus、qqCode、traceId、method、path 等字段。Erro
 
 ## 如何反馈
 
-到 [公开文档仓库 Issues](https://github.com/abandon-jw3/dou-bot-docs/issues) 提供 SDK/Node/TypeScript 版本、WS 或 Webhook、最小代码与错误阶段。不要提交 AppSecret、access_token 或完整身份数据。文档问题也可以点击页面底部的编辑链接修正。
+到 [项目 Issues](https://github.com/abandon-jw3/dou-bot/issues) 提供 SDK/Node/TypeScript 版本、WS 或 Webhook、最小代码与错误阶段。不要提交 AppSecret、access_token 或完整身份数据。文档问题也可以点击页面底部的编辑链接修正。

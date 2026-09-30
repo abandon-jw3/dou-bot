@@ -7,6 +7,8 @@
 环境：Node.js **24.21.0+**、npm **11.19.0**；项目固定使用 TypeScript **5.9.3**。
 
 ```sh
+git clone https://github.com/abandon-jw3/dou-bot.git
+cd dou-bot/apps/example
 npm ci
 ```
 
@@ -72,7 +74,7 @@ export class BotController {
 二次输入示例位于 [example-prompt.controller.ts](src/example/example-prompt.controller.ts)：`/example-prompt` 演示角色名与服务器两轮输入，`/example-prompt-image` 接收图片，`/example-prompt-timeout` 演示 5 秒等待与取消。每一步都有中文注释。
 
 ```text
-dou-bot-example/
+apps/example/
 ├─ src/                       # 机器人源代码
 │  ├─ main.ts                 # 读取凭证、创建应用、连接与关闭
 │  ├─ app.module.ts           # 注册控制器的根模块
@@ -101,7 +103,6 @@ dou-bot-example/
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
 │  └─ verify-sdk.mjs          # 检查 SDK 安装包及公开 API 导入
 ├─ vendor/                    # 已发布 SDK 的来源和校验记录（安装从 npm 下载）
-├─ .github/workflows/         # Windows / Linux 的 GitHub Actions 检查
 ├─ .env.example               # 本地凭证配置模板
 ├─ package.json               # 依赖和 npm 命令
 ├─ package-lock.json          # 锁定依赖版本
@@ -121,6 +122,8 @@ npm test        # 离线验证命令，不需要 QQ 凭证或网络连接
 npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测试
 ```
 
-`npm run format` 可以统一格式。GitHub Actions 在 Windows 和 Linux 上执行相同的完整检查。
+`npm run format` 可以统一格式。主仓库的 [.github/workflows/ci.yml](../../.github/workflows/ci.yml) 在 Windows 和 Linux 上执行相同的完整检查。
+
+本目录是独立 npm 工程，可以单独复制到新目录后安装和开发。请在本目录运行上述命令；主仓库根目录的 `npm run example:check`、`npm run example:build` 和 `npm run example:start` 是对应快捷入口。`.env` 放在 `apps/example/.env`。
 
 SDK 已以 MIT 许可发布到 [npm](https://www.npmjs.com/package/dou-bot/v/0.6.0)。本项目锁定 `dou-bot@0.6.0`，从官方 registry 安装；无需本地 tgz 或另一份框架源码。来源及升级方式见 [vendor/README.md](vendor/README.md)。

@@ -74,4 +74,4 @@ Module 与 UseGuards 的书写先后不影响作用范围。`@GroupOnly()`、`@P
 - GroupRoles/GroupManagersOnly 只用于命令。若模块级角色装饰器作用到 OnButton，启动会拒绝；可以把角色规则放在专门的命令控制器上，按钮点击使用原生 permission。
 - HelpModule 是独立模块，根模块 Guard 不会自动保护其帮助命令；帮助列表不会按业务 Guard 隐藏命令。
 
-可运行且带中文注释的组合示例见公开的 [独立示例项目](https://github.com/abandon-jw3/dou-bot-example/tree/main/src/example/module-guards)，框架行为测试见 [module-guards.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/tests/module-guards.test.ts)。
+可运行且带中文注释的组合示例见公开的 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example/src/example/module-guards)，框架行为测试见 [module-guards.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/tests/module-guards.test.ts)。

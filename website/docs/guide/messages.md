@@ -4,7 +4,7 @@
 
 <<< @/../examples/messages/app.module.ts
 
-图片示例的 [fixture-image.ts](https://github.com/abandon-jw3/dou-bot-docs/blob/main/examples/messages/fixture-image.ts) 在内存生成有效 PNG，不读取本地文件或访问外部图片服务。
+图片示例的 [fixture-image.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/examples/messages/fixture-image.ts) 在内存生成有效 PNG，不读取本地文件或访问外部图片服务。
 
 ## 选择发送方式
 

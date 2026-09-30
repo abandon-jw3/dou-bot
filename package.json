@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/abandon-jw3/dou-bot.git"
   },
-  "homepage": "https://github.com/abandon-jw3/dou-bot#readme",
+  "homepage": "https://abandon-jw3.github.io/dou-bot/",
   "bugs": {
     "url": "https://github.com/abandon-jw3/dou-bot/issues"
   },
@@ -53,6 +53,15 @@
     "tag": "next"
   },
   "scripts": {
+    "install:all": "npm ci --ignore-scripts && npm --prefix apps/example ci --ignore-scripts && npm --prefix website ci",
+    "check:all": "npm run check && npm --prefix apps/example run check && npm --prefix website run check",
+    "example:check": "npm --prefix apps/example run check",
+    "example:build": "npm --prefix apps/example run build",
+    "example:start": "npm --prefix apps/example start",
+    "docs:dev": "npm --prefix website run dev",
+    "docs:build": "npm --prefix website run build",
+    "docs:check": "npm --prefix website run check",
+    "docs:test:browser": "npm --prefix website run test:browser",
     "clean": "node scripts/clean.mjs",
     "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",

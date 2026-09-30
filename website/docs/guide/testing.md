@@ -61,4 +61,4 @@ npm ci
 npm test
 ```
 
-测试源代码位于 [tests/examples.test.ts](https://github.com/abandon-jw3/dou-bot-docs/blob/main/tests/examples.test.ts)，编译器确实生成传统装饰器与元数据后才执行。测试与实际 QQ 客户端显示、权限和公网回调是不同层面的验收。
+测试源代码位于 [tests/examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)，编译器确实生成传统装饰器与元数据后才执行。测试与实际 QQ 客户端显示、权限和公网回调是不同层面的验收。

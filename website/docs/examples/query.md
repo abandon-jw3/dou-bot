@@ -18,16 +18,16 @@
 
 ## 运行这个示例
 
-克隆公开文档仓库后，在仓库根目录执行：
+克隆主仓库后，进入 `website` 工程执行：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot-docs.git
-cd dou-bot-docs
+git clone https://github.com/abandon-jw3/dou-bot.git
+cd dou-bot/website
 npm ci
 npm run examples:build
 ```
 
-将 examples/.env.example 复制为根目录的 .env，填入自己的凭证。然后运行：
+将 `examples/.env.example` 复制为当前目录的 `.env`（即仓库中的 `website/.env`），填入自己的凭证。然后运行：
 
 ```sh
 node --env-file=.env .examples-build/examples/main.js query
@@ -39,4 +39,4 @@ node --env-file=.env .examples-build/examples/main.js query
 
 ## 离线验收
 
-执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot-docs/blob/main/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。
+执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。

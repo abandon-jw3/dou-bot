@@ -56,7 +56,6 @@ switch (process.argv[2]) {
       '*.json',
       '*.mjs',
       '*.md',
-      '.github',
     ]);
     await build();
     await test();

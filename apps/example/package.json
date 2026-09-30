@@ -13,8 +13,8 @@
     "start": "node --env-file-if-exists=.env dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests --max-warnings 0",
-    "format": "prettier --write src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
-    "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
+    "format": "prettier --write src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md",
+    "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md",
     "test": "node scripts/tasks.mjs test",
     "check": "node scripts/tasks.mjs check",
     "verify:sdk": "node scripts/verify-sdk.mjs"

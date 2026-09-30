@@ -2,7 +2,7 @@ import { readFile, readdir, access } from 'node:fs/promises';
 import { resolve, relative, dirname } from 'node:path';
 
 const root = resolve('docs/.vitepress/dist');
-const base = '/dou-bot-docs/';
+const base = '/dou-bot/';
 async function htmlFiles(dir) {
   const result = [];
   for (const item of await readdir(dir, { withFileTypes: true })) {

@@ -11,7 +11,7 @@ export default defineConfig({
   reporter: 'list',
   outputDir: process.env.DOCS_QA_DIR ?? join(tmpdir(), 'dou-bot-docs-qa'),
   use: {
-    baseURL: `${origin}/dou-bot-docs/`,
+    baseURL: `${origin}/dou-bot/`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -26,7 +26,7 @@ export default defineConfig({
     ? undefined
     : {
         command: 'npm run preview -- --port 4173 --strictPort',
-        url: 'http://127.0.0.1:4173/dou-bot-docs/',
+        url: 'http://127.0.0.1:4173/dou-bot/',
         reuseExistingServer: !process.env.CI,
         timeout: 30000,
       },
