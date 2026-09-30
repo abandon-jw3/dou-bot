@@ -8,12 +8,15 @@ import type {
 } from '../contracts.js';
 import { FrameworkError } from './errors.js';
 import { callable, isRecord, nonempty } from './utils.js';
+import { resolvePrompts } from './prompts.js';
+import type { PromptSettings } from './prompts.js';
 
 export interface ResolvedOptions {
   appId: string;
   secret: string;
   api: Readonly<Required<QQApiOptions>>;
   execution: Readonly<Required<ExecutionOptions>>;
+  prompts: PromptSettings;
   prefix: string;
   invalidInput: 'report' | 'reply';
   acknowledge: 'auto' | 'manual';
@@ -116,6 +119,7 @@ export function resolveOptions(raw: BotOptions): ResolvedOptions {
       'transport',
       'commands',
       'execution',
+      'prompts',
       'interactions',
       'logger',
       'onError',
@@ -281,6 +285,7 @@ export function resolveOptions(raw: BotOptions): ResolvedOptions {
     onError: raw.onError,
     transport: Object.freeze(resolvedTransport),
     execution: Object.freeze(execution),
+    prompts: resolvePrompts(raw.prompts),
     api: Object.freeze({
       sandbox,
       baseUrl: address(baseUrl, true),

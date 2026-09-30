@@ -2,6 +2,8 @@
 
 ## 离线入口
 
+测试 prompt 对话时按 [二次输入](prompts.md) 的 enqueue 流程驱动；等待下一条问题记录后再发送下一轮答案，最后等待整段流程完成。
+
 使用 `createTestApplication`，让真实模块、装饰器、DI、参数与消息编码运行，仅替换 QQ 网络。需要完整起点时，参考 [minimal-module.test.ts](../assets/minimal-module.test.ts)。
 
 ```ts

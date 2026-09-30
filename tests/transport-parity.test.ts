@@ -22,6 +22,14 @@ await test('identical private/group messages and buttons produce identical behav
   @Controller()
   class Commands {
     readonly calls: string[] = [];
+    @Command('prompt')
+    async prompt(@Ctx() ctx: MessageContext): Promise<void> {
+      const answer = await ctx.prompt('prompt-question');
+      if (answer.status === 'received') {
+        this.calls.push(`prompt:${answer.message.content}`);
+        await answer.message.reply(`prompt-answer:${answer.message.content}`);
+      }
+    }
     @Command('manage')
     @GroupManagersOnly({ message: 'denied' })
     manage(@Ctx() ctx: MessageContext) {
@@ -63,6 +71,7 @@ await test('identical private/group messages and buttons produce identical behav
       BotFactory.create(Root, {
         appId: 'fixture-app',
         secret,
+        execution: { concurrency: 1 },
         api: { baseUrl: backend.url, tokenEndpoint: backend.url + '/app/getAppAccessToken' },
         transport:
           index === 0 ? { type: 'ws', closeTimeoutMs: 50 } : { type: 'webhook', listen: false },
@@ -148,6 +157,28 @@ await test('identical private/group messages and buttons produce identical behav
       },
     });
   }
+  events.push(
+    {
+      op: 0,
+      t: 'GROUP_MESSAGE_CREATE',
+      d: {
+        id: 'prompt-start',
+        group_openid: 'group',
+        author: { member_openid: 'member' },
+        content: '/prompt',
+      },
+    },
+    {
+      op: 0,
+      t: 'GROUP_MESSAGE_CREATE',
+      d: {
+        id: 'prompt-answer',
+        group_openid: 'group',
+        author: { member_openid: 'member' },
+        content: 'plain input',
+      },
+    },
+  );
   try {
     await Promise.all(apps.map((app) => app.start()));
     for (const [index, event] of events.entries()) {
@@ -178,7 +209,7 @@ await test('identical private/group messages and buttons produce identical behav
       '/v2/groups/group/messages',
       '/v2/users/user/messages',
       '/v2/groups/group/messages',
-      ...Array<string>(4).fill('/v2/groups/group/messages'),
+      ...Array<string>(6).fill('/v2/groups/group/messages'),
     ]);
     assert.equal(
       wsBackend.messages[6]?.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
@@ -187,6 +218,14 @@ await test('identical private/group messages and buttons produce identical behav
     assert.equal(wsBackend.messages[7]?.content, 'denied');
     assert.equal(wsBackend.messages[8]?.content, 'denied');
     assert.equal(wsBackend.messages[9]?.markdown?.content, 'manager:admin');
+    assert.equal(wsBackend.messages[10]?.content, 'prompt-question');
+    assert.equal(wsBackend.messages[11]?.msg_id, 'prompt-answer');
+    assert.equal(wsBackend.messages[11]?.content, 'prompt-answer:plain input');
+    await until(() =>
+      apps.every(
+        (app) => app.snapshot().prompts.pending === 0 && app.snapshot().queue.active === 0,
+      ),
+    );
     assert.equal(wsBackend.messages[4]?.msg_id, undefined);
     assert.equal(wsBackend.messages[5]?.event_id, undefined);
     assert.deepEqual(errors, []);

@@ -93,8 +93,8 @@ await writeFile(
   resolve(consumer, 'consumer.ts'),
   `
 import assert from 'node:assert/strict';
-import { Arg, Command, Controller, Cooldown, GroupManagersOnly, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dd-bot';
-import type { CanActivate, GuardContext, GuardResult } from 'dd-bot';
+import { Arg, Command, Controller, Cooldown, Ctx, GroupManagersOnly, HelpModule, Injectable, Module, Option, Rest, Slot, UseGuards } from 'dd-bot';
+import type { CanActivate, GuardContext, GuardResult, MessageContext } from 'dd-bot';
 import { createTestApplication } from 'dd-bot/testing';
 @Injectable() class Greeter { hello(name: string) { return 'Hello ' + name; } }
 @Injectable() class Guard implements CanActivate {
@@ -106,6 +106,10 @@ import { createTestApplication } from 'dd-bot/testing';
   @UseGuards(Guard) @Cooldown({ scope: 'user', durationMs: 60000, message: 'wait' })
   @Command('controlled') controlled() { return 'allowed'; }
   @Command('manage') @GroupManagersOnly() manage() { return 'manager'; }
+  @Command('ask') async ask(@Ctx() ctx: MessageContext): Promise<void> {
+    const answer = await ctx.prompt('prompt-question');
+    if (answer.status === 'received') await answer.message.reply(answer.message.content);
+  }
   @Command('query') query(
     @Rest() rest: string[],
     @Slot('city', { choices: ['北京'], required: true }) city: string,
@@ -131,6 +135,14 @@ try {
   assert.deepEqual(harness.messages.slice(4).map(m => m.payload.content), ['blocked', 'allowed', 'wait']);
   await harness.dispatch({ op: 0, t: 'GROUP_MESSAGE_CREATE', d: { id: 'package-manager', group_openid: 'g', author: { member_openid: 'u', member_role: 'owner' }, content: 'manage' } });
   assert.equal(harness.messages[7]?.payload.content, 'manager');
+  const question = harness.enqueue({ op: 0, t: 'C2C_MESSAGE_CREATE', d: { id: 'package-prompt', author: { id: 'u' }, content: 'ask' } });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(harness.messages[8]?.payload.content, 'prompt-question');
+  const answer = harness.enqueue({ op: 0, t: 'C2C_MESSAGE_CREATE', d: { id: 'package-answer', author: { id: 'u' }, content: 'plain input' } });
+  assert.ok('done' in question && 'done' in answer);
+  await Promise.all([question.done, answer.done]);
+  assert.equal(harness.messages[9]?.payload.content, 'plain input');
+  assert.equal(harness.messages[9]?.payload.msg_id, 'package-answer');
   assert.ok(import.meta.resolve('dd-bot').includes('consumer/node_modules/dd-bot/'));
 } finally { await harness.app.close(); }
 `,

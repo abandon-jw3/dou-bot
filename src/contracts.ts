@@ -219,6 +219,7 @@ export interface BotOptions {
     invalidInput?: 'report' | 'reply';
   };
   execution?: ExecutionOptions;
+  prompts?: PromptConfig;
   interactions?: {
     acknowledge?: 'auto' | 'manual';
   };
@@ -232,6 +233,7 @@ export type ApplicationStatus =
 export interface ApplicationSnapshot {
   status: ApplicationStatus;
   transport: 'ws' | 'webhook';
+  prompts: { pending: number };
   queue: {
     pending: number;
     active: number;
@@ -308,7 +310,28 @@ export interface MessageContextBase extends QQEventContext {
   readonly attachments: readonly Attachment[];
   reply(message: MessageInput): Promise<SendResult>;
   send(message: MessageInput): Promise<SendResult>;
+  /** Ask and await this user's next message. Always await; replies are owned by this workflow. */
+  prompt(question: MessageInput, options?: PromptOptions): Promise<PromptResult>;
 }
+
+export interface PromptOptions {
+  /** Wait duration after QQ accepts the question; defaults to the application setting. */
+  timeoutMs?: number;
+  /** Exact, case-sensitive matches against trimmed input. [] disables cancellation words. */
+  cancelWords?: readonly string[];
+}
+export interface PromptConfig extends PromptOptions {
+  /** Includes questions being sent and continuations awaiting an execution slot. Default 1000. */
+  maxPending?: number;
+  /** Upper bound for a per-call timeout. Default 300000 ms. */
+  maxTimeoutMs?: number;
+}
+/** Valid until the original command finishes; reply/prompt use this input's message reference. */
+export type PromptMessage = MessageContext;
+export type PromptResult =
+  | { readonly status: 'received'; readonly message: PromptMessage }
+  | { readonly status: 'timeout' }
+  | { readonly status: 'cancelled' };
 
 export interface GroupMessageContext extends MessageContextBase {
   readonly scene: 'group';
@@ -681,6 +704,7 @@ export interface Logger {
 }
 
 export type ErrorPhase =
+  | 'prompt'
   | 'guard'
   | 'cooldown'
   | 'bootstrap'

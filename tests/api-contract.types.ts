@@ -86,3 +86,34 @@ function inspectGroupRole(ctx: runtime.MessageContext): void {
   }
 }
 void inspectGroupRole;
+
+const promptConfig: runtime.PromptConfig = {
+  timeoutMs: 60000,
+  maxPending: 1000,
+  maxTimeoutMs: 300000,
+  cancelWords: ['取消'],
+};
+void promptConfig;
+function inspectPrompt(
+  ctx: runtime.MessageContext,
+  button: runtime.ButtonContext,
+  result: runtime.PromptResult,
+): void {
+  const pending: Promise<runtime.PromptResult> = ctx.prompt('问题', {
+    timeoutMs: 30000,
+    cancelWords: [],
+  });
+  pending.catch(() => {});
+  if (result.status === 'received') {
+    const input: runtime.PromptMessage = result.message;
+    void input.attachments;
+  } else {
+    // @ts-expect-error Timeout/cancellation does not provide a fabricated input message.
+    void result.message;
+  }
+  // @ts-expect-error Initial prompt support is limited to message handlers.
+  void button.prompt;
+  // @ts-expect-error Millisecond duration must be numeric.
+  ctx.prompt('问题', { timeoutMs: '30000' }).catch(() => {});
+}
+void inspectPrompt;

@@ -1,5 +1,5 @@
 /**
- * dd-bot v0.4 public API design contract, revision 1.5 — NOT a runtime implementation.
+ * dd-bot v0.5 public API design contract, revision 1.6 — NOT a runtime implementation.
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24+, TypeScript legacy decorators, ESM.
  */
@@ -217,6 +217,7 @@ export interface BotOptions {
     invalidInput?: 'report' | 'reply';
   };
   execution?: ExecutionOptions;
+  prompts?: PromptConfig;
   interactions?: { acknowledge?: 'auto' | 'manual' };
   logger?: Logger;
   onError?: ErrorHandler;
@@ -227,6 +228,7 @@ export interface ApplicationSnapshot {
   status: ApplicationStatus;
   transport: 'ws' | 'webhook';
   queue: { pending: number; active: number; retainedBytes: number };
+  prompts: { pending: number };
   events: { accepted: number; duplicates: number; rejected: number; failed: number };
   lastEventAt?: number;
 }
@@ -280,7 +282,21 @@ export interface MessageContextBase extends QQEventContext {
   readonly attachments: readonly Attachment[];
   reply(message: MessageInput): Promise<SendResult>;
   send(message: MessageInput): Promise<SendResult>;
+  prompt(question: MessageInput, options?: PromptOptions): Promise<PromptResult>;
 }
+export interface PromptOptions {
+  timeoutMs?: number;
+  cancelWords?: readonly string[];
+}
+export interface PromptConfig extends PromptOptions {
+  maxPending?: number;
+  maxTimeoutMs?: number;
+}
+export type PromptMessage = MessageContext;
+export type PromptResult =
+  | { readonly status: 'received'; readonly message: PromptMessage }
+  | { readonly status: 'timeout' }
+  | { readonly status: 'cancelled' };
 export interface GroupMessageContext extends MessageContextBase {
   readonly scene: 'group';
   readonly groupId: string;
@@ -566,6 +582,7 @@ export interface Logger {
 }
 export declare const LOGGER: unique symbol;
 export type ErrorPhase =
+  | 'prompt'
   | 'guard'
   | 'cooldown'
   | 'bootstrap'

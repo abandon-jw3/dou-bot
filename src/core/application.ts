@@ -148,6 +148,7 @@ export class Application implements BotApplication {
       status: this.state,
       transport: this.config.transport.type,
       queue: this.execution.snapshot(),
+      prompts: this.execution.promptSnapshot(),
       events: { ...this.execution.events },
       ...(this.execution.lastEventAt === undefined
         ? {}

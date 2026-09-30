@@ -1,6 +1,6 @@
 # dd-bot 技术选型方案
 
-版本：1.3 · 日期：2026-09-30 · 对应：[开发方案 1.5](./development-plan.md)
+版本：1.3 · 日期：2026-09-30 · 对应：[开发方案 1.6](./development-plan.md)
 
 本方案确定首版依赖、工程工具和实现技术，不变更已经审查过的公开 API。**TypeScript 按用户要求固定为 5.9.3。** 当前验证覆盖隔离工具链样例和既有 API 草案，尚不是完整 SDK 的运行结果。
 
@@ -256,7 +256,7 @@ Windows 上已验证 Node 24 能处理上述带引号的测试 glob。不要依�
 ```json
 {
   "name": "dd-bot",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },

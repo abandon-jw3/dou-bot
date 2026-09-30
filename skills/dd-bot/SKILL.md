@@ -5,7 +5,7 @@ description: '使用 dd-bot SDK 开发、修改和测试 QQ 官方机器人业�
 
 # 使用 dd-bot 开发机器人
 
-以用户当前业务项目为工作对象，通过 SDK 的公开 API 完成功能和对应验证。本技能按 dd-bot **0.4.0 / 契约 1.5** 核对；项目实际安装的版本、类型声明和用户要求优先，不为套用示例而降级依赖或修改框架内核。
+以用户当前业务项目为工作对象，通过 SDK 的公开 API 完成功能和对应验证。本技能按 dd-bot **0.5.0 / 契约 1.6** 核对；项目实际安装的版本、类型声明和用户要求优先，不为套用示例而降级依赖或修改框架内核。
 
 ## 先确认项目边界
 
@@ -23,6 +23,7 @@ description: '使用 dd-bot SDK 开发、修改和测试 QQ 官方机器人业�
 | 新建消费者、模块、Provider、构造注入、启动关闭           | [工程与 DI](references/project.md)      |
 | 命令、无序参数、自定义 City 装饰器、剩余参数、选项和帮助 | [命令参数](references/commands.md)      |
 | 权限检查、冷却、文本/图片/Markdown、按钮和上下文         | [执行控制与消息](references/runtime.md) |
+| 二次输入、超时取消、多轮回复与会话测试                   | [二次输入](references/prompts.md)       |
 | 离线测试、故障定位、真实 QQ 验收                         | [测试与联调](references/testing.md)     |
 
 按需读取对应参考，不必每次加载所有文件。需要一个可编译的起点时，可复制 [minimal-module.ts](assets/minimal-module.ts) 和 [minimal-module.test.ts](assets/minimal-module.test.ts) 到同一个业务目录，再适配业务服务、策略和相对导入。它们只演示解析、DI 和控制流程，不提供真实天气数据，也不启动真实 QQ 连接。

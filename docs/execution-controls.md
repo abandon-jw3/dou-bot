@@ -1,8 +1,10 @@
 # Guard、冷却与完整业务示例
 
-对应 dd-bot 0.4.0 / 公开契约 1.5。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
+对应 dd-bot 0.5.0 / 公开契约 1.6。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
 
 内置场景、用户、群角色限制和管理者按钮权限见 [访问限制指南](./access-control.md)，它们与 UseGuards 共用执行链。
+
+二次输入可使用 [ctx.prompt()](./prompts.md)；后续回答不作为新命令重复执行 Guard 或扣除冷却。
 
 ## Guard 的使用
 

@@ -4,6 +4,8 @@ import type {
   ErrorPhase,
   MessageContext,
   MessageInput,
+  PromptOptions,
+  PromptResult,
   QQClient,
   QQEventContext,
   SendResult,
@@ -17,6 +19,7 @@ import { snapshotMessage, targetKey } from '../message/index.js';
 import { bounded } from './utils.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
+import { PromptManager } from './prompts.js';
 
 export type HandlerLocation = Pick<ErrorContext, 'controller' | 'method'>;
 
@@ -34,6 +37,16 @@ interface ReplyScope {
   references: number;
   expiresAt: number;
 }
+interface MessageBinding {
+  event: Extract<NormalizedEvent, { kind: 'message' }>;
+  scope: ReplyScope;
+}
+type Ask = (
+  source: MessageBinding,
+  question: MessageInput,
+  options: PromptOptions,
+  location?: HandlerLocation,
+) => Promise<PromptResult>;
 
 export class OperationLedger {
   private sealed = false;
@@ -87,6 +100,7 @@ export class EventTask {
     private readonly client: QQClient,
     private readonly reporter: ErrorReporter,
     private readonly scope?: ReplyScope,
+    private readonly ask?: Ask,
   ) {
     this.ledger = new OperationLedger(
       options.execution.maxContextOperations,
@@ -109,23 +123,23 @@ export class EventTask {
     });
   }
 
-  context(): QQEventContext {
+  context(event: NormalizedEvent = this.event): QQEventContext {
     return Object.freeze({
       appId: this.options.appId,
-      eventName: this.event.raw.t,
-      ...(this.event.raw.id === undefined ? {} : { eventId: this.event.raw.id }),
-      receivedAt: this.event.receivedAt,
-      raw: this.event.raw,
+      eventName: event.raw.t,
+      ...(event.raw.id === undefined ? {} : { eventId: event.raw.id }),
+      receivedAt: event.receivedAt,
+      raw: event.raw,
       signal: this.controller.signal,
       client: this.client,
     });
   }
 
-  messageContext(location?: HandlerLocation): MessageContext {
-    const event = this.event;
+  messageContext(location?: HandlerLocation, source?: MessageBinding): MessageContext {
+    const event = source?.event ?? this.event;
     if (event.kind !== 'message') throw new FrameworkError('INVALID_STATE', 'Not a message event');
     const shared = {
-      ...this.context(),
+      ...this.context(event),
       messageId: event.messageId,
       userId: event.userId,
       content: event.content,
@@ -133,9 +147,20 @@ export class EventTask {
       ...(event.timestamp === undefined ? {} : { timestamp: event.timestamp }),
       reply: (message: MessageInput) => {
         this.manualReplies++;
-        return this.send(message, true, location);
+        return this.send(message, true, location, source);
       },
-      send: (message: MessageInput) => this.send(message, false, location),
+      send: (message: MessageInput) => this.send(message, false, location, source),
+      prompt: (question: MessageInput, options: PromptOptions = {}) =>
+        this.ledger.run(
+          'prompt',
+          () => {
+            const scope = source?.scope ?? this.scope;
+            if (!this.ask || !scope)
+              throw new FrameworkError('INVALID_STATE', 'Prompt context is unavailable');
+            return this.ask({ event, scope }, question, options, location);
+          },
+          location,
+        ),
     };
     return event.target.scene === 'group'
       ? Object.freeze({
@@ -184,24 +209,31 @@ export class EventTask {
     return promise;
   }
 
-  send(input: MessageInput, reply: boolean, location?: HandlerLocation): Promise<SendResult> {
+  send(
+    input: MessageInput,
+    reply: boolean,
+    location?: HandlerLocation,
+    source?: MessageBinding,
+  ): Promise<SendResult> {
     return this.ledger.run(
       'send',
       () => {
-        if (this.event.kind === 'event')
+        const event = source?.event ?? this.event;
+        const scope = source?.scope ?? this.scope;
+        if (event.kind === 'event')
           throw new FrameworkError('INVALID_STATE', 'Event has no send target');
         const message = snapshotMessage(input, this.options.api.maxUploadBytes);
-        const target = this.event.target;
+        const target = event.target;
         const signal = this.controller.signal;
         if (!reply) return this.client.sendMessage(target, message, { signal });
-        if (this.event.kind !== 'message' || !this.scope)
+        if (event.kind !== 'message' || !scope)
           throw new FrameworkError('INVALID_STATE', 'Interaction IDs cannot be message references');
-        const reference = { messageId: this.event.messageId, sequence: ++this.scope.sequence };
-        const result = this.scope.tail.then(() => {
+        const reference = { messageId: event.messageId, sequence: ++scope.sequence };
+        const result = scope.tail.then(() => {
           signal.throwIfAborted();
           return this.client.sendMessage(target, message, { signal, reply: reference });
         });
-        this.scope.tail = result.then(
+        scope.tail = result.then(
           () => {},
           () => {},
         );
@@ -219,7 +251,13 @@ interface QueuedTask {
   scope?: ReplyScope;
   resolve(): void;
   started: boolean;
+  running: boolean;
+  children: Set<QueuedTask>;
   finished: boolean;
+}
+interface QueueItem {
+  queued: QueuedTask;
+  resume?: () => void;
 }
 
 export class Execution {
@@ -227,7 +265,8 @@ export class Execution {
   readonly events = { accepted: 0, duplicates: 0, rejected: 0, failed: 0 };
   private readonly dedup = new Map<string, DedupEntry>();
   private readonly scopes = new Map<string, ReplyScope>();
-  private readonly waiting: (QueuedTask | undefined)[] = [];
+  private readonly waiting: (QueueItem | undefined)[] = [];
+  private readonly prompts: PromptManager<QueuedTask, QueuedTask>;
   private head = 0;
   private readonly tasks = new Set<QueuedTask>();
   private readonly changed = new Set<() => void>();
@@ -245,12 +284,34 @@ export class Execution {
     private readonly execute: (task: EventTask) => Promise<void>,
     private readonly handles: (event: NormalizedEvent) => boolean = () => true,
     private readonly clock: Clock = systemClock,
-  ) {}
+  ) {
+    this.prompts = new PromptManager(options.prompts, clock, {
+      suspend: (owner) => {
+        if (owner.finished || !owner.running)
+          throw new FrameworkError('INVALID_STATE', 'Prompt owner is not executing');
+        owner.running = false;
+        this.active--;
+        this.notify();
+        this.pump();
+      },
+      resume: (owner, continuation) => {
+        if (owner.finished || this.terminated) {
+          continuation();
+          return;
+        }
+        this.waiting.push({ queued: owner, resume: continuation });
+        this.pump();
+      },
+      abort: (owner, reason) => owner.task.controller.abort(reason),
+      fallback: (input) => this.fallback(input),
+    });
+  }
   start(): void {
     this.accepting = true;
   }
   stopAccepting(): void {
     this.accepting = false;
+    this.prompts.close(new FrameworkError('INVALID_STATE', 'Application is stopping'));
     this.notify();
   }
   get pending(): number {
@@ -258,6 +319,50 @@ export class Execution {
   }
   snapshot(): { pending: number; active: number; retainedBytes: number } {
     return { pending: this.pending, active: this.active, retainedBytes: this.retainedBytes };
+  }
+  promptSnapshot(): { pending: number } {
+    return { pending: this.prompts.size };
+  }
+
+  private promptKey(event: Extract<NormalizedEvent, { kind: 'message' }>): string {
+    return JSON.stringify([this.options.appId, targetKey(event.target), event.userId]);
+  }
+  private ask(
+    owner: QueuedTask,
+    source: MessageBinding,
+    question: MessageInput,
+    options: PromptOptions,
+    location?: HandlerLocation,
+  ): Promise<PromptResult> {
+    if (!this.accepting || owner.finished || !owner.running)
+      throw new FrameworkError('INVALID_STATE', 'Prompt requires a running message handler');
+    return this.prompts.request(
+      owner,
+      this.promptKey(source.event),
+      owner.task.controller.signal,
+      () => {
+        owner.task.manualReplies++;
+        return owner.task.send(question, true, location, source);
+      },
+      (input) => {
+        if (owner.finished || input.finished || input.task.event.kind !== 'message' || !input.scope)
+          throw new FrameworkError('INVALID_STATE', 'Prompt message context has finished');
+        owner.children.add(input);
+        return owner.task.messageContext(location, { event: input.task.event, scope: input.scope });
+      },
+      options,
+    );
+  }
+  private fallback(input: QueuedTask): void {
+    if (input.finished) return;
+    if (!this.accepting || this.terminated || !this.handles(input.task.event)) {
+      this.finish(input);
+      return;
+    }
+    // Captured input has already reserved bytes, a dedup entry and a reply scope.
+    // Requeue that same task, rather than re-admit it as a duplicate or lose the input.
+    this.waiting.push({ queued: input });
+    this.pump();
   }
 
   accept(payload: unknown, bytes: number): Admission {
@@ -289,8 +394,6 @@ export class Execution {
           eventName: payload.t,
           fields: parsed.conflictingFields,
         });
-      if (!this.handles(event) && !(event.kind === 'button' && this.options.acknowledge === 'auto'))
-        return { status: 'ignored' };
       const now = this.clock.monotonic();
       if (
         this.dedup.size >= config.dedupMaxEntries ||
@@ -301,7 +404,7 @@ export class Execution {
         event.kind === 'message'
           ? JSON.stringify([
               this.options.appId,
-              event.raw.t,
+              'message',
               targetKey(event.target),
               event.messageId,
               event.sourceIndex,
@@ -320,6 +423,14 @@ export class Execution {
         this.events.duplicates++;
         return { status: 'duplicate', done: existing.done };
       }
+      const prompt =
+        event.kind === 'message' ? this.prompts.find(this.promptKey(event)) : undefined;
+      if (
+        !prompt &&
+        !this.handles(event) &&
+        !(event.kind === 'button' && this.options.acknowledge === 'auto')
+      )
+        return { status: 'ignored' };
       const scopeKey =
         event.kind === 'message'
           ? JSON.stringify([this.options.appId, targetKey(event.target), event.messageId])
@@ -331,7 +442,7 @@ export class Execution {
       }
       const autoAck = event.kind === 'button' && this.options.acknowledge === 'auto';
       if (
-        this.pending + this.active >= config.queueCapacity + config.concurrency ||
+        (!prompt && this.pending + this.active >= config.queueCapacity + config.concurrency) ||
         this.retainedBytes + bytes > config.queueMaxBytes ||
         (autoAck && this.controls >= config.concurrency) ||
         (scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries)
@@ -360,7 +471,15 @@ export class Execution {
         complete = resolve;
       });
       const entry: DedupEntry = { active: true, expiresAt: Infinity, done };
-      const task = new EventTask(event, this.options, this.client, this.reporter, scope);
+      const task = new EventTask(
+        event,
+        this.options,
+        this.client,
+        this.reporter,
+        scope,
+        (source, question, options, location) =>
+          this.ask(queued, source, question, options, location),
+      );
       const queued: QueuedTask = {
         task,
         bytes,
@@ -368,6 +487,8 @@ export class Execution {
         ...(scope ? { scope } : {}),
         resolve: complete,
         started: false,
+        running: false,
+        children: new Set(),
         finished: false,
       };
       if (key !== undefined) this.dedup.set(key, entry);
@@ -376,7 +497,11 @@ export class Execution {
       this.retainedBytes += bytes;
       this.managedSignals.add(task.controller.signal);
       this.tasks.add(queued);
-      this.waiting.push(queued);
+      if (prompt && event.kind === 'message') {
+        if (!this.prompts.claim(prompt, queued, event.content)) this.fallback(queued);
+        return { status: 'accepted', done };
+      }
+      this.waiting.push({ queued });
       if (autoAck) {
         this.controls++;
         task.ack().then(
@@ -409,15 +534,30 @@ export class Execution {
       this.active < this.options.execution.concurrency &&
       this.pending > 0
     ) {
-      const task = this.waiting[this.head];
+      const item = this.waiting[this.head];
       this.waiting[this.head++] = undefined;
-      if (!task) continue;
+      if (!item || item.queued.finished) continue;
+      const task = item.queued;
       this.active++;
+      task.running = true;
+      if (item.resume) {
+        item.resume();
+        continue;
+      }
       task.started = true;
       Promise.resolve()
         .then(() => this.execute(task.task))
         .catch((error: unknown) => task.task.report(error, 'command'))
-        .then(() => task.task.ledger.sealAndDrain())
+        .then(() => {
+          this.prompts.cancelOwner(
+            task,
+            new FrameworkError(
+              'INVALID_STATE',
+              'Message handler ended without awaiting its prompt',
+            ),
+          );
+          return task.task.ledger.sealAndDrain();
+        })
         .then(
           () => this.finish(task),
           (error: unknown) => {
@@ -434,7 +574,16 @@ export class Execution {
   private finish(queued: QueuedTask): void {
     if (queued.finished) return;
     queued.finished = true;
-    if (queued.started) this.active--;
+    this.prompts.cancelOwner(
+      queued,
+      new FrameworkError('INVALID_STATE', 'Event context has finished'),
+    );
+    if (queued.running) {
+      queued.running = false;
+      this.active--;
+    }
+    for (const child of queued.children) this.finish(child);
+    queued.children.clear();
     if (queued.task.failed) this.events.failed++;
     this.retainedBytes -= queued.bytes;
     if (queued.entry) {
@@ -516,6 +665,10 @@ export class Execution {
   abort(): void {
     this.terminated = true;
     this.accepting = false;
+    this.prompts.close(
+      new FrameworkError('SHUTDOWN_TIMEOUT', 'Application closed before the prompt completed'),
+      true,
+    );
     this.waiting.length = 0;
     this.head = 0;
     for (const queued of [...this.tasks]) {
