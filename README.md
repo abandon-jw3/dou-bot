@@ -2,6 +2,8 @@
 
 面向 **QQ 官方机器人群聊和私聊** 的轻量 TypeScript 装饰器框架，支持 WS 与 Webhook。提供类似 NestJS 的模块、依赖注入和装饰器开发方式。
 
+[完整中文用户文档](https://abandon-jw3.github.io/dou-bot-docs/) · [公开示例与文档反馈](https://github.com/abandon-jw3/dou-bot-docs)
+
 运行环境为 Node.js 24+、ESM，TypeScript 使用 **5.9.3**。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
 
 npm 包名是 **`dou-bot`**，开发仓库仍名为 `dd-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
