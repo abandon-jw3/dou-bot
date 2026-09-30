@@ -18,6 +18,84 @@ npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm
 | [apps/example](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example) | 可独立使用的机器人初始项目与装饰器示例 | `npm run example:check`      |
 | [website](https://github.com/abandon-jw3/dou-bot/tree/main/website)           | VitePress 中文文档站及文档示例         | `npm run docs:dev`           |
 
+### 目录说明
+
+以下列出仓库中纳入版本管理的目录，每个目录右侧标明职责：
+
+```text
+dou-bot/
+├─ .github/                          # GitHub 仓库自动化配置
+│  └─ workflows/                     # 三个工程的 Windows/Linux CI 与 Pages 部署
+├─ apps/                             # 使用 SDK 的独立应用工程
+│  └─ example/                       # 可作为新机器人起点的业务示例，独立安装 npm SDK
+│     ├─ src/                        # 应用入口、根模块及最小 hello 命令
+│     │  └─ example/                 # 带中文注释的全部装饰器、按钮与多轮输入示例
+│     │     └─ module-guards/        # 模块、控制器类、方法三级 Guard 组合示例
+│     ├─ tests/                      # 通过 dou-bot/testing 执行的离线业务测试
+│     ├─ scripts/                    # 应用构建、测试及 SDK 来源校验脚本
+│     └─ vendor/                     # SDK 版本、来源、完整性记录及升级说明
+├─ docs/                             # SDK 指南、设计选型、API 审查、发布与验收记录
+├─ examples/                         # 框架开发示例、QQ 联调探针、性能与持续运行测试
+│  └─ business/                      # 面向 SDK 源码开发的模块化业务演示
+├─ scripts/                          # SDK 构建、测试、API 契约、文档及发包校验脚本
+│  └─ fixtures/                      # 用于验证兼容性的历史版本消费者代码
+├─ skills/                           # 配套的 AI 开发技能
+│  └─ dd-bot/                        # dou-bot 使用技能，调用名仍为 $dd-bot
+│     ├─ agents/                     # 技能在工具中的展示与调用配置
+│     ├─ assets/                     # 可复制的最小业务模块及离线测试
+│     └─ references/                 # 模块、参数、权限、prompt 与测试的技能参考
+├─ src/                              # dou-bot SDK 的 TypeScript 源码与公开入口
+│  ├─ core/                         # 应用、模块与 DI，命令解析、权限、冷却和多轮输入
+│  ├─ message/                      # 文本、图片、Markdown 和按钮的消息构造与校验
+│  ├─ qq/                           # QQ HTTP API、令牌管理、客户端及事件标准化
+│  ├─ testing/                      # dou-bot/testing 入口，提供离线测试应用与消息记录
+│  └─ transport/                    # WS 与 Webhook 接入、心跳重连及回调验签
+├─ tests/                            # SDK 的单元、协议、生命周期及回归测试
+│  └─ fixtures/                     # 框架测试使用的辅助 Provider 等测试材料
+└─ website/                          # 独立的 VitePress 文档工程，验证已发布的 npm SDK
+   ├─ docs/                         # 网站页面、导航配置及静态资源
+   │  ├─ .vitepress/                # 站点标题、导航、中文搜索与 Pages 路径配置
+   │  │  └─ theme/                  # 默认主题扩展与自定义样式
+   │  ├─ api/                       # 装饰器、应用、上下文、消息、客户端及类型参考
+   │  ├─ examples/                  # 完整示例的讲解页面，引用实际可运行源码
+   │  ├─ guide/                     # 安装、核心功能、QQ 接入、部署与排错教程
+   │  └─ public/                    # favicon 等直接复制到站点产物的静态资源
+   ├─ examples/                     # 文档引用并参与编译、测试的 TypeScript 示例
+   │  ├─ access/                    # 群聊、私聊、用户与群角色访问限制
+   │  ├─ buttons/                   # Markdown、按钮构造及点击回调
+   │  ├─ client/                    # 注入并使用 QQClient 与 QQApi
+   │  ├─ events/                    # 监听原始 QQ 事件
+   │  ├─ guards/                    # 模块、类、方法三级 Guard 与冷却
+   │  ├─ hello/                     # 最小命令、模块和依赖注入
+   │  ├─ lifecycle/                 # 应用初始化与关闭时的资源管理
+   │  ├─ messages/                  # 文本、图片与 Markdown 消息，以及图片测试数据
+   │  ├─ prompt/                    # 等待用户二次输入、多轮问答与取消
+   │  └─ query/                     # 无序 Slot、Rest、Option 与自定义 City 装饰器
+   ├─ tests/                        # 文档示例的离线行为断言
+   ├─ browser-tests/                # 桌面与手机端的导航、搜索、主题、复制及刷新测试
+   └─ scripts/                      # 示例编译、公开 API 索引生成、内容与产物链接校验
+```
+
+开发机器人业务从 `apps/example/` 开始；修改框架实现时查看 `src/`、`tests/` 和根目录的 `examples/`；更新用户手册时修改 `website/docs/`，相应可运行代码放在 `website/examples/`。
+
+### 本地与生成目录
+
+下面这些目录不属于需要编辑的项目源码，部分仅在安装、构建或检查后出现：
+
+| 目录                                        | 作用                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------- |
+| `.git/`                                     | 本地 Git 提交历史、分支及远程仓库配置。                              |
+| `node_modules/`                             | 各工程安装的依赖；根目录、`apps/example/`、`website/` 各自维护一份。 |
+| `dist/`、`apps/example/dist/`               | SDK 的 JavaScript 与类型声明，以及业务示例的 JavaScript 运行代码。   |
+| `.test-build/`、`apps/example/.test-build/` | 执行离线测试前生成的 JavaScript 测试代码。                           |
+| `coverage/`                                 | SDK 测试的覆盖率数据与报告。                                         |
+| `work/`                                     | API 校验、发包消费者验证、性能测试等任务的临时文件与报告。           |
+| `website/.examples-build/`                  | 文档示例及其离线测试的编译结果。                                     |
+| `website/docs/.vitepress/dist/`             | 文档站的静态 HTML 与资源，用于预览和 Pages 部署。                    |
+| `website/docs/.vitepress/cache/`            | VitePress 开发和构建时使用的缓存。                                   |
+
+依赖、构建产物、缓存和临时目录已被 Git 忽略。清理构建产物后，需要重新执行相应构建命令再启动应用或预览文档。
+
 开发整个仓库时，使用 Node.js 24.21.0、npm 11.19.0，先运行 `npm run install:all`，再运行 `npm run check:all`。文档浏览器验收使用 `npm run docs:test:browser`；完整说明见 [仓库维护指南](https://github.com/abandon-jw3/dou-bot/blob/main/docs/repository.md)。只使用 SDK 时，按下面的安装步骤即可。
 
 ## 安装
