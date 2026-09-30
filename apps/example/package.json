@@ -1,0 +1,33 @@
+{
+  "name": "dou-bot-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A QQ bot starter with annotated examples of every dou-bot decorator.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "build": "node scripts/tasks.mjs build",
+    "start": "node --env-file-if-exists=.env dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests --max-warnings 0",
+    "format": "prettier --write src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
+    "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md .github",
+    "test": "node scripts/tasks.mjs test",
+    "check": "node scripts/tasks.mjs check",
+    "verify:sdk": "node scripts/verify-sdk.mjs"
+  },
+  "dependencies": {
+    "dou-bot": "0.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.0",
+    "eslint": "10.11.0",
+    "prettier": "3.9.9",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.0"
+  }
+}
