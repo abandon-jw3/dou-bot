@@ -44,6 +44,10 @@ export class ExampleController {
       '/example-cooldown：同一用户 3 秒冷却',
       '/example-button：发送回调按钮',
       '/example-events：查看原始事件计数',
+      '/example-group-only、/example-private-only：内置场景限制',
+      '/example-owner、/example-managers：群角色限制',
+      '/example-users：指定 OpenID（需先修改示例名单）',
+      '/example-manager-button：管理者按钮',
       '/help example-slot：查看参数帮助',
     ].join('\n');
   }

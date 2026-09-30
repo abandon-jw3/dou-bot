@@ -1,28 +1,33 @@
 # 全部装饰器示例
 
-本模块覆盖项目当前安装的 **dd-bot 0.3.0 全部 15 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
+本模块覆盖项目当前安装的 **dd-bot 0.4.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
 
 `AppModule` 已导入 `ExampleModule`，按根目录 README 启动后即可发送 `/example` 或 `/示例` 查看入口。最小的 `/hello` 示例仍在模块外。
 
 ## 源码索引
 
-| 装饰器        | 用途                                            | 示例位置                                                                                                                      |
-| ------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `@Module`     | 组合 imports、controllers、providers 与 exports | [example.module.ts](example.module.ts)                                                                                        |
-| `@Injectable` | 声明交给容器创建的服务或 Guard                  | [example.service.ts](example.service.ts)、[example.guard.ts](example.guard.ts)                                                |
-| `@Inject`     | 使用 Symbol 令牌注入接口配置                    | [example.service.ts](example.service.ts) 的构造函数                                                                           |
-| `@Controller` | 声明命令、按钮或事件处理器所在的类              | [example.controller.ts](example.controller.ts)                                                                                |
-| `@Command`    | 注册命令名称、别名和帮助说明                    | [example.controller.ts](example.controller.ts) 的 `index` 等方法                                                              |
-| `@Arg`        | 按下标取值，校验必填、类型、范围和默认值        | [example.controller.ts](example.controller.ts) 的 `positional`                                                                |
-| `@Args`       | 获取命令后完整的分词快照                        | [example.controller.ts](example.controller.ts) 的 `allArguments`                                                              |
-| `@Option`     | 读取长短选项，转换字符串、整数和布尔值          | [example.controller.ts](example.controller.ts) 的 `options`                                                                   |
-| `@Slot`       | 按 match 或 choices 匹配任意位置的分词          | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
-| `@Rest`       | 按原顺序收集尚未消费的普通分词                  | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
-| `@Ctx`        | 注入命令、按钮或原始事件各自的上下文            | [example.controller.ts](example.controller.ts) 的 `context`、`confirmButton`                                                  |
-| `@UseGuards`  | 方法级或类级的调用条件检查                      | [example.controller.ts](example.controller.ts) 的 `groupOnly`、[example-private.controller.ts](example-private.controller.ts) |
-| `@Cooldown`   | 按用户、会话或处理器限制调用频率                | [example.controller.ts](example.controller.ts) 的 `cooldown`                                                                  |
-| `@On`         | 精确监听 QQ 原始事件名                          | [example-events.controller.ts](example-events.controller.ts)                                                                  |
-| `@OnButton`   | 根据 callback 按钮 ID 处理点击                  | [example.controller.ts](example.controller.ts) 的 `confirmButton`                                                             |
+| 装饰器               | 用途                                            | 示例位置                                                                                                                      |
+| -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `@Module`            | 组合 imports、controllers、providers 与 exports | [example.module.ts](example.module.ts)                                                                                        |
+| `@Injectable`        | 声明交给容器创建的服务或 Guard                  | [example.service.ts](example.service.ts)、[example.guard.ts](example.guard.ts)                                                |
+| `@Inject`            | 使用 Symbol 令牌注入接口配置                    | [example.service.ts](example.service.ts) 的构造函数                                                                           |
+| `@Controller`        | 声明命令、按钮或事件处理器所在的类              | [example.controller.ts](example.controller.ts)                                                                                |
+| `@Command`           | 注册命令名称、别名和帮助说明                    | [example.controller.ts](example.controller.ts) 的 `index` 等方法                                                              |
+| `@Arg`               | 按下标取值，校验必填、类型、范围和默认值        | [example.controller.ts](example.controller.ts) 的 `positional`                                                                |
+| `@Args`              | 获取命令后完整的分词快照                        | [example.controller.ts](example.controller.ts) 的 `allArguments`                                                              |
+| `@Option`            | 读取长短选项，转换字符串、整数和布尔值          | [example.controller.ts](example.controller.ts) 的 `options`                                                                   |
+| `@Slot`              | 按 match 或 choices 匹配任意位置的分词          | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
+| `@Rest`              | 按原顺序收集尚未消费的普通分词                  | [example.controller.ts](example.controller.ts) 的 `slots`                                                                     |
+| `@Ctx`               | 注入命令、按钮或原始事件各自的上下文            | [example.controller.ts](example.controller.ts) 的 `context`、`confirmButton`                                                  |
+| `@UseGuards`         | 方法级或类级的调用条件检查                      | [example.controller.ts](example.controller.ts) 的 `groupOnly`、[example-private.controller.ts](example-private.controller.ts) |
+| `@Cooldown`          | 按用户、会话或处理器限制调用频率                | [example.controller.ts](example.controller.ts) 的 `cooldown`                                                                  |
+| `@On`                | 精确监听 QQ 原始事件名                          | [example-events.controller.ts](example-events.controller.ts)                                                                  |
+| `@OnButton`          | 根据 callback 按钮 ID 处理点击                  | [example.controller.ts](example.controller.ts) 的 `confirmButton`                                                             |
+| `@GroupOnly`         | 仅群聊；可用于类和方法                          | [example-access.controller.ts](example-access.controller.ts)                                                                  |
+| `@PrivateOnly`       | 仅私聊；与群聊限制冲突时启动报错                | [example-access.controller.ts](example-access.controller.ts)                                                                  |
+| `@UsersOnly`         | 指定 OpenID，可按场景或群限制                   | [example-access.controller.ts](example-access.controller.ts)                                                                  |
+| `@GroupRoles`        | 指定当前群消息发送者角色                        | [example-access.controller.ts](example-access.controller.ts)                                                                  |
+| `@GroupManagersOnly` | 当前群主或管理员                                | [example-access.controller.ts](example-access.controller.ts)                                                                  |
 
 ## 可以直接尝试的命令
 
@@ -47,6 +52,23 @@
 | `/help example-slot`                            | 查看根据装饰器声明生成的帮助                  |
 
 `example-slot` 只是回显解析结果，支持北京、上海、广州以及散步、骑行，不请求外部业务接口。
+
+## 内置权限示例
+
+| 输入                      | 行为                                                |
+| ------------------------- | --------------------------------------------------- |
+| `/example-group-only`     | 群聊放行，私聊拒绝                                  |
+| `/example-private-only`   | 私聊放行，群聊拒绝                                  |
+| `/example-users`          | 仅指定私聊 OpenID；请先替换源码中的占位 ID          |
+| `/example-owner`          | 仅当前群主                                          |
+| `/example-managers`       | 当前群主或管理员；缺失角色时拒绝                    |
+| `/example-manager-button` | 群主/管理员可以发送，按钮配置 QQ 原生管理者点击权限 |
+
+内置装饰器无需注册 Provider。UsersOnly 的 ID 是 OpenID，不是 QQ 号；可通过 scene 或 groupId 限定匹配范围。装饰器配置是静态快照，动态名单继续使用自定义 Guard。
+
+角色装饰器只用于命令，直接或通过类级声明作用于 OnButton 会在启动时报错。管理者按钮使用 `permission: { type: 'managers' }`，映射原生 type=1；发送到私聊会在请求前被拒绝。命令按钮对应的命令若需要权限，也要声明自己的规则。
+
+原有 example-group/example-private 保留自定义 UseGuards 的写法，用来对照内置装饰器。离线测试不验证 QQ 对真实点击者的拦截，该项仍需实机验收。
 
 ## 阅读时注意
 

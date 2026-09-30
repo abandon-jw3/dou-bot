@@ -59,7 +59,7 @@ export class BotController {
 
 ## 全部装饰器示例
 
-[src/example/](src/example/README.md) 中的独立模块覆盖 SDK 的 **15 个公开装饰器**，已通过 `AppModule.imports` 注册。发送 `/example` 或 `/示例` 查看入口，发送 `/help example-slot` 查看参数帮助。
+[src/example/](src/example/README.md) 中的独立模块覆盖 SDK 的 **20 个公开装饰器**，已通过 `AppModule.imports` 注册。发送 `/example` 或 `/示例` 查看入口，发送 `/help example-slot` 查看参数帮助。
 
 示例包括构造注入、位置参数、选项、Slot/Rest、手动回复、类级和方法级 Guard、冷却、原始事件及按钮回调。每处声明都有中文注释，完整的装饰器索引和可复制命令见 [示例模块说明](src/example/README.md)。
 
@@ -78,11 +78,13 @@ dd-bot-example/
 │     ├─ example.service.ts   # Injectable、Inject 与共享服务
 │     ├─ example.guard.ts     # 群聊 / 私聊 Guard
 │     ├─ example.controller.ts # 参数、上下文、方法级 Guard、冷却与按钮
+│     ├─ example-access.controller.ts  # 内置场景、用户、群角色及管理者按钮
 │     ├─ example-private.controller.ts # 类级 Guard
 │     ├─ example-events.controller.ts  # 原始 QQ 事件观察器
-│     └─ README.md            # 15 个装饰器索引和命令说明
+│     └─ README.md            # 20 个装饰器索引和命令说明
 ├─ tests/                     # 使用 dd-bot/testing 的离线测试
 │  ├─ application.test.ts     # 最小 hello 命令回归
+│  ├─ access.test.ts          # 内置访问限制与管理者按钮
 │  └─ example.test.ts         # 全部装饰器示例的行为验证
 ├─ scripts/                   # 构建、测试和 SDK 校验脚本
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
@@ -110,4 +112,4 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 
 `npm run format` 可以统一格式。GitHub Actions 在 Windows 和 Linux 上执行相同的完整检查。
 
-SDK 尚未发布到 npm，因此通过 `vendor/dd-bot-0.3.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。
+SDK 尚未发布到 npm，因此通过 `vendor/dd-bot-0.4.0.tgz` 安装，克隆本项目后即可安装依赖，无需本机另有框架源码。更新方式见 [vendor/README.md](vendor/README.md)。

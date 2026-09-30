@@ -1,6 +1,6 @@
 # SDK 依赖
 
-项目通过 `file:vendor/dd-bot-0.3.0.tgz` 安装 SDK，业务代码只使用 `dd-bot` 和 `dd-bot/testing` 的公开入口。
+项目通过 `file:vendor/dd-bot-0.4.0.tgz` 安装 SDK，业务代码只使用 `dd-bot` 和 `dd-bot/testing` 的公开入口。
 
 SDK 尚未发布 npm，因此在私有示例仓库保存经过凭证检查的安装包，配合 package-lock.json 保证克隆后能够直接 npm ci。无需跨私有仓库下载权限，也不依赖本机框架源码目录。来源提交与校验值在 sdk.json 中。
 
