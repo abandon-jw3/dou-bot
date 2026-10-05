@@ -69,7 +69,7 @@ export class SettingsController {
 
 只接收这三个精确的小写值。缺失、未知或不合法值保持 undefined，受角色限制的命令拒绝执行；普通命令仍可使用。私聊不读取此字段，不从 mentions、引用消息、转发消息、昵称、OpenID 或上一条消息推测身份。只读取当前事件的角色快照，不保留角色缓存。
 
-依据：[QQ 全量群消息文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。本地测试验证解析和控制流，实际账号上的角色投递仍需实机验证。
+依据：[QQ 全量群消息文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。本地测试验证解析和控制流；2026-10-06 的测试群已实际投递 owner、admin、member，且 SDK 归一化一致。实测范围见本文末节。
 
 ## 管理者按钮
 
@@ -99,4 +99,18 @@ const card = markdown('**群管理**', {
 
 按钮没有单独的 owner 权限枚举；指定身份组 type=3 仅用于频道，不属于本框架范围。ACK 只表示收到交互，业务发送仍用 ctx.send，不能把 interactionId 当作普通消息 ID。
 
-依据：[QQ 消息按钮文档](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/trans/msg-btn.html)。本地只验证 permission 编码和发送目标限制，平台对不同角色的实际点击拦截仍待实机验收。
+依据：[QQ 消息按钮文档](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/trans/msg-btn.html)。本地测试验证 permission 编码和发送目标限制；2026-10-06 已补充管理者回调按钮的分角色实测，范围见下文。
+
+## 实机验收范围
+
+2026-10-06，使用 npm 的 dou-bot 0.6.0，在同一测试机器人和群中分别确认三种真实身份：
+
+| 身份     | 仅群主命令 | 管理者命令 | 普通回调按钮 | 管理者回调按钮                         |
+| -------- | ---------- | ---------- | ------------ | -------------------------------------- |
+| 群主     | 放行       | 放行       | 成功         | 成功                                   |
+| 管理员   | 拒绝       | 放行       | 成功         | 成功                                   |
+| 普通成员 | 拒绝       | 拒绝       | 成功         | 客户端提示无权限或拒绝，后台无对应回调 |
+
+QQ 群消息的 author.member_role 与 SDK 归一化结果分别为 owner、admin、member。允许的按钮点击均有回调、ACK 和反馈发送记录；普通成员的限制同时有用户客户端确认与后台未执行处理器的证据。该轮无错误记录，完成后已关闭测试连接。详细脱敏证据见 [验收记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md#2026-10-06-分角色权限与管理者按钮实测)。
+
+这些结果限于本次账号、测试群及 callback 按钮，不保证所有机器人有相同事件字段与平台权限，也不覆盖 command/link 按钮权限、测试过程中的角色变更或公网 Webhook。

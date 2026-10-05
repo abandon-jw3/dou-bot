@@ -69,4 +69,4 @@ npm publish ./work/release/dou-bot-0.6.0.tgz --ignore-scripts --access public --
 
 ## 当前功能验收边界
 
-WS 已完成 Windows 下群聊和私聊实机验证。Webhook 完成本地真实 HTTP、签名与两种接入对照；公网 HTTPS 回调仍按用户决定待验。群角色投递和管理者按钮对不同角色的实际拦截还需专项实机验收。它们已在公开 README 中明确，不能记为全部生产场景已验证。完整历史见 [验证记录](validation-report.md)。
+WS 已有 Windows 和 macOS 下的群聊与私聊实机验证。2026-10-06 使用发布版 0.6.0，在本次测试机器人与群中完成群主、管理员、普通成员的角色字段、命令权限及管理者回调按钮允许/拒绝验证。Webhook 完成本地真实 HTTP、签名与两种接入对照；公网 HTTPS 回调仍待验。此结论不扩展到所有账号、其他按钮类型的权限或多日生产运行。完整历史见 [验证记录](validation-report.md)。

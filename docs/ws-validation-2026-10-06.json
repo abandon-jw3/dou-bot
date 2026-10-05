@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "validationDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "source": {
+    "repositoryCommit": "20706f19ba6c34d4f655332aa3cf9a5745ad9c8f",
+    "trackedTreeCleanAtStart": true,
+    "application": "apps/example",
+    "sdkVersion": "0.6.0",
+    "sdkOrigin": "published npm package",
+    "probeSha256": "8815deebefdc258306f4656693f3775414cbc74da34e2fdb0805ae955a73f78d"
+  },
+  "runtime": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v24.21.0",
+    "typescript": "5.9.3",
+    "transport": "ws"
+  },
+  "session": {
+    "startedAt": "2026-10-05T16:08:50.878Z",
+    "closedAt": "2026-10-05T16:12:34.188Z",
+    "readyDurationMs": 223310,
+    "closeReason": "validation-complete",
+    "exitCode": 0,
+    "heartbeatAcknowledgments": 5
+  },
+  "totals": {
+    "commands": 4,
+    "interactions": 2,
+    "successfulSends": 6,
+    "errors": 0
+  },
+  "scenes": [
+    {
+      "scene": "private",
+      "messageEvent": "C2C_MESSAGE_CREATE",
+      "textReceived": true,
+      "textSent": true,
+      "markdownCommandReceived": true,
+      "markdownSent": true,
+      "buttonReceived": true,
+      "buttonAcknowledged": true,
+      "buttonFeedbackSent": true,
+      "clientTextConfirmedByUser": true,
+      "clientMarkdownAndButtonConfirmedByUser": true
+    },
+    {
+      "scene": "group",
+      "messageEvent": "GROUP_MESSAGE_CREATE",
+      "textReceived": true,
+      "textSent": true,
+      "markdownCommandReceived": true,
+      "markdownSent": true,
+      "buttonReceived": true,
+      "buttonAcknowledged": true,
+      "buttonFeedbackSent": true,
+      "clientTextConfirmedByUser": true,
+      "clientMarkdownAndButtonConfirmedByUser": true
+    }
+  ],
+  "clientEvidence": [
+    {
+      "scope": "private-and-group-text",
+      "confirmation": "全都收到了",
+      "source": "user confirmation in this conversation"
+    },
+    {
+      "scope": "private-and-group-markdown-and-ordinary-button",
+      "confirmation": "成功了",
+      "source": "user confirmation in this conversation"
+    }
+  ],
+  "scope": "Published dou-bot 0.6.0 on macOS ARM64: private/group text, raw Markdown, ordinary inline callback buttons, acknowledgments and feedback. Client rendering is user-confirmed; the assistant did not inspect QQ screenshots. This session does not verify image sending, group-role restrictions, manager-only buttons, public Webhook, reconnection or multi-day stability.",
+  "events": [
+    {
+      "at": "2026-10-05T16:08:50.878Z",
+      "event": "ready"
+    },
+    {
+      "at": "2026-10-05T16:09:32.096Z",
+      "event": "heartbeat-acknowledged",
+      "count": 1
+    },
+    {
+      "at": "2026-10-05T16:09:49.322Z",
+      "event": "message-received",
+      "scene": "private",
+      "actor": "actor-1",
+      "command": "/hello",
+      "eventName": "C2C_MESSAGE_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:09:50.380Z",
+      "event": "reply-result",
+      "scene": "private",
+      "actor": "actor-1",
+      "command": "/hello",
+      "status": "sent",
+      "kind": "text"
+    },
+    {
+      "at": "2026-10-05T16:10:13.304Z",
+      "event": "heartbeat-acknowledged",
+      "count": 2
+    },
+    {
+      "at": "2026-10-05T16:10:15.506Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/hello",
+      "eventName": "GROUP_MESSAGE_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:10:17.072Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/hello",
+      "status": "sent",
+      "kind": "text"
+    },
+    {
+      "at": "2026-10-05T16:11:22.637Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-button",
+      "eventName": "GROUP_MESSAGE_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:11:24.246Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-button",
+      "status": "sent",
+      "kind": "markdown"
+    },
+    {
+      "at": "2026-10-05T16:11:25.777Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "eventName": "INTERACTION_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:11:26.164Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-2"
+    },
+    {
+      "at": "2026-10-05T16:11:28.745Z",
+      "event": "button-feedback",
+      "scene": "group",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:11:33.921Z",
+      "event": "message-received",
+      "scene": "private",
+      "actor": "actor-1",
+      "command": "/example-button",
+      "eventName": "C2C_MESSAGE_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:11:34.960Z",
+      "event": "reply-result",
+      "scene": "private",
+      "actor": "actor-1",
+      "command": "/example-button",
+      "status": "sent",
+      "kind": "markdown"
+    },
+    {
+      "at": "2026-10-05T16:11:36.249Z",
+      "event": "button-received",
+      "scene": "private",
+      "actor": "actor-1",
+      "eventName": "INTERACTION_CREATE"
+    },
+    {
+      "at": "2026-10-05T16:11:36.632Z",
+      "event": "button-acknowledged",
+      "scene": "private",
+      "actor": "actor-1"
+    },
+    {
+      "at": "2026-10-05T16:11:37.289Z",
+      "event": "button-feedback",
+      "scene": "private",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:12:34.188Z",
+      "event": "closed",
+      "heartbeatAcknowledgments": 5,
+      "observedMessages": 4,
+      "observedInteractions": 2
+    }
+  ]
+}

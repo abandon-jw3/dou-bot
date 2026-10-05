@@ -1,0 +1,686 @@
+{
+  "schemaVersion": 1,
+  "validationDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "status": "passed",
+  "source": {
+    "repositoryCommit": "20706f19ba6c34d4f655332aa3cf9a5745ad9c8f",
+    "application": "apps/example",
+    "sdkVersion": "0.6.0",
+    "sdkOrigin": "published npm package",
+    "node": "v24.21.0",
+    "typescript": "5.9.3",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "probeSha256": "241abde034520d8b4ecbead547ac79bd8e06ce9f3002fa7f7ee105ea5fe88e32"
+  },
+  "session": {
+    "probe": "174108",
+    "transport": "ws",
+    "startedAt": "2026-10-05T16:16:37.184Z",
+    "plannedCloseAt": "2026-10-05T16:31:37.182Z",
+    "closed": true,
+    "closedAt": "2026-10-05T16:29:13.004Z",
+    "readyDurationMs": 755820,
+    "closeReason": "validation-complete",
+    "exitCode": 0,
+    "heartbeatAcknowledgments": 18
+  },
+  "roles": {
+    "owner": {
+      "status": "passed",
+      "actor": "actor-1",
+      "claimedRole": "owner",
+      "claimSource": "User selected 群主 before this stage",
+      "eventRange": {
+        "startInclusive": 0,
+        "endExclusive": 20
+      },
+      "rawRole": "owner",
+      "normalizedRole": "owner",
+      "ownerCommand": "allowed",
+      "managersCommand": "allowed",
+      "buttons": {
+        "everyone-control": {
+          "received": true,
+          "handlerExecuted": true,
+          "acknowledged": true,
+          "feedbackSent": true
+        },
+        "managers": {
+          "received": true,
+          "handlerExecuted": true,
+          "acknowledged": true,
+          "feedbackSent": true
+        }
+      },
+      "clientConfirmedByUser": true,
+      "clientConfirmation": "成功了"
+    },
+    "admin": {
+      "status": "passed",
+      "claimedRole": "admin",
+      "claimSource": "User selected 管理员 before this stage",
+      "eventRange": {
+        "startInclusive": 20,
+        "endExclusive": 37
+      },
+      "actor": "actor-2",
+      "rawRole": "admin",
+      "normalizedRole": "admin",
+      "ownerCommand": "denied",
+      "managersCommand": "allowed",
+      "buttons": {
+        "everyone-control": {
+          "received": true,
+          "handlerExecuted": true,
+          "acknowledged": true,
+          "feedbackSent": true
+        },
+        "managers": {
+          "received": true,
+          "handlerExecuted": true,
+          "acknowledged": true,
+          "feedbackSent": true
+        }
+      },
+      "clientConfirmedByUser": true,
+      "clientConfirmation": "成功了"
+    },
+    "member": {
+      "status": "passed",
+      "eventRange": {
+        "startInclusive": 37,
+        "endExclusive": 51
+      },
+      "claimedRole": "member",
+      "claimSource": "User confirmed 可以，用普通成员继续 before this stage",
+      "actor": "actor-3",
+      "rawRole": "member",
+      "normalizedRole": "member",
+      "ownerCommand": "denied",
+      "managersCommand": "denied",
+      "buttons": {
+        "everyone-control": {
+          "received": true,
+          "handlerExecuted": true,
+          "acknowledged": true,
+          "feedbackSent": true
+        },
+        "managers": {
+          "received": false,
+          "handlerExecuted": false,
+          "acknowledged": false,
+          "feedbackSent": false
+        }
+      },
+      "clientGeneralConfirmation": "成功了",
+      "clientRestrictionConfirmed": true,
+      "clientConfirmedByUser": true,
+      "clientRestrictionDescription": "点击后提示无权限或拒绝操作",
+      "clientRestrictionSource": "User-selected description of QQ behavior; not a verbatim error message",
+      "managerButtonOutcome": "client-rejected-with-no-observed-callback"
+    }
+  },
+  "errors": [],
+  "evidence": [
+    {
+      "at": "2026-10-05T16:16:37.184Z",
+      "event": "ready"
+    },
+    {
+      "at": "2026-10-05T16:17:18.192Z",
+      "event": "heartbeat-acknowledged",
+      "count": 1
+    },
+    {
+      "at": "2026-10-05T16:17:34.854Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/role-info",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "owner",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:17:34.856Z",
+      "event": "normalized-role",
+      "actor": "actor-1",
+      "rawRole": "owner",
+      "normalizedRole": "owner"
+    },
+    {
+      "at": "2026-10-05T16:17:36.253Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/role-info",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:17:51.126Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/example-owner",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "owner",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:17:52.485Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/example-owner",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:17:59.488Z",
+      "event": "heartbeat-acknowledged",
+      "count": 2
+    },
+    {
+      "at": "2026-10-05T16:18:01.967Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/example-managers",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "owner",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:18:03.548Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/example-managers",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:18:08.930Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/role-buttons-174108",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "owner",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:18:10.573Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-1",
+      "command": "/role-buttons-174108",
+      "status": "sent",
+      "kind": "markdown",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:18:16.165Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:18:16.169Z",
+      "event": "button-handler",
+      "actor": "actor-1",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:18:16.817Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-1",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:18:17.645Z",
+      "event": "button-feedback",
+      "actor": "actor-1",
+      "button": "everyone-control",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:18:20.807Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-1",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:18:20.810Z",
+      "event": "button-handler",
+      "actor": "actor-1",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:18:21.166Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-1",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:18:21.927Z",
+      "event": "button-feedback",
+      "actor": "actor-1",
+      "button": "managers",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:21:42.322Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/role-info",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "admin",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:21:42.323Z",
+      "event": "normalized-role",
+      "actor": "actor-2",
+      "rawRole": "admin",
+      "normalizedRole": "admin"
+    },
+    {
+      "at": "2026-10-05T16:21:43.975Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/role-info",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:21:52.872Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-owner",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "admin",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:21:54.532Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-owner",
+      "status": "sent",
+      "kind": "text",
+      "denied": true
+    },
+    {
+      "at": "2026-10-05T16:22:08.159Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-managers",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "admin",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:22:09.463Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/example-managers",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:22:22.749Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/role-buttons-174108",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "admin",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:22:24.105Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-2",
+      "command": "/role-buttons-174108",
+      "status": "sent",
+      "kind": "markdown",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:22:26.979Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:22:26.981Z",
+      "event": "button-handler",
+      "actor": "actor-2",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:22:27.479Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-2",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:22:28.123Z",
+      "event": "button-feedback",
+      "actor": "actor-2",
+      "button": "everyone-control",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:22:30.137Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-2",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:22:30.140Z",
+      "event": "button-handler",
+      "actor": "actor-2",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:22:30.462Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-2",
+      "button": "managers"
+    },
+    {
+      "at": "2026-10-05T16:22:31.162Z",
+      "event": "button-feedback",
+      "actor": "actor-2",
+      "button": "managers",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:25:38.556Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/role-info",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "member",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:25:38.557Z",
+      "event": "normalized-role",
+      "actor": "actor-3",
+      "rawRole": "member",
+      "normalizedRole": "member"
+    },
+    {
+      "at": "2026-10-05T16:25:40.092Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/role-info",
+      "status": "sent",
+      "kind": "text",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:25:42.616Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/example-owner",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "member",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:25:43.873Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/example-owner",
+      "status": "sent",
+      "kind": "text",
+      "denied": true
+    },
+    {
+      "at": "2026-10-05T16:25:51.647Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/example-managers",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "member",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:25:52.947Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/example-managers",
+      "status": "sent",
+      "kind": "text",
+      "denied": true
+    },
+    {
+      "at": "2026-10-05T16:26:00.418Z",
+      "event": "message-received",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/role-buttons-174108",
+      "eventName": "GROUP_MESSAGE_CREATE",
+      "memberRole": "member",
+      "topLevelRole": "missing",
+      "authorFields": ["bot", "id", "member_openid", "member_role", "union_openid", "username"],
+      "payloadFields": [
+        "author",
+        "content",
+        "group_id",
+        "group_openid",
+        "id",
+        "message_scene",
+        "message_type",
+        "timestamp"
+      ]
+    },
+    {
+      "at": "2026-10-05T16:26:01.920Z",
+      "event": "reply-result",
+      "scene": "group",
+      "actor": "actor-3",
+      "command": "/role-buttons-174108",
+      "status": "sent",
+      "kind": "markdown",
+      "denied": false
+    },
+    {
+      "at": "2026-10-05T16:26:04.227Z",
+      "event": "button-received",
+      "scene": "group",
+      "actor": "actor-3",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:26:04.229Z",
+      "event": "button-handler",
+      "actor": "actor-3",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:26:04.562Z",
+      "event": "button-acknowledged",
+      "scene": "group",
+      "actor": "actor-3",
+      "button": "everyone-control"
+    },
+    {
+      "at": "2026-10-05T16:26:05.618Z",
+      "event": "button-feedback",
+      "actor": "actor-3",
+      "button": "everyone-control",
+      "status": "sent"
+    },
+    {
+      "at": "2026-10-05T16:29:13.004Z",
+      "event": "closed",
+      "heartbeatAcknowledgments": 18,
+      "observedMessages": 12,
+      "observedInteractions": 5
+    }
+  ],
+  "scope": "Owner, administrator and ordinary-member stages passed for this QQ bot and this test group over WebSocket using published dou-bot 0.6.0. Each real role was user-confirmed and matched author.member_role. Owner-only and managers-only command behavior matched the intended matrix. Ordinary callback buttons worked for all three; managers-only callback buttons worked for owner/admin, and the member saw a client refusal with no corresponding callback or handler execution observed. The diagnostic buttons perform no group-management operation. User confirmations cover client behavior; no screenshots were inspected. This is not a guarantee for every bot account, a test of command/link-button permissions, public Webhook, role changes during a session, or long-duration stability.",
+  "totals": {
+    "commands": 12,
+    "interactions": 5,
+    "successfulSends": 17,
+    "deniedCommands": 3,
+    "userConfirmedManagerButtonRejections": 1,
+    "errors": 0
+  }
+}
