@@ -2,6 +2,7 @@
   "name": "dou-bot-example",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "A QQ bot starter with annotated examples of every dou-bot decorator.",
   "type": "module",
   "engines": {

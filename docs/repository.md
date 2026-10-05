@@ -67,7 +67,7 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 
 两个子项目通过未压缩的 Git subtree 合并导入，保留原始提交作为合并祖先。迁移基线为示例 `2dbe39698360c1a1cfccc8b074e16cecd85f3b80` 与文档 `38563f89346b55fbd4b4e9b1f7632b322e917bd2`；可以用 `git show <commit>` 查阅迁移前内容。
 
-各工程许可沿用原状：SDK 的 MIT 与上游声明见根目录 `LICENSE`、`NOTICE`；文档与其中新编写的示例使用 `website/LICENSE`；独立业务示例自身的许可范围见 `apps/example/NOTICE`，此次迁移不重新授权其代码。
+2026-10-01，所有者明确将 SDK、独立业务示例、文档及配套技能统一以 MIT 授权。SDK 与技能使用根目录 `LICENSE`；业务示例和文档分别保留 `apps/example/LICENSE`、`website/LICENSE`，便于独立复制分发。根目录和业务示例的 `NOTICE` 继续保留 SDK 与适用上游声明；依赖包保留各自的许可证。
 
 ## 文档工具依赖维护
 

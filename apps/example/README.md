@@ -127,3 +127,5 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 本目录是独立 npm 工程，可以单独复制到新目录后安装和开发。请在本目录运行上述命令；主仓库根目录的 `npm run example:check`、`npm run example:build` 和 `npm run example:start` 是对应快捷入口。`.env` 放在 `apps/example/.env`。
 
 SDK 已以 MIT 许可发布到 [npm](https://www.npmjs.com/package/dou-bot/v/0.6.0)。本项目锁定 `dou-bot@0.6.0`，从官方 registry 安装；无需本地 tgz 或另一份框架源码。来源及升级方式见 [vendor/README.md](vendor/README.md)。
+
+本业务示例也采用 [MIT 许可证](LICENSE)，可独立复制、修改与分发；保留许可及适用的版权声明。SDK 与上游声明见 [NOTICE](NOTICE) 和所安装 SDK 的 LICENSE/NOTICE。
