@@ -23,6 +23,14 @@ const required = [
   'Command',
   'On',
   'OnButton',
+  'OnAttachment',
+  'Attachments',
+  'Images',
+  'User',
+  'UserId',
+  'Group',
+  'GroupId',
+  'Role',
   'Ctx',
   'Arg',
   'Args',
@@ -47,8 +55,7 @@ for (const path of pages) {
   const text = await readFile(path, 'utf8');
   if (/https:\/\/github\.com\/abandon-jw3\/(?:dd-bot|dd-bot-example)(?:[\/#)]|$)/u.test(text))
     throw new Error(`Private repository link: ${relative(root, path)}`);
-  if (/TestAdmission|TODO|待补充|待编写|COMING SOON/u.test(text))
-    throw new Error(`Unpublished API or unfinished content: ${path}`);
+  if (/TODO|待补充|待编写|COMING SOON/u.test(text)) throw new Error(`Unfinished content: ${path}`);
   for (const match of text.matchAll(/^<<<\s+@\/([^\s#]+)(?:#[^\s]+)?/gm)) {
     const target = resolve(docs, match[1]);
     const within = relative(root, target);

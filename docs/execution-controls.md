@@ -51,7 +51,7 @@ GuardContext 及其目标快照在运行时冻结；raw/attachments 仍遵守已
 
 Guard 从 Controller 所属模块解析，遵守 imports/exports 和普通 Provider 生命周期。未注册、不可见或歧义的令牌在实例构造前报错；实例/异步工厂结果没有 canActivate 时，在 create 返回前报错并执行初始化回滚。默认单例，因此将当前请求状态留在方法局部变量，不放在实例字段。
 
-模块 Guard 作用于本模块直接注册的 Controller，类级 Guard 作用于该 Controller 的 Command 和 OnButton；原始 On 观察器仍独立执行，便于记录原始事件。在 On 方法上显式加 Guard/Cooldown 会在启动时报 CONFIG。HelpModule 的列表不执行被列出命令的 Guard，不自动隐藏受限命令；实际调用仍检查权限。
+模块 Guard 作用于本模块直接注册的 Controller，类级 Guard 作用于该 Controller 的 Command、OnButton 和 OnAttachment；原始 On 观察器仍独立执行，便于记录原始事件。在 On 方法上显式加 Guard/Cooldown 会在启动时报 CONFIG。HelpModule 的列表不执行被列出命令的 Guard，不自动隐藏受限命令；实际调用仍检查权限。
 
 ## 命令冷却
 
@@ -64,13 +64,13 @@ query(@City() city: string): string {
 }
 ```
 
-`Cooldown(options)` 用于 Command / OnButton 方法，每个方法最多一个。durationMs 为 1～2147483647 的整数。配置复制并冻结；未声明的字段、错误范围、空提示等在装饰器求值时拒绝。
+`Cooldown(options)` 用于 Command / OnButton / OnAttachment 方法，每个方法最多一个。durationMs 为 1～2147483647 的整数。配置复制并冻结；未声明的字段、错误范围、空提示等在装饰器求值时拒绝。
 
 | scope     | 同一处理器内共享冷却的范围                       |
 | --------- | ------------------------------------------------ |
 | `user`    | 同一会话内的同一用户；不同群独立，群聊与私聊独立 |
 | `session` | 同一个群或同一私聊；群内所有用户共享             |
-| `command` | 此命令或按钮处理器的所有用户、会话共享           |
+| `command` | 此命令、按钮或附件处理器的所有用户、会话共享     |
 
 每个处理器各自计时；命令及其别名共享一份记录。按钮处理器与命令是不同路由，默认不共享冷却。框架不将群 member_openid 与私聊 user_openid 猜测为同一身份；跨会话统一身份策略由业务另行实现。
 
@@ -88,7 +88,7 @@ query(@City() city: string): string {
 - manual 模式下，如果 Guard/冷却拒绝或检查执行出错，业务处理器不会运行，框架负责确认收到（code=0）；确认会在等待拒绝提示发送之前发起。已进入业务处理器时仍由业务负责 manual 确认。
 - 指令提示引用原消息回复；按钮提示通过普通 send 发送，不把 interactionId 当作消息引用。普通发送是否允许由 QQ 平台权限决定，失败按已有机制上报，不自动改换引用。
 - 提示与确认都进入原有操作跟踪，平台重复投递不重复执行业务或发提示。
-- 新增 onError 阶段 guard / cooldown；业务处理器保留 command / button，发送和确认分别保留 send / interaction-ack。
+- 新增 onError 阶段 guard / cooldown；业务处理器保留 command / button / attachment，发送和确认分别保留 send / interaction-ack。
 - 关闭先按既有期限排空在途任务；超时后取消 Guard 的等待。迟到的放行结果不能继续执行业务或重新占用冷却。用户自己的异步操作仍需配合 ctx.signal；框架不能硬终止任意 JS。
 
 ## 完整业务例子

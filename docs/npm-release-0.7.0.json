@@ -1,0 +1,59 @@
+{
+  "package": "dou-bot",
+  "version": "0.7.0",
+  "license": "MIT",
+  "publishedAt": "2026-10-06T16:03:50.326Z",
+  "registry": "https://registry.npmjs.org/",
+  "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-0.7.0.tgz",
+  "integrity": "sha512-u671wsTDLt+g0r0JRwlCVu1mBuBTzQ88jat7i8jUFN6IBH+stjBdyvanzCH7XUu+Q2+SEE9p5NnYV70FEggqdw==",
+  "shasum": "fc79ee15678a5b137f40c503c4baa9906c883ec8",
+  "sha256": "9c5e58b28c779872ffe40916385d151dba6e867549407041ab97b24911d8a559",
+  "observedTags": {
+    "next": "0.6.0",
+    "latest": "0.7.0"
+  },
+  "anonymousDownloadMatchesCandidate": true,
+  "sourceCommit": "abc1cb901394a78a6ca48331e278e02f7eb24dc3",
+  "sourceTag": "v0.7.0",
+  "publisher": "fine_wei",
+  "publishedAtAsiaShanghai": "2026-10-07T00:03:50.326000+08:00",
+  "requestedTag": "latest",
+  "postReleaseSynchronization": "local-checks-passed",
+  "verification": {
+    "anonymousFreshCacheInstall": true,
+    "registryConsumers": [
+      "historical-0.6.0",
+      "attachment-selection",
+      "identity",
+      "attachment-routes"
+    ],
+    "skillExampleTests": 4,
+    "skillValidation": "passed",
+    "sdkTests": 242,
+    "publicExports": 139,
+    "bidirectionalTypeChecks": 102,
+    "exampleRegistryTests": 36,
+    "documentationExampleTests": 18,
+    "browserTests": 16,
+    "visualRenderChecks": ["desktop", "mobile"],
+    "dependencyAuditVulnerabilities": 0,
+    "registryCandidateByteEquality": true
+  },
+  "examples": [
+    "same-message-images",
+    "separate-video-audio-file",
+    "automatic-docx-upload",
+    "message-and-button-identities"
+  ],
+  "releaseScope": {
+    "sdk": "0.7.0",
+    "businessExample": "0.7.0",
+    "website": "0.7.0",
+    "douBotSkill": "0.7.0 / contract 1.11"
+  },
+  "remainingPlatformAcceptance": [
+    "public QQ HTTPS webhook",
+    "live automatic attachment routing",
+    "multi-day runtime"
+  ]
+}

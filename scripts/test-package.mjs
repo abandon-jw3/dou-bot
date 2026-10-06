@@ -6,9 +6,15 @@ import { parseEnv } from 'node:util';
 import ts from 'typescript';
 import { root, runNode } from './paths.mjs';
 
-if (process.argv.slice(2).some((argument) => argument !== '--released-baseline'))
+if (
+  process.argv
+    .slice(2)
+    .some((argument) => !['--released-baseline', '--published'].includes(argument))
+)
   throw new Error('Unknown package check argument');
 const releasedBaseline = process.argv.includes('--released-baseline');
+const published = process.argv.includes('--published');
+if (releasedBaseline && published) throw new Error('Choose one registry validation target');
 const output = resolve(root, 'work', 'package-check', randomUUID());
 const consumer = resolve(output, 'consumer');
 await mkdir(consumer, { recursive: true });
@@ -113,7 +119,9 @@ await writeFile(
       dependencies: {
         'dou-bot': releasedBaseline
           ? '0.6.0'
-          : `file:${relative(consumer, tarball).replaceAll('\\', '/')}`,
+          : published
+            ? manifest.version
+            : `file:${relative(consumer, tarball).replaceAll('\\', '/')}`,
       },
       devDependencies: { '@types/node': '24.19.0' },
     },
@@ -121,6 +129,10 @@ await writeFile(
     2,
   ),
 );
+if (published) {
+  await writeFile(resolve(output, 'npmrc'), '');
+  await writeFile(resolve(output, 'global-npmrc'), '');
+}
 await npm(
   [
     'install',
@@ -129,7 +141,17 @@ await npm(
     '--no-fund',
     '--registry=https://registry.npmjs.org/',
     '--cache',
-    resolve(root, 'work', 'stack-selection', 'npm-cache'),
+    published
+      ? resolve(output, 'fresh-npm-cache')
+      : resolve(root, 'work', 'stack-selection', 'npm-cache'),
+    ...(published
+      ? [
+          '--userconfig',
+          resolve(output, 'npmrc'),
+          '--globalconfig',
+          resolve(output, 'global-npmrc'),
+        ]
+      : []),
   ],
   consumer,
 );
@@ -152,7 +174,11 @@ const compilerOptions = {
   outDir: resolve(consumer, 'out'),
   skipLibCheck: false,
 };
-const skillExamples = ['minimal-module.ts', 'minimal-module.test.ts'];
+const skillExamples = [
+  'minimal-module.ts',
+  'minimal-module.test.ts',
+  ...(releasedBaseline ? [] : ['attachments-module.ts', 'attachments-module.test.ts']),
+];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline
   ? []
@@ -217,10 +243,20 @@ program.emit();
 await runNode([resolve(consumer, 'out', 'consumer.js')], { cwd: consumer });
 for (const name of featureConsumers)
   await runNode([resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))], { cwd: consumer });
-await runNode(['--test', resolve(consumer, 'out', 'minimal-module.test.js')], { cwd: consumer });
+await runNode(
+  [
+    '--test',
+    ...skillExamples
+      .filter((name) => name.endsWith('.test.ts'))
+      .map((name) => resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))),
+  ],
+  { cwd: consumer },
+);
 console.log(`Package consumer passed; ${pack.files.length} allowed files, no credential matches.`);
 console.log(
   releasedBaseline
     ? 'Historical consumer verified against published dou-bot@0.6.0.'
-    : 'Historical 0.6.0 consumer verified against the current tarball.',
+    : published
+      ? `All consumers verified against published dou-bot@${manifest.version} using empty npm configuration and fresh cache.`
+      : 'Historical 0.6.0 consumer verified against the current tarball.',
 );

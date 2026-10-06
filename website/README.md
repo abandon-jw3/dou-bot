@@ -1,8 +1,8 @@
 # dou-bot 用户文档
 
-[在线手册](https://abandon-jw3.github.io/dou-bot/) · [npm 0.6.0](https://www.npmjs.com/package/dou-bot/v/0.6.0) · [问题反馈](https://github.com/abandon-jw3/dou-bot/issues)
+[在线手册](https://abandon-jw3.github.io/dou-bot/) · [npm 0.7.0](https://www.npmjs.com/package/dou-bot/v/0.7.0) · [问题反馈](https://github.com/abandon-jw3/dou-bot/issues)
 
-基于 VitePress 1.6.4 默认主题的中文使用手册，面向 QQ 官方机器人群聊和私聊。API 和示例以公开发布的 dou-bot 0.6.0 为准。
+基于 VitePress 1.6.4 默认主题的中文使用手册，面向 QQ 官方机器人群聊和私聊。API 和示例以公开发布的 dou-bot 0.7.0 为准。
 
 工具依赖通过 scoped override 固定 Vite 6.4.3，锁文件使用 esbuild 0.25.12；版本评估与维护条件见 [文档工具依赖维护](../docs/repository.md#文档工具依赖维护)。
 
@@ -75,6 +75,6 @@ check 包含类型、格式、API 索引、链接、示例测试和站点构建�
 
 固定 base 为 /dou-bot/。如果以后改变仓库名或使用独立域名，需要同步 base、站点 hostname、favicon 和浏览器 baseURL，再验证所有深层页面。
 
-在主仓库根目录也可以使用 `npm run docs:dev`、`npm run docs:build`、`npm run docs:check` 和 `npm run docs:test:browser`。本站仍独立安装 npm 上的 `dou-bot@0.6.0`，不会自动链接当前 SDK 源码。原 `/dou-bot-docs/` 地址保留页面跳转，新内容统一在本目录维护。
+在主仓库根目录也可以使用 `npm run docs:dev`、`npm run docs:build`、`npm run docs:check` 和 `npm run docs:test:browser`。本站仍独立安装 npm 上的 `dou-bot@0.7.0`，不会自动链接当前 SDK 源码。原 `/dou-bot-docs/` 地址保留页面跳转，新内容统一在本目录维护。
 
 文档与新编写示例采用 [MIT](LICENSE)。协议与权限的详细验证记录保存在 [仓库验证报告](../docs/validation-report.md)；在线手册只保留影响用户使用的行为、限制和排错步骤。

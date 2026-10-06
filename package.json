@@ -95,7 +95,8 @@
     "probe:attachments": "node scripts/run-example.mjs live-attachments",
     "benchmark": "node scripts/run-example.mjs benchmark",
     "soak": "node scripts/run-example.mjs soak",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "test:published": "node scripts/test-package.mjs --published"
   },
   "dependencies": {
     "reflect-metadata": "0.2.2",

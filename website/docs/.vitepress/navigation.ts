@@ -38,6 +38,14 @@ export const sidebar: DefaultTheme.Sidebar = {
           link: '/guide/parameters',
         },
         {
+          text: '附件与自动上传',
+          link: '/guide/attachments',
+        },
+        {
+          text: '用户、群和角色信息',
+          link: '/guide/identity',
+        },
+        {
           text: 'Guard 与冷却',
           link: '/guide/guards',
         },
@@ -148,6 +156,14 @@ export const sidebar: DefaultTheme.Sidebar = {
         {
           text: '两轮问答',
           link: '/examples/prompt',
+        },
+        {
+          text: '图片与文件接收',
+          link: '/examples/attachments',
+        },
+        {
+          text: '用户身份与按钮操作者',
+          link: '/examples/identity',
         },
         {
           text: 'Markdown 与按钮',

@@ -1,6 +1,6 @@
 # 全部装饰器示例
 
-本模块覆盖项目当前安装的 **dou-bot 0.6.0 全部 20 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
+本模块覆盖项目当前安装的 **dou-bot 0.7.0 全部 28 个公开装饰器**。源码中的中文注释说明了用途、参数、执行顺序和容易混淆的行为。
 
 `AppModule` 已导入 `ExampleModule`，按根目录 README 启动后即可发送 `/example` 或 `/示例` 查看入口。最小的 `/hello` 示例仍在模块外。
 
@@ -30,6 +30,15 @@
 | `@GroupManagersOnly` | 当前群主或管理员                                | [example-access.controller.ts](example-access.controller.ts)                                                                  |
 
 ## 可以直接尝试的命令
+
+0.7.0 新增示例位于 [附件控制器](example-attachments.controller.ts) 和 [身份控制器](example-identity.controller.ts)，覆盖 Attachments、Images、OnAttachment、User、UserId、Group、GroupId、Role 八个新装饰器：
+
+- 在同一条消息发送 `/example-images 备注` 与 1～4 张图片；`/example-attachments` 查看当前附件数量。
+- 发送 `/example-upload video`、`/example-upload audio` 或 `/example-upload file`，收到提问后单独发送相应附件。取消、类型或数量不符时明确结束，不自动重问。
+- 直接上传“报告_20261007.docx”一类文件即可触发 OnAttachment。它只确认元信息匹配，下载与 DOCX 解析需要接入自己的业务服务；同用户有 3 秒冷却。
+- `/example-identity` 演示五种身份参数；`/example-identity-button` 演示本次按钮操作者。角色缺失时显示未知，不根据按钮权限推断。
+
+附件示例依赖 QQ 实际投递文件事件。上面的文件名仅为示例匹配规则，可按自己的业务修改；图片、文件与身份数据都不会被示例保存。
 
 | 输入                                            | 观察结果                                      |
 | ----------------------------------------------- | --------------------------------------------- |
@@ -88,7 +97,7 @@
 
 ## 二次输入与多轮会话
 
-[example-prompt.controller.ts](example-prompt.controller.ts) 演示上下文方法 `ctx.prompt()`，它不增加装饰器，现有 20 个装饰器示例保持完整。
+[example-prompt.controller.ts](example-prompt.controller.ts) 演示上下文方法 `ctx.prompt()`，它不增加装饰器，现有 28 个装饰器示例保持完整。
 
 | 命令                      | 使用方式                                                             |
 | ------------------------- | -------------------------------------------------------------------- |

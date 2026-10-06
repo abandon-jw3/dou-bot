@@ -1,12 +1,12 @@
 # 工程、模块与依赖注入
 
-适用基线：dou-bot 0.6.0。先检查项目实际声明，保留现有结构与用户选定的版本。
+适用基线：dou-bot 0.7.0。先检查项目实际声明，保留现有结构与用户选定的版本。
 
 ## 消费 SDK
 
 公开入口只有 `dou-bot` 和 `dou-bot/testing`。根入口加载 reflect-metadata/lite；业务无需添加框架内部的 RuntimePorts、Container 或 WebSocket 类型依赖。
 
-框架 dou-bot@0.6.0 已以 MIT 发布到官方 npm registry，GitHub 框架仓库已改名为 dou-bot 并公开。新项目可声明 `"dou-bot": "0.6.0"` 并提交锁文件。已有本地 tgz 项目迁移时显式执行 `npm install --save-exact dou-bot@0.6.0`，核对锁文件的 resolved 已改为官方 registry URL，保留原包来源与校验记录；不要安装其他项目占用的 dd-bot 包。
+框架 dou-bot@0.7.0 已以 MIT 发布到官方 npm registry，GitHub 框架仓库已改名为 dou-bot 并公开。新项目可声明 `"dou-bot": "0.7.0"` 并提交锁文件。已有本地 tgz 项目迁移时显式执行 `npm install --save-exact dou-bot@0.7.0`，核对锁文件的 resolved 已改为官方 registry URL，保留原包来源与校验记录；不要安装其他项目占用的 dd-bot 包。
 
 业务开发依赖通常包含 TypeScript 与 @types/node，生产依赖只需声明自己使用的 SDK 和业务库。框架内部的 ws 不意味着消费者必须安装 @types/ws。
 

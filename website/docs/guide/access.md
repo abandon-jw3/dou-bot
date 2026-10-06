@@ -1,6 +1,6 @@
 # 内置访问限制与管理者按钮
 
-适用于 dou-bot **0.6.0**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
+适用于 dou-bot **0.7.0**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
 
 ## API
 
@@ -51,12 +51,12 @@ export class SettingsController {
 
 填入的 ID 是当前机器人从 QQ 收到的 OpenID，不是日常 QQ 号。未指定 scene/groupId 时，对所有会话做精确字符串匹配；它不转换、合并或推断群聊和私聊身份。需要限定场景时显式配置 scene/groupId 或叠加 GroupOnly/PrivateOnly。多机器人各自配置对应的 OpenID。
 
-从 0.6.0 开始，这些装饰器也可以写在模块类上，规则只传递给本模块直接注册的控制器。具体顺序和边界见 [模块 Guard 指南](./guards.md#模块统一配置)。
+从 0.7.0 开始，这些装饰器也可以写在模块类上，规则只传递给本模块直接注册的控制器。具体顺序和边界见 [模块 Guard 指南](./guards.md#模块统一配置)。
 
 ## 作用范围与执行规则
 
-- GroupOnly、PrivateOnly、UsersOnly 可作用于控制器类及 Command/OnButton 方法。
-- GroupRoles、GroupManagersOnly 用于命令或命令控制器。直接作用于 OnButton，或由类/继承施加到 OnButton 时，启动报 CONFIG，提示使用按钮原生 permission。不要在同一个带类级角色限制的控制器里放按钮回调。
+- GroupOnly、PrivateOnly、UsersOnly 可作用于控制器类及 Command/OnButton/OnAttachment 方法。
+- GroupRoles、GroupManagersOnly 用于命令、附件处理器或对应控制器。直接作用于 OnButton，或由类/继承施加到 OnButton 时，启动报 CONFIG，提示使用按钮原生 permission。不要在同一个带类级角色限制的控制器里放按钮回调。
 - 原始 On 观察器保持原有语义：类级规则不约束观察器；在 On 方法上直接放这些装饰器会报 CONFIG。观察器不能用来拦截命令。
 - 类级规则先于方法级；基类先于派生类；同一位置按代码从上到下执行，与 UseGuards 混用也保持此顺序。任一规则拒绝即停止。
 - 不同装饰器之间是 AND；一个 UsersOnly 名单或一个 GroupRoles 列表内部是 OR。方法声明不能放宽类级限制。覆写方法使用新的方法声明，未重新声明路由的覆写方法不注册。

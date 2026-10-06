@@ -29,10 +29,10 @@ features:
 ## 创建你的第一个机器人
 
 ```sh
-npm install --save-exact dou-bot@0.6.0
+npm install --save-exact dou-bot@0.7.0
 ```
 
-运行环境为 Node.js 24+，本手册使用 Node.js 24.21.0、TypeScript 5.9.3 和 ESM。查看 [快速开始](./guide/quick-start.md)，编写并运行第一个机器人；也可以先试试 [离线示例](./guide/testing.md)。
+运行环境为 Node.js 24.x（>=24.0.0 <25），本手册使用 Node.js 24.21.0、TypeScript 5.9.3 和 ESM。查看 [快速开始](./guide/quick-start.md)，编写并运行第一个机器人；也可以先试试 [离线示例](./guide/testing.md)。
 
 ## 找到你需要的内容
 
@@ -41,4 +41,4 @@ npm install --save-exact dou-bot@0.6.0
 - **查询细节**：[装饰器参考](./api/decorators.md)、[应用 API](./api/application.md)、[错误与日志](./api/errors.md)。
 - **准备运行**：[WS](./guide/ws.md)、[Webhook](./guide/webhook.md)、[Windows 部署](./guide/deployment.md)。
 
-本手册适用于 dou-bot 0.6.0。遇到问题可先查阅 [排错指南](./guide/troubleshooting.md)，也可以 [反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。
+本手册适用于 dou-bot 0.7.0。遇到问题可先查阅 [排错指南](./guide/troubleshooting.md)，也可以 [反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。

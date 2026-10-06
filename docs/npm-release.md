@@ -1,6 +1,10 @@
 # dou-bot 的 npm 发布记录与流程
 
-状态：**dou-bot@0.6.0 已于 2026-09-30 13:47（Asia/Shanghai）公开发布到 npm**，许可证为 MIT，发布账号为 fine_wei。完整性、来源提交与验证记录见 [发布记录](npm-release-0.6.0.json)，包页面见 [npm](https://www.npmjs.com/package/dou-bot/v/0.6.0)。
+状态：**dou-bot@0.7.0 已于 2026-10-07 00:03:50（Asia/Shanghai）公开发布到 npm**，许可证为 MIT，发布账号为 fine_wei。latest 指向 0.7.0，next 保持 0.6.0。匿名下载与已验收候选的 SHA-256 / SHA-512 完全一致，源码标签 v0.7.0 指向 abc1cb9；见 [0.7.0 发布记录](npm-release-0.7.0.json) 和 [npm](https://www.npmjs.com/package/dou-bot/v/0.7.0)。
+
+业务示例、网站和配套技能已同步升级至精确版本 0.7.0。通过 `npm run test:published` 可使用空 npm 配置和全新缓存验证 registry 上的当前版本；历史 0.6.0 消费者继续用 `npm run test:compat` 验证。
+
+0.6.0 于 2026-09-30 13:47 发布，其 [历史记录](npm-release-0.6.0.json) 保留。下方的候选生成和发布前步骤是本次发行的过程记录；0.7.0 已存在，不能重复上传覆盖。
 
 ## 0.7.0 发行候选
 
@@ -55,9 +59,9 @@ npm publish ./work/release/0.7.0/dou-bot-0.7.0.tgz --ignore-scripts --access pub
 
 本次命令明确使用 `--tag next`，但 registry 返回的实际状态为 `next`、`latest` 都指向 0.6.0。完成账号验证后尝试移除 latest，registry 返回 HTTP 400，复查标签未变。此结果已记录，不将其写成“只有 next”。项目使用精确依赖 `dou-bot@0.6.0`；0.6.0 不带 prerelease 后缀，标签本身不构成生产验收承诺。
 
-## 后续发行需说明的变更
+## 0.7.0 纳入的变更记录
 
-以下属于 0.6.0 发布后的源码变更，尚未发布到 npm：
+以下是 0.6.0 发布后、0.7.0 发布前记录的源码变更，现已随 0.7.0 发布；其中契约修订号和“未发布”描述保留开发阶段的背景：
 
 - 2026-10-01，所有者明确统一采用 MIT；独立业务示例已补齐 LICENSE、NOTICE 与 package.json 的许可字段。既有 SDK 和上游声明继续保留。
 

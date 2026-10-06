@@ -104,7 +104,7 @@ dou-bot/
 
 ## 安装
 
-本节对应 dou-bot 0.7.0。请先核对 [发行状态](https://github.com/abandon-jw3/dou-bot/blob/main/docs/npm-release.md)；registry 发布完成后，在自己的机器人项目中安装精确版本：
+dou-bot 0.7.0 已发布到 npm，详见 [发行记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/npm-release.md)。在自己的机器人项目中安装精确版本：
 
 ```sh
 npm init -y
@@ -113,7 +113,7 @@ npm install --save-exact dou-bot@0.7.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
-候选验收阶段安装本地已验证的 `.tgz`；源码的版本字段本身不代表 npm 已发布。0.7.0 计划使用 `latest` 标签，`next` 可能仍指向旧版，不用于确定安装版本。旧本地 tgz 项目在 registry 发布后执行 `npm install --save-exact dou-bot@0.7.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
+latest 已指向 0.7.0，next 仍指向 0.6.0；业务项目使用精确版本及锁文件。旧本地 tgz 项目执行 `npm install --save-exact dou-bot@0.7.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
 
 创建 `tsconfig.json`：
 

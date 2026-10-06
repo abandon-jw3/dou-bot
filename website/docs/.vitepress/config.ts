@@ -36,7 +36,7 @@ export default defineConfig({
     lightModeSwitchTitle: '切换到浅色模式',
     darkModeSwitchTitle: '切换到深色模式',
     footer: {
-      message: '以 MIT 许可证发布 · 文档适用于 dou-bot 0.6.0',
+      message: '以 MIT 许可证发布 · 文档适用于 dou-bot 0.7.0',
       copyright: '© 2026 dou-bot contributors',
     },
     search: {

@@ -12,6 +12,8 @@
 
 下方示例展示装饰器的声明方式；可以直接运行的完整模块见 [示例](../examples/hello.md)。
 
+接收图片和文件时，使用 [Attachments](#attachments)、[Images](#images) 与 [OnAttachment](#onattachment)。读取当前身份时，使用 [User](#user)、[UserId](#userid)、[Group](#group)、[GroupId](#groupid)、[Role](#role)。
+
 ## Module {#module}
 
 声明模块的依赖、服务、控制器和导出。
@@ -91,6 +93,76 @@ Controller(): ClassDecorator
 **使用限制：** Controller 不作为跨模块注入或导出的 Provider。
 
 [教程与完整示例](../guide/commands.md)。
+
+## OnAttachment {#onattachment}
+
+当用户直接发送符合条件的附件时执行处理器。
+
+```ts
+OnAttachment(options?: OnAttachmentOptions): MethodDecorator
+```
+
+filename 支持精确文件名或 RegExp，extension 支持一个扩展名，kind 支持 all/image/video/audio/file；条件共同作用于同一个附件。省略筛选条件时监听全部带附件的消息。invalidInput 默认为 report，可设为 reply。
+
+用于实例方法，返回消息可自动回复。支持 Guard、冷却、身份和附件参数、ctx.prompt；不支持文字参数。多个匹配处理器独立顺序执行，prompt 和已识别命令优先。用法见 [自动接收文件](../guide/attachments.md#用户直接上传文件)。
+
+## Attachments {#attachments}
+
+```ts
+Attachments(options?: AttachmentOptions): ParameterDecorator
+```
+
+注入 readonly Attachment[]。命令参数获得本条消息的全部顶层附件，OnAttachment 参数获得本处理器匹配的附件。name/description 用于说明；minCount 默认 0，maxCount 默认无限制，数量边界必须为非负安全整数。
+
+各参数获得独立的浅冻结数组，保留顺序和重复项。Guard 之后、冷却之前校验数量，不消费文字。见 [附件指南](../guide/attachments.md)。
+
+## Images {#images}
+
+```ts
+Images(options?: AttachmentOptions): ParameterDecorator
+```
+
+与 Attachments 使用相同配置和位置，进一步选择 image MIME；只选择本条消息或本附件处理器匹配集合中的图片。用户将指令与图片同条发送时使用。见 [收图示例](../examples/attachments.md)。
+
+## User {#user}
+
+```ts
+User(): ParameterDecorator
+```
+
+注入 UserInfo 冻结快照，包含当前用户 id 和平台提供的可选 username、bot、memberRole。用于命令、按钮和附件处理器，不请求额外资料。见 [身份信息](../guide/identity.md)。
+
+## UserId {#userid}
+
+```ts
+UserId(): ParameterDecorator
+```
+
+注入 string，等于当前 ctx.userId；按钮以本次操作者为准。用于命令、按钮和附件处理器。见 [身份与按钮示例](../examples/identity.md)。
+
+## Group {#group}
+
+```ts
+Group(): ParameterDecorator
+```
+
+注入 GroupInfo 或 undefined。群聊为包含 id 的冻结对象，私聊为 undefined；用于命令、按钮和附件处理器。不会查询群名称或成员列表。
+
+## GroupId {#groupid}
+
+```ts
+GroupId(): ParameterDecorator
+```
+
+注入当前群 OpenID，私聊为 undefined；用于命令、按钮和附件处理器。OpenID 不等于显示用群号。
+
+## Role {#role}
+
+```ts
+Role(): ParameterDecorator
+```
+
+注入 member/admin/owner 或 undefined。角色来自当前群消息，私聊、按钮和未知值均为 undefined。装饰器不拒绝执行，权限限制使用 GroupRoles 等 Guard。见 [身份信息](../guide/identity.md)。
 
 ## Command {#command}
 

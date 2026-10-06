@@ -1,4 +1,6 @@
 import { HelpModule, Module } from 'dou-bot';
+import { ExampleAttachmentsController } from './example-attachments.controller.js';
+import { ExampleIdentityController } from './example-identity.controller.js';
 import { ExampleController } from './example.controller.js';
 import { ExampleEventsController } from './example-events.controller.js';
 import { ExamplePrivateController } from './example-private.controller.js';
@@ -24,6 +26,8 @@ import type { ExampleSettings } from './example.service.js';
     ExampleGroupAccessController,
     ExamplePrivateAccessController,
     ExamplePromptController,
+    ExampleAttachmentsController,
+    ExampleIdentityController,
   ],
   // providers 注册服务、Guard 与配置；useValue 的令牌供 @Inject 使用。
   providers: [

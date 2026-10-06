@@ -55,8 +55,8 @@ export class SettingsController {
 
 ## 作用范围与执行规则
 
-- GroupOnly、PrivateOnly、UsersOnly 可作用于控制器类及 Command/OnButton 方法。
-- GroupRoles、GroupManagersOnly 用于命令或命令控制器。直接作用于 OnButton，或由类/继承施加到 OnButton 时，启动报 CONFIG，提示使用按钮原生 permission。不要在同一个带类级角色限制的控制器里放按钮回调。
+- GroupOnly、PrivateOnly、UsersOnly 可作用于控制器类及 Command/OnButton/OnAttachment 方法。
+- GroupRoles、GroupManagersOnly 用于命令、附件处理器或对应控制器。直接作用于 OnButton，或由类/继承施加到 OnButton 时，启动报 CONFIG，提示使用按钮原生 permission。不要在同一个带类级角色限制的控制器里放按钮回调。
 - 原始 On 观察器保持原有语义：类级规则不约束观察器；在 On 方法上直接放这些装饰器会报 CONFIG。观察器不能用来拦截命令。
 - 类级规则先于方法级；基类先于派生类；同一位置按代码从上到下执行，与 UseGuards 混用也保持此顺序。任一规则拒绝即停止。
 - 不同装饰器之间是 AND；一个 UsersOnly 名单或一个 GroupRoles 列表内部是 OR。方法声明不能放宽类级限制。覆写方法使用新的方法声明，未重新声明路由的覆写方法不注册。

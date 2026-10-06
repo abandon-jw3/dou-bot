@@ -2,7 +2,7 @@
 
 ## Guard 与执行顺序
 
-0.6.0 支持 `@Module({ guards: [...] })` 以及模块类上的 UseGuards/内置访问限制。顺序为模块配置 guards → 模块类装饰器 → 控制器类 → 方法；各层累加，重复令牌不自动去重。仅保护本模块 controllers 中的 Command/OnButton，不传播到 imports、父模块或兄弟模块。
+0.7.0 支持 `@Module({ guards: [...] })` 以及模块类上的 UseGuards/内置访问限制。顺序为模块配置 guards → 模块类装饰器 → 控制器类 → 方法；各层累加，重复令牌不自动去重。仅保护本模块 controllers 中的 Command/OnButton，不传播到 imports、父模块或兄弟模块。
 
 模块 Guard 从所属模块的 providers/imports/exports 解析，不能传实例或把 GroupOnly() 等装饰器放入 guards 数组。缺失、歧义、Controller 令牌和非法工厂结果会在启动时拒绝，即使模块暂无控制器也会检查。内置规则跨层合并做场景/角色冲突校验；含 OnButton 的模块不能整体使用 GroupRoles/GroupManagersOnly，应把角色规则放到专门的命令控制器。
 

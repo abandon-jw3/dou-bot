@@ -1,6 +1,6 @@
 # 类型与接口
 
-在这里查阅 dou-bot **0.6.0** 的函数签名、配置字段与返回类型。编写业务时从 `dou-bot` 导入，编写离线测试时从 `dou-bot/testing` 导入；需要了解用法时，先看 [装饰器参考](./decorators.md) 或 [完整示例](../examples/hello.md)。
+在这里查阅 dou-bot **0.7.0** 的函数签名、配置字段与返回类型。编写业务时从 `dou-bot` 导入，编写离线测试时从 `dou-bot/testing` 导入；需要了解用法时，先看 [装饰器参考](./decorators.md) 或 [完整示例](../examples/hello.md)。
 
 ## dou-bot
 
@@ -122,8 +122,59 @@ export interface Attachment {
   readonly size?: number;
   readonly width?: number;
   readonly height?: number;
+  readonly voiceWavUrl?: string;
+  readonly asrReferText?: string;
   readonly raw: Readonly<Record<string, unknown>>;
 }
+```
+
+### AttachmentKind {#root-AttachmentKind}
+
+```ts
+export type AttachmentKind = 'all' | 'image' | 'video' | 'audio' | 'file';
+```
+
+### AttachmentOptions {#root-AttachmentOptions}
+
+```ts
+export interface AttachmentOptions {
+  name?: string;
+  description?: string;
+  minCount?: number;
+  maxCount?: number;
+}
+```
+
+### Attachments {#root-Attachments}
+
+```ts
+export declare const Attachments: (options?: AttachmentOptions) => ParameterDecorator;
+```
+
+### AttachmentSelectionOptions {#root-AttachmentSelectionOptions}
+
+```ts
+export interface AttachmentSelectionOptions {
+  kind?: AttachmentKind;
+  minCount?: number;
+  maxCount?: number;
+}
+```
+
+### AttachmentSelectionResult {#root-AttachmentSelectionResult}
+
+```ts
+export type AttachmentSelectionResult =
+  | {
+      readonly status: 'valid';
+      readonly attachments: readonly Attachment[];
+    }
+  | {
+      readonly status: 'invalid';
+      readonly reason: 'too-few' | 'too-many';
+      readonly count: number;
+      readonly limit: number;
+    };
 ```
 
 ### Awaitable {#root-Awaitable}
@@ -379,6 +430,7 @@ export type ErrorPhase =
   | 'queue'
   | 'observer'
   | 'command'
+  | 'attachment'
   | 'button'
   | 'interaction-ack'
   | 'send'
@@ -443,6 +495,12 @@ export type FrameworkErrorCode =
   | 'CLEANUP_FAILED';
 ```
 
+### Group {#root-Group}
+
+```ts
+export declare const Group: () => ParameterDecorator;
+```
+
 ### GroupButtonContext {#root-GroupButtonContext}
 
 ```ts
@@ -454,6 +512,20 @@ export interface GroupButtonContext extends ButtonContextBase {
       scene: 'group';
     }
   >;
+}
+```
+
+### GroupId {#root-GroupId}
+
+```ts
+export declare const GroupId: () => ParameterDecorator;
+```
+
+### GroupInfo {#root-GroupInfo}
+
+```ts
+export interface GroupInfo {
+  readonly id: string;
 }
 ```
 
@@ -508,13 +580,13 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly userId: string;
   readonly controller: Type;
   readonly method: string;
-  /** Canonical command name or button ID, independent of the alias used. */
+  /** Canonical command name, button ID, or attachment:<controller>.<method>. */
   readonly route: string;
 } & (
     | {
         readonly scene: 'group';
         readonly groupId: string;
-        /** Present only for group message commands with a recognized author role. */
+        /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
         readonly target: Extract<
           MessageTarget,
@@ -539,6 +611,13 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         readonly messageId: string;
         readonly content: string;
         readonly attachments: readonly Attachment[];
+      }
+    | {
+        readonly kind: 'attachment';
+        readonly messageId: string;
+        readonly content: string;
+        readonly attachments: readonly Attachment[];
+        readonly matchedAttachments: readonly Attachment[];
       }
     | {
         readonly kind: 'button';
@@ -591,6 +670,12 @@ export interface ImageMessage {
   readonly source: ImageSource;
   readonly caption?: string;
 }
+```
+
+### Images {#root-Images}
+
+```ts
+export declare const Images: (options?: AttachmentOptions) => ParameterDecorator;
 ```
 
 ### ImageSource {#root-ImageSource}
@@ -770,6 +855,23 @@ export interface ModuleMetadata {
 
 ```ts
 export declare const On: (eventName: string) => MethodDecorator;
+```
+
+### OnAttachment {#root-OnAttachment}
+
+```ts
+export declare function OnAttachment(options?: OnAttachmentOptions): MethodDecorator;
+```
+
+### OnAttachmentOptions {#root-OnAttachmentOptions}
+
+```ts
+export interface OnAttachmentOptions {
+  filename?: string | RegExp;
+  extension?: string;
+  kind?: AttachmentKind;
+  invalidInput?: 'report' | 'reply';
+}
 ```
 
 ### OnButton {#root-OnButton}
@@ -1214,6 +1316,21 @@ export interface RetryOptions {
 }
 ```
 
+### Role {#root-Role}
+
+```ts
+export declare const Role: () => ParameterDecorator;
+```
+
+### selectAttachments {#root-selectAttachments}
+
+```ts
+export declare function selectAttachments(
+  attachments: readonly Attachment[],
+  options?: AttachmentSelectionOptions,
+): AttachmentSelectionResult;
+```
+
 ### SendOptions {#root-SendOptions}
 
 ```ts
@@ -1314,6 +1431,29 @@ export declare function UseGuards(
 ): ClassDecorator & MethodDecorator;
 ```
 
+### User {#root-User}
+
+```ts
+export declare const User: () => ParameterDecorator;
+```
+
+### UserId {#root-UserId}
+
+```ts
+export declare const UserId: () => ParameterDecorator;
+```
+
+### UserInfo {#root-UserInfo}
+
+```ts
+export interface UserInfo {
+  readonly id: string;
+  readonly username?: string;
+  readonly bot?: boolean;
+  readonly memberRole?: GroupRole;
+}
+```
+
 ### UsersOnly {#root-UsersOnly}
 
 ```ts
@@ -1407,6 +1547,19 @@ export interface RecordedMessage {
   target: MessageTarget;
   payload: QQMessagePayload;
 }
+```
+
+### TestAdmission {#testing-TestAdmission}
+
+```ts
+export type TestAdmission =
+  | {
+      status: 'accepted' | 'duplicate';
+      done: Promise<void>;
+    }
+  | {
+      status: 'ignored' | 'overloaded' | 'stopping' | 'failed';
+    };
 ```
 
 ### TestHarness {#testing-TestHarness}

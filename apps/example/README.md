@@ -61,7 +61,7 @@ export class BotController {
 
 ## 全部装饰器示例
 
-[src/example/](src/example/README.md) 中的独立模块覆盖 SDK 的 **20 个公开装饰器**，已通过 `AppModule.imports` 注册。发送 `/example` 或 `/示例` 查看入口，发送 `/help example-slot` 查看参数帮助。
+[src/example/](src/example/README.md) 中的独立模块覆盖 SDK 的 **28 个公开装饰器**，已通过 `AppModule.imports` 注册。发送 `/example` 或 `/示例` 查看入口，发送 `/help example-slot` 查看参数帮助。
 
 示例包括构造注入、位置参数、选项、Slot/Rest、手动回复、类级和方法级 Guard、冷却、原始事件及按钮回调。每处声明都有中文注释，完整的装饰器索引和可复制命令见 [示例模块说明](src/example/README.md)。
 
@@ -92,7 +92,7 @@ apps/example/
 │     │  └─ module-guards.guard.ts      # 模块、类和方法使用的 Guard
 │     ├─ example-private.controller.ts # 类级 Guard
 │     ├─ example-events.controller.ts  # 原始 QQ 事件观察器
-│     └─ README.md            # 20 个装饰器索引和命令说明
+│     └─ README.md            # 28 个装饰器索引和命令说明
 ├─ tests/                     # 使用 dou-bot/testing 的离线测试
 │  ├─ application.test.ts     # 最小 hello 命令回归
 │  ├─ access.test.ts          # 内置访问限制与管理者按钮
@@ -126,6 +126,6 @@ npm run check   # SDK 校验、类型检查、Lint、格式检查、构建和测
 
 本目录是独立 npm 工程，可以单独复制到新目录后安装和开发。请在本目录运行上述命令；主仓库根目录的 `npm run example:check`、`npm run example:build` 和 `npm run example:start` 是对应快捷入口。`.env` 放在 `apps/example/.env`。
 
-SDK 已以 MIT 许可发布到 [npm](https://www.npmjs.com/package/dou-bot/v/0.6.0)。本项目锁定 `dou-bot@0.6.0`，从官方 registry 安装；无需本地 tgz 或另一份框架源码。来源及升级方式见 [vendor/README.md](vendor/README.md)。
+SDK 已以 MIT 许可发布到 [npm](https://www.npmjs.com/package/dou-bot/v/0.7.0)。本项目锁定 `dou-bot@0.7.0`，从官方 registry 安装；无需本地 tgz 或另一份框架源码。来源及升级方式见 [vendor/README.md](vendor/README.md)。
 
 本业务示例也采用 [MIT 许可证](LICENSE)，可独立复制、修改与分发；保留许可及适用的版权声明。SDK 与上游声明见 [NOTICE](NOTICE) 和所安装 SDK 的 LICENSE/NOTICE。

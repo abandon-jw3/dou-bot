@@ -44,6 +44,6 @@ PromptMessage 是 MessageContext。取消与超时不自动发送提示；发送
 
 提供请求与路由信息，包括 appId、eventName、raw、signal、userId、scene、target、controller、method、route。route 使用规范命令名或按钮 ID，不随别名变化。
 
-kind=command 时有 messageId、content、attachments；kind=button 时有 interactionId、buttonId、data。群上下文有 groupId，群命令可能有 memberRole。
+kind=command 时有 messageId、content、attachments；kind=attachment 还提供本处理器的 matchedAttachments；kind=button 时有 interactionId、buttonId、data。群上下文有 groupId，群消息可能有 memberRole。
 
 GuardContext 没有 reply/send/ack/client。canActivate 返回 true 放行，false 静默拒绝，或 `{ allow: false, message }` 拒绝并提示；不要返回 `{ allow: true }`。Guard 发生在参数绑定之前，因此没有解析后的 Slot 等参数。

@@ -15,7 +15,7 @@ dou-bot **0.7.0 / 契约 1.11** 支持三个层级的 Guard。执行顺序为 **
 export class FeatureModule {}
 ```
 
-FeatureGuard 会作用于两个控制器中的所有 Command 和 OnButton，无需在每个控制器上重复声明。`guards` 接受类、字符串或 Symbol 类型的 Provider 令牌；Guard 本身仍需在本模块 providers 中注册，或通过 imports/exports 取得。数组为空表示该配置项不追加规则。
+FeatureGuard 会作用于两个控制器中的所有 Command、OnButton 和 OnAttachment，无需在每个控制器上重复声明。`guards` 接受类、字符串或 Symbol 类型的 Provider 令牌；Guard 本身仍需在本模块 providers 中注册，或通过 imports/exports 取得。数组为空表示该配置项不追加规则。
 
 模块只保护直接列在自己 controllers 中的类。imports 引入的模块有自己的规则，父模块、兄弟模块也不会受到影响；归属由模块注册决定，不由目录结构或 TypeScript 的 import 决定。导出一个 Guard Provider 只让令牌可见，不会自动给导入方施加规则。
 
