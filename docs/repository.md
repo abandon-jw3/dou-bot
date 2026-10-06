@@ -78,3 +78,5 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 该 override 超出 VitePress 原先声明的 Vite 5 范围，是本仓库维护的兼容组合。已核对 [Vite 6 迁移说明](https://github.com/vitejs/vite/blob/v6.4.3/docs/guide/migration.md) 和 [Vite 官方修复公告](https://github.com/vitejs/vite/security/advisories/GHSA-fx2h-pf6j-xcff)；当前站点没有自定义 Sass、PostCSS 配置或条件解析。本轮已通过文档类型检查、发布包 API 索引、14 项示例测试、生产构建、12 项生产预览浏览器测试，以及开发服务器桌面/手机渲染、导航、搜索、刷新和控制台检查。后续升级应重复这些验收。
 
 本次 `npm audit` 已降为 **0 项告警**。CI 增加 `npm audit --audit-level=moderate`；后续 VitePress 稳定版正式采用已修复的 Vite 后，移除 override 并重新验收。工具依赖只安装在 `website` 工程，SDK 发包检查继续拒绝携带它们。
+
+2026-10-06 部署补充：`a8fbeb7` 的四组 SDK 和两组业务示例 CI 通过，文档任务被 source-map-js 的 [安全公告](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) 阻断。仅将网站锁文件中的传递依赖 source-map-js 从 1.2.1 更新到上游 [1.2.2 修复版本](https://github.com/7rulnik/source-map-js/releases/tag/v1.2.2)，现有依赖范围已兼容，无需新增 override 或调整直接依赖。干净安装后 audit 恢复为 0 项告警，文档完整检查和 12 项浏览器测试通过；VitePress、TypeScript 与 SDK 版本保持。
