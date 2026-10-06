@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: dou-bot
-  text: '<span class="hero-phrase">用装饰器编写</span> <span class="hero-phrase">QQ 机器人</span>'
+  text: '<span class="hero-phrase">一个轻量化的</span><span class="hero-phrase">机器人框架</span>'
   tagline: 接收命令、发送消息、限制访问、收集用户输入。从第一个 hello 开始搭建你的机器人。
   actions:
     - theme: brand

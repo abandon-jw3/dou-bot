@@ -20,7 +20,7 @@ test('首页、快速开始、主题切换与手机导航', async ({ page, isMob
   await page.goto('./');
   await waitForClient(page);
   await expect(page).toHaveTitle(/dou-bot/);
-  await expect(page.locator('h1')).toContainText('用装饰器编写 QQ 机器人');
+  await expect(page.locator('h1')).toContainText('一个轻量化的机器人框架');
   await page.locator('.VPHero').getByRole('link', { name: '快速开始', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('快速开始');
   if (isMobile) {
