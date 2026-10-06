@@ -1,6 +1,6 @@
 # 二次输入与多轮会话
 
-dou-bot **0.6.0 / 契约 1.7** 为命令消息上下文提供 `ctx.prompt(question, options?)`。它先登记等待项，再发送问题，等待同一机器人、同一场景/会话、同一用户 OpenID 的下一条消息。只提供进程内的短会话，不持久化或跨进程恢复。
+dou-bot **0.7.0 / 契约 1.11** 为命令消息上下文提供 `ctx.prompt(question, options?)`。它先登记等待项，再发送问题，等待同一机器人、同一场景/会话、同一用户 OpenID 的下一条消息。只提供进程内的短会话，不持久化或跨进程恢复。
 
 ## 使用方式
 
@@ -104,3 +104,7 @@ maxPending 是等待项上限，实际可用容量还受 queueMaxBytes、maxEven
 捕获回答的 done 与父流程一起完成，不能用它等待“第一轮已处理”再驱动第二轮；应观察下一条问题发送记录。可运行的完整测试见 [prompts.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/tests/prompts.test.ts)，包括 FakeClock 超时、多轮引用、并发、重复、失败回退与关闭路径。
 
 本地测试和本机 WS/Webhook 测试不会连接真实 QQ。实际消息展示、消息投递权限与客户端操作仍需要专门联调。
+
+## 自动附件处理器
+
+dou-bot 0.7.0 的 `@OnAttachment()` 支持现有 Guard、冷却、身份参数与 `ctx.prompt()`；数量校验在 Guard 之后、冷却之前。多个命中处理器独立、顺序执行，每个处理器结束时清理自己的 Context 和未等待的追问。GroupRoles / GroupManagersOnly 可用于附件处理器，按钮仍使用原生 permission。自定义 Guard 需处理新增的 `kind: 'attachment'` 与 `matchedAttachments`；详情见 [自动处理上传附件](command-parameters.md#自动处理上传附件)。

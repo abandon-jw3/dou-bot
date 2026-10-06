@@ -6,12 +6,11 @@ import {
   Arg,
   Args,
   Attachments,
-  Audios,
+  selectAttachments,
   Command,
   Controller,
   Cooldown,
   Ctx,
-  Files,
   FrameworkError,
   HelpModule,
   Images,
@@ -23,11 +22,11 @@ import {
   Rest,
   Slot,
   UseGuards,
-  Videos,
 } from '../src/index.js';
 import type {
   Attachment,
   AttachmentOptions,
+  AttachmentKind,
   CanActivate,
   GuardResult,
   MessageContext,
@@ -76,16 +75,19 @@ function configurationError(error: unknown): boolean {
   return error instanceof FrameworkError && error.code === 'CONFIG';
 }
 const names = (files: readonly Attachment[]) => files.map((entry) => entry.filename);
+function selected(files: readonly Attachment[], kind: AttachmentKind): readonly Attachment[] {
+  const result = selectAttachments(files, { kind });
+  assert.equal(result.status, 'valid');
+  if (result.status !== 'valid') assert.fail('Unexpected selection failure');
+  return result.attachments;
+}
 
-await test('attachment selectors classify mixed top-level inputs in private, group and mentioned messages', async (t) => {
+await test('synthetic protocol mixtures retain classification and top-level command binding', async (t) => {
   @Controller()
   class Inspect {
     @Command('附件') inspect(
       @Attachments() all: readonly Attachment[],
       @Images() images: readonly Attachment[],
-      @Videos() videos: readonly Attachment[],
-      @Audios() audios: readonly Attachment[],
-      @Files() files: readonly Attachment[],
       @Ctx() ctx: MessageContext,
     ): string {
       assert.equal(all.length, ctx.attachments.length);
@@ -94,9 +96,9 @@ await test('attachment selectors classify mixed top-level inputs in private, gro
       return JSON.stringify({
         all: names(all),
         images: names(images),
-        videos: names(videos),
-        audios: names(audios),
-        files: names(files),
+        videos: names(selected(all, 'video')),
+        audios: names(selected(all, 'audio')),
+        files: names(selected(all, 'file')),
       });
     }
   }
@@ -157,11 +159,9 @@ await test('voice metadata is exposed without replacing content or inventing com
   let calls = 0;
   @Controller()
   class Inspect {
-    @Command('voice') inspect(
-      @Audios() audios: readonly Attachment[],
-      @Ctx() ctx: MessageContext,
-    ): string {
+    @Command('voice') inspect(@Ctx() ctx: MessageContext): string {
       calls++;
+      const audios = selected(ctx.attachments, 'audio');
       assert.equal(ctx.content, '/voice');
       assert.equal(audios[0]?.voiceWavUrl, 'https://example.invalid/voice.wav');
       assert.equal(audios[0]?.asrReferText, '/voice');
@@ -273,12 +273,14 @@ await test('attachment counts apply after filtering, including empty defaults an
       calls.push(`images:${images.length}`);
       return 'images accepted';
     }
-    @Command('no-files') noFiles(@Files({ maxCount: 0 }) files: readonly Attachment[]): string {
-      calls.push(`files:${files.length}`);
-      return 'no files';
+    @Command('no-attachments') noAttachments(
+      @Attachments({ maxCount: 0 }) attachments: readonly Attachment[],
+    ): string {
+      calls.push(`all:${attachments.length}`);
+      return 'no attachments';
     }
-    @Command('optional') optional(@Videos() videos: readonly Attachment[]): string {
-      calls.push(`videos:${videos.length}`);
+    @Command('optional') optional(@Images() images: readonly Attachment[]): string {
+      calls.push(`images:${images.length}`);
       return 'optional';
     }
   }
@@ -298,11 +300,11 @@ await test('attachment counts apply after filtering, including empty defaults an
   await harness.dispatch(
     message('/images', [file('a', 'image/png'), file('b', 'image/png'), file('c', 'image/png')]),
   );
-  await harness.dispatch(message('/no-files', [file('image', 'image/png')]));
-  await harness.dispatch(message('/no-files', [file('file', 'file')]));
+  await harness.dispatch(message('/no-attachments'));
+  await harness.dispatch(message('/no-attachments', [file('file', 'file')]));
   await harness.dispatch(message('/optional'));
   await tick();
-  assert.deepEqual(calls, ['images:2', 'files:0', 'videos:0']);
+  assert.deepEqual(calls, ['images:2', 'all:0', 'images:0']);
   assert.equal(harness.errors.length, 4);
   for (const { error, context } of harness.errors) {
     assert.ok(error instanceof FrameworkError && error.code === 'PARAMETER_PARSE');
@@ -310,7 +312,7 @@ await test('attachment counts apply after filtering, including empty defaults an
   }
   assert.match(harness.messages[0]?.payload.content ?? '', /图片数量不能少于 1/u);
   assert.match(harness.messages[3]?.payload.content ?? '', /图片数量不能超过 2/u);
-  assert.match(harness.messages[5]?.payload.content ?? '', /文件数量不能超过 0/u);
+  assert.match(harness.messages[5]?.payload.content ?? '', /附件数量不能超过 0/u);
 });
 
 await test('adding attachment options preserves legacy flags, excess words and JavaScript defaults', async (t) => {
@@ -449,11 +451,8 @@ await test('attachment help explains cardinality and options are snapshotted at 
     @Command('pictures', { aliases: ['pic'] }) inspect(
       @Images(options) images: readonly Attachment[],
       @Attachments() all: readonly Attachment[],
-      @Videos({ maxCount: 2 }) videos: readonly Attachment[],
-      @Audios() audios: readonly Attachment[],
-      @Files({ maxCount: 0 }) files: readonly Attachment[],
     ): void {
-      void [images, all, videos, audios, files];
+      void [images, all];
     }
   }
   options.name = 'changed';
@@ -463,7 +462,7 @@ await test('attachment help explains cardinality and options are snapshotted at 
   const harness = await open(t, Root, { commands: { invalidInput: 'reply' } });
   await harness.dispatch(message('/help pic'));
   const help = harness.messages[0]?.payload.content ?? '';
-  assert.ok(help.startsWith('用法：/pictures <素材附件> [附件] [视频附件] [音频附件] [文件附件]'));
+  assert.ok(help.startsWith('用法：/pictures <素材附件> [附件]'));
   for (const part of [
     '测试照片',
     '最少 1 个',
@@ -521,7 +520,7 @@ await test('invalid attachment configuration fails before constructing controlle
     await assert.rejects(createTestApplication(Root), configurationError);
   }
   assert.equal(constructed, 0);
-  for (const factory of [Attachments, Images, Videos, Audios, Files]) {
+  for (const factory of [Attachments, Images]) {
     for (const options of [null, [], 'invalid'])
       assert.throws(() => factory(options as unknown as AttachmentOptions), configurationError);
     assert.throws(() => factory()(class Constructor {}, undefined, 0), configurationError);
@@ -530,7 +529,7 @@ await test('invalid attachment configuration fails before constructing controlle
 });
 
 await test('attachment parameters reject raw event/button handlers and duplicate bindings, while inheritance works', async (t) => {
-  for (const factory of [Attachments, Images, Videos, Audios, Files]) {
+  for (const factory of [Attachments, Images]) {
     for (const route of [On('C2C_MESSAGE_CREATE'), OnButton('press')]) {
       @Controller()
       class Invalid {

@@ -42,6 +42,7 @@ interface MessageBinding {
   scope: ReplyScope;
 }
 type Ask = (
+  actor: EventTask,
   source: MessageBinding,
   question: MessageInput,
   options: PromptOptions,
@@ -50,7 +51,6 @@ type Ask = (
 
 export class OperationLedger {
   private sealed = false;
-  private count = 0;
   private readonly operations: Promise<unknown>[] = [];
   constructor(
     private readonly maximum: number,
@@ -59,6 +59,7 @@ export class OperationLedger {
       phase: ErrorPhase,
       location?: HandlerLocation,
     ) => void,
+    readonly budget = { count: 0 },
   ) {}
   get open(): boolean {
     return !this.sealed;
@@ -68,9 +69,9 @@ export class OperationLedger {
     let registered = false;
     try {
       if (this.sealed) throw new FrameworkError('INVALID_STATE', 'Event context has finished');
-      if (this.count >= this.maximum)
+      if (this.budget.count >= this.maximum)
         throw new FrameworkError('RESOURCE_LIMIT', 'Too many context operations');
-      this.count++;
+      this.budget.count++;
       registered = true;
       result = operation();
     } catch (error) {
@@ -87,6 +88,11 @@ export class OperationLedger {
   }
 }
 
+interface TaskLifecycle {
+  managedSignals: Set<AbortSignal>;
+  cancelPrompt(signal: AbortSignal): void;
+}
+
 export class EventTask {
   readonly controller = new AbortController();
   readonly ledger: OperationLedger;
@@ -101,15 +107,54 @@ export class EventTask {
     private readonly reporter: ErrorReporter,
     private readonly scope?: ReplyScope,
     private readonly ask?: Ask,
+    private readonly lifecycle?: TaskLifecycle,
+    private readonly parent?: EventTask,
   ) {
     this.ledger = new OperationLedger(
       options.execution.maxContextOperations,
       (error, phase, location) => this.report(error, phase, location),
+      parent?.ledger.budget,
     );
+  }
+
+  /** One attachment handler owns its context operations; budgets and reply sequences stay shared. */
+  invocation(): EventTask {
+    const child = new EventTask(
+      this.event,
+      this.options,
+      this.client,
+      this.reporter,
+      this.scope,
+      this.ask,
+      this.lifecycle,
+      this,
+    );
+    this.lifecycle?.managedSignals.add(child.controller.signal);
+    const abort = () => {
+      child.controller.abort(this.controller.signal.reason);
+      this.lifecycle?.managedSignals.delete(child.controller.signal);
+      child.ledger.sealAndDrain().catch(() => {});
+    };
+    this.controller.signal.addEventListener('abort', abort, { once: true });
+    child.detach = () => this.controller.signal.removeEventListener('abort', abort);
+    if (this.controller.signal.aborted) abort();
+    return child;
+  }
+  private detach?: () => void;
+  async endInvocation(): Promise<void> {
+    try {
+      this.lifecycle?.cancelPrompt(this.controller.signal);
+      await this.ledger.sealAndDrain();
+    } finally {
+      this.controller.abort(new FrameworkError('INVALID_STATE', 'Attachment handler has finished'));
+      this.lifecycle?.managedSignals.delete(this.controller.signal);
+      this.detach?.();
+    }
   }
 
   report(error: unknown, phase: ErrorPhase, location?: HandlerLocation): void {
     this.failed = true;
+    if (this.parent) this.parent.failed = true;
     if (this.reported.has(error)) return;
     if (this.reported.size < this.options.execution.maxContextOperations + 2)
       this.reported.add(error);
@@ -157,7 +202,7 @@ export class EventTask {
             const scope = source?.scope ?? this.scope;
             if (!this.ask || !scope)
               throw new FrameworkError('INVALID_STATE', 'Prompt context is unavailable');
-            return this.ask({ event, scope }, question, options, location);
+            return this.ask(this, { event, scope }, question, options, location);
           },
           location,
         ),
@@ -329,26 +374,27 @@ export class Execution {
   }
   private ask(
     owner: QueuedTask,
+    actor: EventTask,
     source: MessageBinding,
     question: MessageInput,
     options: PromptOptions,
     location?: HandlerLocation,
   ): Promise<PromptResult> {
-    if (!this.accepting || owner.finished || !owner.running)
+    if (!this.accepting || owner.finished || !owner.running || !actor.ledger.open)
       throw new FrameworkError('INVALID_STATE', 'Prompt requires a running message handler');
     return this.prompts.request(
       owner,
       this.promptKey(source.event),
-      owner.task.controller.signal,
+      actor.controller.signal,
       () => {
-        owner.task.manualReplies++;
-        return owner.task.send(question, true, location, source);
+        actor.manualReplies++;
+        return actor.send(question, true, location, source);
       },
       (input) => {
         if (owner.finished || input.finished || input.task.event.kind !== 'message' || !input.scope)
           throw new FrameworkError('INVALID_STATE', 'Prompt message context has finished');
         owner.children.add(input);
-        return owner.task.messageContext(location, { event: input.task.event, scope: input.scope });
+        return actor.messageContext(location, { event: input.task.event, scope: input.scope });
       },
       options,
     );
@@ -477,8 +523,20 @@ export class Execution {
         this.client,
         this.reporter,
         scope,
-        (source, question, options, location) =>
-          this.ask(queued, source, question, options, location),
+        (actor, source, question, options, location) =>
+          this.ask(queued, actor, source, question, options, location),
+        {
+          managedSignals: this.managedSignals,
+          cancelPrompt: (signal) =>
+            this.prompts.cancelSignal(
+              queued,
+              signal,
+              new FrameworkError(
+                'INVALID_STATE',
+                'Attachment handler ended without awaiting its prompt',
+              ),
+            ),
+        },
       );
       const queued: QueuedTask = {
         task,

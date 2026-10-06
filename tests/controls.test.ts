@@ -699,7 +699,10 @@ await test('invalid control declarations fail during definition or bootstrap', a
     policy(Bad.prototype, 'observe', Object.getOwnPropertyDescriptor(Bad.prototype, 'observe')!);
     @Module({ controllers: [Bad], providers: [Gate] })
     class Root {}
-    await assert.rejects(createTestApplication(Root), /require @Command or @OnButton/u);
+    await assert.rejects(
+      createTestApplication(Root),
+      /require @Command, @OnButton or @OnAttachment/u,
+    );
   }
   @Controller()
   class Duplicate {

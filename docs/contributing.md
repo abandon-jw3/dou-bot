@@ -19,7 +19,7 @@ npm run example:identity
 
 `check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及历史消费者对当前安装包的兼容检查。`npm run test:compat` 另从 registry 安装已发布的 0.6.0 验证历史消费者；先完成 build/check。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.0.0 最低版本及 `.nvmrc` 开发版本上运行这两项检查；源码支持范围为 Node 24.x，TypeScript 固定为 5.9.3。
 
-离线示例不读取凭证或连接 QQ。`query` 展示无序 Slot、Rest、Option 与帮助；`business` 组合自定义 City 装饰器、可注入权限服务、Guard、冷却、Markdown 和按钮；`attachments` 演示未发布的五种附件参数装饰器，`identity` 演示命令和按钮的五种身份参数装饰器。身份、天气等数据是本地合成示例。源码示例允许相对导入 `src`；复制到独立应用时改用 `dou-bot` 和 `dou-bot/testing`，并先确认所安装版本包含相应 API。
+离线示例不读取凭证或连接 QQ。`query` 展示无序 Slot、Rest、Option 与帮助；`business` 组合自定义 City 装饰器、可注入权限服务、Guard、冷却、Markdown 和按钮；`attachments` 演示两种同条附件装饰器，以及 prompt 后调用 selectAttachments 的分条输入、OnAttachment 的直接文件上传，`identity` 演示命令和按钮的五种身份参数装饰器。身份、天气等数据是本地合成示例。源码示例允许相对导入 `src`；复制到独立应用时改用 `dou-bot` 和 `dou-bot/testing`，并先确认所安装版本包含相应 API。
 
 ## 真实 QQ 联调
 
@@ -35,11 +35,13 @@ npm run example:identity
 | `npm run probe:media`         | 图片、原始 Markdown、回调按钮；`-- --buttons-only --no-prefix` 验证空前缀按钮 |
 | `npm run probe:reconnect`     | 主动断开本探针的 WS，检查 RESUME 和心跳，不发送消息                           |
 | `npm run probe:controls`      | 随机命令验证 Guard、参数、冷却、按钮允许/拒绝与 manual 确认                   |
-| `npm run probe:attachments`   | 用当前 SDK 源码验证同条指令与图片/视频/音频/文件，读取 `apps/example/.env`    |
+| `npm run probe:attachments`   | 用当前源码验证图文同条和视频/音频/文件分条输入，读取 `apps/example/.env`      |
 
 探针逐个运行，按实际联调范围启用。controls 探针最多运行 10 分钟，首次拒绝测试仅在内存绑定每种场景的一个用户及会话，只记录场景、阶段、结果与错误分类。日志保存在忽略的 `work/` 中；每次运行采用独立产物目录，测试重编译不会删除正在运行的例子。
 
-attachments 探针最多运行 15 分钟，为五类附件分别生成随机命令。每种场景只接纳首次使用命令的用户和会话；只记录数量、类型、处理/发送结果和语音字段是否存在，不记录身份、附件 URL、文件名或 ASR 正文，也不下载文件。启动日志给出 logPath、stopPath 和截止时间；创建 stopPath 文件或按 Ctrl+C 可提前关闭。该探针使用源码 API，业务示例依赖仍保持 npm 0.6.0。
+attachments 探针最多运行 15 分钟，为五类附件生成随机命令。图片和通用附件入口读取与命令同条发送的附件；视频、音频、文件入口先提问，再接收同一用户在同一会话的下一条消息。只校验这条输入，不自动重试或累积多条附件。启动日志用 inputModes 标明 same-message / next-message，并给出 logPath、stopPath 和截止时间；创建 stopPath 文件或按 Ctrl+C 可提前关闭。
+
+每种场景只绑定首次使用命令的用户和会话，最多接纳 100 条命令，起始消息及回答在内存中最多关联 200 条记录；日志最多 300 条。记录等待、取消、超时、校验失败以及数量、类型和发送结果，不记录身份、附件 URL、文件名或 ASR 正文，也不下载文件。输入是否实际投递仍取决于 QQ 账号权限。该探针使用源码 API，业务示例依赖仍保持 npm 0.6.0。
 
 ## 性能与持续运行
 

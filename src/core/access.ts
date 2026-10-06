@@ -88,7 +88,7 @@ export function createBuiltinGuard(rule: BuiltinGuard): CanActivate {
               (rule.scene === undefined || ctx.scene === rule.scene) &&
               (rule.groupId === undefined ||
                 (ctx.scene === 'group' && ctx.groupId === rule.groupId))
-            : ctx.kind === 'command' &&
+            : (ctx.kind === 'command' || ctx.kind === 'attachment') &&
               ctx.scene === 'group' &&
               ctx.memberRole !== undefined &&
               rule.roles.includes(ctx.memberRole);
@@ -99,7 +99,7 @@ export function createBuiltinGuard(rule: BuiltinGuard): CanActivate {
 
 export function validateAccessRules(
   guards: readonly GuardDeclaration[],
-  kind?: 'command' | 'button',
+  kind?: 'command' | 'button' | 'attachment',
 ): void {
   let scene: 'group' | 'private' | undefined;
   let roles: readonly GroupRole[] = ['member', 'admin', 'owner'];
@@ -109,7 +109,7 @@ export function validateAccessRules(
       if (kind === 'button')
         throw new FrameworkError(
           'CONFIG',
-          'GroupRoles/GroupManagersOnly require @Command; use button permission for @OnButton',
+          'GroupRoles/GroupManagersOnly require @Command or @OnAttachment; use button permission for @OnButton',
         );
       roles = roles.filter((role) => rule.roles.includes(role));
       if (!roles.length) throw new FrameworkError('CONFIG', 'Conflicting group role restrictions');

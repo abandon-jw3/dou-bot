@@ -6,13 +6,13 @@
 
 当前源码支持 Node.js **24.x（最低 24.0.0）**、ESM，TypeScript 使用 **5.9.3**。开发统一使用 24.21.0；SDK 的 CI 覆盖最低版本及开发版本。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
 
-已发布的 `dou-bot@0.6.0` 元数据仍声明 Node.js `>=24`。源码中的 `<25` 上界将在后续发行中生效；使用 Node.js 25 及更高主版本的应用升级前需切换到支持的 24.x。
+已发布的 `dou-bot@0.6.0` 元数据仍声明 Node.js `>=24`。0.7.0 的安装范围为 `>=24.0.0 <25`；使用 Node.js 25 及更高主版本的应用升级前需切换到支持的 24.x。
 
 npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
 
 ## 仓库结构
 
-框架、业务示例与文档站统一维护在本仓库。三个工程独立安装依赖和构建；示例及文档使用已发布的 `dou-bot@0.6.0`。
+框架、业务示例与文档站统一维护在本仓库。三个工程独立安装依赖和构建；示例和文档按各自锁文件安装已发布的 SDK，具体版本见各自的 package.json。
 
 在另一台设备继续开发时，先阅读 [跨设备开发交接](https://github.com/abandon-jw3/dou-bot/blob/main/docs/handoff.md)，其中包含环境恢复、凭证与技能配置、验收边界和后续工作。
 
@@ -104,16 +104,16 @@ dou-bot/
 
 ## 安装
 
-[dou-bot@0.6.0](https://www.npmjs.com/package/dou-bot/v/0.6.0) 已发布。建议项目依赖锁定精确版本，在自己的机器人项目中运行：
+本节对应 dou-bot 0.7.0。请先核对 [发行状态](https://github.com/abandon-jw3/dou-bot/blob/main/docs/npm-release.md)；registry 发布完成后，在自己的机器人项目中安装精确版本：
 
 ```sh
 npm init -y
 npm pkg set type=module
-npm install --save-exact dou-bot@0.6.0
+npm install --save-exact dou-bot@0.7.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
-也可通过 `dou-bot@next` 安装对应标签版本；标签可能随后续发行变化。旧本地 tgz 项目迁移时执行 `npm install --save-exact dou-bot@0.6.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
+候选验收阶段安装本地已验证的 `.tgz`；源码的版本字段本身不代表 npm 已发布。0.7.0 计划使用 `latest` 标签，`next` 可能仍指向旧版，不用于确定安装版本。旧本地 tgz 项目在 registry 发布后执行 `npm install --save-exact dou-bot@0.7.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
 
 创建 `tsconfig.json`：
 
@@ -234,9 +234,11 @@ node --env-file=.env dist/main.js
 
 参数与返回值的完整类型由包入口提供。公开导入只有 `dou-bot` 和 `dou-bot/testing`；不依赖 `dist` 内部路径。调用 `ctx.reply()` 后返回 void，避免又通过返回值自动回复。
 
-当前源码另新增 `Attachments`、`Images`、`Videos`、`Audios`、`Files` 五个附件参数装饰器，以及 `AttachmentOptions` 和语音附件扩展字段；这些 API **尚未包含在 npm 0.6.0 中**。源码开发可运行 `npm run example:attachments`，用法见 [附件参数](docs/command-parameters.md#附件参数未发布源码-api)。发布前，业务示例和文档站继续使用已发布包的 `ctx.attachments`。
+当前源码提供 `Attachments`、`Images` 两个同条消息附件装饰器，以及同步筛选校验函数 `selectAttachments` 和语音附件扩展字段；这些 API **从 0.7.0 开始提供**。图片可与指令同条发送；视频、音频、文件通过 `ctx.prompt()` 接收后再筛选。早期未发布的 Videos、Audios、Files 装饰器已移除。运行 `npm run example:attachments` 查看源码示例，规则与迁移说明见 [附件参数](docs/command-parameters.md#附件参数)。
 
-源码还提供 `@User()`、`@UserId()`、`@Group()`、`@GroupId()`、`@Role()`，为命令及按钮注入当前事件的身份信息；缺失的群或角色信息为 `undefined`，不发起资料查询。这些装饰器及 `UserInfo`、`GroupInfo` **同样尚未发布**。运行 `npm run example:identity` 查看离线源码示例，完整类型和场景说明见 [身份参数](docs/command-parameters.md#身份参数未发布源码-api)。
+源码新增 `@OnAttachment()`，可按文件名（字符串或正则）、扩展名和附件分类自动接收用户直接上传的文件。支持权限、冷却、身份注入与追问；多个匹配处理器独立、顺序执行。此 API 从 0.7.0 开始提供，用法见 [自动处理上传附件](docs/command-parameters.md#自动处理上传附件)。
+
+源码还提供 `@User()`、`@UserId()`、`@Group()`、`@GroupId()`、`@Role()`，为命令、按钮及附件处理器注入当前事件的身份信息；缺失的群或角色信息为 `undefined`，不发起资料查询。这些装饰器及 `UserInfo`、`GroupInfo` **从 0.7.0 开始提供**。运行 `npm run example:identity` 查看离线源码示例，完整类型和场景说明见 [身份参数](docs/command-parameters.md#身份参数)。
 
 ## 离线测试
 

@@ -1,6 +1,6 @@
 # Guard、冷却与完整业务示例
 
-对应 dou-bot 0.6.0 / 公开契约 1.7。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
+对应 dou-bot 0.7.0 / 公开契约 1.11。TypeScript 仍固定为 5.9.3，运行时依赖仍为 reflect-metadata 与 ws。
 
 内置场景、用户、群角色限制和管理者按钮权限见 [访问限制指南](./access-control.md)，它们与 UseGuards 共用执行链。
 
@@ -118,3 +118,7 @@ npm run example:business
 QQ_TRANSPORT=webhook 时使用已有 PORT 与 /qq 配置，否则 WS。源码工程示例通过相对路径引用 SDK；复制到独立业务工程后，安装 SDK 并将这些导入改为 dou-bot，测试入口改为 dou-bot/testing。按既定方案由宿主处理退出信号并等待 close。
 
 初次交付完成离线示例与自动测试，随后于 2026-09-30 使用 `probe:controls` 在授权机器人的群聊与私聊验证了 Guard、参数、冷却、允许/拒绝按钮及 manual 兜底确认。探针复用 City 和 QueryService，使用临时绑定会话控制测试范围；business-qq 常驻入口本轮未运行。具体后台结果与客户端确认状态见 [验证记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md)。公网 Webhook 验收仍等待 HTTPS 部署入口。
+
+## 自动附件处理器
+
+dou-bot 0.7.0 的 `@OnAttachment()` 支持现有 Guard、冷却、身份参数与 `ctx.prompt()`；数量校验在 Guard 之后、冷却之前。多个命中处理器独立、顺序执行，每个处理器结束时清理自己的 Context 和未等待的追问。GroupRoles / GroupManagersOnly 可用于附件处理器，按钮仍使用原生 permission。自定义 Guard 需处理新增的 `kind: 'attachment'` 与 `matchedAttachments`；详情见 [自动处理上传附件](command-parameters.md#自动处理上传附件)。

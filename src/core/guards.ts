@@ -1,4 +1,4 @@
-import type { CanActivate, GuardContext, GuardResult, Type } from '../contracts.js';
+import type { Attachment, CanActivate, GuardContext, GuardResult, Type } from '../contracts.js';
 import type { Clock } from './clock.js';
 import type { EventTask } from './execution.js';
 import { FrameworkError } from './errors.js';
@@ -9,6 +9,7 @@ export function guardContext(
   controller: Type,
   method: string,
   route: string,
+  matchedAttachments?: readonly Attachment[],
 ): GuardContext {
   const event = task.event;
   if (event.kind === 'event')
@@ -35,7 +36,9 @@ export function guardContext(
     route,
     ...(event.kind === 'message'
       ? {
-          kind: 'command' as const,
+          ...(matchedAttachments === undefined
+            ? { kind: 'command' as const }
+            : { kind: 'attachment' as const, matchedAttachments }),
           content: event.content,
           messageId: event.messageId,
           attachments: event.attachments,

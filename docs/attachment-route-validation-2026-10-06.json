@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "validationDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "status": "offline-passed",
+  "source": {
+    "commit": "b7f3808533a4a01d670d764b048e41767d03c34f",
+    "dirty": true,
+    "sdkVersion": "0.6.0",
+    "releaseState": "unreleased-source",
+    "publicContract": "1.11",
+    "sha256": "cbf114e49205f2a4a6992b3490850657012587383f528b0ebe2c94836790eac0",
+    "fingerprintScope": "Sorted src/**/*.ts plus examples/attachments.ts, examples/attachments-probe.ts and examples/live-attachments.ts; each relative path and content followed by NUL.",
+    "fingerprintedFiles": 38
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "npm": "11.19.0",
+    "typescript": "5.9.3"
+  },
+  "checks": {
+    "sdkChecksOnBothNodeVersions": "passed",
+    "sdkTestsPerNode": 242,
+    "attachmentRouteTests": 20,
+    "publicExports": 139,
+    "bidirectionalTypeChecks": 102,
+    "currentTarballHistoricalConsumer": "passed",
+    "currentTarballAttachmentConsumer": "passed",
+    "currentTarballIdentityConsumer": "passed",
+    "currentTarballAttachmentRouteConsumer": "passed",
+    "historicalPublished060Consumer": "passed",
+    "skillExampleTests": 2,
+    "exampleApplicationTests": 25,
+    "documentationExampleTests": 14,
+    "publishedDocumentationExports": 122,
+    "allowedPackageFiles": 114,
+    "sourceAttachmentExample": "passed",
+    "localWsWebhookDirectAttachmentParity": "passed"
+  },
+  "coverage": {
+    "lines": 98.78,
+    "statements": 98.78,
+    "functions": 97.79,
+    "branches": 90.78,
+    "attachmentRouteModule": {
+      "lines": 100,
+      "functions": 100,
+      "statements": 100,
+      "branches": 100
+    },
+    "attachmentSelectionModule": {
+      "lines": 100,
+      "functions": 100,
+      "statements": 100,
+      "branches": 100
+    }
+  },
+  "routing": {
+    "priority": ["pending-prompt", "recognized-command", "matching-attachment-handlers"],
+    "multipleMatches": "independent-authorization-and-sequential-broadcast",
+    "failureBehavior": "continue-other-handlers-unless-application-aborts",
+    "promptBehavior": "awaited-prompt-delays-later-handlers; input-is-exclusive",
+    "contextLifecycle": "per-handler; late-operations-rejected; unawaited-prompts-cancelled; registered-sends-drained",
+    "sharedResources": [
+      "event-operation-budget",
+      "reply-sequence",
+      "deduplication",
+      "execution-admission"
+    ],
+    "invalidInput": "default-report; optional-per-route-reply"
+  },
+  "compatibility": {
+    "publishedConsumers": "historical fixture unchanged",
+    "guardContextMigration": "kind includes attachment; replace command/else button assumptions with an explicit button branch",
+    "productionDependencies": "unchanged",
+    "exampleWebsiteSkillSdk": "npm dou-bot@0.6.0"
+  },
+  "live": {
+    "status": "not-run",
+    "reason": "This task authorized offline and local WS/Webhook protocol validation only. QQ delivery and client display of automatic file handling require a separate live run."
+  },
+  "previousValidationRecords": [
+    "attachment-validation-2026-10-06.json",
+    "identity-validation-2026-10-06.json",
+    "attachment-input-validation-2026-10-06.json"
+  ],
+  "scope": "OnAttachment matches normalized top-level metadata only. Verified same-item filter intersection, exact names, regular-expression snapshots and g/y reset, extensions, all five categories, frozen matching subsets, context/identity consistency, module and role guards, cooldown and cardinality ordering, routing priority, broadcasts, prompt isolation/cancellation/timeouts, reply sequence and original/input references, late contexts, shared budgets, and shutdown cleanup. Local real WS and signed Webhook HTTP covered private, group and group-at standalone DOCX metadata. Downloading and DOCX content verification remain application responsibilities. No real QQ connection, package version change, npm publication, commit, push or deployment was performed."
+}

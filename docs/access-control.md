@@ -1,6 +1,6 @@
 # 内置访问限制与管理者按钮
 
-适用于 dou-bot **0.6.0 / 契约 1.7**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
+适用于 dou-bot **0.7.0 / 契约 1.11**。新增五个装饰器，不增加运行时依赖，不需要注册额外 Provider。它们与 `@UseGuards()` 进入同一 Guard 链，先于命令参数绑定和冷却。
 
 ## API
 
@@ -114,3 +114,7 @@ const card = markdown('**群管理**', {
 QQ 群消息的 author.member_role 与 SDK 归一化结果分别为 owner、admin、member。允许的按钮点击均有回调、ACK 和反馈发送记录；普通成员的限制同时有用户客户端确认与后台未执行处理器的证据。该轮无错误记录，完成后已关闭测试连接。详细脱敏证据见 [验收记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md#2026-10-06-分角色权限与管理者按钮实测)。
 
 这些结果限于本次账号、测试群及 callback 按钮，不保证所有机器人有相同事件字段与平台权限，也不覆盖 command/link 按钮权限、测试过程中的角色变更或公网 Webhook。
+
+## 自动附件处理器
+
+dou-bot 0.7.0 的 `@OnAttachment()` 支持现有 Guard、冷却、身份参数与 `ctx.prompt()`；数量校验在 Guard 之后、冷却之前。多个命中处理器独立、顺序执行，每个处理器结束时清理自己的 Context 和未等待的追问。GroupRoles / GroupManagersOnly 可用于附件处理器，按钮仍使用原生 permission。自定义 Guard 需处理新增的 `kind: 'attachment'` 与 `matchedAttachments`；详情见 [自动处理上传附件](command-parameters.md#自动处理上传附件)。

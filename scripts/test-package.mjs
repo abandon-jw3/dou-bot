@@ -156,7 +156,7 @@ const skillExamples = ['minimal-module.ts', 'minimal-module.test.ts'];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline
   ? []
-  : ['consumer-attachments.ts', 'consumer-identity.ts'];
+  : ['consumer-attachments.ts', 'consumer-identity.ts', 'consumer-attachment-routes.ts'];
 if (!releasedBaseline) {
   await writeFile(
     resolve(consumer, 'testing-types.ts'),

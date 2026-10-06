@@ -6,13 +6,13 @@
 
 实测更新：2026-10-06。基于 `20706f1` 的业务示例完成新设备 WS 私聊/群聊文字、原始 Markdown 及普通按钮的收发和客户端确认。随后独立的角色探针完成群主、管理员、普通成员的角色命令与管理者回调按钮验收；两轮测试连接均已关闭。结论限于本次机器人和测试会话，详见 [验收记录](validation-report.md#2026-10-06-分角色权限与管理者按钮实测)。
 
-附件 API 更新：2026-10-06。源码新增 Attachments、Images、Videos、Audios、Files 和 AttachmentOptions，并映射语音 WAV URL 与 ASR 参考文本；该次公开契约修订为 1.8，尚未发布。实现与验证入口见 [附件参数指南](command-parameters.md#附件参数未发布源码-api)。业务示例、网站和技能仍面向 npm 0.6.0。
+附件 API 更新：2026-10-06。源码新增 Attachments、Images、Videos、Audios、Files 和 AttachmentOptions，并映射语音 WAV URL 与 ASR 参考文本；该次公开契约修订为 1.8，尚未发布。实现与验证入口见 [附件参数指南](command-parameters.md#附件参数)。业务示例、网站和技能仍面向 npm 0.6.0。
 
 附件离线验收已通过：Node 24.0.0 / 24.21.0 各 199 项 SDK 测试，129 个导出与 96 组类型检查；当前 tarball、新功能消费者、历史 0.6.0 消费者及整仓检查均通过。真实 QQ 附件投递单独记录，详见 [附件验收记录](attachment-validation-2026-10-06.json)。
 
 本轮附件实测已结束：群聊收到 1 个 `image/jpeg` 附件、筛选成功并完成回复发送；用户明确无需继续验证其他附件类型。视频、音频、文件、混合附件及私聊未完成实机验收，保留离线检查结果。已确认探针不再运行，退出记录的限制见上述验收记录。
 
-身份 API 更新：2026-10-06。源码新增 User、UserId、Group、GroupId、Role 和 UserInfo / GroupInfo，公开契约更新为 1.9，尚未发布。命令与按钮从当前事件的冻结快照注入信息，缺失群或角色时为 undefined；Context 接口及生产依赖不变。运行 `npm run example:identity` 查看离线示例，规则见 [身份参数指南](command-parameters.md#身份参数未发布源码-api)。本轮只做离线与本地协议验收，没有启动真实 QQ 联调。
+身份 API 更新：2026-10-06。源码新增 User、UserId、Group、GroupId、Role 和 UserInfo / GroupInfo，公开契约更新为 1.9，尚未发布。命令与按钮从当前事件的冻结快照注入信息，缺失群或角色时为 undefined；Context 接口及生产依赖不变。运行 `npm run example:identity` 查看离线示例，规则见 [身份参数指南](command-parameters.md#身份参数)。本轮只做离线与本地协议验收，没有启动真实 QQ 联调。
 
 身份离线验收已通过：Node 24.0.0 / 24.21.0 各 213 项 SDK 测试（其中身份专项 14 项），136 个导出与 98 组类型检查；当前 tarball、历史 0.6.0 消费者、整仓检查及本地 WS/Webhook 对照均通过。覆盖率为行/语句 98.69%、函数 97.72%、分支 90.32%；来源与范围见 [身份验收记录](identity-validation-2026-10-06.json)。
 
@@ -22,21 +22,31 @@
 
 首次交付提交为 `a8fbeb7`；其 SDK 与业务示例 CI 通过，文档审计被 source-map-js 1.2.1 的安全公告阻断。部署修复只将网站锁文件中的该传递依赖更新为 1.2.2，干净安装、audit、文档检查和 12 项浏览器测试均通过；详见 [文档工具依赖维护](repository.md#文档工具依赖维护)。
 
+附件交互收敛：2026-10-06。用户反馈当前客户端仅能将图片与文字同条发送，视频、音频和文件需要单独发送。当前源码契约改为 1.10，保留 Attachments / Images，移除未发布的 Videos / Audios / Files，新增 selectAttachments 与三种相关类型。后续附件由业务明确 prompt 后筛选，普通不匹配返回 invalid，不自动等待、重试或累计。源码示例和探针已采用对应流程；本轮不启动真实 QQ、不提交、推送或部署。
+
+收敛后的离线检查已通过：两版 Node 各 222 项 SDK 测试、137 个导出、101 组类型检查，以及整仓、覆盖率、当前 tarball 和历史消费者检查。附件模块行、函数和分支覆盖率为 100%；分条输入的本地 WS/Webhook 对照通过。客户端观察与机器人投递能力分别记录，详见 [附件输入验收记录](attachment-input-validation-2026-10-06.json)。此前 1.8 / 1.9 的记录保留原始证据。
+
+自动附件路由更新：2026-10-06。契约 1.11 新增 OnAttachment / OnAttachmentOptions，按文件名、扩展名、分类监听直接上传。pending prompt、已识别命令优先；多个匹配处理器独立授权和顺序执行，允许 await prompt 后再继续下一个。处理器各自收尾 Context、发送和未等待的追问，整条消息共享去重、操作预算与回复序号。GuardContext.kind 增加 attachment 分支，旧穷尽判断需要迁移。用法见 [自动附件指南](command-parameters.md#自动处理上传附件)。本轮仅离线及本地协议验收，未提交、推送或部署。
+
+自动附件离线验收通过：两版 Node 各 242 项 SDK 测试（路由专项 20 项）、139 个导出、102 组类型检查；整仓、当前 tarball、历史 npm 0.6.0 消费者和本地 WS/Webhook 对照通过。整体行覆盖率 98.78%，附件分类与路由模块行、函数、分支均为 100%。源码指纹与边界见 [自动附件验收记录](attachment-route-validation-2026-10-06.json)；真实 QQ 直接文件投递仍待另行验收。
+
+0.7.0 发行准备：2026-10-06。根包和锁文件版本已设为 0.7.0，公开契约为 1.11，计划公开发布到 npm 的 latest 标签。当前仍处于候选准备阶段；npm 已发布版本、业务示例、网站和技能仍为 0.6.0，实际上传后再同步升级。变更、迁移、候选完整性和发布后清单见 [发行流程](npm-release.md#070-发行候选)。
+
 ## 1. 接手时先确认的状态
 
-| 项目            | 当前状态                                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                                            |
-| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                                        |
-| 已发布 npm 版本 | `dou-bot@0.6.0`；交接时查询到 `latest`、`next` 都指向 `0.6.0`                                                                   |
-| 源码状态        | 已完成 1.0 API 审查、Node 支持范围及文档工具依赖的本地收尾，尚未发布新的 SDK 版本                                               |
-| 业务示例        | 已并入 `apps/example/`，精确依赖 npm 的 `dou-bot@0.6.0`                                                                         |
-| 文档站          | 已并入 `website/`，示例和 API 索引也精确依赖 npm 的 `dou-bot@0.6.0`                                                             |
-| 配套技能        | 仓库位置 `skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                                           |
-| 提交前 CI 基线  | [73b5b9f 对应工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/37342551959) 的 9 项任务通过；本次交付结果按新提交核对 |
-| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                                                     |
+| 项目            | 当前状态                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                                                 |
+| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                                             |
+| 已发布 npm 版本 | `dou-bot@0.6.0`；交接时查询到 `latest`、`next` 都指向 `0.6.0`                                                                        |
+| 源码状态        | 0.7.0 候选已验收；契约 1.11，npm 实际上传尚未执行                                                                                    |
+| 业务示例        | 已并入 `apps/example/`，精确依赖 npm 的 `dou-bot@0.6.0`                                                                              |
+| 文档站          | 已并入 `website/`，示例和 API 索引也精确依赖 npm 的 `dou-bot@0.6.0`                                                                  |
+| 配套技能        | 仓库位置 `skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                                                |
+| 已提交 CI 基线  | [b7f3808 对应工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/37408996480) 的 9 项任务通过；本轮 1.10 / 1.11 调整尚未提交 |
+| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                                                          |
 
-**源码与 npm 包存在差异。** 根目录 `package.json` 仍标为 `0.6.0`，但源码已新增 testing 入口的 `TestAdmission`、五种附件参数装饰器、`AttachmentOptions`、语音附件扩展字段，以及五种身份参数装饰器和 UserInfo / GroupInfo；这些新增 API 不在已发布的 0.6.0 中。业务示例和网站继续验证发布包；判断源码状态要看提交号和类型声明，不能只看版本字段。
+**源码与 npm 包存在差异。** 根目录 `package.json` 已标为待发布的 `0.7.0`，源码已新增 testing 入口的 `TestAdmission`、Attachments / Images、`AttachmentOptions`、selectAttachments 及相关类型、语音附件扩展字段，以及五种身份参数装饰器和 UserInfo / GroupInfo、OnAttachment / OnAttachmentOptions；这些新增 API 不在已发布的 0.6.0 中。业务示例和网站继续验证发布包；判断源码状态要看提交号和类型声明，不能只看版本字段。
 
 源码的 Node 声明已限定为 `>=24.0.0 <25`；已发布 0.6.0 仍为 `>=24`。后续发行需要明确说明此安装范围收紧，不能把它记成已发布包的既有要求。
 
@@ -245,7 +255,8 @@ test ! -e "$skill_parent/dou-bot" && cp -R ./skills/dou-bot "$skill_parent/dou-b
 
 - Provider 默认单例；模块的 imports/exports 决定依赖可见性，Controller 不作为共享 Provider。
 - 参数消费顺序是 Option → Arg → Slot → Rest。Slot 匹配同步且无副作用，Rest 不掩盖歧义、重复或非法输入。
-- 未发布附件参数在文字绑定完成后选择顶层附件并校验数量，不切换旧/严格文字模式、不消费文字；引用与嵌套附件不会自动并入，语音 ASR 文本不会变成命令。
+- 未发布 Attachments / Images 在文字绑定后选择顶层附件并校验数量，不切换旧/严格模式。selectAttachments 只同步筛选传入数组；分条附件在 prompt 返回后由业务校验，失败不自动重试或退还命令冷却。引用附件和 ASR 文本不会自动成为命令输入。
+- 未发布 OnAttachment 只匹配顶层归一化附件，pending prompt 和已识别命令优先。各处理器独立授权、回复和追问，共享整条消息的去重、回复序号与操作预算；结束后旧 Context 失效，未等待的追问必须清理。
 - 未发布身份参数在文字与附件绑定后、冷却前同步注入，不占输入位置。快照在归一化时冻结；按钮没有可靠角色，不从历史消息、权限或引用推断，缺失信息为 undefined。
 - Guard 按模块 → 控制器类 → 方法执行。模块 Guard 只覆盖直接注册的控制器，不传播到导入模块，不保护原始 `On` 观察器，也不自动过滤帮助列表。
 - Guard 拒绝和参数错误不占用冷却；命令别名共享冷却；业务执行失败不退还已占用的冷却。
@@ -312,9 +323,11 @@ SDK 只从主仓库根目录发布，发行白名单不包含 `apps/`、`website
 >
 > 这是 dou-bot 单仓库：根目录是 SDK，`apps/example` 是业务示例，`website` 是文档站。已发布版本为 0.6.0，源码包含尚未发布的 TestAdmission；示例和文档仍使用 npm 的 0.6.0。配套技能名称是 `$dou-bot`。
 >
-> 当前源码另有尚未发布的五种附件参数装饰器、AttachmentOptions 和语音扩展字段。用根目录源码示例或当前 tarball 验证，勿让仍依赖 npm 0.6.0 的业务示例与网站提前导入这些 API。
+> 当前源码的未发布附件 API 为 Attachments / Images、AttachmentOptions、selectAttachments 及相关类型和语音扩展字段；Videos / Audios / Files 已移除。视频、音频和文件改为业务显式 prompt 后筛选。用根目录源码示例或当前 tarball 验证，勿让仍依赖 npm 0.6.0 的业务示例与网站提前导入这些 API。
 >
-> 当前源码还包含尚未发布的五种身份参数装饰器与 UserInfo / GroupInfo，公开契约为 1.9。它们支持命令与按钮，缺失信息注入 undefined；本轮只进行了离线和本地协议验收。
+> 当前源码还包含尚未发布的五种身份参数装饰器与 UserInfo / GroupInfo，当前公开契约为 1.11。它们支持命令、按钮与 OnAttachment，缺失信息注入 undefined；本轮只进行了离线和本地协议验收。
+>
+> 当前源码还包含未发布的 OnAttachment / OnAttachmentOptions，支持文件名、扩展名及分类筛选；多个附件处理器独立顺序执行，允许 await prompt。GuardContext.kind 增加 attachment 分支，自定义 Guard 的旧二分支判断需要迁移。
 >
 > 保持 QQ 官方群聊/私聊、WS/Webhook、轻量依赖和 TypeScript 5.9.3 的既定方向。先用离线检查确认新设备环境，再按本轮任务推进交接文档中的待办；真实 QQ 联调、长时间运行和 npm 发布按本轮明确的任务范围执行。SDK、业务示例、文档和技能均采用 MIT；公网 Webhook 和分角色实测的完成状态以当前验收记录为准。
 

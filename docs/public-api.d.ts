@@ -1,5 +1,5 @@
 /**
- * dou-bot public API design contract, revision 1.9 — includes unreleased attachment and identity bindings.
+ * dou-bot public API design contract, revision 1.11 — independently controlled attachment routes.
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
  */
@@ -68,11 +68,13 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly userId: string;
   readonly controller: Type;
   readonly method: string;
+  /** Canonical command name, button ID, or attachment:<controller>.<method>. */
   readonly route: string;
 } & (
     | {
         readonly scene: 'group';
         readonly groupId: string;
+        /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
         readonly target: Extract<MessageTarget, { scene: 'group' }>;
       }
@@ -86,12 +88,20 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         readonly attachments: readonly Attachment[];
       }
     | {
+        readonly kind: 'attachment';
+        readonly messageId: string;
+        readonly content: string;
+        readonly attachments: readonly Attachment[];
+        readonly matchedAttachments: readonly Attachment[];
+      }
+    | {
         readonly kind: 'button';
         readonly interactionId: string;
         readonly buttonId: string;
         readonly data: string;
       }
   );
+
 export interface CanActivate {
   canActivate(context: GuardContext): Awaitable<GuardResult>;
 }
@@ -119,6 +129,7 @@ export declare function GroupManagersOnly(
 export declare function Command(name: string, options?: CommandOptions): MethodDecorator;
 export declare function On(eventName: string): MethodDecorator;
 export declare function OnButton(buttonId: string): MethodDecorator;
+export declare function OnAttachment(options?: OnAttachmentOptions): MethodDecorator;
 export declare function Ctx(): ParameterDecorator;
 export declare function User(): ParameterDecorator;
 export declare function UserId(): ParameterDecorator;
@@ -157,6 +168,31 @@ export interface AttachmentOptions {
   minCount?: number;
   maxCount?: number;
 }
+export interface OnAttachmentOptions {
+  filename?: string | RegExp;
+  extension?: string;
+  kind?: AttachmentKind;
+  invalidInput?: 'report' | 'reply';
+}
+
+export type AttachmentKind = 'all' | 'image' | 'video' | 'audio' | 'file';
+export interface AttachmentSelectionOptions {
+  kind?: AttachmentKind;
+  minCount?: number;
+  maxCount?: number;
+}
+export type AttachmentSelectionResult =
+  | { readonly status: 'valid'; readonly attachments: readonly Attachment[] }
+  | {
+      readonly status: 'invalid';
+      readonly reason: 'too-few' | 'too-many';
+      readonly count: number;
+      readonly limit: number;
+    };
+export declare function selectAttachments(
+  attachments: readonly Attachment[],
+  options?: AttachmentSelectionOptions,
+): AttachmentSelectionResult;
 export declare function Arg(index: number, options?: ArgumentOptions): ParameterDecorator;
 export declare function Args(): ParameterDecorator;
 export declare function Option(name: string, options?: OptionOptions): ParameterDecorator;
@@ -164,9 +200,6 @@ export declare function Slot(name: string, options: SlotOptions): ParameterDecor
 export declare function Rest(options?: RestOptions): ParameterDecorator;
 export declare function Attachments(options?: AttachmentOptions): ParameterDecorator;
 export declare function Images(options?: AttachmentOptions): ParameterDecorator;
-export declare function Videos(options?: AttachmentOptions): ParameterDecorator;
-export declare function Audios(options?: AttachmentOptions): ParameterDecorator;
-export declare function Files(options?: AttachmentOptions): ParameterDecorator;
 export declare class HelpModule {}
 
 export interface RetryOptions {
@@ -619,10 +652,12 @@ export type ErrorPhase =
   | 'queue'
   | 'observer'
   | 'command'
+  | 'attachment'
   | 'button'
   | 'interaction-ack'
   | 'send'
   | 'shutdown';
+
 export interface ErrorContext {
   readonly phase: ErrorPhase;
   readonly appId: string;

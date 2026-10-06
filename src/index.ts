@@ -10,6 +10,7 @@ export {
   Command,
   On,
   OnButton,
+  OnAttachment,
   Ctx,
   User,
   UserId,
@@ -23,9 +24,6 @@ export {
   Rest,
   Attachments,
   Images,
-  Videos,
-  Audios,
-  Files,
   UseGuards,
   GroupOnly,
   PrivateOnly,
@@ -34,6 +32,7 @@ export {
   GroupManagersOnly,
   Cooldown,
 } from './core/metadata.js';
+export { selectAttachments } from './core/attachments.js';
 export { HelpModule } from './core/help.js';
 export { BotFactory } from './core/factory.js';
 export { LOGGER } from './core/logging.js';

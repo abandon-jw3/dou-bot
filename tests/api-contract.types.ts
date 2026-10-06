@@ -29,15 +29,52 @@ runtime.Rest({ name: '补充内容' });
 const attachmentOptions: runtime.AttachmentOptions = { name: '素材', minCount: 1, maxCount: 4 };
 runtime.Attachments(attachmentOptions);
 runtime.Images(attachmentOptions);
-runtime.Videos();
-runtime.Audios({ maxCount: 2 });
-runtime.Files({ minCount: 0 });
+// @ts-expect-error Unreleased command-only video binding was removed.
+void runtime.Videos;
+// @ts-expect-error Audio uses explicit prompt plus selectAttachments.
+void runtime.Audios;
+// @ts-expect-error File collection is not a command parameter decorator.
+void runtime.Files;
 // @ts-expect-error Attachment counts are numeric.
 runtime.Images({ minCount: '1' });
 // @ts-expect-error Cardinality uses minCount, not a second required flag.
 runtime.Attachments({ required: true });
 // @ts-expect-error Media selection belongs to the decorator, not an ad-hoc MIME option.
-runtime.Files({ contentType: 'image/png' });
+runtime.Images({ contentType: 'image/png' });
+const selectionOptions: runtime.AttachmentSelectionOptions = {
+  kind: 'video',
+  minCount: 1,
+  maxCount: 1,
+};
+const selection: runtime.AttachmentSelectionResult = runtime.selectAttachments(
+  [],
+  selectionOptions,
+);
+const kind: runtime.AttachmentKind = 'file';
+void kind;
+if (selection.status === 'valid') {
+  const attachments: readonly runtime.Attachment[] = selection.attachments;
+  void attachments;
+  // @ts-expect-error Selection arrays are readonly.
+  selection.attachments[0] = { url: 'unused', raw: {} };
+} else {
+  const reason: 'too-few' | 'too-many' = selection.reason;
+  const count: number = selection.count;
+  const limit: number = selection.limit;
+  void [reason, count, limit];
+  // @ts-expect-error Invalid results do not expose a partial selection.
+  void selection.attachments;
+  // @ts-expect-error Result fields are readonly.
+  selection.count = 0;
+}
+// @ts-expect-error Public kinds are explicit categories, not MIME values.
+runtime.selectAttachments([], { kind: 'image/png' });
+// @ts-expect-error Counts are numeric.
+runtime.selectAttachments([], { minCount: '1' });
+// @ts-expect-error Selection does not take decorator help metadata.
+runtime.selectAttachments([], { name: '文件' });
+// @ts-expect-error Raw QQ attachments must first be normalized.
+runtime.selectAttachments([{ url: 'unused', content_type: 'voice' }]);
 function inspectAttachments(attachments: readonly runtime.Attachment[]): void {
   const voice = attachments[0];
   const wav: string | undefined = voice?.voiceWavUrl;
@@ -124,7 +161,13 @@ function inspectGuardContext(ctx: runtime.GuardContext): void {
   // @ts-expect-error Guards do not acknowledge interactions directly.
   void ctx.ack;
   if (ctx.kind === 'command') void ctx.content;
-  else void ctx.buttonId;
+  else if (ctx.kind === 'button') void ctx.buttonId;
+  else {
+    void ctx.matchedAttachments;
+    void ctx.content;
+    // @ts-expect-error Attachment guards are message guards.
+    void ctx.buttonId;
+  }
   if (ctx.scene === 'group') void ctx.groupId;
 }
 void inspectGuardContext;
@@ -191,3 +234,15 @@ runtime.Module({ guards: [] });
 runtime.Module({ guards: [guard] });
 // @ts-expect-error Apply built-in guard decorators to the module class instead.
 runtime.Module({ guards: [runtime.GroupOnly()] });
+
+runtime.OnAttachment();
+runtime.OnAttachment({
+  filename: /^report_\d+\.docx$/i,
+  extension: '.docx',
+  kind: 'file',
+  invalidInput: 'reply',
+});
+// @ts-expect-error Attachment routes have no command aliases.
+runtime.OnAttachment({ aliases: ['doc'] });
+// @ts-expect-error Extension is one literal suffix.
+runtime.OnAttachment({ extension: ['docx'] });

@@ -4,6 +4,7 @@ import { readHandlers } from './metadata.js';
 import { FrameworkError } from './errors.js';
 import { callable } from './utils.js';
 import { tokenizeCommand } from './parser.js';
+import { AttachmentRoute } from './attachment-route.js';
 import { CommandArguments } from './arguments.js';
 import { CommandInputError } from './input-error.js';
 import { bindIdentity } from './identity.js';
@@ -14,13 +15,14 @@ import { createBuiltinGuard, isBuiltinGuard } from './access.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
 import type { EventTask, HandlerLocation } from './execution.js';
-import type { CanActivate, ErrorPhase, MessageInput } from '../contracts.js';
+import type { Attachment, CanActivate, ErrorPhase, MessageInput } from '../contracts.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
 
 interface Route {
   binding: ControllerBinding;
   metadata: HandlerMetadata;
   arguments?: CommandArguments;
+  attachment?: AttachmentRoute;
   id: number;
   guards: readonly (() => CanActivate)[];
 }
@@ -31,6 +33,7 @@ const location = (route: Route): HandlerLocation => ({
 export class Dispatcher {
   private readonly commands = new Map<string, Route>();
   private readonly buttons = new Map<string, Route>();
+  private readonly attachments: Route[] = [];
   private readonly events = new Map<string, Route[]>();
   private readonly moduleGuardChecks: (() => CanActivate)[] = [];
   private readonly clock: Clock;
@@ -65,6 +68,16 @@ export class Dispatcher {
             return () => guard;
           }),
         };
+        if (metadata.kind === 'attachment') {
+          route.metadata = {
+            ...metadata,
+            name: `attachment:${binding.type.name || '(anonymous)'}.${metadata.method}`,
+          };
+          route.arguments = new CommandArguments(metadata.parameters);
+          route.attachment = new AttachmentRoute(metadata.attachment ?? {});
+          this.attachments.push(route);
+          continue;
+        }
         if (metadata.kind === 'command') {
           route.arguments = new CommandArguments(metadata.parameters);
           this.catalog.add(metadata, route.arguments);
@@ -94,7 +107,11 @@ export class Dispatcher {
 
   validateGuards(): void {
     for (const reference of this.moduleGuardChecks) assertGuard(reference());
-    for (const route of new Set([...this.commands.values(), ...this.buttons.values()]))
+    for (const route of new Set([
+      ...this.commands.values(),
+      ...this.buttons.values(),
+      ...this.attachments,
+    ]))
       for (const reference of route.guards) assertGuard(reference());
   }
   close(): void {
@@ -112,7 +129,11 @@ export class Dispatcher {
     await task.send(message, task.event.kind === 'message', location(route));
   }
 
-  private async controlled(task: EventTask, route: Route): Promise<void> {
+  private async controlled(
+    task: EventTask,
+    route: Route,
+    matched?: readonly Attachment[],
+  ): Promise<void> {
     const handler = location(route);
     let phase: ErrorPhase = 'guard';
     let parsing = false;
@@ -121,7 +142,13 @@ export class Dispatcher {
       const cooldown = route.metadata.cooldown;
       const info =
         route.guards.length || cooldown
-          ? guardContext(task, route.binding.type, route.metadata.method, route.metadata.name)
+          ? guardContext(
+              task,
+              route.binding.type,
+              route.metadata.method,
+              route.metadata.name,
+              matched,
+            )
           : undefined;
       if (info)
         for (const reference of route.guards) {
@@ -132,15 +159,20 @@ export class Dispatcher {
           }
         }
       task.controller.signal.throwIfAborted();
-      phase = task.event.kind === 'button' ? 'button' : 'command';
+      phase =
+        task.event.kind === 'button' ? 'button' : matched === undefined ? 'command' : 'attachment';
       const context =
         task.event.kind === 'button' ? task.buttonContext(handler) : task.messageContext(handler);
       let parameters: unknown[] = route.metadata.parameters.map(() => context);
       if (task.event.kind === 'message') {
         parsing = true;
-        const parsed = tokenizeCommand(task.event.content, this.prefix);
-        if (!parsed || !route.arguments) return;
-        parameters = route.arguments.bind(parsed.tokens, context, task.event.attachments);
+        if (matched !== undefined) {
+          parameters = route.arguments!.bind([], context, matched, true);
+        } else {
+          const parsed = tokenizeCommand(task.event.content, this.prefix);
+          if (!parsed || !route.arguments) return;
+          parameters = route.arguments.bind(parsed.tokens, context, task.event.attachments);
+        }
         parsing = false;
       }
       if (task.event.kind !== 'event')
@@ -158,7 +190,8 @@ export class Dispatcher {
           return;
         }
       }
-      phase = task.event.kind === 'button' ? 'button' : 'command';
+      phase =
+        task.event.kind === 'button' ? 'button' : matched === undefined ? 'command' : 'attachment';
       invoked = true;
       const result = await this.invoke(route, context, parameters);
       if (task.event.kind === 'button') {
@@ -174,15 +207,22 @@ export class Dispatcher {
       }
     } catch (error) {
       task.report(error, phase, handler);
-      if (parsing && error instanceof CommandInputError && this.invalidInput === 'reply') {
+      if (
+        parsing &&
+        error instanceof CommandInputError &&
+        (matched === undefined ? this.invalidInput : route.metadata.attachment?.invalidInput) ===
+          'reply'
+      ) {
         try {
           await this.hint(
             task,
             route,
-            `${error.message}\n${this.catalog.usage(route.metadata.name)}`,
+            matched === undefined
+              ? `${error.message}\n${this.catalog.usage(route.metadata.name)}`
+              : error.message,
           );
         } catch (sendError) {
-          task.report(sendError, 'command', handler);
+          task.report(sendError, matched === undefined ? 'command' : 'attachment', handler);
         }
       }
     } finally {
@@ -205,7 +245,10 @@ export class Dispatcher {
     const name = content.startsWith(this.prefix)
       ? /^\S+/.exec(content.slice(this.prefix.length))?.[0]
       : undefined;
-    return name !== undefined && this.commands.has(name);
+    return (
+      (name !== undefined && this.commands.has(name)) ||
+      this.attachments.some((route) => route.attachment!.select(event.attachments).length > 0)
+    );
   }
 
   private async invoke(route: Route, context: unknown, parameters?: unknown[]): Promise<unknown> {
@@ -237,7 +280,22 @@ export class Dispatcher {
       ? /^\S+/.exec(content.slice(this.prefix.length))?.[0]
       : undefined;
     const route = name === undefined ? undefined : this.commands.get(name);
-    if (!route) return;
-    await this.controlled(task, route);
+    if (route) {
+      await this.controlled(task, route);
+      return;
+    }
+    const attachments = task.event.attachments;
+    const matches = this.attachments
+      .map((route) => ({ route, matched: route.attachment!.select(attachments) }))
+      .filter(({ matched }) => matched.length > 0);
+    for (const { route, matched } of matches) {
+      if (task.controller.signal.aborted) break;
+      const invocation = task.invocation();
+      try {
+        await this.controlled(invocation, route, matched);
+      } finally {
+        await invocation.endInvocation();
+      }
+    }
   }
 }

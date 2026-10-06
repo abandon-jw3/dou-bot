@@ -1,6 +1,6 @@
 # 模块、类和方法级 Guard
 
-dou-bot **0.6.0 / 契约 1.7** 支持三个层级的 Guard。执行顺序为 **模块 → 控制器类 → 方法 → 参数绑定 → 冷却 → 业务处理器**。任意一级拒绝都会停止后续检查，不占用冷却。
+dou-bot **0.7.0 / 契约 1.11** 支持三个层级的 Guard。执行顺序为 **模块 → 控制器类 → 方法 → 参数绑定 → 冷却 → 业务处理器**。任意一级拒绝都会停止后续检查，不占用冷却。
 
 ## 模块统一配置
 
@@ -75,3 +75,7 @@ Module 与 UseGuards 的书写先后不影响作用范围。`@GroupOnly()`、`@P
 - HelpModule 是独立模块，根模块 Guard 不会自动保护其帮助命令；帮助列表不会按业务 Guard 隐藏命令。
 
 可运行且带中文注释的组合示例见公开的 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example/src/example/module-guards)，框架行为测试见 [module-guards.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/tests/module-guards.test.ts)。
+
+## 自动附件路由
+
+契约 1.11 的 OnAttachment 同样受本模块直接注册控制器的模块 Guard 约束，顺序仍为模块 → 控制器 → 方法。GuardContext 新增 attachment 分支和 matchedAttachments；多个处理器各自独立授权。详见 [自动处理上传附件](command-parameters.md#自动处理上传附件)。

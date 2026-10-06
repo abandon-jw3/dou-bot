@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "0.7.0",
+  "status": "candidate-validated",
+  "published": false,
+  "preparedDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest",
+    "nextTagAction": "leave-unchanged"
+  },
+  "npmAccount": {
+    "username": "fine_wei",
+    "whoami": "passed",
+    "publicationMayRequireNpmVerification": true
+  },
+  "publicContract": "1.11",
+  "nodeRange": ">=24.0.0 <25",
+  "typescript": "5.9.3",
+  "npm": "11.19.0",
+  "dependencies": {
+    "reflect-metadata": "0.2.2",
+    "ws": "8.22.0"
+  },
+  "source": {
+    "commit": "b7f3808533a4a01d670d764b048e41767d03c34f",
+    "dirty": true,
+    "inputFingerprint": "0faddb15ac0435bd8ceff5d05b8c135288652baae6c82653d5cd608f62150366",
+    "fingerprintAlgorithm": "SHA-256 of each sorted relative path, NUL, file bytes, NUL",
+    "fingerprintedInputs": [
+      "LICENSE",
+      "NOTICE",
+      "README.md",
+      "docs/access-control.md",
+      "docs/command-parameters.md",
+      "docs/execution-controls.md",
+      "docs/module-guards.md",
+      "docs/prompts.md",
+      "package-lock.json",
+      "package.json",
+      "scripts/build.mjs",
+      "src/contracts.ts",
+      "src/core/access.ts",
+      "src/core/application.ts",
+      "src/core/arguments.ts",
+      "src/core/attachment-route.ts",
+      "src/core/attachments.ts",
+      "src/core/clock.ts",
+      "src/core/config.ts",
+      "src/core/container.ts",
+      "src/core/cooldown.ts",
+      "src/core/dispatcher.ts",
+      "src/core/errors.ts",
+      "src/core/execution.ts",
+      "src/core/factory.ts",
+      "src/core/guards.ts",
+      "src/core/help.ts",
+      "src/core/identity.ts",
+      "src/core/input-error.ts",
+      "src/core/logging.ts",
+      "src/core/metadata.ts",
+      "src/core/parser.ts",
+      "src/core/prompts.ts",
+      "src/core/utils.ts",
+      "src/index.ts",
+      "src/message/index.ts",
+      "src/qq/api.ts",
+      "src/qq/client.ts",
+      "src/qq/http.ts",
+      "src/qq/lifetime.ts",
+      "src/qq/normalize.ts",
+      "src/qq/token.ts",
+      "src/testing/index.ts",
+      "src/transport/types.ts",
+      "src/transport/webhook.ts",
+      "src/transport/ws.ts",
+      "tsconfig.build.json",
+      "tsconfig.json"
+    ],
+    "note": "The candidate was built from uncommitted 0.7.0 changes above the recorded base commit. Record a release source commit before tagging; do not tag the old base as v0.7.0."
+  },
+  "artifact": {
+    "path": "work/release/0.7.0/dou-bot-0.7.0.tgz",
+    "sizeBytes": 203476,
+    "unpackedBytes": 843651,
+    "fileCount": 114,
+    "sha256": "9c5e58b28c779872ffe40916385d151dba6e867549407041ab97b24911d8a559",
+    "shasum": "fc79ee15678a5b137f40c503c4baa9906c883ec8",
+    "integrity": "sha512-u671wsTDLt+g0r0JRwlCVu1mBuBTzQ88jat7i8jUFN6IBH+stjBdyvanzCH7XUu+Q2+SEE9p5NnYV70FEggqdw==",
+    "origin": "Copied byte-for-byte from the exact tarball used by the successful SDK package consumer check."
+  },
+  "validation": {
+    "sdkCheckNode24210": "passed",
+    "sdkTests": 242,
+    "publicExports": 139,
+    "bidirectionalTypeChecks": 102,
+    "currentTarballConsumers": [
+      "historical-0.6.0",
+      "attachment-selection",
+      "identity",
+      "attachment-routes",
+      "skill-examples"
+    ],
+    "sameTarballConsumerExecutionNode2400": "passed",
+    "skillExampleTests": 2,
+    "isolatedBusinessExampleWithSameTarball": {
+      "status": "passed",
+      "tests": 25,
+      "source": "apps/example source and scripts; only temporary dependency, lock and vendor metadata pointed to the local 0.7.0 candidate"
+    },
+    "publicationDryRun": {
+      "status": "passed",
+      "tag": "latest",
+      "ignoreScripts": true,
+      "integrityMatchesCandidate": true
+    },
+    "priorReview": {
+      "nodeVersions": ["24.0.0", "24.21.0"],
+      "sdkTestsPerNode": 242,
+      "historicalRegistryConsumer": "passed",
+      "websiteExampleTests": 14,
+      "browserTests": 12,
+      "additionalLifecycleCases": 5,
+      "localWsWebhookParity": "passed",
+      "soakDurationMs": 30000,
+      "soakUnexpectedErrors": 0,
+      "soakFinalResourcesReleased": true,
+      "coverage": {
+        "lines": 98.78,
+        "statements": 98.78,
+        "functions": 97.79,
+        "branches": 90.78
+      },
+      "note": "Code validation was completed in the preceding review. This preparation changes release documentation and records, not SDK runtime source."
+    }
+  },
+  "publishedConsumers": {
+    "apps/example": "dou-bot@0.6.0",
+    "website": "dou-bot@0.6.0",
+    "skills/dou-bot": "0.6.0 / contract 1.7"
+  },
+  "pending": [
+    "source commit and release tag coordination",
+    "explicit npm upload and any required account verification",
+    "anonymous registry download and candidate byte comparison",
+    "upgrade apps/example and add new API demonstrations",
+    "upgrade website examples, version labels and API index",
+    "upgrade dou-bot skill and validate registry consumers",
+    "push and verify CI/documentation deployment when requested"
+  ],
+  "liveAcceptance": {
+    "automaticQQAttachmentRouting": "not-run",
+    "publicQQWebhook": "pending",
+    "multiDayRun": "pending"
+  }
+}

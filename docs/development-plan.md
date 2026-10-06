@@ -1,6 +1,6 @@
 # dd-bot v0.6 详细开发方案
 
-版本：设计契约 1.9（新增身份参数） · 原设计日期：2026-09-30 · 附件与身份补充：2026-10-06
+版本：设计契约 1.11（自动附件路由） · 原设计日期：2026-09-30 · 附件与身份补充：2026-10-06
 
 2026-10-01 维护补充：本篇保留设计时的运行时范围和仓库状态；当前源码支持 Node 24.x（最低 24.0.0），开发使用 24.21.0，仓库已公开并合并业务示例与文档。现行安装与 CI 约定以 [仓库维护指南](repository.md) 为准。
 
@@ -18,9 +18,13 @@
 
 1.7 增加 ModuleMetadata.guards，并支持模块类上的 UseGuards 和内置访问限制。规则按模块、控制器类、方法累加，仅覆盖模块直接注册的控制器，详见 [模块 Guard 指南](./module-guards.md)。
 
-1.8 新增未发布的 Attachments、Images、Videos、Audios、Files 参数装饰器与 AttachmentOptions。它们只选择当前消息顶层附件，在文字绑定之后、冷却之前校验数量，不改变文字消费或旧模式。语音扩展字段只作信息映射；下载、转码和 ASR 执行不属于装饰器。完整语义见 [附件参数](command-parameters.md#附件参数未发布源码-api)。其余章节保留原设计的说明与历史范围。
+1.8 新增未发布的 Attachments、Images、Videos、Audios、Files 参数装饰器与 AttachmentOptions。它们只选择当前消息顶层附件，在文字绑定之后、冷却之前校验数量，不改变文字消费或旧模式。语音扩展字段只作信息映射；下载、转码和 ASR 执行不属于装饰器。完整语义见 [附件参数](command-parameters.md#附件参数)。其余章节保留原设计的说明与历史范围。
 
-1.9 新增未发布的 User、UserId、Group、GroupId、Role 参数装饰器，以及只读 UserInfo / GroupInfo。命令和按钮共用同步身份绑定；归一化时冻结快照，缺失群或角色时注入 undefined，不查询资料或改变 Guard、参数消费和冷却。Context 接口不变；完整语义见 [身份参数](command-parameters.md#身份参数未发布源码-api)。
+1.9 新增未发布的 User、UserId、Group、GroupId、Role 参数装饰器，以及只读 UserInfo / GroupInfo。命令和按钮共用同步身份绑定；归一化时冻结快照，缺失群或角色时注入 undefined，不查询资料或改变 Guard、参数消费和冷却。Context 接口不变；完整语义见 [身份参数](command-parameters.md#身份参数)。
+
+1.10 根据客户端实测收敛附件交互：保留 Attachments / Images，移除未发布的 Videos / Audios / Files，新增同步 selectAttachments 及分类、选项、结果类型。视频、音频、文件由业务显式 prompt 后筛选；普通数量不符返回 invalid，不自动等待、重试或累计多条消息。分类与数量规则复用，既有命令参数、身份和 prompt 生命周期保持；详见 [附件参数](command-parameters.md#附件参数)。上述 1.8 / 1.9 记录保留当时的设计背景。
+
+1.11 新增未发布的 OnAttachment / OnAttachmentOptions，接收用户直接上传的顶层附件，条件按同一附件取交集。pending prompt 与已识别命令优先，附件路由按现有发现顺序广播；处理器独立授权、冷却、回复及追问生命周期，共享整条消息的资源预算和回复序号。GuardContext.kind 增加 attachment / matchedAttachments，ErrorPhase 增加 attachment；自定义 Guard 的穷尽判断需补分支。详见 [自动处理上传附件](command-parameters.md#自动处理上传附件)。
 
 ## 1. 已确定的产品边界
 

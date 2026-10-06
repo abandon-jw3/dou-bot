@@ -1,8 +1,7 @@
 import type { ParameterBinding } from './metadata.js';
 import type { ArgumentToken } from './parser.js';
 import type { Attachment } from '../contracts.js';
-import { attachmentLabels, selectAttachments } from './attachments.js';
-import type { AttachmentSelection } from './attachments.js';
+import { attachmentCounts, attachmentLabels, selectAttachmentValues } from './attachments.js';
 import { FrameworkError } from './errors.js';
 import { CommandInputError } from './input-error.js';
 import { isRecord } from './utils.js';
@@ -37,7 +36,7 @@ interface SlotParameter extends Description {
 interface AttachmentParameter extends Description {
   kind: 'attachments';
   index: number;
-  selection: AttachmentSelection;
+  selection: 'all' | 'image';
   minCount: number;
   maxCount?: number;
 }
@@ -176,25 +175,13 @@ function compile(binding: ParameterBinding): CompiledParameter {
   const options = binding.options ?? {};
   if (binding.kind === 'attachments') {
     keys(options, ['name', 'description', 'minCount', 'maxCount']);
-    for (const key of ['minCount', 'maxCount'] as const) {
-      const value = options[key];
-      if (
-        value !== undefined &&
-        (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
-      )
-        config(`Attachment ${key} must be a non-negative safe integer`);
-    }
-    const minCount = options.minCount === undefined ? 0 : (options.minCount as number);
-    const maxCount = options.maxCount as number | undefined;
-    if (maxCount !== undefined && maxCount < minCount)
-      config('Attachment maxCount cannot be less than minCount');
+    const counts = attachmentCounts(options.minCount, options.maxCount, 'CONFIG');
     return {
       kind: 'attachments',
       index: binding.index,
       selection: binding.selection,
       ...describe(options, attachmentLabels[binding.selection]),
-      minCount,
-      ...(maxCount === undefined ? {} : { maxCount }),
+      ...counts,
     };
   }
   if (binding.kind === 'rest') {
@@ -340,6 +327,7 @@ export class CommandArguments {
     tokens: readonly ArgumentToken[],
     context: unknown,
     attachments: readonly Attachment[] = [],
+    attachmentRoute = false,
   ): unknown[] {
     const args = tokens.map((token) => token.value);
     if (!this.enhanced) {
@@ -352,7 +340,7 @@ export class CommandArguments {
               ? args[parameter.argument]
               : undefined,
       );
-      return this.bindAttachments(values, attachments);
+      return this.bindAttachments(values, attachments, attachmentRoute);
     }
 
     const positional: string[] = [];
@@ -427,22 +415,26 @@ export class CommandArguments {
           ? [...args]
           : values.get(parameter.index),
     );
-    return this.bindAttachments(bound, attachments);
+    return this.bindAttachments(bound, attachments, attachmentRoute);
   }
 
-  private bindAttachments(values: unknown[], attachments: readonly Attachment[]): unknown[] {
+  private bindAttachments(
+    values: unknown[],
+    attachments: readonly Attachment[],
+    attachmentRoute: boolean,
+  ): unknown[] {
     for (const [index, parameter] of this.parameters.entries()) {
       if (parameter.kind !== 'attachments') continue;
-      const selected = selectAttachments(attachments, parameter.selection);
-      if (selected.length < parameter.minCount)
+      const selected = selectAttachmentValues(attachments, parameter.selection, parameter);
+      if (selected.status === 'invalid' && selected.reason === 'too-few')
         throw new CommandInputError(
-          `${parameter.name}数量不能少于 ${parameter.minCount}（收到 ${selected.length}）；请与命令在同一条消息中发送。`,
+          `${parameter.name}数量不能少于 ${selected.limit}（收到 ${selected.count}）${attachmentRoute ? '。' : '；请与命令在同一条消息中发送。'}`,
         );
-      if (parameter.maxCount !== undefined && selected.length > parameter.maxCount)
+      if (selected.status === 'invalid')
         throw new CommandInputError(
-          `${parameter.name}数量不能超过 ${parameter.maxCount}（收到 ${selected.length}）。`,
+          `${parameter.name}数量不能超过 ${selected.limit}（收到 ${selected.count}）。`,
         );
-      values[index] = selected;
+      values[index] = selected.attachments;
     }
     return values;
   }

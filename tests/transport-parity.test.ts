@@ -4,12 +4,11 @@ import { createPrivateKey, sign } from 'node:crypto';
 import {
   Arg,
   Attachments,
-  Audios,
+  selectAttachments,
   BotFactory,
   Command,
   Controller,
   Ctx,
-  Files,
   Group,
   GroupId,
   GroupManagersOnly,
@@ -17,10 +16,10 @@ import {
   Images,
   Module,
   OnButton,
+  OnAttachment,
   Role,
   User,
   UserId,
-  Videos,
   button,
   image,
   keyboard,
@@ -28,6 +27,7 @@ import {
 } from '../src/index.js';
 import type {
   Attachment,
+  AttachmentKind,
   ButtonContext,
   CanActivate,
   GuardContext,
@@ -120,17 +120,48 @@ await test('identical private/group messages and buttons produce identical behav
     @Command('attachments') attachments(
       @Attachments() all: readonly Attachment[],
       @Images() images: readonly Attachment[],
-      @Videos() videos: readonly Attachment[],
-      @Audios() audios: readonly Attachment[],
-      @Files() files: readonly Attachment[],
       @Ctx() ctx: MessageContext,
     ): string {
       this.calls.push(`${ctx.scene}:attachments`);
+      const results = (['video', 'audio', 'file'] as const).map((kind) => {
+        const result = selectAttachments(all, { kind });
+        assert.ok(result.status === 'valid');
+        return result.attachments;
+      });
+      const audios = results[1]!;
       return JSON.stringify({
-        counts: [all.length, images.length, videos.length, audios.length, files.length],
+        counts: [all.length, images.length, ...results.map((items) => items.length)],
         wav: audios[0]?.voiceWavUrl,
         asr: audios[0]?.asrReferText,
       });
+    }
+    @Command('collect') async collect(
+      @Arg(0, { choices: ['video', 'audio', 'file'], required: true }) kind: AttachmentKind,
+      @Ctx() ctx: MessageContext,
+    ): Promise<void> {
+      const answer = await ctx.prompt(`send-${kind}`);
+      assert.ok(answer.status === 'received');
+      const result = selectAttachments(answer.message.attachments, {
+        kind,
+        minCount: 1,
+        maxCount: 1,
+      });
+      assert.ok(result.status === 'valid');
+      this.calls.push(`${ctx.scene}:collect:${kind}`);
+      await answer.message.reply(
+        `received-${kind}:${result.attachments.length}:${result.attachments[0]?.contentType}`,
+      );
+    }
+    @OnAttachment({ filename: /^report_\d+\.docx$/i, extension: '.docx', kind: 'file' })
+    uploaded(
+      @Attachments({ maxCount: 1 }) files: readonly Attachment[],
+      @UserId() userId: string,
+      @Role() role: GroupRole | undefined,
+      @Ctx() ctx: MessageContext,
+    ): string {
+      assert.equal(userId, ctx.userId);
+      this.calls.push(`${ctx.scene}:uploaded:${files.length}`);
+      return JSON.stringify({ scene: ctx.scene, filename: files[0]?.filename, userId, role });
     }
     @OnButton('press') async pressed(@Ctx() ctx: ButtonContext): Promise<void> {
       this.calls.push(`${ctx.scene}:button:${ctx.data}`);
@@ -265,6 +296,7 @@ await test('identical private/group messages and buttons produce identical behav
       content: '/echo should-not-run',
     },
   });
+  // Synthetic mixtures exercise protocol robustness, not QQ client composition capabilities.
   for (const scene of ['private', 'group']) {
     events.push({
       op: 0,
@@ -330,6 +362,58 @@ await test('identical private/group messages and buttons produce identical behav
       },
     );
   }
+  for (const scene of ['private', 'group']) {
+    for (const [kind, contentType] of [
+      ['video', 'video/mp4'],
+      ['audio', 'voice'],
+      ['file', 'file'],
+    ]) {
+      const identity =
+        scene === 'private'
+          ? { author: { user_openid: 'user' } }
+          : { group_openid: 'group', author: { member_openid: 'member' } };
+      const t = scene === 'private' ? 'C2C_MESSAGE_CREATE' : 'GROUP_MESSAGE_CREATE';
+      events.push({
+        op: 0,
+        t,
+        d: { id: `start-${scene}-${kind}`, ...identity, content: `/collect ${kind}` },
+      });
+      events.push({
+        op: 0,
+        t,
+        d: {
+          id: `input-${scene}-${kind}`,
+          ...identity,
+          content: '',
+          attachments: [{ url: 'https://example.invalid/input', content_type: contentType }],
+        },
+      });
+    }
+  }
+  for (const [index, t] of [
+    'C2C_MESSAGE_CREATE',
+    'GROUP_MESSAGE_CREATE',
+    'GROUP_AT_MESSAGE_CREATE',
+  ].entries()) {
+    events.push({
+      op: 0,
+      t,
+      d: {
+        id: `automatic-${index}`,
+        content: '',
+        ...(index === 0
+          ? { author: { user_openid: 'user' } }
+          : { group_openid: 'group', author: { member_openid: 'member', member_role: 'admin' } }),
+        attachments: [
+          {
+            url: 'https://example.invalid/document',
+            filename: 'report_20261006.docx',
+            content_type: 'file',
+          },
+        ],
+      },
+    });
+  }
   try {
     await Promise.all(apps.map((app) => app.start()));
     for (const [index, event] of events.entries()) {
@@ -368,6 +452,11 @@ await test('identical private/group messages and buttons produce identical behav
       '/v2/users/user/messages',
       '/v2/groups/group/messages',
       '/v2/groups/group/messages',
+      ...Array<string>(6).fill('/v2/users/user/messages'),
+      ...Array<string>(6).fill('/v2/groups/group/messages'),
+      '/v2/users/user/messages',
+      '/v2/groups/group/messages',
+      '/v2/groups/group/messages',
     ]);
     assert.equal(
       wsBackend.messages[6]?.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
@@ -390,7 +479,9 @@ await test('identical private/group messages and buttons produce identical behav
     }
     assert.deepEqual(ws.get(Commands).identities, webhook.get(Commands).identities);
     assert.deepEqual(
-      wsBackend.messages.slice(15).map((entry) => JSON.parse(entry.content ?? 'null') as unknown),
+      wsBackend.messages
+        .slice(15, 19)
+        .map((entry) => JSON.parse(entry.content ?? 'null') as unknown),
       [
         { user: { id: 'user', username: '', bot: false }, userId: 'user' },
         { user: { id: 'user' }, userId: 'user' },
@@ -403,6 +494,43 @@ await test('identical private/group messages and buttons produce identical behav
         },
         { user: { id: 'member' }, userId: 'member', group: { id: 'group' }, groupId: 'group' },
       ],
+    );
+    assert.deepEqual(
+      wsBackend.messages.slice(19, 31).map((entry) => entry.content),
+      Array.from({ length: 2 }, () => [
+        'send-video',
+        'received-video:1:video/mp4',
+        'send-audio',
+        'received-audio:1:voice',
+        'send-file',
+        'received-file:1:file',
+      ]).flat(),
+    );
+    assert.deepEqual(
+      wsBackend.messages
+        .slice(19, 31)
+        .filter((_, index) => index % 2 === 1)
+        .map((entry) => entry.msg_id),
+      [
+        'input-private-video',
+        'input-private-audio',
+        'input-private-file',
+        'input-group-video',
+        'input-group-audio',
+        'input-group-file',
+      ],
+    );
+    assert.deepEqual(
+      wsBackend.messages.slice(31).map((entry) => JSON.parse(entry.content ?? 'null') as unknown),
+      [
+        { scene: 'private', filename: 'report_20261006.docx', userId: 'user' },
+        { scene: 'group', filename: 'report_20261006.docx', userId: 'member', role: 'admin' },
+        { scene: 'group', filename: 'report_20261006.docx', userId: 'member', role: 'admin' },
+      ],
+    );
+    assert.deepEqual(
+      wsBackend.messages.slice(31).map((entry) => entry.msg_id),
+      ['automatic-0', 'automatic-1', 'automatic-2'],
     );
     assert.equal(
       ws.get(Commands).calls.some((call) => call.includes('should-not-run')),

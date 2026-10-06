@@ -10,6 +10,7 @@ import type {
   InjectionToken,
   ModuleMetadata,
   OptionOptions,
+  OnAttachmentOptions,
   RestOptions,
   SlotOptions,
   Type,
@@ -20,7 +21,6 @@ import { cooldownOptions } from './cooldown.js';
 import { isRecord, isType, tokenName } from './utils.js';
 import { rolesGuard, sceneGuard, usersGuard, validateAccessRules } from './access.js';
 import type { GuardDeclaration } from './access.js';
-import type { AttachmentSelection } from './attachments.js';
 import type { IdentitySelection } from './identity.js';
 
 const MODULE = Symbol('module');
@@ -40,13 +40,14 @@ type ParameterDeclaration =
   | { kind: 'option'; key: string; options: OptionOptions }
   | { kind: 'slot'; key: string; options: SlotOptions }
   | { kind: 'rest'; options: RestOptions }
-  | { kind: 'attachments'; selection: AttachmentSelection; options: AttachmentOptions };
+  | { kind: 'attachments'; selection: 'all' | 'image'; options: AttachmentOptions };
 export type ParameterBinding = ParameterDeclaration & { index: number };
 export interface HandlerMetadata {
   method: string;
-  kind: 'command' | 'event' | 'button';
+  kind: 'command' | 'event' | 'button' | 'attachment';
   name: string;
   options: CommandOptions;
+  attachment?: Readonly<OnAttachmentOptions>;
   parameters: readonly ParameterBinding[];
   guards: readonly GuardDeclaration[];
   cooldown?: Readonly<CooldownOptions>;
@@ -109,6 +110,7 @@ function handler(
   kind: HandlerMetadata['kind'],
   name: string,
   options: CommandOptions = {},
+  attachment?: Readonly<OnAttachmentOptions>,
 ): MethodDecorator {
   if (
     !isRecord(options) ||
@@ -136,6 +138,7 @@ function handler(
       kind,
       name,
       options: declarationOptions,
+      ...(attachment === undefined ? {} : { attachment }),
     });
     Reflect.defineMetadata(HANDLERS, entries, target);
   };
@@ -143,6 +146,17 @@ function handler(
 export const Command = (name: string, options?: CommandOptions): MethodDecorator =>
   handler('command', name, options);
 export const On = (eventName: string): MethodDecorator => handler('event', eventName);
+export function OnAttachment(options: OnAttachmentOptions = {}): MethodDecorator {
+  if (!isRecord(options)) throw new FrameworkError('CONFIG', 'Invalid attachment route options');
+  const filename = options.filename;
+  const frozen = Object.freeze({
+    ...options,
+    ...(filename instanceof RegExp
+      ? { filename: new RegExp(filename.source, filename.flags) }
+      : {}),
+  });
+  return handler('attachment', 'attachment', {}, frozen);
+}
 export const OnButton = (buttonId: string): MethodDecorator => handler('button', buttonId);
 
 function isGuardToken(token: unknown): token is InjectionToken<CanActivate> {
@@ -281,20 +295,12 @@ export const Slot = (name: string, options: SlotOptions): ParameterDecorator =>
 export const Rest = (options: RestOptions = {}): ParameterDecorator =>
   parameter({ kind: 'rest', options: snapshot(options) });
 
-const attachments = (
-  selection: AttachmentSelection,
-  options: AttachmentOptions,
-): ParameterDecorator => parameter({ kind: 'attachments', selection, options: snapshot(options) });
+const attachments = (selection: 'all' | 'image', options: AttachmentOptions): ParameterDecorator =>
+  parameter({ kind: 'attachments', selection, options: snapshot(options) });
 export const Attachments = (options: AttachmentOptions = {}): ParameterDecorator =>
   attachments('all', options);
 export const Images = (options: AttachmentOptions = {}): ParameterDecorator =>
   attachments('image', options);
-export const Videos = (options: AttachmentOptions = {}): ParameterDecorator =>
-  attachments('video', options);
-export const Audios = (options: AttachmentOptions = {}): ParameterDecorator =>
-  attachments('audio', options);
-export const Files = (options: AttachmentOptions = {}): ParameterDecorator =>
-  attachments('file', options);
 
 export function readModule(type: Type): ModuleMetadata {
   const result = metadata<ModuleMetadata>(MODULE, type);
@@ -364,7 +370,20 @@ export function readHandlers(
       )
         throw new FrameworkError(
           'CONFIG',
-          'Method guards and cooldowns require @Command or @OnButton',
+          'Method guards and cooldowns require @Command, @OnButton or @OnAttachment',
+        );
+      if (
+        metadata<ParameterBinding[]>(PARAMETERS, prototype, key)?.some(
+          (p) => p.kind === 'attachments',
+        ) &&
+        !declarations.some(
+          (entry) =>
+            entry.method === key && (entry.kind === 'command' || entry.kind === 'attachment'),
+        )
+      )
+        throw new FrameworkError(
+          'CONFIG',
+          'Attachment parameters require @Command or @OnAttachment',
         );
       if (
         metadata<ParameterBinding[]>(PARAMETERS, prototype, key)?.some(
@@ -372,7 +391,10 @@ export function readHandlers(
         ) &&
         !declarations.some((entry) => entry.method === key && entry.kind !== 'event')
       )
-        throw new FrameworkError('CONFIG', 'Identity parameters require @Command or @OnButton');
+        throw new FrameworkError(
+          'CONFIG',
+          'Identity parameters require @Command, @OnButton or @OnAttachment',
+        );
     }
     for (const entry of declarations) {
       if (seen.has(entry.method)) continue;
@@ -391,7 +413,11 @@ export function readHandlers(
             p.index >= count ||
             (entry.kind !== 'command' &&
               p.kind !== 'context' &&
-              !(entry.kind === 'button' && p.kind === 'identity')),
+              !(
+                (entry.kind === 'button' || entry.kind === 'attachment') &&
+                p.kind === 'identity'
+              ) &&
+              !(entry.kind === 'attachment' && p.kind === 'attachments')),
         )
       ) {
         throw new FrameworkError(

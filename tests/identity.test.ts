@@ -5,12 +5,11 @@ import {
   Arg,
   Args,
   Attachments,
-  Audios,
+  selectAttachments,
   Command,
   Controller,
   Cooldown,
   Ctx,
-  Files,
   FrameworkError,
   Group,
   GroupId,
@@ -29,7 +28,6 @@ import {
   UseGuards,
   User,
   UserId,
-  Videos,
 } from '../src/index.js';
 import type {
   Attachment,
@@ -455,16 +453,18 @@ await test('identities coexist with every structured and attachment binding with
       @Rest() rest: string[],
       @GroupId() groupId: string | undefined,
       @Slot('city', { choices: ['北京', '上海'], required: true }) city: string,
-      @Videos() videos: readonly Attachment[],
       @Arg(0, { required: true }) name: string,
       @Role() role: GroupRole | undefined,
-      @Audios() audios: readonly Attachment[],
       @Option('detail', { type: 'boolean', default: false }) detail: boolean,
       @Group() group: GroupInfo | undefined,
-      @Files() files: readonly Attachment[],
       @UserId() userId: string,
       @Attachments() all: readonly Attachment[],
     ): void {
+      const counts = (['video', 'audio', 'file'] as const).map((kind) => {
+        const result = selectAttachments(all, { kind });
+        assert.ok(result.status === 'valid');
+        return result.attachments.length;
+      });
       seen.push({
         user,
         group,
@@ -475,7 +475,7 @@ await test('identities coexist with every structured and attachment binding with
         city,
         name,
         detail,
-        counts: [all.length, images.length, videos.length, audios.length, files.length],
+        counts: [all.length, images.length, ...counts],
       });
     }
   }

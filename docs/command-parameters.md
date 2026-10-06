@@ -1,6 +1,6 @@
 # 命令参数与最终使用方式
 
-文字参数部分适用于已发布的 dou-bot 0.6.0；后面的附件与身份装饰器属于公开契约 1.9 的未发布源码 API。它们不增加运行时依赖，群聊、私聊与两种接入方式共用同一套规则。
+本文适用于 dou-bot 0.7.0 / 公开契约 1.11。它们不增加运行时依赖，群聊、私聊与两种接入方式共用同一套规则。
 
 ## 可运行示例
 
@@ -160,21 +160,18 @@ await app.start();
 
 声明错误（重复 Slot 名、多个 Rest、重复 Option 名/别名、重复位置消费、默认值不合法等）在应用初始化时拒绝，先于实例构造和网络连接。完整类型由 `dou-bot` 包入口提供；源码验证覆盖见 [验证记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md)。
 
-## 附件参数（未发布源码 API）
+## 附件参数
 
-以下五个装饰器和 `AttachmentOptions` 尚未发布到 npm，不能从已发布的 0.6.0 导入。源码示例使用 `npm run example:attachments`，实际安装包消费者由 `npm run test:package` 校验；独立业务示例、文档站和技能继续验证 npm 0.6.0。
+Attachments、Images、selectAttachments 及相关类型从 0.7.0 开始提供。独立应用从 dou-bot 导入，源码仓库可运行 `npm run example:attachments`。
 
-每个装饰器接受可选的 `AttachmentOptions`，为命令处理器注入 `readonly Attachment[]`：
+需要随命令附图时，在同一条消息中发送文字和图片。视频、音频和文件采用两步操作：先发送命令，收到机器人的提示后，再单独发送附件。机器人只能处理 QQ 实际投递的事件，群聊中的独立附件是否送达取决于账号权限。
 
-| 装饰器           | 选择范围                                                                           |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| `@Attachments()` | 当前消息的全部顶层附件，包含类型缺失或未知的附件                                   |
-| `@Images()`      | `image/*`                                                                          |
-| `@Videos()`      | `video/*`                                                                          |
-| `@Audios()`      | QQ 的 `voice` 标记及 `audio/*`                                                     |
-| `@Files()`       | QQ 的 `file` 标记，以及非 image/video/audio 的合法 MIME 类型，如 PDF、压缩包、文本 |
+### 同条消息的附件
 
-匹配时修剪空白、忽略大小写并去除分号后的 MIME 参数；保留 `contentType` 和 `raw` 的原始值。缺失或无法识别的裸类型、不完整 MIME、`image/*` 这类范围值只进入 Attachments；不根据 URL 或文件名后缀推断类型。
+| 装饰器                   | 注入值                  | 用途                                                 |
+| ------------------------ | ----------------------- | ---------------------------------------------------- |
+| `@Attachments(options?)` | `readonly Attachment[]` | 当前命令消息的全部顶层附件，包含类型缺失或未知的附件 |
+| `@Images(options?)`      | `readonly Attachment[]` | 当前命令消息中标为 image MIME 的图片                 |
 
 ```ts
 import { Command, Controller, Images, Rest } from 'dou-bot';
@@ -192,21 +189,91 @@ class PictureCommands {
 }
 ```
 
-将控制器注册到模块后，在同一条消息中发送 `/测试图片 备注` 并附图。使用空前缀时可直接发送 `测试图片 备注`。装饰器只注入元信息；下载、保存、转码或识别放在业务服务中处理。单独发送图片不会自动匹配命令，分条补图仍使用 `ctx.prompt()`。
+注册控制器后，在同一条消息中发送 `/测试图片 备注` 并附图。使用空前缀时直接发送 `测试图片 备注`。单独发送附件不会自动触发这条命令。
 
-`AttachmentOptions` 的字段为 `name`、`description`、`minCount`、`maxCount`。默认最少 0 个、最多无上限，没有匹配项时注入 `[]`。数量只统计筛选后的集合；上限 0 可用于拒绝某类附件。上下限必须是非负安全整数，且 maxCount 不得小于 minCount；未知选项、非法名称或上下限在启动时以 CONFIG 拒绝。不提供额外的 required、default 或单附件装饰器。
+`AttachmentOptions` 提供 name、description、minCount、maxCount。默认最少 0 个、最多无上限，没有匹配项时注入空数组；数量只统计筛选结果。上限 0 可用于拒绝附件。上下限必须是非负安全整数，且 maxCount 不得小于 minCount；非法配置在启动时以 CONFIG 拒绝。
 
-附件数组是每次绑定创建的浅冻结副本，保留原顺序和重复项；附件对象及 raw 延续现有只读约定。多个装饰器可选中同一个附件，互不消费，也不占 Arg 的文字位置。添加附件装饰器不会把旧 Arg/Args/Ctx 命令切换为严格文字解析。
+同条附件装饰器不消费文字，不改变旧式或严格文字模式，支持 Command 参数，也可用于下文的 OnAttachment 匹配集合。命令执行顺序保持 Guard → 文字绑定 → 附件数量校验 → 身份注入 → 冷却 → 处理器。数量不足或过多仍产生 PARAMETER_PARSE，遵循 commands.invalidInput，不占用冷却；帮助会说明类型、名称、描述及数量要求。
 
-执行顺序为 Guard → 原有文字参数绑定 → 附件选择与数量校验 → 身份注入（如有） → 冷却 → 处理器。数量不满足时产生 PARAMETER_PARSE，按 `commands.invalidInput` 的 report/reply 配置处理，不占用冷却；帮助信息同时展示附件类型、名称、说明和数量要求。附件装饰器只支持 Command 参数，构造参数、原始 On 和 OnButton 不支持。
+### 分条接收视频、音频或文件
 
-框架只读取本条消息顶层的 attachments；不会递归合并 msg_elements 中的引用/聊天记录，也不从 ARK 预览图合成附件。Attachment 增加可选的 `voiceWavUrl` 与 `asrReferText`，对应 QQ 的 voice_wav_url、asr_refer_text；它们不会替换消息 content 或触发语音命令。其余附件字段和 URL 的校验方式保持原状。
+保留明确的提问步骤，再对收到的消息调用同步工具函数：
 
-协议依据：[QQ 单聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/c2c_message_create.html)、[QQ 群聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。文档描述、离线夹具与具体账号实测分别记录，不把支持筛选视频/音频当作所有账号都已验证对应投递能力。
+```ts
+import { Command, Controller, Ctx, selectAttachments } from 'dou-bot';
+import type { MessageContext } from 'dou-bot';
 
-## 身份参数（未发布源码 API）
+@Controller()
+class FileCommands {
+  @Command('处理文件')
+  async receive(@Ctx() ctx: MessageContext): Promise<void> {
+    const answer = await ctx.prompt('请单独发送 1 个文件，或发送“取消”。');
+    if (answer.status !== 'received') {
+      await ctx.reply(answer.status === 'timeout' ? '等待超时。' : '已取消。');
+      return;
+    }
+    const result = selectAttachments(answer.message.attachments, {
+      kind: 'file',
+      minCount: 1,
+      maxCount: 1,
+    });
+    if (result.status === 'invalid') {
+      await answer.message.reply(`请发送 1 个文件，本条匹配 ${result.count} 个。`);
+      return;
+    }
+    // 将 result.attachments 交给业务服务处理。
+    await answer.message.reply(`收到 ${result.attachments.length} 个文件。`);
+  }
+}
+```
 
-以下五个无参数装饰器及 UserInfo / GroupInfo 属于公开契约 1.9，尚未发布到 npm，不能从 0.6.0 导入。可在源码仓库运行 `npm run example:identity`；独立消费者验证当前 tarball，业务示例、网站和技能继续使用 npm 0.6.0 的 `@Ctx()`。
+接收视频或音频时，将 kind 改为 video 或 audio，同时调整提问与提示。示例一次只接收下一条消息，校验失败后结束；再次提问、批量收集、保存和处理附件由业务明确编写。使用新消息的上下文回复，才能引用刚收到的附件消息。
+
+prompt 的超时、取消、同用户和同会话隔离保持原样。进入处理器时原命令已经通过 Guard 并占用冷却；后续输入不会重新执行 Guard，也不会因附件校验失败自动退还冷却。涉及管理操作时，应依据新输入复核权限；详细规则见 [二次输入指南](prompts.md)。
+
+### selectAttachments
+
+```ts
+selectAttachments(
+  attachments: readonly Attachment[],
+  options?: AttachmentSelectionOptions,
+): AttachmentSelectionResult
+```
+
+函数接收规范化的 Attachment 数组，例如 ctx.attachments 或 answer.message.attachments，不解析 QQ 原始 payload。它同步执行筛选和数量判定，不等待、不下载、不发送提示，也不读取消息历史。
+
+| kind        | 筛选范围                                                             |
+| ----------- | -------------------------------------------------------------------- |
+| all（默认） | 全部附件，包括未知或缺失类型                                         |
+| image       | image MIME                                                           |
+| video       | video MIME                                                           |
+| audio       | QQ 的 voice 标记及 audio MIME                                        |
+| file        | QQ 的 file 标记，以及其他合法 MIME，例如 application/pdf、text/plain |
+
+MIME 匹配修剪空白、忽略大小写并移除分号后的类型参数，只接受具体的 type/subtype；裸类型、残缺 MIME 和 image/* 这种范围值只进入 all。不根据文件名或 URL 扩展名猜测类型；音频文件若被 QQ 标为 file，也按 file 选择。
+
+AttachmentSelectionOptions 的字段是 kind、minCount、maxCount，默认分别为 all、0、无上限。类型筛选完成后才检查数量；例如要求一个视频而收到图片时，匹配数量为 0。需要必填附件时显式设置 minCount: 1。
+
+| 结果    | 字段                 | 业务处理                                         |
+| ------- | -------------------- | ------------------------------------------------ |
+| valid   | attachments          | 使用筛选后的数组                                 |
+| invalid | reason、count、limit | 根据失败原因、实际数量和触发的边界决定提示或结束 |
+
+reason 为 too-few 或 too-many。普通校验失败不会抛异常、调用 onError 或触发 commands.invalidInput；失败结果不携带部分附件，也不会为满足上限而截断数组。选项拼写、未知 kind、非法上下限或非规范化数组属于调用错误，以 HANDLER_CONTRACT 抛出。
+
+结果对象冻结；成功数组是浅冻结副本，保留原顺序、重复项和附件对象引用。附件对象及 raw 延续现有只读约定，contentType 原值不会被改写。多个选择操作相互独立，原数组保持不变。
+
+只选择明确传入的数组，不递归读取 raw、msg_elements 或 ARK 预览图。语音元信息 voiceWavUrl / asrReferText 继续保留，但不会替换消息正文或触发命令。
+
+### 从早期未发布源码迁移
+
+Videos、Audios、Files 已移除。将相应命令改为 `@Ctx()` 加 `ctx.prompt()`，再使用 selectAttachments；没有字段选择器或自动等待的参数选项。Attachments、Images 与既有 AttachmentOptions 保持原来的同条消息语义，身份装饰器不受影响。
+
+协议字段参考：[QQ 单聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/c2c_message_create.html)、[QQ 群聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。合成的混合附件输入只用于协议健壮性测试，不作为客户端组合发送能力的证明。
+
+## 身份参数
+
+以下五个无参数装饰器及 UserInfo / GroupInfo 从 dou-bot 0.7.0 开始提供，不能从 0.6.0 导入。可在源码仓库运行 `npm run example:identity`；独立应用从包含这些 API 的 SDK 版本导入。
 
 | 装饰器       | 注入类型                 | 含义                                           |
 | ------------ | ------------------------ | ---------------------------------------------- |
@@ -264,4 +331,53 @@ class IdentityCommands {
 
 命令执行顺序为 Guard → 文字参数绑定 → 附件校验 → 身份注入 → 冷却 → 处理器；按钮为 Guard → 身份注入 → 冷却 → 处理器，原有交互确认行为保持。缺失群信息或角色时正常注入 undefined，不产生输入错误；需要限制群聊或角色时，继续使用 [GroupOnly / GroupRoles 等访问限制](access-control.md)。角色注入本身不执行权限检查，装饰器也不支持 required、默认值或字段选择配置。
 
-身份装饰器只用于 Command / OnButton 参数。构造器、静态方法、原始 On 或未注册的方法会按 CONFIG 机制拒绝；同一参数只能声明一种来源。继承方法保留参数声明，覆写方法必须按原有规则重新注册。
+身份装饰器用于 Command / OnButton / OnAttachment 参数。构造器、静态方法、原始 On 或未注册的方法会按 CONFIG 机制拒绝；同一参数只能声明一种来源。继承方法保留参数声明，覆写方法必须按原有规则重新注册。
+
+## 自动处理上传附件
+
+用户直接发送文件时，使用 `@OnAttachment()` 声明处理器。例如接收名为“报告_日期.docx”的文件：
+
+```ts
+import { Attachments, Controller, OnAttachment } from 'dou-bot';
+import type { Attachment } from 'dou-bot';
+
+@Controller()
+export class ReportsController {
+  @OnAttachment({
+    filename: /^报告_\d{8}\.docx$/u,
+    extension: 'docx',
+    invalidInput: 'reply',
+  })
+  accept(@Attachments({ maxCount: 1 }) files: readonly Attachment[]): string {
+    // 在这里交给应用自己的下载与文档处理服务。
+    return `已接收 ${files.length} 个匹配文件。`;
+  }
+}
+```
+
+将控制器注册到模块。此 API 从 **0.7.0 / 契约 1.11** 开始提供，npm 0.6.0 无法运行该示例。
+
+`OnAttachmentOptions` 的筛选条件可省略：
+
+| 选项           | 行为                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `filename`     | 字符串精确匹配完整文件名，区分大小写；RegExp 按表达式和 flags 匹配。需要完整匹配时写 `^` / `$`。                          |
+| `extension`    | 一个字面扩展名，例如 `docx` 或 `.docx`，忽略大小写；按文件名最后扩展名匹配。空值、空白、路径、通配符与复合后缀为 CONFIG。 |
+| `kind`         | 默认 `all`，也可为 `image`、`video`、`audio`、`file`，使用上文的 MIME 与 QQ 标记分类规则。                                |
+| `invalidInput` | 默认 `report`；设为 `reply` 时，附件参数的数量错误额外回复提示。                                                          |
+
+所有提供的条件必须同时命中同一个附件。没有文件名时，filename 和 extension 均无法匹配；不从 URL 推断文件名，不从扩展名推断 MIME。省略所有条件时，接收任何包含顶层附件的消息，纯文字消息不触发。正则保存独立快照，`g` / `y` 状态不会在附件之间延续。
+
+每条消息对每个匹配处理器调用一次。`@Attachments()` 获得该处理器匹配的集合；`@Images()` 在这个集合中进一步选择图片。顺序与重复项保留，各参数是独立的浅冻结数组；`ctx.attachments` 仍包含原消息的全部附件。数量限制针对参数自己的筛选结果；Guard 先执行，随后数量校验、身份注入、冷却、处理器。数量错误使用 PARAMETER_PARSE，不占用冷却；普通路由未命中保持静默。`commands.invalidInput` 不控制附件路由的提示，也不会添加命令用法。
+
+附件处理器支持 `Ctx`、`Attachments`、`Images` 和五种身份装饰器，可使用模块、控制器、方法级 Guard、GroupOnly、UsersOnly、GroupRoles 和 Cooldown；文字参数装饰器不适用。返回消息会自动回复；调用 reply 或带问题的 prompt 后返回 void，send 沿用现有规则。原始 On 和按钮的参数限制仍按各自声明检查。同一方法只能注册一种路由，附件处理器不进入命令帮助。
+
+正在等待的 prompt 优先接收下一条消息；已识别的命令优先处理本条消息，即使命令被拒绝、冷却或执行出错也不会转交附件处理器。其余消息交给所有匹配的附件处理器，包括不带条件的处理器；不存在最具体匹配或兜底优先级。未识别的命令文字可以随附件进入此流程。原始 On 继续在正常业务分发前观察事件，被 prompt 接收的消息则由该会话独占。
+
+多个匹配处理器按现有发现顺序运行：导入模块先于导入方，控制器按模块注册顺序，同一控制器内按方法名排序。某个处理器被 Guard 拒绝、进入冷却、参数错误或执行失败后，继续其他处理器；各自独立检查权限和冷却。应用取消或关闭中止后续执行。
+
+需要询问处理方式时，可以在附件处理器里 `await ctx.prompt('请选择处理方式')`。后续处理器等本次追问结束后运行，并继续处理原始上传消息；追问答案不会广播给它们。超时和取消沿用 [二次输入指南](prompts.md)。框架在每个处理器结束时收尾已登记的发送，取消并报告未等待的 prompt，使该处理器及其追问消息的旧 Context 失效，再进入下一个处理器。回复计数和错误归属按处理器隔离；回复序号、消息去重和操作预算按整条消息共享。追问后的业务校验不退还已经占用的冷却，也不自动重做 Guard；需要重新确认权限时由业务明确检查。
+
+自定义 Guard 可以检查新增的 `ctx.kind === 'attachment'` 分支和冻结的 `ctx.matchedAttachments`，完整消息集合仍在 `ctx.attachments`。`ctx.route` 为 `attachment:<控制器名>.<方法名>`。迁移已有 Guard 时，显式判断 button 分支：旧写法 `if (kind === 'command') ... else ...` 的 else 现在还可能是 attachment。附件处理器错误阶段为 `attachment`；发送、Guard、冷却、prompt 错误沿用各自阶段。
+
+筛选只检查消息元信息。扩展名符合 DOCX 并不证明文件内容有效；下载、验证、解析和保存由应用服务处理。运行 `npm run example:attachments` 查看同条图片、分条附件和直接上传三种源码流程。

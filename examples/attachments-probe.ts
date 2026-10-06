@@ -1,17 +1,15 @@
 import {
   Attachments,
-  Audios,
   Command,
   Controller,
   Ctx,
-  Files,
   FrameworkError,
   Images,
   Injectable,
   Module,
   QQApiError,
   UseGuards,
-  Videos,
+  selectAttachments,
 } from '../src/index.js';
 import type {
   Attachment,
@@ -45,6 +43,7 @@ export function createAttachmentsProbe(
   ) as Record<Kind, string>;
   const actors = new Map<Scene, { userId: string; target: MessageTarget }>();
   const messages = new Map<string, { scene: Scene; kind: Kind }>();
+  let admittedCommands = 0;
   let emissions = 0;
   const note = (entry: AttachmentProbeRecord) => {
     if (emissions++ < 300) record(entry);
@@ -59,7 +58,7 @@ export function createAttachmentsProbe(
   @Injectable()
   class SessionGuard implements CanActivate {
     canActivate(ctx: GuardContext): boolean {
-      if (ctx.kind !== 'command' || messages.size >= 100) return false;
+      if (ctx.kind !== 'command' || admittedCommands >= 100) return false;
       const kind = (Object.keys(commands) as Kind[]).find((kind) => commands[kind] === ctx.route);
       if (!kind) return false;
       let actor = actors.get(ctx.scene);
@@ -68,6 +67,7 @@ export function createAttachmentsProbe(
         actors.set(ctx.scene, actor);
       }
       if (actor.userId !== ctx.userId || !matches(ctx.target)) return false;
+      admittedCommands++;
       messages.set(ctx.messageId, { scene: ctx.scene, kind });
       note({ event: 'received', scene: ctx.scene, kind, attachments: ctx.attachments.length });
       return true;
@@ -90,6 +90,38 @@ export function createAttachmentsProbe(
     });
     return `附件验证：收到 ${files.length} 个${labels[kind]}。`;
   }
+  async function collect(kind: 'videos' | 'audios' | 'files', ctx: MessageContext): Promise<void> {
+    const info = { scene: ctx.scene, kind };
+    note({ event: 'waiting', ...info });
+    const answer = await ctx.prompt(`请单独发送 1 个${labels[kind]}，或发送“取消”。`);
+    if (answer.status !== 'received') {
+      note({ event: answer.status, ...info });
+      await ctx.reply(answer.status === 'timeout' ? '附件验证：等待超时。' : '附件验证：已取消。');
+      return;
+    }
+    // Each admitted command owns at most one input; these records remain bounded by 200 entries.
+    messages.set(answer.message.messageId, info);
+    note({ event: 'input-received', ...info, attachments: answer.message.attachments.length });
+    const selection = selectAttachments(answer.message.attachments, {
+      kind: kind === 'videos' ? 'video' : kind === 'audios' ? 'audio' : 'file',
+      minCount: 1,
+      maxCount: 1,
+    });
+    if (selection.status === 'invalid') {
+      note({
+        event: 'invalid',
+        ...info,
+        reason: selection.reason,
+        count: selection.count,
+        limit: selection.limit,
+      });
+      await answer.message.reply(
+        `附件验证：请发送 1 个${labels[kind]}（本条匹配 ${selection.count} 个）。`,
+      );
+      return;
+    }
+    await answer.message.reply(inspect(kind, selection.attachments, answer.message));
+  }
   @Controller()
   @UseGuards(SessionGuard)
   class Commands {
@@ -99,23 +131,14 @@ export function createAttachmentsProbe(
     ): string {
       return inspect('images', files, ctx);
     }
-    @Command(commands.videos) videos(
-      @Videos({ minCount: 1, maxCount: 2 }) files: readonly Attachment[],
-      @Ctx() ctx: MessageContext,
-    ): string {
-      return inspect('videos', files, ctx);
+    @Command(commands.videos) videos(@Ctx() ctx: MessageContext): Promise<void> {
+      return collect('videos', ctx);
     }
-    @Command(commands.audios) audios(
-      @Audios({ minCount: 1, maxCount: 2 }) files: readonly Attachment[],
-      @Ctx() ctx: MessageContext,
-    ): string {
-      return inspect('audios', files, ctx);
+    @Command(commands.audios) audios(@Ctx() ctx: MessageContext): Promise<void> {
+      return collect('audios', ctx);
     }
-    @Command(commands.files) files(
-      @Files({ minCount: 1, maxCount: 4 }) files: readonly Attachment[],
-      @Ctx() ctx: MessageContext,
-    ): string {
-      return inspect('files', files, ctx);
+    @Command(commands.files) files(@Ctx() ctx: MessageContext): Promise<void> {
+      return collect('files', ctx);
     }
     @Command(commands.attachments) attachments(
       @Attachments({ minCount: 1, maxCount: 8 }) files: readonly Attachment[],
@@ -128,6 +151,13 @@ export function createAttachmentsProbe(
   class Root {}
   return {
     root: Root,
+    inputModes: Object.freeze({
+      attachments: 'same-message',
+      images: 'same-message',
+      videos: 'next-message',
+      audios: 'next-message',
+      files: 'next-message',
+    }),
     commands: Object.fromEntries(
       Object.entries(commands).map(([kind, name]) => [kind, `/${name}`]),
     ) as Record<Kind, string>,

@@ -58,6 +58,7 @@ try {
     sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     sourceDirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
     commands: probe.commands,
+    inputModes: probe.inputModes,
     logPath,
     stopPath,
     timeoutSeconds: 900,

@@ -80,13 +80,13 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly userId: string;
   readonly controller: Type;
   readonly method: string;
-  /** Canonical command name or button ID, independent of the alias used. */
+  /** Canonical command name, button ID, or attachment:<controller>.<method>. */
   readonly route: string;
 } & (
     | {
         readonly scene: 'group';
         readonly groupId: string;
-        /** Present only for group message commands with a recognized author role. */
+        /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
         readonly target: Extract<MessageTarget, { scene: 'group' }>;
       }
@@ -98,6 +98,13 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         readonly messageId: string;
         readonly content: string;
         readonly attachments: readonly Attachment[];
+      }
+    | {
+        readonly kind: 'attachment';
+        readonly messageId: string;
+        readonly content: string;
+        readonly attachments: readonly Attachment[];
+        readonly matchedAttachments: readonly Attachment[];
       }
     | {
         readonly kind: 'button';
@@ -159,6 +166,28 @@ export interface AttachmentOptions {
   minCount?: number;
   maxCount?: number;
 }
+
+export interface OnAttachmentOptions {
+  filename?: string | RegExp;
+  extension?: string;
+  kind?: AttachmentKind;
+  invalidInput?: 'report' | 'reply';
+}
+
+export type AttachmentKind = 'all' | 'image' | 'video' | 'audio' | 'file';
+export interface AttachmentSelectionOptions {
+  kind?: AttachmentKind;
+  minCount?: number;
+  maxCount?: number;
+}
+export type AttachmentSelectionResult =
+  | { readonly status: 'valid'; readonly attachments: readonly Attachment[] }
+  | {
+      readonly status: 'invalid';
+      readonly reason: 'too-few' | 'too-many';
+      readonly count: number;
+      readonly limit: number;
+    };
 
 export interface RetryOptions {
   initialAttempts?: number;
@@ -736,6 +765,7 @@ export type ErrorPhase =
   | 'queue'
   | 'observer'
   | 'command'
+  | 'attachment'
   | 'button'
   | 'interaction-ack'
   | 'send'
