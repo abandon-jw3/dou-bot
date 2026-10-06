@@ -96,7 +96,8 @@
     "benchmark": "node scripts/run-example.mjs benchmark",
     "soak": "node scripts/run-example.mjs soak",
     "check": "node scripts/check.mjs",
-    "test:published": "node scripts/test-package.mjs --published"
+    "test:published": "node scripts/test-package.mjs --published",
+    "example:dev": "npm --prefix apps/example run dev"
   },
   "dependencies": {
     "reflect-metadata": "0.2.2",

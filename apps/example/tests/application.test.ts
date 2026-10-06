@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createTestApplication } from 'dou-bot/testing';
-import { AppModule } from '../src/app.module.js';
+import { AppModule } from '../src/app.module.ts';
 
 await test('私聊 /hello 使用默认称呼并自动回复', async (t) => {
   const bot = await createTestApplication(AppModule);

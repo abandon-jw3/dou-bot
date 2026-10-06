@@ -33,7 +33,25 @@ npm start
 | `/hello`      | 你好，朋友！ |
 | `/hello 小明` | 你好，小明！ |
 
-按 `Ctrl+C` 关闭连接。修改源码后重新运行 `npm run build` 并启动。
+按 `Ctrl+C` 关闭连接。正式运行使用 `npm run build` 和 `npm start`；日常修改可使用下面的开发模式。
+
+## 保存后自动重启
+
+在本项目目录运行：
+
+```sh
+npm run dev
+```
+
+开发脚本监听 `src/`、`.env`、`tsconfig.json`、`tsconfig.build.json` 以及 package.json / package-lock.json。首次编译成功后启动机器人，保存文件后使用现有 TypeScript 编译器生成新版本，再关闭旧进程并启动新进程。连续保存会合并处理；编译期间再次保存时，只采用最新结果。
+
+编译错误会显示诊断并保留上次成功版本；首次编译失败时不会启动机器人。开发产物位于被 Git 忽略的 `work/dev-*`，每次构建使用独立目录，避免运行中的旧版本读到半更新文件，也不会覆盖生产用的 dist。旧进程关闭期间又发生错误时，会恢复上次运行的代码。
+
+关闭采用本地进程消息触发 `app.close()`，Windows 也会等待清理。最长等待 12 秒，超时才强制结束旧进程；新旧机器人不会同时运行。按 `Ctrl+C` 同时关闭文件监听、编译器和机器人，正常退出会清理临时产物。启动异常不会无限重启，修复后再次保存即可重试。
+
+每次重启都会断开并重新连接 QQ，清空进程内的 prompt、冷却和去重状态。测试时等“机器人已启动”提示出现后再发送消息。修改环境变量遵循 Node 的优先级：终端中已设置的变量优先于 `.env`。
+
+在整个 dou-bot 仓库根目录，也可以运行 `npm run example:dev`。此功能属于业务示例的开发脚本，不需要增加 SDK 运行依赖。
 
 ## 最简单的命令
 
@@ -99,7 +117,9 @@ apps/example/
 │  ├─ prompt.test.ts          # 通过 enqueue 驱动多轮交互测试
 │  ├─ module-guards.test.ts   # 模块覆盖、层级顺序及导入隔离
 │  └─ example.test.ts         # 全部装饰器示例的行为验证
-├─ scripts/                   # 构建、测试和 SDK 校验脚本
+├─ scripts/                   # 开发监听、构建、测试和 SDK 校验脚本
+│  ├─ dev.mjs                 # 编译成功后有序重启，保持单个机器人进程
+│  ├─ dev.test.mjs            # 使用离线机器人验证重启与关闭
 │  ├─ tasks.mjs               # 清理旧产物，执行编译、测试与完整检查
 │  └─ verify-sdk.mjs          # 检查 SDK 安装包及公开 API 导入
 ├─ vendor/                    # 已发布 SDK 的来源和校验记录（安装从 npm 下载）
@@ -114,6 +134,8 @@ apps/example/
 运行命令后生成的 `node_modules/`（依赖）、`dist/`（应用 JavaScript）和 `.test-build/`（测试 JavaScript）不提交到 Git。
 
 项目使用 `tsc` 将 TypeScript 编译为 ESM JavaScript，输出到 `dist/`，由 Node.js 运行。保留传统装饰器和元数据编译配置；当前无需额外打包工具。
+
+源码与测试的相对导入统一使用 `.ts`，例如 `import { PrivateOnlyGuard } from './example.guard.ts'`。tsconfig.json 已启用 `rewriteRelativeImportExtensions`，TypeScript 5.9.3 会在生成 JavaScript 时将这些相对路径改为 `.js`；构建、测试和开发重启共用此配置。`dou-bot` 等包导入名称保持原样，启动入口仍运行生成的 `dist/main.js`。
 
 ## 本地检查
 

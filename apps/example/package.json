@@ -18,7 +18,9 @@
     "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md",
     "test": "node scripts/tasks.mjs test",
     "check": "node scripts/tasks.mjs check",
-    "verify:sdk": "node scripts/verify-sdk.mjs"
+    "verify:sdk": "node scripts/verify-sdk.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test:dev": "node --test scripts/dev.test.mjs"
   },
   "dependencies": {
     "dou-bot": "0.7.0"

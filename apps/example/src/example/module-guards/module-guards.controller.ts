@@ -1,5 +1,5 @@
 import { Command, Controller, UseGuards } from 'dou-bot';
-import { ControllerManagersGuard, MethodOwnerGuard } from './module-guards.guard.js';
+import { ControllerManagersGuard, MethodOwnerGuard } from './module-guards.guard.ts';
 
 @Controller()
 export class ModuleInfoController {

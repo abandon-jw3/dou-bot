@@ -3,7 +3,7 @@ import test from 'node:test';
 import type { TestContext } from 'node:test';
 import type { QQDispatch } from 'dou-bot';
 import { createTestApplication } from 'dou-bot/testing';
-import { AppModule } from '../src/app.module.js';
+import { AppModule } from '../src/app.module.ts';
 
 let next = 0;
 function message(

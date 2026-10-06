@@ -3,7 +3,7 @@ import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import type { QQDispatch } from 'dou-bot';
 import { createTestApplication } from 'dou-bot/testing';
-import { AppModule } from '../src/app.module.js';
+import { AppModule } from '../src/app.module.ts';
 
 let next = 0;
 function message(content: string, scene: 'group' | 'private', role?: string): QQDispatch {

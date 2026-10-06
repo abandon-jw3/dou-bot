@@ -1,10 +1,10 @@
 import { Module } from 'dou-bot';
-import { ModuleInfoController, ModuleManagementController } from './module-guards.controller.js';
+import { ModuleInfoController, ModuleManagementController } from './module-guards.controller.ts';
 import {
   ControllerManagersGuard,
   MethodOwnerGuard,
   ModuleGroupGuard,
-} from './module-guards.guard.js';
+} from './module-guards.guard.ts';
 
 // guards 只作用于本模块直接注册的控制器，不会传播给父模块或 imports 中的模块。
 // “所属模块”由 controllers 注册决定，与代码存放在哪个目录无关。

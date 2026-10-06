@@ -33,6 +33,7 @@ async function test() {
   await clean('.test-build');
   await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json']);
   await run(['--test', '.test-build/tests/**/*.test.js']);
+  await run(['--test', 'scripts/dev.test.mjs']);
 }
 switch (process.argv[2]) {
   case 'build':

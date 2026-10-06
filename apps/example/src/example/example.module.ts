@@ -1,18 +1,18 @@
 import { HelpModule, Module } from 'dou-bot';
-import { ExampleAttachmentsController } from './example-attachments.controller.js';
-import { ExampleIdentityController } from './example-identity.controller.js';
-import { ExampleController } from './example.controller.js';
-import { ExampleEventsController } from './example-events.controller.js';
-import { ExamplePrivateController } from './example-private.controller.js';
-import { ExamplePromptController } from './example-prompt.controller.js';
-import { ModuleGuardsExampleModule } from './module-guards/module-guards.module.js';
+import { ExampleAttachmentsController } from './example-attachments.controller.ts';
+import { ExampleIdentityController } from './example-identity.controller.ts';
+import { ExampleController } from './example.controller.ts';
+import { ExampleEventsController } from './example-events.controller.ts';
+import { ExamplePrivateController } from './example-private.controller.ts';
+import { ExamplePromptController } from './example-prompt.controller.ts';
+import { ModuleGuardsExampleModule } from './module-guards/module-guards.module.ts';
 import {
   ExampleGroupAccessController,
   ExamplePrivateAccessController,
-} from './example-access.controller.js';
-import { GroupOnlyGuard, PrivateOnlyGuard } from './example.guard.js';
-import { EXAMPLE_SETTINGS, ExampleService } from './example.service.js';
-import type { ExampleSettings } from './example.service.js';
+} from './example-access.controller.ts';
+import { GroupOnlyGuard, PrivateOnlyGuard } from './example.guard.ts';
+import { EXAMPLE_SETTINGS, ExampleService } from './example.service.ts';
+import type { ExampleSettings } from './example.service.ts';
 
 // @Module 声明一个功能模块；模块类本身只承载配置，不作为服务实例化。
 @Module({

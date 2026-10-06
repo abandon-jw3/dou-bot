@@ -15,9 +15,9 @@ import {
   markdown,
 } from 'dou-bot';
 import type { ButtonContext, MarkdownMessage, MessageContext } from 'dou-bot';
-import { GroupOnlyGuard } from './example.guard.js';
+import { GroupOnlyGuard } from './example.guard.ts';
 // 类依赖必须使用值导入；import type 会使构造注入所需的运行时类型丢失。
-import { ExampleService } from './example.service.js';
+import { ExampleService } from './example.service.ts';
 
 const cities = new Set(['北京', '上海', '广州']);
 

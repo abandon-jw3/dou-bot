@@ -1,5 +1,5 @@
 import { Command, Controller, UseGuards } from 'dou-bot';
-import { PrivateOnlyGuard } from './example.guard.js';
+import { PrivateOnlyGuard } from './example.guard.ts';
 
 // @UseGuards 也可以写在类上，保护此类的所有 Command 和 OnButton。
 // 类级 Guard 先于方法级 Guard；它不会应用到原始 On 观察器。

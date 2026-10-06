@@ -41,7 +41,7 @@ npm --prefix website exec -- playwright install chromium
 npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本地预览
 ```
 
-文档开发使用 `npm run docs:dev`。业务示例使用 `npm run example:build` 和 `npm run example:start`；真实凭证只填入 `apps/example/.env`。原目录中的 `.env` 不会因 Git 合并自动迁入，请按需自行配置，勿提交真实凭证。
+文档开发使用 `npm run docs:dev`。业务示例开发使用 `npm run example:dev`，保存源码并编译成功后会有序重启；编译失败保留上次成功版本，Ctrl+C 同时关闭监听和机器人。正式运行使用 `npm run example:build` 和 `npm run example:start`；真实凭证只填入 `apps/example/.env`。原目录中的 `.env` 不会因 Git 合并自动迁入，请按需自行配置，勿提交真实凭证。
 
 各子工程也支持先 `cd apps/example` 或 `cd website`，再使用各自 README 中的命令。业务示例代码与依赖可独立复制；其中涉及仓库 CI 的说明仍指向本仓库。
 

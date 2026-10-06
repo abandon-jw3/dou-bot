@@ -1,6 +1,6 @@
 import { Controller, Ctx, On } from 'dou-bot';
 import type { QQEventContext } from 'dou-bot';
-import { ExampleService } from './example.service.js';
+import { ExampleService } from './example.service.ts';
 
 @Controller()
 export class ExampleEventsController {
