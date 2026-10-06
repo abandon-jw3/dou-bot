@@ -1,6 +1,6 @@
 # Windows 部署
 
-先完成 [快速开始](./quick-start.md) 并确认机器人能在本机正常收发。这里使用已验证的 Node.js 24.21.0、npm 11.19.0 和 TypeScript 5.9.3。
+先完成 [快速开始](./quick-start.md)，确认机器人能在本机正常收发，再把同一项目放到持续运行的 Windows 主机上。以下步骤使用 Node.js 24.21.0、npm 11.19.0 和 TypeScript 5.9.3。
 
 ## 部署内容
 
@@ -12,7 +12,7 @@ npm run build
 npm start
 ```
 
-上面的脚本来自 [项目结构](./project.md)。文档仓库的演示入口使用不同路径，见 [完整示例](../examples/hello.md)。
+如果还没有 build 和 start 脚本，先按 [项目结构](./project.md#推荐脚本) 添加。
 
 ## 运行与退出
 
@@ -28,7 +28,7 @@ npm start
 
 ## Webhook 部署额外要求
 
-提供 QQ 能访问的 HTTPS 回调地址，代理到 SDK 的 HTTP 端口，保持请求原文与签名头。默认 host 为 127.0.0.1；开放到其他地址前确认自己的网络边界。步骤与验收限制见 [Webhook](./webhook.md)。
+提供 QQ 能访问的 HTTPS 回调地址，代理到 SDK 的 HTTP 端口，保持请求原文与签名头。默认 host 为 127.0.0.1；开放到其他地址前确认自己的网络边界。配置及连接检查见 [Webhook](./webhook.md)。
 
 ## 升级与回退
 

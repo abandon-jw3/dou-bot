@@ -3,26 +3,40 @@ import assert from 'node:assert/strict';
 import { createPrivateKey, sign } from 'node:crypto';
 import {
   Arg,
+  Attachments,
+  Audios,
   BotFactory,
   Command,
   Controller,
   Ctx,
+  Files,
+  Group,
+  GroupId,
   GroupManagersOnly,
   Injectable,
+  Images,
   Module,
   OnButton,
+  Role,
+  User,
+  UserId,
+  Videos,
   button,
   image,
   keyboard,
   markdown,
 } from '../src/index.js';
 import type {
+  Attachment,
   ButtonContext,
   CanActivate,
   GuardContext,
   GuardResult,
+  GroupInfo,
+  GroupRole,
   MessageContext,
   QQDispatch,
+  UserInfo,
 } from '../src/index.js';
 import { qqServer, serve, until } from './helpers.js';
 
@@ -36,6 +50,40 @@ await test('identical private/group messages and buttons produce identical behav
   @Controller()
   class Commands {
     readonly calls: string[] = [];
+    readonly identities: unknown[] = [];
+    identity(
+      user: UserInfo,
+      userId: string,
+      group: GroupInfo | undefined,
+      groupId: string | undefined,
+      role: GroupRole | undefined,
+    ): string {
+      assert.ok(Object.isFrozen(user));
+      assert.ok(group === undefined || Object.isFrozen(group));
+      const result = { user, userId, group, groupId, role };
+      this.identities.push(result);
+      return JSON.stringify(result);
+    }
+    @Command('identity') who(
+      @User() user: UserInfo,
+      @UserId() userId: string,
+      @Group() group: GroupInfo | undefined,
+      @GroupId() groupId: string | undefined,
+      @Role() role: GroupRole | undefined,
+    ): string {
+      return this.identity(user, userId, group, groupId, role);
+    }
+    @OnButton('identity') async whoClicked(
+      @Role() role: GroupRole | undefined,
+      @GroupId() groupId: string | undefined,
+      @User() user: UserInfo,
+      @Group() group: GroupInfo | undefined,
+      @UserId() userId: string,
+      @Ctx() ctx: ButtonContext,
+    ): Promise<void> {
+      await ctx.ack();
+      await ctx.send(this.identity(user, userId, group, groupId, role));
+    }
     @Command('prompt')
     async prompt(@Ctx() ctx: MessageContext): Promise<void> {
       const answer = await ctx.prompt('prompt-question');
@@ -67,6 +115,21 @@ await test('identical private/group messages and buttons produce identical behav
       this.calls.push(`${ctx.scene}:markdown`);
       return markdown('**same**', {
         keyboard: keyboard([[button.callback('press', 'Press', 'choice')]]),
+      });
+    }
+    @Command('attachments') attachments(
+      @Attachments() all: readonly Attachment[],
+      @Images() images: readonly Attachment[],
+      @Videos() videos: readonly Attachment[],
+      @Audios() audios: readonly Attachment[],
+      @Files() files: readonly Attachment[],
+      @Ctx() ctx: MessageContext,
+    ): string {
+      this.calls.push(`${ctx.scene}:attachments`);
+      return JSON.stringify({
+        counts: [all.length, images.length, videos.length, audios.length, files.length],
+        wav: audios[0]?.voiceWavUrl,
+        asr: audios[0]?.asrReferText,
       });
     }
     @OnButton('press') async pressed(@Ctx() ctx: ButtonContext): Promise<void> {
@@ -202,6 +265,71 @@ await test('identical private/group messages and buttons produce identical behav
       content: '/echo should-not-run',
     },
   });
+  for (const scene of ['private', 'group']) {
+    events.push({
+      op: 0,
+      t: scene === 'private' ? 'C2C_MESSAGE_CREATE' : 'GROUP_MESSAGE_CREATE',
+      d: {
+        id: `attachments-${scene}`,
+        ...(scene === 'private'
+          ? { author: { user_openid: 'user' } }
+          : { author: { member_openid: 'member' }, group_openid: 'group' }),
+        content: '/attachments',
+        attachments: [
+          { url: 'https://example.invalid/image.png', content_type: 'image/png' },
+          { url: 'https://example.invalid/video.mp4', content_type: 'video/mp4' },
+          {
+            url: 'https://example.invalid/voice.silk',
+            content_type: 'voice',
+            voice_wav_url: 'https://example.invalid/voice.wav',
+            asr_refer_text: '/echo not-a-command',
+          },
+          { url: 'https://example.invalid/file', content_type: 'file' },
+        ],
+        msg_elements: [
+          {
+            attachments: [{ url: 'https://example.invalid/quoted.png', content_type: 'image/png' }],
+          },
+        ],
+      },
+    });
+  }
+  for (const scene of ['private', 'group']) {
+    events.push(
+      {
+        op: 0,
+        t: scene === 'private' ? 'C2C_MESSAGE_CREATE' : 'GROUP_AT_MESSAGE_CREATE',
+        d: {
+          id: `identity-${scene}`,
+          content: '/identity',
+          ...(scene === 'private'
+            ? { author: { user_openid: 'user', username: '', bot: false } }
+            : {
+                group_openid: 'group',
+                author: {
+                  member_openid: 'member',
+                  username: '群员',
+                  bot: false,
+                  member_role: 'admin',
+                },
+              }),
+        },
+      },
+      {
+        op: 0,
+        t: 'INTERACTION_CREATE',
+        d: {
+          id: `identity-button-${scene}`,
+          chat_type: scene === 'private' ? 2 : 1,
+          ...(scene === 'private'
+            ? { user_openid: 'user' }
+            : { group_openid: 'group', group_member_openid: 'member' }),
+          data: { resolved: { button_id: 'identity' } },
+          author: { username: 'not-an-author', member_role: 'owner' },
+        },
+      },
+    );
+  }
   try {
     await Promise.all(apps.map((app) => app.start()));
     for (const [index, event] of events.entries()) {
@@ -234,6 +362,12 @@ await test('identical private/group messages and buttons produce identical behav
       '/v2/groups/group/messages',
       ...Array<string>(6).fill('/v2/groups/group/messages'),
       '/v2/users/blocked/messages',
+      '/v2/users/user/messages',
+      '/v2/groups/group/messages',
+      '/v2/users/user/messages',
+      '/v2/users/user/messages',
+      '/v2/groups/group/messages',
+      '/v2/groups/group/messages',
     ]);
     assert.equal(
       wsBackend.messages[6]?.keyboard?.content.rows[0]?.buttons[0]?.action.permission.type,
@@ -246,6 +380,30 @@ await test('identical private/group messages and buttons produce identical behav
     assert.equal(wsBackend.messages[11]?.msg_id, 'prompt-answer');
     assert.equal(wsBackend.messages[11]?.content, 'prompt-answer:plain input');
     assert.equal(wsBackend.messages[12]?.content, 'module denied');
+    for (const index of [13, 14]) {
+      const result: unknown = JSON.parse(wsBackend.messages[index]?.content ?? 'null');
+      assert.deepEqual(result, {
+        counts: [4, 1, 1, 1, 1],
+        wav: 'https://example.invalid/voice.wav',
+        asr: '/echo not-a-command',
+      });
+    }
+    assert.deepEqual(ws.get(Commands).identities, webhook.get(Commands).identities);
+    assert.deepEqual(
+      wsBackend.messages.slice(15).map((entry) => JSON.parse(entry.content ?? 'null') as unknown),
+      [
+        { user: { id: 'user', username: '', bot: false }, userId: 'user' },
+        { user: { id: 'user' }, userId: 'user' },
+        {
+          user: { id: 'member', username: '群员', bot: false, memberRole: 'admin' },
+          userId: 'member',
+          group: { id: 'group' },
+          groupId: 'group',
+          role: 'admin',
+        },
+        { user: { id: 'member' }, userId: 'member', group: { id: 'group' }, groupId: 'group' },
+      ],
+    );
     assert.equal(
       ws.get(Commands).calls.some((call) => call.includes('should-not-run')),
       false,

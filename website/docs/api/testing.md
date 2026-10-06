@@ -28,7 +28,7 @@ root 为模块类。options 保留普通 BotOptions 的业务、日志、执行�
 
 enqueue 结果为 accepted/duplicate 时带 done: Promise&lt;void&gt;；ignored、overloaded、stopping、failed 时没有 done。duplicate 共享原流程的完成 Promise。done 不代表业务成功，仍应检查 errors 和实际发送结果。
 
-0.6.0 没有导出一个单独命名的接纳结果类型。需要类型别名时使用 `ReturnType<TestHarness['enqueue']>`，不要导入内部执行器类型。
+需要为 enqueue 的结果声明类型别名时，使用 `ReturnType<TestHarness['enqueue']>`。
 
 ## respond 与 TestRequest
 

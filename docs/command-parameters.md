@@ -1,6 +1,6 @@
 # 命令参数与最终使用方式
 
-适用于 dou-bot 0.6.0、公开契约 1.7。新增能力不引入运行时依赖，群聊、私聊与两种接入方式共用同一套解析规则。
+文字参数部分适用于已发布的 dou-bot 0.6.0；后面的附件与身份装饰器属于公开契约 1.9 的未发布源码 API。它们不增加运行时依赖，群聊、私聊与两种接入方式共用同一套规则。
 
 ## 可运行示例
 
@@ -159,3 +159,109 @@ await app.start();
 只有框架解析阶段产生的输入错误可自动回复；自定义匹配器抛错、返回 Promise/非布尔值、业务异常及接口错误仅上报。回复通过原有发送跟踪和回复序号机制；重复平台投递不会重复回复。任务已取消时不追加输入错误回复。
 
 声明错误（重复 Slot 名、多个 Rest、重复 Option 名/别名、重复位置消费、默认值不合法等）在应用初始化时拒绝，先于实例构造和网络连接。完整类型由 `dou-bot` 包入口提供；源码验证覆盖见 [验证记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md)。
+
+## 附件参数（未发布源码 API）
+
+以下五个装饰器和 `AttachmentOptions` 尚未发布到 npm，不能从已发布的 0.6.0 导入。源码示例使用 `npm run example:attachments`，实际安装包消费者由 `npm run test:package` 校验；独立业务示例、文档站和技能继续验证 npm 0.6.0。
+
+每个装饰器接受可选的 `AttachmentOptions`，为命令处理器注入 `readonly Attachment[]`：
+
+| 装饰器           | 选择范围                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `@Attachments()` | 当前消息的全部顶层附件，包含类型缺失或未知的附件                                   |
+| `@Images()`      | `image/*`                                                                          |
+| `@Videos()`      | `video/*`                                                                          |
+| `@Audios()`      | QQ 的 `voice` 标记及 `audio/*`                                                     |
+| `@Files()`       | QQ 的 `file` 标记，以及非 image/video/audio 的合法 MIME 类型，如 PDF、压缩包、文本 |
+
+匹配时修剪空白、忽略大小写并去除分号后的 MIME 参数；保留 `contentType` 和 `raw` 的原始值。缺失或无法识别的裸类型、不完整 MIME、`image/*` 这类范围值只进入 Attachments；不根据 URL 或文件名后缀推断类型。
+
+```ts
+import { Command, Controller, Images, Rest } from 'dou-bot';
+import type { Attachment } from 'dou-bot';
+
+@Controller()
+class PictureCommands {
+  @Command('测试图片')
+  receive(
+    @Images({ name: '图片', minCount: 1, maxCount: 4 }) images: readonly Attachment[],
+    @Rest({ name: '备注' }) notes: string[],
+  ): string {
+    return `收到 ${images.length} 张图片；备注：${notes.join(' ') || '无'}。`;
+  }
+}
+```
+
+将控制器注册到模块后，在同一条消息中发送 `/测试图片 备注` 并附图。使用空前缀时可直接发送 `测试图片 备注`。装饰器只注入元信息；下载、保存、转码或识别放在业务服务中处理。单独发送图片不会自动匹配命令，分条补图仍使用 `ctx.prompt()`。
+
+`AttachmentOptions` 的字段为 `name`、`description`、`minCount`、`maxCount`。默认最少 0 个、最多无上限，没有匹配项时注入 `[]`。数量只统计筛选后的集合；上限 0 可用于拒绝某类附件。上下限必须是非负安全整数，且 maxCount 不得小于 minCount；未知选项、非法名称或上下限在启动时以 CONFIG 拒绝。不提供额外的 required、default 或单附件装饰器。
+
+附件数组是每次绑定创建的浅冻结副本，保留原顺序和重复项；附件对象及 raw 延续现有只读约定。多个装饰器可选中同一个附件，互不消费，也不占 Arg 的文字位置。添加附件装饰器不会把旧 Arg/Args/Ctx 命令切换为严格文字解析。
+
+执行顺序为 Guard → 原有文字参数绑定 → 附件选择与数量校验 → 身份注入（如有） → 冷却 → 处理器。数量不满足时产生 PARAMETER_PARSE，按 `commands.invalidInput` 的 report/reply 配置处理，不占用冷却；帮助信息同时展示附件类型、名称、说明和数量要求。附件装饰器只支持 Command 参数，构造参数、原始 On 和 OnButton 不支持。
+
+框架只读取本条消息顶层的 attachments；不会递归合并 msg_elements 中的引用/聊天记录，也不从 ARK 预览图合成附件。Attachment 增加可选的 `voiceWavUrl` 与 `asrReferText`，对应 QQ 的 voice_wav_url、asr_refer_text；它们不会替换消息 content 或触发语音命令。其余附件字段和 URL 的校验方式保持原状。
+
+协议依据：[QQ 单聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/c2c_message_create.html)、[QQ 群聊消息](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。文档描述、离线夹具与具体账号实测分别记录，不把支持筛选视频/音频当作所有账号都已验证对应投递能力。
+
+## 身份参数（未发布源码 API）
+
+以下五个无参数装饰器及 UserInfo / GroupInfo 属于公开契约 1.9，尚未发布到 npm，不能从 0.6.0 导入。可在源码仓库运行 `npm run example:identity`；独立消费者验证当前 tarball，业务示例、网站和技能继续使用 npm 0.6.0 的 `@Ctx()`。
+
+| 装饰器       | 注入类型                 | 含义                                           |
+| ------------ | ------------------------ | ---------------------------------------------- |
+| `@User()`    | `UserInfo`               | 当前消息发送者或按钮操作者的身份快照           |
+| `@UserId()`  | `string`                 | 当前用户的归一化 OpenID，与 ctx.userId 一致    |
+| `@Group()`   | `GroupInfo \| undefined` | 当前群的身份快照；私聊为 undefined             |
+| `@GroupId()` | `string \| undefined`    | 当前群 OpenID；私聊为 undefined                |
+| `@Role()`    | `GroupRole \| undefined` | 当前群消息作者角色；私聊、按钮及未知角色均缺失 |
+
+```ts
+export interface UserInfo {
+  readonly id: string;
+  readonly username?: string;
+  readonly bot?: boolean;
+  readonly memberRole?: GroupRole;
+}
+
+export interface GroupInfo {
+  readonly id: string;
+}
+```
+
+GroupRole 复用 `'member' | 'admin' | 'owner'`。用户名、机器人标记只读取当前消息顶层 author 的对应字段，类型正确才提供，空昵称与 `bot: false` 原样保留。GroupInfo 首版只有 id，不包含群名、头像或成员列表；其他平台原始字段仍从 `@Ctx().raw` 读取。
+
+```ts
+import { Command, Controller, Ctx, Group, GroupId, OnButton, Role, User, UserId } from 'dou-bot';
+import type { ButtonContext, GroupInfo, GroupRole, UserInfo } from 'dou-bot';
+
+@Controller()
+class IdentityCommands {
+  @Command('我')
+  me(
+    @User() user: UserInfo,
+    @Group() group: GroupInfo | undefined,
+    @Role() role: GroupRole | undefined,
+  ): string {
+    return `用户：${user.username || user.id}；群：${group?.id ?? '私聊'}；角色：${role ?? '未知或不适用'}。`;
+  }
+
+  @OnButton('who')
+  async who(
+    @UserId() userId: string,
+    @GroupId() groupId: string | undefined,
+    @Ctx() ctx: ButtonContext,
+  ): Promise<void> {
+    await ctx.ack();
+    await ctx.send(`操作者：${userId}；群：${groupId ?? '私聊'}。`);
+  }
+}
+```
+
+将控制器注册到模块即可使用。按钮事件只提供 UserInfo.id 以及适用的 GroupInfo.id，其余用户资料与角色缺失；不会从上一条消息、管理者按钮权限、提及或引用消息推断。群和用户 ID 是当前场景的 OpenID，不是显示用群号或 QQ 号；不要假设同一人的群聊与私聊 OpenID 相同。
+
+快照在事件归一化时创建并冻结，同一事件可以共享，不同事件独立；原始 On 观察器修改 raw 不会改变快照。装饰器只同步注入本条事件信息，不请求完整资料，不缓存角色，不消费任何文字或附件，不触发严格文字模式，也不出现在帮助的输入参数中。现有 Context 接口不变。
+
+命令执行顺序为 Guard → 文字参数绑定 → 附件校验 → 身份注入 → 冷却 → 处理器；按钮为 Guard → 身份注入 → 冷却 → 处理器，原有交互确认行为保持。缺失群信息或角色时正常注入 undefined，不产生输入错误；需要限制群聊或角色时，继续使用 [GroupOnly / GroupRoles 等访问限制](access-control.md)。角色注入本身不执行权限检查，装饰器也不支持 required、默认值或字段选择配置。
+
+身份装饰器只用于 Command / OnButton 参数。构造器、静态方法、原始 On 或未注册的方法会按 CONFIG 机制拒绝；同一参数只能声明一种来源。继承方法保留参数声明，覆写方法必须按原有规则重新注册。

@@ -1,5 +1,8 @@
 import type { ParameterBinding } from './metadata.js';
 import type { ArgumentToken } from './parser.js';
+import type { Attachment } from '../contracts.js';
+import { attachmentLabels, selectAttachments } from './attachments.js';
+import type { AttachmentSelection } from './attachments.js';
 import { FrameworkError } from './errors.js';
 import { CommandInputError } from './input-error.js';
 import { isRecord } from './utils.js';
@@ -31,11 +34,20 @@ interface SlotParameter extends Description {
   choices?: readonly string[];
   match?: (text: string) => boolean;
 }
+interface AttachmentParameter extends Description {
+  kind: 'attachments';
+  index: number;
+  selection: AttachmentSelection;
+  minCount: number;
+  maxCount?: number;
+}
 type CompiledParameter =
   | ValueParameter
   | SlotParameter
+  | AttachmentParameter
   | (Description & { kind: 'rest'; index: number })
   | { kind: 'context'; index: number }
+  | Extract<ParameterBinding, { kind: 'identity' }>
   | { kind: 'args'; index: number };
 
 function config(message: string): never {
@@ -159,8 +171,32 @@ function matches(slot: SlotParameter, value: string): boolean {
 const commonKeys = ['name', 'description', 'required', 'default'];
 const valueKeys = [...commonKeys, 'type', 'choices', 'min', 'max'];
 function compile(binding: ParameterBinding): CompiledParameter {
-  if (binding.kind === 'context' || binding.kind === 'args') return binding;
+  if (binding.kind === 'context' || binding.kind === 'args' || binding.kind === 'identity')
+    return binding;
   const options = binding.options ?? {};
+  if (binding.kind === 'attachments') {
+    keys(options, ['name', 'description', 'minCount', 'maxCount']);
+    for (const key of ['minCount', 'maxCount'] as const) {
+      const value = options[key];
+      if (
+        value !== undefined &&
+        (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
+      )
+        config(`Attachment ${key} must be a non-negative safe integer`);
+    }
+    const minCount = options.minCount === undefined ? 0 : (options.minCount as number);
+    const maxCount = options.maxCount as number | undefined;
+    if (maxCount !== undefined && maxCount < minCount)
+      config('Attachment maxCount cannot be less than minCount');
+    return {
+      kind: 'attachments',
+      index: binding.index,
+      selection: binding.selection,
+      ...describe(options, attachmentLabels[binding.selection]),
+      minCount,
+      ...(maxCount === undefined ? {} : { maxCount }),
+    };
+  }
   if (binding.kind === 'rest') {
     keys(options, ['name', 'description']);
     return { kind: 'rest', index: binding.index, ...describe(options, '剩余参数') };
@@ -251,6 +287,10 @@ function usage(parameter: CompiledParameter): string | undefined {
     }
     case 'rest':
       return `[${parameter.name}...]`;
+    case 'attachments': {
+      const label = parameter.name.endsWith('附件') ? parameter.name : `${parameter.name}附件`;
+      return parameter.minCount > 0 ? `<${label}>` : `[${label}]`;
+    }
     default:
       return undefined;
   }
@@ -296,10 +336,14 @@ export class CommandArguments {
     }
   }
 
-  bind(tokens: readonly ArgumentToken[], context: unknown): unknown[] {
+  bind(
+    tokens: readonly ArgumentToken[],
+    context: unknown,
+    attachments: readonly Attachment[] = [],
+  ): unknown[] {
     const args = tokens.map((token) => token.value);
-    if (!this.enhanced)
-      return this.parameters.map((parameter) =>
+    if (!this.enhanced) {
+      const values = this.parameters.map((parameter) =>
         parameter.kind === 'context'
           ? context
           : parameter.kind === 'args'
@@ -308,6 +352,8 @@ export class CommandArguments {
               ? args[parameter.argument]
               : undefined,
       );
+      return this.bindAttachments(values, attachments);
+    }
 
     const positional: string[] = [];
     const values = new Map<number, unknown>();
@@ -374,13 +420,31 @@ export class CommandArguments {
     const rest = this.parameters.find((parameter) => parameter.kind === 'rest');
     if (rest) values.set(rest.index, remaining);
     else if (remaining.length) throw new CommandInputError('存在未识别的参数，请检查命令用法');
-    return this.parameters.map((parameter) =>
+    const bound = this.parameters.map((parameter) =>
       parameter.kind === 'context'
         ? context
         : parameter.kind === 'args'
           ? [...args]
           : values.get(parameter.index),
     );
+    return this.bindAttachments(bound, attachments);
+  }
+
+  private bindAttachments(values: unknown[], attachments: readonly Attachment[]): unknown[] {
+    for (const [index, parameter] of this.parameters.entries()) {
+      if (parameter.kind !== 'attachments') continue;
+      const selected = selectAttachments(attachments, parameter.selection);
+      if (selected.length < parameter.minCount)
+        throw new CommandInputError(
+          `${parameter.name}数量不能少于 ${parameter.minCount}（收到 ${selected.length}）；请与命令在同一条消息中发送。`,
+        );
+      if (parameter.maxCount !== undefined && selected.length > parameter.maxCount)
+        throw new CommandInputError(
+          `${parameter.name}数量不能超过 ${parameter.maxCount}（收到 ${selected.length}）。`,
+        );
+      values[index] = selected;
+    }
+    return values;
   }
 
   help(): { usage: string; details: string[] } {
@@ -393,18 +457,35 @@ export class CommandArguments {
     );
     return {
       usage: [
-        ...ordered.map(usage).filter(Boolean),
+        ...ordered
+          .filter((p) => p.kind !== 'attachments')
+          .map(usage)
+          .filter(Boolean),
         ...(!this.enhanced && ordered.some((p) => p.kind === 'args') ? ['[参数...]'] : []),
+        ...ordered.filter((p) => p.kind === 'attachments').map(usage),
       ].join(' '),
       details: ordered.flatMap((parameter) => {
-        if (parameter.kind === 'context' || parameter.kind === 'args') return [];
+        if (
+          parameter.kind === 'context' ||
+          parameter.kind === 'args' ||
+          parameter.kind === 'identity'
+        )
+          return [];
         const parts = [
           parameter.kind === 'option'
             ? `--${parameter.key}${parameter.alias ? ` / -${parameter.alias}` : ''}（${parameter.name}）`
             : parameter.name,
         ];
         if (parameter.description) parts.push(parameter.description);
-        if (parameter.kind === 'rest') parts.push('可填写多个补充内容，保持输入顺序');
+        if (parameter.kind === 'attachments') {
+          parts.push(
+            parameter.minCount > 0 ? '必填' : '可选',
+            `附件类型：${attachmentLabels[parameter.selection]}`,
+            `最少 ${parameter.minCount} 个`,
+            parameter.maxCount === undefined ? '数量无上限' : `最多 ${parameter.maxCount} 个`,
+            '与命令在同一条消息中发送，不占文字参数',
+          );
+        } else if (parameter.kind === 'rest') parts.push('可填写多个补充内容，保持输入顺序');
         else {
           parts.push(parameter.required ? '必填' : '可选');
           if (parameter.kind === 'slot') parts.push('按规则匹配，顺序不限');

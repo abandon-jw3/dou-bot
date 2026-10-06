@@ -1,15 +1,17 @@
 # WebSocket 接入
 
-WS 是默认接入方式，适合在有出站网络的 Windows 主机上运行。它不要求部署公网 HTTP 回调服务。
+WS 是默认接入方式。你的程序主动连接 QQ 并保持在线，适合本地开发或常驻服务，不需要公网 HTTP 回调地址。
 
 ## 基础配置
 
-在 BotFactory.create 的 options 中设置：
+在 [快速开始](./quick-start.md) 的 `src/main.ts` 中，创建应用时选择 WS：
 
 ```ts
-transport: {
-  type: 'ws';
-}
+const app = await BotFactory.create(AppModule, {
+  appId,
+  secret,
+  transport: { type: 'ws' },
+});
 ```
 
 [快速开始](./quick-start.md) 已提供完整入口。QQ_APP_ID 与 QQ_APP_SECRET 来自你的机器人账号，保存在本地环境中。确认同一机器人的其他 WS 程序已经关闭，再启动新实例，避免连接相互影响。
@@ -36,4 +38,4 @@ transport: {
 
 ## 恢复边界
 
-WS 的 READY、心跳和受控断线后的 RESUME 已验证。平台是否完整保留断线窗口中的事件不能由 SDK 保证；进程内去重也不提供跨重启恰好一次处理。需要可靠业务记账时，在业务存储中设计幂等键。
+断线后框架会尝试恢复会话，但 QQ 不一定补发断线期间的所有事件。需要可靠业务记账时，在自己的存储中记录操作状态，并使用幂等键避免重复执行；进程内去重不会跨重启保留。

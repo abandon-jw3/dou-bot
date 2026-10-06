@@ -1,42 +1,47 @@
 # 无序参数与 City
 
-发送 `/查询 今天 天气 北京 带伞 -p 2 -d`，得到城市=北京、主题=天气、备注=[今天, 带伞]、page=2、detail=true。交换北京和天气的顺序，结果保持相同。
+让用户输入“北京 天气”或“天气 北京”，都能得到相同的参数结果。这个示例把城市匹配封装成 `@City()`，并用 Slot、Rest 和 Option 接收主题、备注和选项。
 
-`/查询 北京 上海 天气` 会因为城市重复而失败；`/查询 北京` 缺少主题也失败。Rest 不吞掉这些错误。此例只回显解析结果，不访问天气服务。
+示例只回显解析结果。接入自己的查询服务后，可以把这些参数交给 Service 获取实际数据。
 
-`/echo a "b c" --flag` 展示 Args；`/repeat hi 2` 展示显式整数转换。
+## 添加到你的项目
 
-## 源文件
+先准备 [快速开始](../guide/quick-start.md) 中的项目、启动入口和 `.env`。在 `src/` 中添加下面两个文件，用这里的 AppModule 替换 hello 示例的根模块；保留 `src/main.ts`。
 
-### examples/query/city.decorator.ts
+### src/city.decorator.ts
 
 <<< @/../examples/query/city.decorator.ts
 
-### examples/query/app.module.ts
+### src/app.module.ts
 
 <<< @/../examples/query/app.module.ts
 
 ## 运行这个示例
 
-克隆主仓库后，进入 `website` 工程执行：
+在自己的项目根目录执行：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/website
-npm ci
-npm run examples:build
+npx tsc -p tsconfig.json
+node --env-file=.env dist/main.js
 ```
 
-将 `examples/.env.example` 复制为当前目录的 `.env`（即仓库中的 `website/.env`），填入自己的凭证。然后运行：
+发送 `/查询 今天 天气 北京 带伞 -p 2 -d`，预期得到：
 
-```sh
-node --env-file=.env .examples-build/examples/main.js query
+```json
+{ "city": "北京", "topic": "天气", "notes": ["今天", "带伞"], "page": 2, "detail": true }
 ```
 
-共享入口默认使用 WS 和 / 前缀。设置 QQ_TRANSPORT=webhook 可以切换接入，部署前阅读 [Webhook 指南](../guide/webhook.md)。按 Ctrl+C 关闭实例。
+## 试试不同输入
 
-需要独立业务工程时，先完成 [快速开始](../guide/quick-start.md)，再替换 AppModule 和它依赖的文件；保留相应相对导入。
+| 发送内容               | 预期结果                                   |
+| ---------------------- | ------------------------------------------ |
+| `/查询 天气 北京`      | 识别城市和主题；page 为 1、detail 为 false |
+| `/查询 北京 天气`      | 交换顺序仍得到相同结果                     |
+| `/查询 北京 上海 天气` | 提示城市重复，不执行查询                   |
+| `/查询 北京`           | 提示缺少主题                               |
+| `/echo a "b c" --flag` | 返回 `["a", "b c", "--flag"]`              |
+| `/repeat hi 2`         | 返回 `hi hi`                               |
 
-## 离线验收
+启动入口保留 `commands.invalidInput: 'reply'`，才能把输入错误回复给用户。群聊中先 @机器人；按 Ctrl+C 结束运行。
 
-执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。
+修改 City 的城市集合即可接收自己的词表。参数匹配规则和错误处理见 [命令参数](../guide/parameters.md)，为查询逻辑编写断言可参考 [离线测试](../guide/testing.md)。

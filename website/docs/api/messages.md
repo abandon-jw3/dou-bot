@@ -28,7 +28,7 @@ ButtonOptions 可指定 id、visitedLabel、style、permission。callback 的 ID
 - visitedLabel 默认为原 label；显式空字符串会保留。
 - style 为 secondary（默认）或 primary。
 - permission 默认为 everyone，也可为 users + userIds 或 managers。
-- managers 仅支持群聊发送，角色限制的实机验证边界见 [访问限制](../guide/access.md)。
+- managers 仅允许群主和管理员点击，只支持群聊发送；配置方式见 [访问限制](../guide/access.md)。
 
 <<< @/../examples/buttons/app.module.ts
 

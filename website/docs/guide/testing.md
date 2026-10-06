@@ -1,14 +1,40 @@
 # 离线测试
 
-从 dou-bot/testing 导入 createTestApplication，用真实模块、DI、命令解析和消息编码替换 QQ 网络。它不需要真实机器人凭证。
+不连接 QQ，也可以检查命令是否回复正确、错误输入是否被拒绝、按钮是否执行了预期操作。`createTestApplication` 会运行你的业务模块，并用内存记录代替 QQ 的消息发送，无需机器人凭证。
 
 ## 最小测试
 
-下面的 AppModule 来自 [hello 示例](../examples/hello.md)。
+先准备 [hello 示例](../examples/hello.md) 中的业务文件，在同一个项目中创建 `src/offline.ts`：
 
-<<< @/../examples/offline.ts
+```ts
+import assert from 'node:assert/strict';
+import { createTestApplication } from 'dou-bot/testing';
+import { AppModule } from './app.module.js';
 
-预期输出：`你好，小明！`。也可以把同样的断言放到 Node 内置 test 中运行。
+const bot = await createTestApplication(AppModule);
+await bot.app.start();
+try {
+  await bot.dispatch({
+    op: 0,
+    t: 'C2C_MESSAGE_CREATE',
+    d: { id: 'message-1', author: { user_openid: 'user-1' }, content: '/hello 小明' },
+  });
+  assert.equal(bot.messages[0]?.payload.content, '你好，小明！');
+  assert.equal(bot.errors.length, 0);
+  console.log(bot.messages[0]?.payload.content);
+} finally {
+  await bot.app.close();
+}
+```
+
+在你的项目根目录编译并运行，不需要 `.env`：
+
+```sh
+npx tsc -p tsconfig.json
+node dist/offline.js
+```
+
+终端应输出 `你好，小明！`；断言失败会让程序报错。你可以替换 content 和预期回复来测试其他输入，也可以把这些断言放进 Node 的 `test()` 中组织测试用例。
 
 ## 事件输入
 
@@ -54,11 +80,8 @@ prompt 要先 enqueue 问题，观察到模拟发送，再 enqueue 回答。不�
 
 第一轮回答的 done 也可能要等整个对话完成；观察到第二条问题后再发送下一条回答。参考 [两轮问答](../examples/prompt.md)。
 
-## 运行本仓库验证
+## 为自己的业务补充检查
 
-```sh
-npm ci
-npm test
-```
+除了正常输入，还应检查缺少参数、没有权限、连续调用触发冷却、外部服务失败等情况。确认回复内容的同时检查 errors，避免处理器抛错后测试仍被当作成功。
 
-测试源代码位于 [tests/examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)，编译器确实生成传统装饰器与元数据后才执行。测试与实际 QQ 客户端显示、权限和公网回调是不同层面的验收。
+这类测试验证你的业务逻辑。连接 QQ 后，再检查账号的消息投递权限、图片和按钮的客户端显示；使用 Webhook 时还需检查 HTTPS 回调。测试工具的完整选项见 [测试入口 API](../api/testing.md)。

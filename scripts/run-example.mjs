@@ -5,6 +5,8 @@ const name = process.argv[2];
 if (
   ![
     'offline',
+    'attachments',
+    'identity',
     'query',
     'business',
     'business-qq',
@@ -14,6 +16,7 @@ if (
     'live-media',
     'live-reconnect',
     'live-controls',
+    'live-attachments',
     'benchmark',
     'soak',
   ].includes(name)
@@ -23,9 +26,11 @@ const output = resolve(root, 'work', 'runs', `${name}-${randomUUID()}`);
 await runNode(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json', '--outDir', output]);
 await runNode([
   ...(name === 'soak' ? ['--expose-gc'] : []),
-  ...(['offline', 'query', 'business', 'benchmark', 'soak'].includes(name)
+  ...(['offline', 'attachments', 'identity', 'query', 'business', 'benchmark', 'soak'].includes(
+    name,
+  )
     ? []
-    : ['--env-file=.env']),
+    : [name === 'live-attachments' ? '--env-file=apps/example/.env' : '--env-file=.env']),
   resolve(output, 'examples', `${name}.js`),
   ...process.argv.slice(3),
 ]);

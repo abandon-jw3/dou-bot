@@ -25,7 +25,7 @@ my-qq-bot/
 
 package.json 使用 `"type": "module"`。TypeScript 源码的相对导入写生成后的 `.js` 扩展名，例如 `./app.module.js`。自动构造注入的类必须作为值导入，接口或纯类型使用 `import type`。
 
-普通业务从 `dou-bot` 导入，测试从 `dou-bot/testing` 导入。不要导入 `dou-bot/dist/...`，也不要指向本机框架源码目录。
+业务代码从 `dou-bot` 导入，离线测试从 `dou-bot/testing` 导入。这两个入口提供你需要的运行时 API 和类型。
 
 ## 推荐脚本
 
@@ -40,4 +40,4 @@ package.json 使用 `"type": "module"`。TypeScript 源码的相对导入写生�
 }
 ```
 
-生产机器先安装依赖并构建，再运行生成的 JavaScript。若在部署端移除开发依赖，要在移除 TypeScript 前完成构建，或直接部署已构建产物。文档仓库的 `examples:build` 是该仓库自己的示例命令，不是 SDK 自动提供的命令。
+添加脚本后，用 `npm run build` 编译，`npm start` 启动。生产机器也使用这两个步骤；若只安装生产依赖，应提前构建好 dist，再连同 package.json 和锁文件一起部署。

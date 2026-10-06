@@ -8,7 +8,7 @@
 | DEPENDENCY                   | 服务是否 Injectable、是否注册、imports/exports、接口是否有 Inject 令牌           |
 | ROUTE_CONFLICT               | 命令名或别名重复，是否和 HelpModule 的 help/帮助 冲突                            |
 | 有连接但命令无响应           | 前缀、Controller 注册、平台投递权限、Guard 是否静默拒绝                          |
-| 群里不 @ 无响应              | 该账号是否收到普通群消息；不要把一个账号的能力推广到所有账号                     |
+| 群里不 @ 无响应              | 先 @机器人重试，再确认该账号是否有普通群消息投递权限                             |
 | Slot 输入报错                | 字典是否包含该词、是否重复命中或歧义、必要参数是否缺失                           |
 | 管理员命令拒绝               | 当前事件有没有 member_role，是否为精确的 admin/owner；不要用 QQ 号推测角色       |
 | 按钮点击已确认却没有业务消息 | ACK 仅表示收到；检查回调 ID、data、Guard 和平台普通发送权限                      |

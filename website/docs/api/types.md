@@ -1,10 +1,10 @@
-# 公共声明索引
+# 类型与接口
 
-本页从安装的 dou-bot **0.6.0** 类型声明生成，只列出两个公开入口的导出。声明用于查阅；可运行代码见 [示例](../examples/hello.md)。不要通过内部路径导入未公开的实现。
+在这里查阅 dou-bot **0.6.0** 的函数签名、配置字段与返回类型。编写业务时从 `dou-bot` 导入，编写离线测试时从 `dou-bot/testing` 导入；需要了解用法时，先看 [装饰器参考](./decorators.md) 或 [完整示例](../examples/hello.md)。
 
 ## dou-bot
 
-117 个公开导出，包含运行时值和类型。
+业务开发使用的装饰器、应用、消息工具与类型。
 
 ### AbstractType {#root-AbstractType}
 
@@ -1389,7 +1389,7 @@ export interface WsTransportOptions {
 
 ## dou-bot/testing
 
-5 个公开导出，包含运行时值和类型。
+在本地运行模块、投递模拟事件并检查处理结果的测试工具与类型。
 
 ### createTestApplication {#testing-createTestApplication}
 

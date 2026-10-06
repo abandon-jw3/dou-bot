@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "validationDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "status": "offline-passed-live-partial",
+  "source": {
+    "commit": "73b5b9fd0843dca0f3380e1ba213c83c098a5515",
+    "dirty": true,
+    "sdkVersion": "0.6.0",
+    "releaseState": "unreleased-source",
+    "publicContract": "1.8",
+    "sha256": "5b6f843286944d8ae5d56e822ddbdb6f250e54924c56d07f7154e1e5729302cd",
+    "fingerprintScope": "Sorted src/**/*.ts plus the three attachment examples; each relative path and content followed by NUL."
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "npm": "11.19.0",
+    "typescript": "5.9.3"
+  },
+  "checks": {
+    "sdkTestsPerNode": 199,
+    "publicExports": 129,
+    "bidirectionalTypeChecks": 96,
+    "currentTarballConsumer": "passed",
+    "attachmentConsumer": "passed",
+    "historicalPublished060Consumer": "passed",
+    "skillExampleTests": 2,
+    "exampleApplicationTests": 25,
+    "documentationExampleTests": 14,
+    "publishedDocumentationExports": 122,
+    "allowedPackageFiles": 108,
+    "sourceAttachmentExample": "passed",
+    "realLocalWsWebhookParity": "passed"
+  },
+  "coverage": {
+    "lines": 98.62,
+    "statements": 98.62,
+    "functions": 97.38,
+    "branches": 90.02,
+    "attachmentSelector": {
+      "lines": {
+        "total": 36,
+        "covered": 36,
+        "skipped": 0,
+        "pct": 100
+      },
+      "functions": {
+        "total": 2,
+        "covered": 2,
+        "skipped": 0,
+        "pct": 100
+      },
+      "statements": {
+        "total": 36,
+        "covered": 36,
+        "skipped": 0,
+        "pct": 100
+      },
+      "branches": {
+        "total": 19,
+        "covered": 19,
+        "skipped": 0,
+        "pct": 100
+      }
+    }
+  },
+  "live": {
+    "status": "ended",
+    "endReason": "user-ended-remaining-live-tests",
+    "userRequest": "这个不需要验证了",
+    "images": "group-backend-passed",
+    "videos": "skipped-per-user-request",
+    "audios": "skipped-per-user-request",
+    "files": "skipped-per-user-request",
+    "attachments": "skipped-per-user-request",
+    "privateScene": "not-tested",
+    "processCheck": {
+      "checkedAt": "2026-10-05T18:07:40Z",
+      "running": false,
+      "cleanShutdownRecorded": false,
+      "exitCode": null,
+      "note": "The probe process and its exec session were already absent when checked. No closed event was present; the stop sentinel was also created. Exact exit time and exit code are unavailable."
+    },
+    "cases": [
+      {
+        "scene": "group",
+        "kind": "images",
+        "receivedAt": "2026-10-05T18:00:08.004Z",
+        "selectedAt": "2026-10-05T18:00:08.005Z",
+        "replySentAt": "2026-10-05T18:00:09.523Z",
+        "receivedCount": 1,
+        "selectedCount": 1,
+        "contentTypes": ["image/jpeg"],
+        "frozen": true,
+        "backendStatus": "passed",
+        "clientConfirmation": "not-confirmed"
+      }
+    ],
+    "probeId": "2ba3a5",
+    "startedAt": "2026-10-05T17:55:36.551Z",
+    "plannedCloseAt": "2026-10-05T18:10:36.551Z",
+    "logReference": "work/live-attachments/2ba3a5.jsonl",
+    "commands": {
+      "attachments": "/附件-2ba3a5",
+      "images": "/图片-2ba3a5",
+      "videos": "/视频-2ba3a5",
+      "audios": "/音频-2ba3a5",
+      "files": "/文件-2ba3a5"
+    }
+  },
+  "scope": "Offline fixtures and real local WS/Webhook servers verify selection, immutable arrays, cardinality, text compatibility, guards/cooldowns, help, voice fields and package exports. A real QQ group message selected one image/jpeg attachment and its reply was sent successfully, without explicit client confirmation. The user ended the remaining live tests; videos, audios, files, mixed attachments and private messages are not live-verified. The probe is no longer running. The business example, website and skill remain compatible with published 0.6.0; no SDK version was published."
+}

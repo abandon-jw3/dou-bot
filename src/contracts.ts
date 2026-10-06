@@ -53,6 +53,17 @@ export type GuardResult = boolean | { readonly allow: false; readonly message?: 
 
 /** QQ group message author.member_role; missing/unknown values remain undefined. */
 export type GroupRole = 'member' | 'admin' | 'owner';
+/** Frozen snapshot of the current sender or button operator; IDs are scene-specific OpenIDs. */
+export interface UserInfo {
+  readonly id: string;
+  readonly username?: string;
+  readonly bot?: boolean;
+  readonly memberRole?: GroupRole;
+}
+/** Frozen group identity from the current event; id is an OpenID, not a displayed group number. */
+export interface GroupInfo {
+  readonly id: string;
+}
 export interface AccessOptions {
   /** Omit for the default denial hint; false denies silently. */
   message?: string | false;
@@ -139,6 +150,14 @@ export type SlotOptions = ParameterDescription & { default?: string } & (
 export interface RestOptions {
   name?: string;
   description?: string;
+}
+
+/** Counts apply to the selected top-level attachments of the current message. */
+export interface AttachmentOptions {
+  name?: string;
+  description?: string;
+  minCount?: number;
+  maxCount?: number;
 }
 
 export interface RetryOptions {
@@ -290,6 +309,8 @@ export interface Attachment {
   readonly size?: number;
   readonly width?: number;
   readonly height?: number;
+  readonly voiceWavUrl?: string;
+  readonly asrReferText?: string;
   readonly raw: Readonly<Record<string, unknown>>;
 }
 

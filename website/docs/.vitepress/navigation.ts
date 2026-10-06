@@ -98,7 +98,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: 'API 参考',
       items: [
         {
-          text: '20 个装饰器',
+          text: '装饰器参考',
           link: '/api/decorators',
         },
         {
@@ -125,7 +125,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           text: '测试入口',
           link: '/api/testing',
         },
-        { text: '公共声明索引', link: '/api/types' },
+        { text: '类型与接口', link: '/api/types' },
       ],
     },
   ],

@@ -4,7 +4,7 @@
 
 <<< @/../examples/messages/app.module.ts
 
-图片示例的 [fixture-image.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/examples/messages/fixture-image.ts) 在内存生成有效 PNG，不读取本地文件或访问外部图片服务。
+这里用 [一张生成的 PNG](https://github.com/abandon-jw3/dou-bot/blob/main/website/examples/messages/fixture-image.ts) 演示发送图片。接入自己的业务时，可以替换为图片 URL 或本地文件的字节，支持的输入见下文。
 
 ## 选择发送方式
 

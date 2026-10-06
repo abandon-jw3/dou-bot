@@ -6,7 +6,7 @@
 
 QQEventContext 提供 appId、eventName、可选 eventId、receivedAt、raw、signal、client。raw 是 QQDispatch，包含 op=0、事件名 t、事件数据 d，以及可选 id/s；d 默认 unknown。
 
-raw 和 attachments 按只读契约使用。业务自己的外部请求应 await 并传入 signal；通过 client 发起任意操作不等于自动成为上下文回复操作。
+把 raw 和 attachments 作为只读数据使用。业务自己的外部请求应 await 并传入 signal；回复当前消息时优先使用 ctx.reply，由框架处理消息引用和回复序号。
 
 ## MessageContext
 

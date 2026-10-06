@@ -1,48 +1,41 @@
 # 三级 Guard
 
-此例中的 `USER_OPENID` 是占位值。连接真实群聊前，把它替换成该场景下允许用户的 OpenID。
+这个示例演示如何逐步限制命令：整个模块只允许群聊，设置命令再检查用户允许名单，修改命令还要求当前用户是群主。另一个命令用冷却时间防止连续调用。
 
-| 调用                                | 结果                   |
-| ----------------------------------- | ---------------------- |
-| 私聊 /info                          | 模块级 Guard 拒绝      |
-| 群聊 /info                          | 模块级放行             |
-| 群聊 /settings                      | 还需通过类级允许名单   |
-| 群聊 /change                        | 还需通过方法级群主检查 |
-| 群聊 /limited 后立即 /limited-alias | 第二次被同一冷却拦截   |
+## 添加到你的项目
 
-这些命令只发送固定说明，不执行真正的群管理操作。群角色实际投递依赖 QQ 平台，缺失时拒绝。
+先准备 [快速开始](../guide/quick-start.md) 中的项目、启动入口和 `.env`。在 `src/` 中添加以下文件，用这里的 AppModule 替换 hello 示例的根模块；保留 `src/main.ts`。
 
-## 源文件
-
-### examples/guards/guards.ts
+### src/guards.ts
 
 <<< @/../examples/guards/guards.ts
 
-### examples/guards/app.module.ts
+### src/app.module.ts
 
 <<< @/../examples/guards/app.module.ts
 
+启动前，把 `USER_OPENID` 替换为允许操作的群成员 OpenID。可以从该成员发送命令时的 `ctx.userId` 取得这个值；它不是日常 QQ 号，也不应与私聊 OpenID 混用。
+
 ## 运行这个示例
 
-克隆主仓库后，进入 `website` 工程执行：
+在自己的项目根目录执行：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/website
-npm ci
-npm run examples:build
+npx tsc -p tsconfig.json
+node --env-file=.env dist/main.js
 ```
 
-将 `examples/.env.example` 复制为当前目录的 `.env`（即仓库中的 `website/.env`），填入自己的凭证。然后运行：
+## 检查权限是否符合预期
 
-```sh
-node --env-file=.env .examples-build/examples/main.js guards
-```
+| 操作                                                | 预期结果                             |
+| --------------------------------------------------- | ------------------------------------ |
+| 在私聊发送 `/info`                                  | 提示只能在群聊使用                   |
+| 在群聊发送 `/info`                                  | 回复已通过模块级群聊检查             |
+| 用名单外成员发送 `/settings`                        | 提示不在允许名单中                   |
+| 用名单内成员发送 `/settings`                        | 回复已通过模块和类级检查             |
+| 用名单内群主发送 `/change`                          | 回复已通过三级检查                   |
+| 用名单内成员连续发送 `/limited` 和 `/limited-alias` | 第二次提示稍后再试，3 秒后可再次调用 |
 
-共享入口默认使用 WS 和 / 前缀。设置 QQ_TRANSPORT=webhook 可以切换接入，部署前阅读 [Webhook 指南](../guide/webhook.md)。按 Ctrl+C 关闭实例。
+这些命令只回复检查结果。QQ 未提供角色字段时，群主检查会拒绝；排查方法见 [访问限制](../guide/access.md)。群聊中先 @机器人，按 Ctrl+C 结束运行。
 
-需要独立业务工程时，先完成 [快速开始](../guide/quick-start.md)，再替换 AppModule 和它依赖的文件；保留相应相对导入。
-
-## 离线验收
-
-执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。
+接入实际管理操作时，把业务调用放在通过 Guard 的命令方法中。更多组合方式见 [Guard 与冷却](../guide/guards.md)，也可以用 [离线测试](../guide/testing.md) 检查允许和拒绝两条路径。

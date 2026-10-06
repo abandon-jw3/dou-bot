@@ -44,6 +44,10 @@ npm run preview
 
 ## 修改和验证
 
+面向框架使用者的页面放在 `docs/`。写作时先回答“能做什么、在我的项目里怎么用、会得到什么结果”，再解释参数、限制和排错方法。示例按用户自己的 `src/` 目录说明文件位置，运行步骤使用该项目的编译与启动入口。
+
+文档构建、API 索引生成、CI、发行流程和内部验收记录留在本 README 或根目录的维护文档中。影响使用的版本与平台限制仍需说明，并给出具体的接入选择或检查步骤；不要把维护过程作为教程正文。
+
 ```sh
 npm run format
 npm audit --audit-level=moderate
@@ -73,4 +77,4 @@ check 包含类型、格式、API 索引、链接、示例测试和站点构建�
 
 在主仓库根目录也可以使用 `npm run docs:dev`、`npm run docs:build`、`npm run docs:check` 和 `npm run docs:test:browser`。本站仍独立安装 npm 上的 `dou-bot@0.6.0`，不会自动链接当前 SDK 源码。原 `/dou-bot-docs/` 地址保留页面跳转，新内容统一在本目录维护。
 
-文档与新编写示例采用 [MIT](LICENSE)。框架协议与权限的验收边界见在线手册，不将离线断言视为所有账号都已通过实机测试。
+文档与新编写示例采用 [MIT](LICENSE)。协议与权限的详细验证记录保存在 [仓库验证报告](../docs/validation-report.md)；在线手册只保留影响用户使用的行为、限制和排错步骤。

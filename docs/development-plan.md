@@ -1,6 +1,6 @@
 # dd-bot v0.6 详细开发方案
 
-版本：设计契约 1.7（模块、类与方法级 Guard） · 日期：2026-09-30
+版本：设计契约 1.9（新增身份参数） · 原设计日期：2026-09-30 · 附件与身份补充：2026-10-06
 
 2026-10-01 维护补充：本篇保留设计时的运行时范围和仓库状态；当前源码支持 Node 24.x（最低 24.0.0），开发使用 24.21.0，仓库已公开并合并业务示例与文档。现行安装与 CI 约定以 [仓库维护指南](repository.md) 为准。
 
@@ -17,6 +17,10 @@
 1.6 增加 MessageContext.prompt、PromptResult、按用户与会话隔离的等待器，以及执行槽挂起/恢复。接口、超时、取消、资源与测试语义见 [二次输入指南](./prompts.md)。
 
 1.7 增加 ModuleMetadata.guards，并支持模块类上的 UseGuards 和内置访问限制。规则按模块、控制器类、方法累加，仅覆盖模块直接注册的控制器，详见 [模块 Guard 指南](./module-guards.md)。
+
+1.8 新增未发布的 Attachments、Images、Videos、Audios、Files 参数装饰器与 AttachmentOptions。它们只选择当前消息顶层附件，在文字绑定之后、冷却之前校验数量，不改变文字消费或旧模式。语音扩展字段只作信息映射；下载、转码和 ASR 执行不属于装饰器。完整语义见 [附件参数](command-parameters.md#附件参数未发布源码-api)。其余章节保留原设计的说明与历史范围。
+
+1.9 新增未发布的 User、UserId、Group、GroupId、Role 参数装饰器，以及只读 UserInfo / GroupInfo。命令和按钮共用同步身份绑定；归一化时冻结快照，缺失群或角色时注入 undefined，不查询资料或改变 Guard、参数消费和冷却。Context 接口不变；完整语义见 [身份参数](command-parameters.md#身份参数未发布源码-api)。
 
 ## 1. 已确定的产品边界
 

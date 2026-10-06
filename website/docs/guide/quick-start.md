@@ -4,7 +4,7 @@
 
 ## 1. 安装环境与依赖
 
-使用 Node.js **24.21.0** 与 npm **11.19.0**。框架要求 Node.js 24+，这里选用已验证的具体版本。
+准备 Node.js **24.21.0** 与 npm **11.19.0**，然后在你自己的项目目录安装依赖。本教程使用 TypeScript **5.9.3**，后面的配置和命令可以直接复制。
 
 ```sh
 mkdir my-qq-bot
@@ -15,7 +15,7 @@ npm install --save-exact dou-bot@0.6.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
-包名是 `dou-bot`。npm 上的 `dd-bot` 是另一个项目。
+安装的包名为 `dou-bot`。
 
 ## 2. 配置编译
 
@@ -39,7 +39,7 @@ npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 }
 ```
 
-构造注入依赖传统装饰器元数据。先用 tsc 编译再运行，不要用默认缺少这些元数据的转译方式替代。
+保留 `experimentalDecorators` 和 `emitDecoratorMetadata`：前者启用参数装饰器，后者让框架识别需要注入的服务。下面使用 tsc 编译，再用 Node 运行生成的 JavaScript。
 
 ## 3. 编写服务、控制器与模块
 

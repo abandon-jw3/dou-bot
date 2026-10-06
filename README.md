@@ -234,6 +234,10 @@ node --env-file=.env dist/main.js
 
 参数与返回值的完整类型由包入口提供。公开导入只有 `dou-bot` 和 `dou-bot/testing`；不依赖 `dist` 内部路径。调用 `ctx.reply()` 后返回 void，避免又通过返回值自动回复。
 
+当前源码另新增 `Attachments`、`Images`、`Videos`、`Audios`、`Files` 五个附件参数装饰器，以及 `AttachmentOptions` 和语音附件扩展字段；这些 API **尚未包含在 npm 0.6.0 中**。源码开发可运行 `npm run example:attachments`，用法见 [附件参数](docs/command-parameters.md#附件参数未发布源码-api)。发布前，业务示例和文档站继续使用已发布包的 `ctx.attachments`。
+
+源码还提供 `@User()`、`@UserId()`、`@Group()`、`@GroupId()`、`@Role()`，为命令及按钮注入当前事件的身份信息；缺失的群或角色信息为 `undefined`，不发起资料查询。这些装饰器及 `UserInfo`、`GroupInfo` **同样尚未发布**。运行 `npm run example:identity` 查看离线源码示例，完整类型和场景说明见 [身份参数](docs/command-parameters.md#身份参数未发布源码-api)。
+
 ## 离线测试
 
 测试入口运行真实模块、DI、参数解析与消息编码，在内存中替换网络，不读取 QQ 凭证。示例 `src/offline.ts`：

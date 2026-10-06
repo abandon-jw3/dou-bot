@@ -2,6 +2,8 @@ import type { Attachment, GroupRole, MessageTarget, QQDispatch } from '../contra
 import { isGroupRole } from '../core/access.js';
 import { isRecord, own } from '../core/utils.js';
 import { systemClock } from '../core/clock.js';
+import { identitySnapshot } from '../core/identity.js';
+import type { IdentitySnapshot } from '../core/identity.js';
 
 export type NormalizedEvent =
   | {
@@ -11,6 +13,7 @@ export type NormalizedEvent =
       target: MessageTarget;
       userId: string;
       memberRole?: GroupRole;
+      identity: IdentitySnapshot;
       messageId: string;
       content: string;
       attachments: readonly Attachment[];
@@ -23,6 +26,7 @@ export type NormalizedEvent =
       receivedAt: number;
       target: MessageTarget;
       userId: string;
+      identity: IdentitySnapshot;
       interactionId: string;
       buttonId: string;
       data: string;
@@ -122,6 +126,8 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
         ...(typeof entry.width === 'number' ? { width: entry.width } : {}),
         ...(typeof entry.height === 'number' ? { height: entry.height } : {}),
         ...(typeof entry.size === 'number' ? { size: entry.size } : {}),
+        ...(typeof entry.voice_wav_url === 'string' ? { voiceWavUrl: entry.voice_wav_url } : {}),
+        ...(typeof entry.asr_refer_text === 'string' ? { asrReferText: entry.asr_refer_text } : {}),
       });
     }
     const ext: unknown = isRecord(data.message_scene) ? data.message_scene.ext : undefined;
@@ -145,6 +151,15 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
         target,
         userId,
         ...(memberRole === undefined ? {} : { memberRole }),
+        identity: identitySnapshot(
+          {
+            id: userId,
+            ...(typeof data.author.username === 'string' ? { username: data.author.username } : {}),
+            ...(typeof data.author.bot === 'boolean' ? { bot: data.author.bot } : {}),
+            ...(memberRole === undefined ? {} : { memberRole }),
+          },
+          target,
+        ),
         messageId,
         content:
           typeof data.content !== 'string'
@@ -178,6 +193,8 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
       (resolved.button_data !== undefined && typeof resolved.button_data !== 'string')
     )
       return invalid('Interaction identity is missing');
+    const target: MessageTarget =
+      scene === 'group' ? { scene, groupId: groupId ?? '' } : { scene, userId };
     return {
       status: 'ok',
       event: {
@@ -185,9 +202,10 @@ export function normalize(raw: QQDispatch, receivedAt = systemClock.wallTime()):
         raw,
         receivedAt,
         userId,
+        identity: identitySnapshot({ id: userId }, target),
         interactionId,
         buttonId,
-        target: scene === 'group' ? { scene, groupId: groupId ?? '' } : { scene, userId },
+        target,
         data: typeof resolved.button_data === 'string' ? resolved.button_data : '',
       },
     };

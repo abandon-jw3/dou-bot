@@ -1,6 +1,16 @@
-# 20 个装饰器
+# 装饰器参考
 
-所有装饰器都从 dou-bot 导入。下方代码行用于展示声明位置；完整可运行模块见各条目的指南和 [示例](../examples/hello.md)。返回类型是装饰器函数，处理器的返回规则在条目中单独说明。
+所有装饰器都从 `dou-bot` 导入。先按你要完成的任务选择，再查看参数、使用位置和示例。
+
+| 你要做什么               | 使用哪些装饰器                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 组织业务并注入服务       | [Module](#module)、[Controller](#controller)、[Injectable](#injectable)、[Inject](#inject)                                                        |
+| 接收命令、事件或按钮点击 | [Command](#command)、[On](#on)、[OnButton](#onbutton)                                                                                             |
+| 读取上下文和文字参数     | [Ctx](#ctx)、[Arg](#arg)、[Args](#args)、[Option](#option)、[Slot](#slot)、[Rest](#rest)                                                          |
+| 限制场景、用户和角色     | [GroupOnly](#grouponly)、[PrivateOnly](#privateonly)、[UsersOnly](#usersonly)、[GroupRoles](#grouproles)、[GroupManagersOnly](#groupmanagersonly) |
+| 自定义权限或限制调用频率 | [UseGuards](#useguards)、[Cooldown](#cooldown)                                                                                                    |
+
+下方示例展示装饰器的声明方式；可以直接运行的完整模块见 [示例](../examples/hello.md)。
 
 ## Module {#module}
 
@@ -12,7 +22,7 @@ Module(metadata: ModuleMetadata): ClassDecorator
 
 **参数与默认值：** metadata 可包含 imports、providers、controllers、exports、guards；省略数组表示不注册对应项。
 
-**返回值：** `ClassDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类。
 
 ```ts
 @Module({ controllers: [HelloController] })
@@ -32,7 +42,7 @@ Injectable(): ClassDecorator
 
 **参数与默认值：** 无参数；还需要在模块 providers 中注册。
 
-**返回值：** `ClassDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 需要注入的服务类或 Guard 类。
 
 ```ts
 @Injectable()
@@ -52,7 +62,7 @@ Inject(token: InjectionToken): ParameterDecorator
 
 **参数与默认值：** token 为类、字符串或 Symbol。接口配置通常使用 Symbol。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 构造函数参数。
 
 ```ts
 constructor(@Inject(SETTINGS) private readonly settings: Settings) {}
@@ -72,7 +82,7 @@ Controller(): ClassDecorator
 
 **参数与默认值：** 无参数；模块 controllers 决定是否注册。
 
-**返回值：** `ClassDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 控制器类。
 
 ```ts
 @Controller()
@@ -92,7 +102,7 @@ Command(name: string, options?: CommandOptions): MethodDecorator
 
 **参数与默认值：** name 不带前缀；options 提供 aliases 和 description，默认无别名和说明。
 
-**返回值：** `MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 控制器的命令方法。
 
 ```ts
 @Command('hello', { aliases: ['hi'], description: '问好' })
@@ -112,7 +122,7 @@ On(eventName: string): MethodDecorator
 
 **参数与默认值：** eventName 必填，例如 C2C_MESSAGE_CREATE。
 
-**返回值：** `MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 控制器的原始事件处理方法。
 
 ```ts
 @On('C2C_MESSAGE_CREATE')
@@ -132,7 +142,7 @@ OnButton(buttonId: string): MethodDecorator
 
 **参数与默认值：** buttonId 与 button.callback 的第一个参数一致。
 
-**返回值：** `MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 控制器的按钮回调方法。
 
 ```ts
 @OnButton('docs:confirm')
@@ -152,7 +162,7 @@ Ctx(): ParameterDecorator
 
 **参数与默认值：** 无参数；命令为 MessageContext，按钮为 ButtonContext，On 为 QQEventContext。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** Command、On 或 OnButton 方法的参数；参数类型与对应上下文一致。
 
 ```ts
 handler(@Ctx() ctx: MessageContext) {}
@@ -172,7 +182,7 @@ Arg(index: number, options?: ArgumentOptions): ParameterDecorator
 
 **参数与默认值：** index 从 0 开始。无 options 时注入 string 或 undefined；options 显式声明 type、required、default、choices、min/max 等。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 命令方法的参数。
 
 ```ts
 name(@Arg(0) value = '朋友') {}
@@ -192,7 +202,7 @@ Args(): ParameterDecorator
 
 **参数与默认值：** 无参数；包含选项名、选项值和 --，不含命令名。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 命令方法的参数。
 
 ```ts
 echo(@Args() words: string[]) {}
@@ -212,7 +222,7 @@ Option(name: string, options?: OptionOptions): ParameterDecorator
 
 **参数与默认值：** 默认 type 为 string、required 为 false。alias 为单个 ASCII 字母；其他字段与 ArgumentOptions 对应。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 命令方法的参数。
 
 ```ts
 query(@Option('page', { alias: 'p', type: 'integer', default: 1 }) page: number) {}
@@ -232,7 +242,7 @@ Slot(name: string, options: SlotOptions): ParameterDecorator
 
 **参数与默认值：** name 在同一命令中唯一；options 至少提供 choices 或 match，两者同时提供取交集。required 默认 false。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 命令方法的参数。
 
 ```ts
 query(@Slot('city', { choices: ['北京'], required: true }) city: string) {}
@@ -252,7 +262,7 @@ Rest(options?: RestOptions): ParameterDecorator
 
 **参数与默认值：** options 仅 name、description；没有剩余时注入空数组。
 
-**返回值：** `ParameterDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 命令方法的参数。
 
 ```ts
 query(@Rest() notes: string[]) {}
@@ -272,7 +282,7 @@ UseGuards(...tokens: InjectionToken<CanActivate>[]): ClassDecorator & MethodDeco
 
 **参数与默认值：** 传一个或多个 Provider 令牌，按声明顺序运行；Guard 需在所属模块可见。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
 
 ```ts
 @UseGuards(AllowlistGuard, OwnerGuard)
@@ -292,7 +302,7 @@ GroupOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 
 **参数与默认值：** message 省略时使用默认拒绝提示，false 静默拒绝，非空字符串自定义提示。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
 
 ```ts
 @GroupOnly()
@@ -312,7 +322,7 @@ PrivateOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 
 **参数与默认值：** message 与 GroupOnly 相同。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
 
 ```ts
 @PrivateOnly()
@@ -332,7 +342,7 @@ UsersOnly(userIds: readonly string[], options?: UsersOnlyOptions): ClassDecorato
 
 **参数与默认值：** userIds 为非空字符串数组；可指定 scene、groupId、message。groupId 隐含群聊。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
 
 ```ts
 @UsersOnly(['USER_OPENID'], { scene: 'private' })
@@ -352,7 +362,7 @@ GroupRoles(...roles: GroupRole[]): ClassDecorator & MethodDecorator
 
 **参数与默认值：** 至少一个 member、admin 或 owner；允许任一列出的角色。使用默认拒绝提示。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类或 Command 方法；不能把角色规则施加到 OnButton。
 
 ```ts
 @GroupRoles('owner')
@@ -372,7 +382,7 @@ GroupManagersOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 
 **参数与默认值：** 相当于角色 owner 或 admin；message 可自定义或设为 false。
 
-**返回值：** `ClassDecorator & MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** 模块类、控制器类或 Command 方法；不能把角色规则施加到 OnButton。
 
 ```ts
 @GroupManagersOnly({ message: '仅限群管理者。' })
@@ -392,7 +402,7 @@ Cooldown(options: CooldownOptions): MethodDecorator
 
 **参数与默认值：** scope 为 user、session 或 command；durationMs 为正整数。message 默认显示剩余时间，可设为字符串或 false。
 
-**返回值：** `MethodDecorator`，用于相应的类、方法或参数声明。
+**用在哪里：** Command 或 OnButton 方法。
 
 ```ts
 @Cooldown({ scope: 'user', durationMs: 3000 })

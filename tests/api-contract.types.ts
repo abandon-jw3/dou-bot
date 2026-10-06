@@ -26,6 +26,73 @@ runtime.Arg(0, { type: 'integer', default: 1, min: 1 });
 runtime.Option('detail', { type: 'boolean', alias: 'd', default: false });
 runtime.Slot('city', { choices: ['北京'], match: (text) => text.length > 0 });
 runtime.Rest({ name: '补充内容' });
+const attachmentOptions: runtime.AttachmentOptions = { name: '素材', minCount: 1, maxCount: 4 };
+runtime.Attachments(attachmentOptions);
+runtime.Images(attachmentOptions);
+runtime.Videos();
+runtime.Audios({ maxCount: 2 });
+runtime.Files({ minCount: 0 });
+// @ts-expect-error Attachment counts are numeric.
+runtime.Images({ minCount: '1' });
+// @ts-expect-error Cardinality uses minCount, not a second required flag.
+runtime.Attachments({ required: true });
+// @ts-expect-error Media selection belongs to the decorator, not an ad-hoc MIME option.
+runtime.Files({ contentType: 'image/png' });
+function inspectAttachments(attachments: readonly runtime.Attachment[]): void {
+  const voice = attachments[0];
+  const wav: string | undefined = voice?.voiceWavUrl;
+  const text: string | undefined = voice?.asrReferText;
+  void [wav, text];
+  // @ts-expect-error Injected attachment arrays are readonly.
+  attachments[0] = { url: 'https://example.invalid/image.png', raw: {} };
+  if (voice) {
+    // @ts-expect-error Voice metadata is readonly, like the rest of Attachment.
+    voice.voiceWavUrl = 'https://example.invalid/other.wav';
+  }
+}
+void inspectAttachments;
+const identityDecorators: ParameterDecorator[] = [
+  runtime.User(),
+  runtime.UserId(),
+  runtime.Group(),
+  runtime.GroupId(),
+  runtime.Role(),
+];
+void identityDecorators;
+// @ts-expect-error Identity bindings do not take field selectors.
+runtime.User('id');
+// @ts-expect-error Missing groups remain undefined; access rules belong to guards.
+runtime.Group({ required: true });
+// @ts-expect-error Role injection takes no options.
+runtime.Role({ default: 'member' });
+// @ts-expect-error IDs are read from the event, not supplied to the decorator.
+runtime.UserId('user');
+// @ts-expect-error Group IDs are not configurable.
+runtime.GroupId({});
+function inspectIdentity(user: runtime.UserInfo, group: runtime.GroupInfo | undefined): void {
+  const id: string = user.id;
+  const username: string | undefined = user.username;
+  const bot: boolean | undefined = user.bot;
+  const role: runtime.GroupRole | undefined = user.memberRole;
+  const groupId: string | undefined = group?.id;
+  void [id, username, bot, role, groupId];
+  // @ts-expect-error Identity snapshots are readonly.
+  user.id = 'changed';
+  // @ts-expect-error Profiles are readonly too.
+  user.username = 'changed';
+  // @ts-expect-error An unavailable role cannot be assumed to be a known role.
+  const requiredRole: runtime.GroupRole = user.memberRole;
+  void requiredRole;
+  // @ts-expect-error The current event does not provide a complete group profile.
+  void group?.name;
+  // @ts-expect-error Additional platform fields remain accessible through Ctx.raw.
+  void user.unionOpenId;
+  if (group) {
+    // @ts-expect-error Group snapshots are readonly.
+    group.id = 'changed';
+  }
+}
+void inspectIdentity;
 // @ts-expect-error Numeric arguments cannot use string defaults.
 runtime.Arg(0, { type: 'integer', default: '1' });
 // @ts-expect-error String arguments cannot declare numeric bounds.

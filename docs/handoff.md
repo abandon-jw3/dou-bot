@@ -6,21 +6,35 @@
 
 实测更新：2026-10-06。基于 `20706f1` 的业务示例完成新设备 WS 私聊/群聊文字、原始 Markdown 及普通按钮的收发和客户端确认。随后独立的角色探针完成群主、管理员、普通成员的角色命令与管理者回调按钮验收；两轮测试连接均已关闭。结论限于本次机器人和测试会话，详见 [验收记录](validation-report.md#2026-10-06-分角色权限与管理者按钮实测)。
 
+附件 API 更新：2026-10-06。源码新增 Attachments、Images、Videos、Audios、Files 和 AttachmentOptions，并映射语音 WAV URL 与 ASR 参考文本；该次公开契约修订为 1.8，尚未发布。实现与验证入口见 [附件参数指南](command-parameters.md#附件参数未发布源码-api)。业务示例、网站和技能仍面向 npm 0.6.0。
+
+附件离线验收已通过：Node 24.0.0 / 24.21.0 各 199 项 SDK 测试，129 个导出与 96 组类型检查；当前 tarball、新功能消费者、历史 0.6.0 消费者及整仓检查均通过。真实 QQ 附件投递单独记录，详见 [附件验收记录](attachment-validation-2026-10-06.json)。
+
+本轮附件实测已结束：群聊收到 1 个 `image/jpeg` 附件、筛选成功并完成回复发送；用户明确无需继续验证其他附件类型。视频、音频、文件、混合附件及私聊未完成实机验收，保留离线检查结果。已确认探针不再运行，退出记录的限制见上述验收记录。
+
+身份 API 更新：2026-10-06。源码新增 User、UserId、Group、GroupId、Role 和 UserInfo / GroupInfo，公开契约更新为 1.9，尚未发布。命令与按钮从当前事件的冻结快照注入信息，缺失群或角色时为 undefined；Context 接口及生产依赖不变。运行 `npm run example:identity` 查看离线示例，规则见 [身份参数指南](command-parameters.md#身份参数未发布源码-api)。本轮只做离线与本地协议验收，没有启动真实 QQ 联调。
+
+身份离线验收已通过：Node 24.0.0 / 24.21.0 各 213 项 SDK 测试（其中身份专项 14 项），136 个导出与 98 组类型检查；当前 tarball、历史 0.6.0 消费者、整仓检查及本地 WS/Webhook 对照均通过。覆盖率为行/语句 98.69%、函数 97.72%、分支 90.32%；来源与范围见 [身份验收记录](identity-validation-2026-10-06.json)。
+
+文档站更新：2026-10-06。首页、指南、API 和五个完整示例已改为使用者叙事，示例按业务项目的 src 目录说明操作；维护约定放在 website/README.md。文档完整检查、14 项示例测试、五个独立项目编译和 12 项桌面/手机浏览器测试通过，仍使用 npm 0.6.0。
+
+交付：所有者已要求将附件、身份和文档站改动一并提交并部署。推送 main 后由 CI 检查并部署 GitHub Pages；本次不修改 SDK 版本或发布 npm。测试记录中的 dirty 和源码指纹保留采集时的状态，部署结果按 main 最新提交对应的工作流核对。
+
 ## 1. 接手时先确认的状态
 
-| 项目            | 当前状态                                                                                                  |
-| --------------- | --------------------------------------------------------------------------------------------------------- |
-| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                      |
-| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                  |
-| 已发布 npm 版本 | `dou-bot@0.6.0`；交接时查询到 `latest`、`next` 都指向 `0.6.0`                                             |
-| 源码状态        | 已完成 1.0 API 审查、Node 支持范围及文档工具依赖的本地收尾，尚未发布新的 SDK 版本                         |
-| 业务示例        | 已并入 `apps/example/`，精确依赖 npm 的 `dou-bot@0.6.0`                                                   |
-| 文档站          | 已并入 `website/`，示例和 API 索引也精确依赖 npm 的 `dou-bot@0.6.0`                                       |
-| 配套技能        | 仓库位置 `skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                     |
-| 最近已验证 CI   | [ada385b 对应工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/36751393279) 的全部 9 项任务成功 |
-| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                               |
+| 项目            | 当前状态                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                                            |
+| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                                        |
+| 已发布 npm 版本 | `dou-bot@0.6.0`；交接时查询到 `latest`、`next` 都指向 `0.6.0`                                                                   |
+| 源码状态        | 已完成 1.0 API 审查、Node 支持范围及文档工具依赖的本地收尾，尚未发布新的 SDK 版本                                               |
+| 业务示例        | 已并入 `apps/example/`，精确依赖 npm 的 `dou-bot@0.6.0`                                                                         |
+| 文档站          | 已并入 `website/`，示例和 API 索引也精确依赖 npm 的 `dou-bot@0.6.0`                                                             |
+| 配套技能        | 仓库位置 `skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                                           |
+| 提交前 CI 基线  | [73b5b9f 对应工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/37342551959) 的 9 项任务通过；本次交付结果按新提交核对 |
+| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                                                     |
 
-**源码与 npm 包存在差异。** 根目录 `package.json` 仍标为 `0.6.0`，但源码的 `dou-bot/testing` 已新增 `TestAdmission` 类型导出，已发布的 `0.6.0` 没有这个类型名。业务示例和网站继续验证发布包；判断源码状态要看提交号和类型声明，不能只看版本字段。
+**源码与 npm 包存在差异。** 根目录 `package.json` 仍标为 `0.6.0`，但源码已新增 testing 入口的 `TestAdmission`、五种附件参数装饰器、`AttachmentOptions`、语音附件扩展字段，以及五种身份参数装饰器和 UserInfo / GroupInfo；这些新增 API 不在已发布的 0.6.0 中。业务示例和网站继续验证发布包；判断源码状态要看提交号和类型声明，不能只看版本字段。
 
 源码的 Node 声明已限定为 `>=24.0.0 <25`；已发布 0.6.0 仍为 `>=24`。后续发行需要明确说明此安装范围收紧，不能把它记成已发布包的既有要求。
 
@@ -83,17 +97,20 @@ npm run docs:test:browser
 
 ### 常用命令与前置条件
 
-| 命令（主仓库根目录执行）    | 用途与前置条件                                                     |
-| --------------------------- | ------------------------------------------------------------------ |
-| `npm run check:all`         | SDK、业务示例、文档的完整本地检查，不包含浏览器测试                |
-| `npm run test:api`          | 两个公开入口的导出集合与类型契约检查                               |
-| `npm run test:package`      | 验证当前源码 tarball 和技能示例；先运行 `npm run build`            |
-| `npm run test:compat`       | 从 registry 安装已发布的 0.6.0，验证历史消费者；先完成 build/check |
-| `npm run coverage`          | SDK 测试及覆盖率报告                                               |
-| `npm run docs:dev`          | 启动本地文档开发服务器，按终端输出访问 `/dou-bot/`                 |
-| `npm run docs:test:browser` | 桌面和手机浏览器检查；先构建站点并安装 Chromium                    |
-| `npm run example:build`     | 编译独立业务示例                                                   |
-| `npm run example:start`     | 建立真实 QQ WS 连接；先配置示例 `.env` 并完成构建                  |
+| 命令（主仓库根目录执行）      | 用途与前置条件                                                              |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| `npm run check:all`           | SDK、业务示例、文档的完整本地检查，不包含浏览器测试                         |
+| `npm run test:api`            | 两个公开入口的导出集合与类型契约检查                                        |
+| `npm run test:package`        | 验证当前源码 tarball 和技能示例；先运行 `npm run build`                     |
+| `npm run test:compat`         | 从 registry 安装已发布的 0.6.0，验证历史消费者；先完成 build/check          |
+| `npm run coverage`            | SDK 测试及覆盖率报告                                                        |
+| `npm run docs:dev`            | 启动本地文档开发服务器，按终端输出访问 `/dou-bot/`                          |
+| `npm run docs:test:browser`   | 桌面和手机浏览器检查；先构建站点并安装 Chromium                             |
+| `npm run example:build`       | 编译独立业务示例                                                            |
+| `npm run example:attachments` | 离线运行当前源码的附件参数示例，不读取 QQ 凭证                              |
+| `npm run example:identity`    | 离线运行当前源码的身份参数示例，覆盖命令及按钮                              |
+| `npm run probe:attachments`   | 真实 WS 附件探针，读取 `apps/example/.env`，使用当前 SDK 源码，最长 15 分钟 |
+| `npm run example:start`       | 建立真实 QQ WS 连接；先配置示例 `.env` 并完成构建                           |
 
 如只编辑 Markdown，通常只需要相应的格式、链接或站点构建检查；业务或框架变更再运行相关行为测试。不要把单纯文档编辑误当作已重新完成全部实机验收。
 
@@ -226,6 +243,8 @@ test ! -e "$skill_parent/dou-bot" && cp -R ./skills/dou-bot "$skill_parent/dou-b
 
 - Provider 默认单例；模块的 imports/exports 决定依赖可见性，Controller 不作为共享 Provider。
 - 参数消费顺序是 Option → Arg → Slot → Rest。Slot 匹配同步且无副作用，Rest 不掩盖歧义、重复或非法输入。
+- 未发布附件参数在文字绑定完成后选择顶层附件并校验数量，不切换旧/严格文字模式、不消费文字；引用与嵌套附件不会自动并入，语音 ASR 文本不会变成命令。
+- 未发布身份参数在文字与附件绑定后、冷却前同步注入，不占输入位置。快照在归一化时冻结；按钮没有可靠角色，不从历史消息、权限或引用推断，缺失信息为 undefined。
 - Guard 按模块 → 控制器类 → 方法执行。模块 Guard 只覆盖直接注册的控制器，不传播到导入模块，不保护原始 `On` 观察器，也不自动过滤帮助列表。
 - Guard 拒绝和参数错误不占用冷却；命令别名共享冷却；业务执行失败不退还已占用的冷却。
 - 业务必须 `await ctx.prompt()`。回答属于父流程，不重新走命令匹配、Guard 和冷却；后续回复使用新消息引用。
@@ -290,6 +309,10 @@ SDK 只从主仓库根目录发布，发行白名单不包含 `apps/`、`website
 > 请先阅读 `docs/handoff.md`、`docs/repository.md`、`docs/api-review-1.0.md` 和根目录 README，核对当前分支、提交、未提交改动及 CI。
 >
 > 这是 dou-bot 单仓库：根目录是 SDK，`apps/example` 是业务示例，`website` 是文档站。已发布版本为 0.6.0，源码包含尚未发布的 TestAdmission；示例和文档仍使用 npm 的 0.6.0。配套技能名称是 `$dou-bot`。
+>
+> 当前源码另有尚未发布的五种附件参数装饰器、AttachmentOptions 和语音扩展字段。用根目录源码示例或当前 tarball 验证，勿让仍依赖 npm 0.6.0 的业务示例与网站提前导入这些 API。
+>
+> 当前源码还包含尚未发布的五种身份参数装饰器与 UserInfo / GroupInfo，公开契约为 1.9。它们支持命令与按钮，缺失信息注入 undefined；本轮只进行了离线和本地协议验收。
 >
 > 保持 QQ 官方群聊/私聊、WS/Webhook、轻量依赖和 TypeScript 5.9.3 的既定方向。先用离线检查确认新设备环境，再按本轮任务推进交接文档中的待办；真实 QQ 联调、长时间运行和 npm 发布按本轮明确的任务范围执行。SDK、业务示例、文档和技能均采用 MIT；公网 Webhook 和分角色实测的完成状态以当前验收记录为准。
 

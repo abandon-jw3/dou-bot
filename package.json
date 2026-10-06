@@ -80,6 +80,8 @@
     "test:compat": "node scripts/test-package.mjs --released-baseline",
     "test:docs": "node scripts/check-docs.mjs",
     "example:offline": "node scripts/run-example.mjs offline",
+    "example:attachments": "node scripts/run-example.mjs attachments",
+    "example:identity": "node scripts/run-example.mjs identity",
     "example:query": "node scripts/run-example.mjs query",
     "example:business": "node scripts/run-example.mjs business",
     "example:business:qq": "node scripts/run-example.mjs business-qq",
@@ -90,6 +92,7 @@
     "probe:media": "node scripts/run-example.mjs live-media",
     "probe:reconnect": "node scripts/run-example.mjs live-reconnect",
     "probe:controls": "node scripts/run-example.mjs live-controls",
+    "probe:attachments": "node scripts/run-example.mjs live-attachments",
     "benchmark": "node scripts/run-example.mjs benchmark",
     "soak": "node scripts/run-example.mjs soak",
     "check": "node scripts/check.mjs"

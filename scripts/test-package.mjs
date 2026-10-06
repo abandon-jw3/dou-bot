@@ -154,6 +154,9 @@ const compilerOptions = {
 };
 const skillExamples = ['minimal-module.ts', 'minimal-module.test.ts'];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
+const featureConsumers = releasedBaseline
+  ? []
+  : ['consumer-attachments.ts', 'consumer-identity.ts'];
 if (!releasedBaseline) {
   await writeFile(
     resolve(consumer, 'testing-types.ts'),
@@ -172,10 +175,18 @@ for (const name of skillExamples) {
     await readFile(resolve(root, 'skills', 'dou-bot', 'assets', name)),
   );
 }
+for (const name of featureConsumers) {
+  await writeFile(
+    resolve(consumer, name),
+    await readFile(resolve(root, 'scripts', 'fixtures', name)),
+  );
+}
 const program = ts.createProgram(
   [
     resolve(consumer, 'consumer.ts'),
-    ...[...skillExamples, ...currentTypes].map((name) => resolve(consumer, name)),
+    ...[...skillExamples, ...currentTypes, ...featureConsumers].map((name) =>
+      resolve(consumer, name),
+    ),
   ],
   compilerOptions,
 );
@@ -204,6 +215,8 @@ for (const file of program.getSourceFiles()) {
 }
 program.emit();
 await runNode([resolve(consumer, 'out', 'consumer.js')], { cwd: consumer });
+for (const name of featureConsumers)
+  await runNode([resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))], { cwd: consumer });
 await runNode(['--test', resolve(consumer, 'out', 'minimal-module.test.js')], { cwd: consumer });
 console.log(`Package consumer passed; ${pack.files.length} allowed files, no credential matches.`);
 console.log(

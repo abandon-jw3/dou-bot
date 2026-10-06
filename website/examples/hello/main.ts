@@ -20,4 +20,4 @@ const close = () => {
 process.once('SIGINT', close);
 process.once('SIGTERM', close);
 await app.start();
-console.log('机器人已启动，发送 /hello 小明 试试。');
+console.log('机器人已启动。');

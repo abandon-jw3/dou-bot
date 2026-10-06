@@ -19,6 +19,8 @@
 - 2026-10-01，所有者明确统一采用 MIT；独立业务示例已补齐 LICENSE、NOTICE 与 package.json 的许可字段。既有 SDK 和上游声明继续保留。
 
 - `dou-bot/testing` 增加 `TestAdmission` 类型导出，已有 `enqueue()` / `dispatch()` 行为不变。
+- 新增五种附件参数装饰器、AttachmentOptions，以及 Attachment 的 voiceWavUrl / asrReferText 可选字段；公开契约修订为 1.8。旧参数消费和冷却顺序不变，发布后再同步业务示例、网站 API 索引和技能。新功能由当前 tarball 的专用消费者验证，不回写历史 0.6.0 消费者。
+- 新增 User、UserId、Group、GroupId、Role 身份参数装饰器与 UserInfo / GroupInfo，公开契约继续修订为 1.9。仅从当前事件注入冻结快照，命令和按钮共用；缺失信息保持 undefined，现有 Context 接口不变。身份专用消费者同样只验证当前 tarball。
 - SDK 的 Node 支持范围明确为 `>=24.0.0 <25`，开发使用 `.nvmrc` 的 24.21.0。0.6.0 的 `>=24` 元数据不会被改写；运行 Node 25 及更高主版本的消费者升级新 SDK 前需切换到 24.x。发行说明必须包含此安装兼容性收紧。
 
 ## 检查并生成候选

@@ -1,38 +1,38 @@
 # 两轮问答
 
-发送 `/报名`，按顺序输入角色名和服务器名称。最后一条回复引用第二轮的新消息。任一轮发送“取消”会结束流程。`/等待` 演示五秒超时。
+通过两次提问收集角色名和服务器名称：用户发送 `/报名` 后，机器人会依次询问并确认填写结果。任何一轮都可以发送“取消”结束。
 
-群聊和私聊按各自会话隔离；同一个用户在不同群中可以分别等待。命令形状的文本也会作为回答消费。
+## 添加到你的项目
 
-离线测试使用 enqueue 发起流程、观察问题发送记录后投递回答，最后等待所有 done；完整驱动代码见下方测试链接。
-
-## 源文件
-
-### examples/prompt/app.module.ts
+先准备 [快速开始](../guide/quick-start.md) 中的项目、启动入口和 `.env`。把下面代码保存为 `src/app.module.ts`，替换 hello 示例的根模块，保留 `src/main.ts`。
 
 <<< @/../examples/prompt/app.module.ts
 
 ## 运行这个示例
 
-克隆主仓库后，进入 `website` 工程执行：
+在自己的项目根目录执行：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/website
-npm ci
-npm run examples:build
+npx tsc -p tsconfig.json
+node --env-file=.env dist/main.js
 ```
 
-将 `examples/.env.example` 复制为当前目录的 `.env`（即仓库中的 `website/.env`），填入自己的凭证。然后运行：
+## 完成一次报名
 
-```sh
-node --env-file=.env .examples-build/examples/main.js prompt
-```
+| 你发送  | 机器人回复                     |
+| ------- | ------------------------------ |
+| `/报名` | 请输入角色名，发送“取消”结束。 |
+| `小明`  | 请输入服务器名称。             |
+| `一区`  | 已记录：小明 / 一区            |
 
-共享入口默认使用 WS 和 / 前缀。设置 QQ_TRANSPORT=webhook 可以切换接入，部署前阅读 [Webhook 指南](../guide/webhook.md)。按 Ctrl+C 关闭实例。
+最后一条回复引用服务器名称这条新消息。再试一次 `/报名`，在任意一轮发送“取消”，应收到 `已取消。`。
 
-需要独立业务工程时，先完成 [快速开始](../guide/quick-start.md)，再替换 AppModule 和它依赖的文件；保留相应相对导入。
+发送 `/等待` 后不回复，约 5 秒后会收到 `等待超时。`；在期限内发送内容，则收到回显。
 
-## 离线验收
+## 用在自己的业务中
 
-执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。
+群聊和私聊的等待相互独立；同一个用户也可以在不同群中分别对话。群聊中，如果普通消息不能触发下一轮，尝试 @机器人后回复，并检查该账号的消息投递权限。
+
+等待期间的下一条消息会作为回答，包括 `/help` 这样的命令文本。收到输入后先检查内容是否符合业务要求，再保存到自己的服务或数据库。按 Ctrl+C 会关闭程序并结束等待。
+
+更多超时、取消和输入校验方式见 [多轮对话](../guide/prompts.md)。需要自动测试时，按 [对话测试](../guide/testing.md#对话测试) 先发起流程、再投递回答。

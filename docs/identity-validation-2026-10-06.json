@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "validationDate": "2026-10-06",
+  "timeZone": "Asia/Shanghai",
+  "status": "offline-passed",
+  "source": {
+    "commit": "73b5b9fd0843dca0f3380e1ba213c83c098a5515",
+    "dirty": true,
+    "sdkVersion": "0.6.0",
+    "releaseState": "unreleased-source",
+    "publicContract": "1.9",
+    "sha256": "7f7e37107138c1fc407b107c17531818d072607f63b961e3b264ec00591661ed",
+    "fingerprintScope": "Sorted src/**/*.ts plus examples/identity.ts; each relative path and content followed by NUL.",
+    "fingerprintedFiles": 35
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "npm": "11.19.0",
+    "typescript": "5.9.3"
+  },
+  "checks": {
+    "sdkChecksOnBothNodeVersions": "passed",
+    "sdkTestsPerNode": 213,
+    "identityTests": 14,
+    "publicExports": 136,
+    "bidirectionalTypeChecks": 98,
+    "currentTarballHistoricalConsumer": "passed",
+    "currentTarballAttachmentConsumer": "passed",
+    "currentTarballIdentityConsumer": "passed",
+    "historicalPublished060Consumer": "passed",
+    "skillExampleTests": 2,
+    "exampleApplicationTests": 25,
+    "documentationExampleTests": 14,
+    "publishedDocumentationExports": 122,
+    "allowedPackageFiles": 111,
+    "sourceIdentityExample": "passed",
+    "realLocalWsWebhookParity": "passed"
+  },
+  "coverage": {
+    "lines": 98.69,
+    "statements": 98.69,
+    "functions": 97.72,
+    "branches": 90.32,
+    "identityModule": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    }
+  },
+  "live": {
+    "status": "not-run",
+    "reason": "This task is limited to offline and local protocol validation; no real QQ connection was started."
+  },
+  "scope": "Verified all five identity decorators in private/group/mentioned messages and private/group buttons, ID precedence, optional profiles and roles, frozen snapshots, raw observer isolation, parameter compatibility, guards, cooldowns, acknowledgment, invalid declarations, inheritance, help and independent package exports. The business example, website and skill remain compatible with published 0.6.0. No version bump, npm publication, commit or push was performed."
+}

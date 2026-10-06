@@ -26,7 +26,7 @@ const program = ts.createProgram(paths, {
 });
 const checker = program.getTypeChecker();
 let body =
-  '# 公共声明索引\n\n本页从安装的 dou-bot **0.6.0** 类型声明生成，只列出两个公开入口的导出。声明用于查阅；可运行代码见 [示例](../examples/hello.md)。不要通过内部路径导入未公开的实现。\n\n';
+  '# 类型与接口\n\n在这里查阅 dou-bot **0.6.0** 的函数签名、配置字段与返回类型。编写业务时从 `dou-bot` 导入，编写离线测试时从 `dou-bot/testing` 导入；需要了解用法时，先看 [装饰器参考](./decorators.md) 或 [完整示例](../examples/hello.md)。\n\n';
 let count = 0;
 for (let i = 0; i < entries.length; i++) {
   const file = program.getSourceFile(paths[i]);
@@ -35,7 +35,7 @@ for (let i = 0; i < entries.length; i++) {
   const exports = checker
     .getExportsOfModule(symbol)
     .sort((a, b) => a.name.localeCompare(b.name, 'en'));
-  body += `## ${entries[i][0]}\n\n${exports.length} 个公开导出，包含运行时值和类型。\n\n`;
+  body += `## ${entries[i][0]}\n\n${i === 0 ? '业务开发使用的装饰器、应用、消息工具与类型。' : '在本地运行模块、投递模拟事件并检查处理结果的测试工具与类型。'}\n\n`;
   for (const exported of exports) {
     const actual =
       exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;

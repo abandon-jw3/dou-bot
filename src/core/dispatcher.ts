@@ -6,6 +6,7 @@ import { callable } from './utils.js';
 import { tokenizeCommand } from './parser.js';
 import { CommandArguments } from './arguments.js';
 import { CommandInputError } from './input-error.js';
+import { bindIdentity } from './identity.js';
 import { CommandCatalog } from './help.js';
 import { CooldownStore } from './cooldown.js';
 import { assertGuard, guardContext, runGuard } from './guards.js';
@@ -134,14 +135,16 @@ export class Dispatcher {
       phase = task.event.kind === 'button' ? 'button' : 'command';
       const context =
         task.event.kind === 'button' ? task.buttonContext(handler) : task.messageContext(handler);
-      let parameters: unknown[] | undefined;
+      let parameters: unknown[] = route.metadata.parameters.map(() => context);
       if (task.event.kind === 'message') {
         parsing = true;
         const parsed = tokenizeCommand(task.event.content, this.prefix);
         if (!parsed || !route.arguments) return;
-        parameters = route.arguments.bind(parsed.tokens, context);
+        parameters = route.arguments.bind(parsed.tokens, context, task.event.attachments);
         parsing = false;
       }
+      if (task.event.kind !== 'event')
+        bindIdentity(route.metadata.parameters, parameters, task.event.identity);
       task.controller.signal.throwIfAborted();
       phase = 'cooldown';
       if (cooldown && info) {

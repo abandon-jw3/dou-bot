@@ -1,5 +1,5 @@
 /**
- * dd-bot v0.6 public API design contract, revision 1.7 — NOT a runtime implementation.
+ * dou-bot public API design contract, revision 1.9 — includes unreleased attachment and identity bindings.
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
  */
@@ -48,6 +48,15 @@ export interface CommandOptions {
 }
 export type GuardResult = boolean | { readonly allow: false; readonly message?: string };
 export type GroupRole = 'member' | 'admin' | 'owner';
+export interface UserInfo {
+  readonly id: string;
+  readonly username?: string;
+  readonly bot?: boolean;
+  readonly memberRole?: GroupRole;
+}
+export interface GroupInfo {
+  readonly id: string;
+}
 export interface AccessOptions {
   message?: string | false;
 }
@@ -111,6 +120,11 @@ export declare function Command(name: string, options?: CommandOptions): MethodD
 export declare function On(eventName: string): MethodDecorator;
 export declare function OnButton(buttonId: string): MethodDecorator;
 export declare function Ctx(): ParameterDecorator;
+export declare function User(): ParameterDecorator;
+export declare function UserId(): ParameterDecorator;
+export declare function Group(): ParameterDecorator;
+export declare function GroupId(): ParameterDecorator;
+export declare function Role(): ParameterDecorator;
 export interface ParameterDescription {
   name?: string;
   description?: string;
@@ -137,11 +151,22 @@ export interface RestOptions {
   name?: string;
   description?: string;
 }
+export interface AttachmentOptions {
+  name?: string;
+  description?: string;
+  minCount?: number;
+  maxCount?: number;
+}
 export declare function Arg(index: number, options?: ArgumentOptions): ParameterDecorator;
 export declare function Args(): ParameterDecorator;
 export declare function Option(name: string, options?: OptionOptions): ParameterDecorator;
 export declare function Slot(name: string, options: SlotOptions): ParameterDecorator;
 export declare function Rest(options?: RestOptions): ParameterDecorator;
+export declare function Attachments(options?: AttachmentOptions): ParameterDecorator;
+export declare function Images(options?: AttachmentOptions): ParameterDecorator;
+export declare function Videos(options?: AttachmentOptions): ParameterDecorator;
+export declare function Audios(options?: AttachmentOptions): ParameterDecorator;
+export declare function Files(options?: AttachmentOptions): ParameterDecorator;
 export declare class HelpModule {}
 
 export interface RetryOptions {
@@ -263,6 +288,8 @@ export interface Attachment {
   readonly size?: number;
   readonly width?: number;
   readonly height?: number;
+  readonly voiceWavUrl?: string;
+  readonly asrReferText?: string;
   readonly raw: Readonly<Record<string, unknown>>;
 }
 export interface QQEventContext<T = unknown> {

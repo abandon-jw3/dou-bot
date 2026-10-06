@@ -10,7 +10,7 @@ BotFactory.create(root: Type, options: BotOptions): Promise<BotApplication>
 
 创建并初始化模块、依赖注入与路由。root 为根模块类；options 至少包含 appId、secret，transport 默认 WS。返回已创建但尚未建立 QQ 接入的应用，之后调用 start。
 
-配置、依赖或路由校验失败会拒绝 Promise。不要给 create 传内部运行时端口或手动构造内部 Application。
+配置、依赖或路由校验失败会拒绝 Promise。创建失败时，根据错误码检查配置字段、Provider 注册和命令名；具体步骤见 [排错指南](../guide/troubleshooting.md)。
 
 完整示例：
 

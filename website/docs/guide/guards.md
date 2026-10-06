@@ -34,7 +34,7 @@ class Commands {
 class AppModule {}
 ```
 
-| API                            | 契约                                                                                       |
+| API                            | 使用方式                                                                                   |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
 | `UseGuards(...tokens)`         | 接收一个或多个 `InjectionToken<CanActivate>`；类、字符串、Symbol 都可以；不接收 Guard 实例 |
 | `CanActivate.canActivate(ctx)` | 返回 `GuardResult` 或 `Promise<GuardResult>`，可注入权限服务异步检查                       |
@@ -43,7 +43,7 @@ class AppModule {}
 
 GuardContext 共用字段为 appId、eventName、eventId（可选）、receivedAt、raw、signal、userId、scene、target、controller、method、route。route 是规范命令名或按钮 ID，不随命令别名改变。群聊还有 groupId。`kind === 'command'` 时可访问 messageId、content、attachments；`kind === 'button'` 时可访问 interactionId、buttonId、data。没有解析后的参数，因为 Guard 先于参数绑定执行。
 
-GuardContext 及其目标快照在运行时冻结；raw/attachments 仍遵守已有上下文的 readonly 契约，业务不得修改。需要读取 QQ API 时可显式注入 QQApi 等服务，传入 ctx.signal，并自行 await；注入服务发起的请求不自动成为上下文发送操作。
+GuardContext 及其 target 在运行时冻结，raw 和 attachments 也应作为只读数据使用。需要查询 QQ API 来决定是否放行时，可注入 QQApi，传入 ctx.signal 并 await 请求；Guard 最后返回允许或拒绝的结果。
 
 `@UseGuards(A, B)` 按 A、B 顺序执行。模块级先于控制器类级，类级先于方法级；同一位置叠加多个 UseGuards 时按代码从上到下执行。基类的类级 Guard 先于派生类的类级 Guard；继承方法保留方法级声明，覆写方法使用覆写后的方法声明，不叠加基类方法策略。未重新注册的覆写方法沿用现有规则：不会成为路由。
 

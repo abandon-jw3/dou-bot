@@ -3,7 +3,7 @@ layout: home
 hero:
   name: dou-bot
   text: '<span class="hero-phrase">用装饰器编写</span> <span class="hero-phrase">QQ 机器人</span>'
-  tagline: 从第一个 hello，到模块、权限和多轮对话。适用于 dou-bot 0.6.0 的完整中文手册。
+  tagline: 接收命令、发送消息、限制访问、收集用户输入。从第一个 hello 开始搭建你的机器人。
   actions:
     - theme: brand
       text: 快速开始
@@ -26,7 +26,7 @@ features:
     link: /guide/ws
 ---
 
-## 从一个依赖开始
+## 创建你的第一个机器人
 
 ```sh
 npm install --save-exact dou-bot@0.6.0
@@ -38,7 +38,7 @@ npm install --save-exact dou-bot@0.6.0
 
 - **第一次使用**：[框架介绍](./guide/introduction.md) → [快速开始](./guide/quick-start.md) → [模块与依赖注入](./guide/modules.md)。
 - **正在编写业务**：[命令参数](./guide/parameters.md)、[权限与冷却](./guide/guards.md)、[二次输入](./guide/prompts.md)。
-- **查询细节**：[20 个装饰器](./api/decorators.md)、[应用 API](./api/application.md)、[错误与日志](./api/errors.md)。
+- **查询细节**：[装饰器参考](./api/decorators.md)、[应用 API](./api/application.md)、[错误与日志](./api/errors.md)。
 - **准备运行**：[WS](./guide/ws.md)、[Webhook](./guide/webhook.md)、[Windows 部署](./guide/deployment.md)。
 
-本手册及示例公开可读，代码以 npm 上的 0.6.0 为准。[反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。
+本手册适用于 dou-bot 0.6.0。遇到问题可先查阅 [排错指南](./guide/troubleshooting.md)，也可以 [反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。

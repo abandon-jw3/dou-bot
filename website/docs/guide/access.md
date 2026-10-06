@@ -69,7 +69,7 @@ export class SettingsController {
 
 只接收这三个精确的小写值。缺失、未知或不合法值保持 undefined，受角色限制的命令拒绝执行；普通命令仍可使用。私聊不读取此字段，不从 mentions、引用消息、转发消息、昵称、OpenID 或上一条消息推测身份。只读取当前事件的角色快照，不保留角色缓存。
 
-依据：[QQ 全量群消息文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。本地测试验证解析和控制流；2026-10-06 的测试群已实际投递 owner、admin、member，且 SDK 归一化一致。实测范围见本文末节。
+如果管理员命令被拒绝，先检查当前群消息是否带有 member_role，再核对装饰器允许的角色。平台字段说明见 [QQ 群消息文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)。
 
 ## 管理者按钮
 
@@ -99,7 +99,7 @@ const card = markdown('**群管理**', {
 
 按钮没有单独的 owner 权限枚举；指定身份组 type=3 仅用于频道，不属于本框架范围。ACK 只表示收到交互，业务发送仍用 ctx.send，不能把 interactionId 当作普通消息 ID。
 
-依据：[QQ 消息按钮文档](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/trans/msg-btn.html)。本地测试验证 permission 编码和发送目标限制；2026-10-06 已补充管理者回调按钮的分角色实测，范围见下文。
+需要手动构造原始按钮数据时，可查阅 [QQ 消息按钮文档](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/trans/msg-btn.html)。一般业务直接使用上面的 button 和 keyboard 即可。
 
 ## 可运行的访问限制模块
 
@@ -107,16 +107,14 @@ const card = markdown('**群管理**', {
 
 <<< @/../examples/access/app.module.ts
 
-## 实机验收范围
+## 检查权限配置 {#实机验收范围}
 
-2026-10-06，使用 npm 的 dou-bot 0.6.0，在同一测试机器人和群中分别确认三种真实身份：
+为命令添加 GroupRoles('owner') 或 GroupManagersOnly，并为回调按钮配置 managers 后，在自己的测试群中检查以下预期行为。命令判断依赖当前消息中的角色字段：
 
-| 身份     | 仅群主命令 | 管理者命令 | 普通回调按钮 | 管理者回调按钮                         |
-| -------- | ---------- | ---------- | ------------ | -------------------------------------- |
-| 群主     | 放行       | 放行       | 成功         | 成功                                   |
-| 管理员   | 拒绝       | 放行       | 成功         | 成功                                   |
-| 普通成员 | 拒绝       | 拒绝       | 成功         | 客户端提示无权限或拒绝，后台无对应回调 |
+| 身份     | 仅群主命令 | 管理者命令 | 普通回调按钮 | 管理者回调按钮 |
+| -------- | ---------- | ---------- | ------------ | -------------- |
+| 群主     | 允许       | 允许       | 允许点击     | 允许点击       |
+| 管理员   | 拒绝       | 允许       | 允许点击     | 允许点击       |
+| 普通成员 | 拒绝       | 拒绝       | 允许点击     | 由 QQ 拒绝点击 |
 
-QQ 群消息的 author.member_role 与 SDK 归一化结果分别为 owner、admin、member。允许的按钮点击均有回调、ACK 和反馈发送记录；普通成员的限制同时有用户客户端确认与后台未执行处理器的证据。该轮无错误记录，完成后已关闭测试连接。详细脱敏证据见 [验收记录](https://github.com/abandon-jw3/dou-bot/blob/main/docs/validation-report.md#2026-10-06-分角色权限与管理者按钮实测)。
-
-这些结果限于本次账号、测试群及 callback 按钮，不保证所有机器人有相同事件字段与平台权限，也不覆盖 command/link 按钮权限、测试过程中的角色变更或公网 Webhook。
+如果角色缺失，受角色限制的命令会拒绝执行。点击被允许但没有业务回复时，继续检查回调 ID、data、业务 Guard 和发送权限；`ctx.ack()` 只确认收到点击。使用 command 按钮时，还要检查用户直接输入同名命令的权限。

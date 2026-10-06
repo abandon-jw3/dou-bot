@@ -1,44 +1,53 @@
 # 最小 hello
 
-发送 `/hello 小明`，收到 `你好，小明！`；`/hello` 使用默认称呼，`/hi` 是同一个命令的别名。`/help hello` 显示帮助。
+发送 `/hello 小明`，让机器人回复 `你好，小明！`。你将用一个服务生成问候语，用一个控制器接收命令，再用模块把两者注册到应用中。
 
-此例同时演示 Module、Injectable、Inject、Controller、Command 与 Arg；配置值使用 Symbol 令牌，构造服务使用值导入。
+## 准备项目
 
-## 源文件
+先按 [快速开始](../guide/quick-start.md) 创建自己的 TypeScript 项目，安装依赖并配置 tsconfig.json。下面的文件都放在这个项目的 `src/` 目录中。
 
-### examples/hello/greeting.service.ts
+## 添加业务代码
+
+### src/greeting.service.ts
+
+这个服务接收问候语配置，并生成回复内容。
 
 <<< @/../examples/hello/greeting.service.ts
 
-### examples/hello/hello.controller.ts
+### src/hello.controller.ts
+
+控制器把 `/hello` 和 `/hi` 交给同一个方法，名字由 `@Arg(0)` 注入。
 
 <<< @/../examples/hello/hello.controller.ts
 
-### examples/hello/app.module.ts
+### src/app.module.ts
+
+注册服务、配置和控制器，并导入 HelpModule 提供命令帮助。
 
 <<< @/../examples/hello/app.module.ts
 
 ## 运行这个示例
 
-克隆主仓库后，进入 `website` 工程执行：
+创建 `src/main.ts`：
+
+<<< @/../examples/hello/main.ts
+
+在项目根目录的 `.env` 中填写 QQ_APP_ID 和 QQ_APP_SECRET，然后执行：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/website
-npm ci
-npm run examples:build
+npx tsc -p tsconfig.json
+node --env-file=.env dist/main.js
 ```
 
-将 `examples/.env.example` 复制为当前目录的 `.env`（即仓库中的 `website/.env`），填入自己的凭证。然后运行：
+## 试一试
 
-```sh
-node --env-file=.env .examples-build/examples/main.js hello
-```
+| 发送内容      | 预期回复               |
+| ------------- | ---------------------- |
+| `/hello 小明` | `你好，小明！`         |
+| `/hello`      | `你好，朋友！`         |
+| `/hi 小明`    | 与 `/hello 小明` 相同  |
+| `/help hello` | hello 命令的说明与用法 |
 
-共享入口默认使用 WS 和 / 前缀。设置 QQ_TRANSPORT=webhook 可以切换接入，部署前阅读 [Webhook 指南](../guide/webhook.md)。按 Ctrl+C 关闭实例。
+群聊中先 @机器人再发送命令；按 Ctrl+C 关闭程序。没有回复时查看 [排错指南](../guide/troubleshooting.md)。
 
-需要独立业务工程时，先完成 [快速开始](../guide/quick-start.md)，再替换 AppModule 和它依赖的文件；保留相应相对导入。
-
-## 离线验收
-
-执行 npm test，无需 QQ 凭证。对应断言包含在 [examples.test.ts](https://github.com/abandon-jw3/dou-bot/blob/main/website/tests/examples.test.ts)。这验证模块、解析和消息编码，不代表当前账号的平台权限或客户端显示已通过实机测试。
+接下来可以修改 GreetingService 的回复，或添加新的命令方法。暂时没有 QQ 凭证时，按 [离线测试](../guide/testing.md) 在本地运行同一个 AppModule。
