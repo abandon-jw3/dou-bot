@@ -115,4 +115,10 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
   ).toBe(false);
+  await page.goto('guide/project.html');
+  await waitForClient(page);
+  await expect(page.getByRole('link', { name: '完整业务示例', exact: true })).toHaveAttribute(
+    'href',
+    'https://github.com/abandon-jw3/dou-bot/tree/main/example',
+  );
 });

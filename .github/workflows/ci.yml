@@ -22,6 +22,9 @@ jobs:
             versionFile: .nvmrc
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: framework
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -29,30 +32,32 @@ jobs:
           node-version: ${{ matrix.node.version }}
           node-version-file: ${{ matrix.node.versionFile }}
           cache: npm
+          cache-dependency-path: framework/package-lock.json
       - run: npm install --global npm@11.19.0
       - run: npm ci --ignore-scripts
+      - run: node scripts/check-repository.mjs
       - run: npm run check
       - run: npm run coverage
       - name: Capacity and retention regression (two virtual hours)
         run: npm run benchmark:capacity -- virtual 7200000 ci
         timeout-minutes: 3
       - name: Save capacity report
-        if: ${{ always() && hashFiles('work/capacity-review/ci.json') != '' }}
+        if: ${{ always() && hashFiles('framework/work/capacity-review/ci.json') != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: capacity-${{ matrix.os }}-${{ matrix.node.label }}
-          path: work/capacity-review/ci.json
+          path: framework/work/capacity-review/ci.json
           retention-days: 14
           if-no-files-found: error
       - name: Sustained workload regression
         run: npm run soak -- 30000
         timeout-minutes: 2
       - name: Save sustained workload report
-        if: ${{ always() && hashFiles('work/soak-latest.json') != '' }}
+        if: ${{ always() && hashFiles('framework/work/soak-latest.json') != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: soak-${{ matrix.os }}-${{ matrix.node.label }}
-          path: work/soak-latest.json
+          path: framework/work/soak-latest.json
           retention-days: 14
           if-no-files-found: error
   example:
@@ -65,14 +70,14 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: apps/example
+        working-directory: example
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/example/package-lock.json
+          cache-dependency-path: example/package-lock.json
       - run: npm install --global npm@11.19.0
       - run: npm ci --ignore-scripts
       - run: npm run check

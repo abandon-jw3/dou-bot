@@ -48,6 +48,6 @@ package.json 使用 `"type": "module"`。本手册的最小项目在相对导入
 
 ## 使用业务示例的开发模式
 
-如果使用仓库中的 [完整业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/apps/example)，在该项目目录运行 `npm run dev`，保存源码后即可自动编译并重启机器人。编译失败时保留上次成功版本；旧进程完成关闭后才启动新进程，按 Ctrl+C 结束开发会话。
+如果使用仓库中的 [完整业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)，在该项目目录运行 `npm run dev`，保存源码后即可自动编译并重启机器人。编译失败时保留上次成功版本；旧进程完成关闭后才启动新进程，按 Ctrl+C 结束开发会话。
 
 开发模式也监听 `.env` 和项目编译配置。每次重启会清空 prompt、冷却和去重状态，等待启动提示后再测试。按本页从零搭建的最小项目不会自动拥有这个脚本；需要时可参考业务示例的开发脚本和 main.ts 关闭处理。

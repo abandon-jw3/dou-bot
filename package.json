@@ -1,121 +1,22 @@
 {
-  "name": "dou-bot",
-  "version": "0.7.0",
-  "description": "A lightweight decorator-based framework for official QQ bots.",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/abandon-jw3/dou-bot.git"
-  },
-  "homepage": "https://abandon-jw3.github.io/dou-bot/",
-  "bugs": {
-    "url": "https://github.com/abandon-jw3/dou-bot/issues"
-  },
-  "keywords": [
-    "qq",
-    "bot",
-    "decorators",
-    "typescript",
-    "websocket",
-    "webhook"
-  ],
+  "name": "dou-bot-repository",
+  "private": true,
   "type": "module",
+  "license": "MIT",
   "engines": {
-    "node": ">=24.0.0 <25"
+    "node": ">=24.21.0 <25"
   },
   "packageManager": "npm@11.19.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./testing": {
-      "types": "./dist/testing/index.d.ts",
-      "import": "./dist/testing/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "NOTICE",
-    "docs/command-parameters.md",
-    "docs/context-middleware.md",
-    "docs/capacity.md",
-    "docs/execution-controls.md",
-    "docs/access-control.md",
-    "docs/prompts.md",
-    "docs/module-guards.md"
-  ],
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "tag": "latest"
-  },
   "scripts": {
-    "install:all": "npm ci --ignore-scripts && npm --prefix apps/example ci --ignore-scripts && npm --prefix website ci",
-    "check:all": "npm run check && npm --prefix apps/example run check && npm --prefix website run check",
-    "example:check": "npm --prefix apps/example run check",
-    "example:build": "npm --prefix apps/example run build",
-    "example:start": "npm --prefix apps/example start",
-    "docs:dev": "npm --prefix website run dev",
-    "docs:build": "npm --prefix website run build",
-    "docs:check": "npm --prefix website run check",
-    "docs:test:browser": "npm --prefix website run test:browser",
-    "clean": "node scripts/clean.mjs",
-    "build": "node scripts/build.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src tests examples --max-warnings 0",
-    "format": "prettier --write src tests examples scripts docs skills *.json *.mjs *.md .github",
-    "format:check": "prettier --check src tests examples scripts docs skills *.json *.mjs *.md .github",
-    "prepack": "npm run build",
-    "prepublishOnly": "npm run check",
-    "test:compile": "node scripts/compile-tests.mjs",
-    "pretest": "npm run test:compile",
-    "test": "node --test \".test-build/tests/**/*.test.js\"",
-    "precoverage": "npm run test:compile",
-    "coverage": "c8 --all --src src --extension .ts --include \"src/**/*.ts\" --exclude-after-remap --reporter text --reporter lcov --reporter json-summary node --test \".test-build/tests/**/*.test.js\"",
-    "test:package": "node scripts/test-package.mjs",
-    "test:api": "node scripts/check-api.mjs",
-    "test:compat": "node scripts/test-package.mjs --released-baseline",
-    "test:docs": "node scripts/check-docs.mjs",
-    "example:offline": "node scripts/run-example.mjs offline",
-    "example:attachments": "node scripts/run-example.mjs attachments",
-    "example:identity": "node scripts/run-example.mjs identity",
-    "example:context": "node scripts/run-example.mjs context",
-    "example:query": "node scripts/run-example.mjs query",
-    "example:business": "node scripts/run-example.mjs business",
-    "example:business:qq": "node scripts/run-example.mjs business-qq",
-    "example:qq": "node scripts/run-example.mjs qq",
-    "diagnose:auth": "node scripts/run-example.mjs diagnose auth",
-    "diagnose:ws": "node scripts/run-example.mjs diagnose ws",
-    "probe:live": "node scripts/run-example.mjs live-probe",
-    "probe:media": "node scripts/run-example.mjs live-media",
-    "probe:reconnect": "node scripts/run-example.mjs live-reconnect",
-    "probe:controls": "node scripts/run-example.mjs live-controls",
-    "probe:attachments": "node scripts/run-example.mjs live-attachments",
-    "benchmark": "node scripts/run-example.mjs benchmark",
-    "benchmark:framework": "node scripts/run-example.mjs benchmark-framework",
-    "benchmark:capacity": "node scripts/run-example.mjs capacity",
-    "soak": "node scripts/run-example.mjs soak",
-    "check": "node scripts/check.mjs",
-    "test:published": "node scripts/test-package.mjs --published",
-    "example:dev": "npm --prefix apps/example run dev"
-  },
-  "dependencies": {
-    "reflect-metadata": "0.2.2",
-    "ws": "8.22.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "10.0.1",
-    "@types/node": "24.19.0",
-    "@types/ws": "8.18.2",
-    "c8": "12.0.0",
-    "eslint": "10.11.0",
-    "prettier": "3.9.9",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.71.0"
+    "install:all": "npm --prefix framework ci --ignore-scripts && npm --prefix example ci --ignore-scripts && npm --prefix website ci",
+    "check:all": "node framework/scripts/check-repository.mjs && npm --prefix framework run check && npm --prefix example run check && npm --prefix website run check",
+    "example:check": "npm --prefix example run check --",
+    "example:build": "npm --prefix example run build --",
+    "example:start": "npm --prefix example start --",
+    "example:dev": "npm --prefix example run dev --",
+    "docs:dev": "npm --prefix website run dev --",
+    "docs:build": "npm --prefix website run build --",
+    "docs:check": "npm --prefix website run check --",
+    "docs:test:browser": "npm --prefix website run test:browser --"
   }
 }
