@@ -247,3 +247,23 @@ for (const scene of ['private', 'group'] as const) {
     assert.equal(bot.errors.length, 0);
   });
 }
+
+for (const scene of ['private', 'group'] as const) {
+  await test(`0.8：${scene} 中的别名、默认值和上下文准备`, async (t) => {
+    const bot = await setup(t);
+    for (const input of [
+      '/example-normalize 双梦',
+      '/example-normalize 梦江南',
+      '/example-normalize',
+    ]) {
+      await bot.dispatch(message(input, scene));
+      assert.equal(bot.messages.at(-1)?.payload.content, '服务器：梦江南');
+    }
+    await bot.dispatch(message('/example-state', scene));
+    assert.equal(
+      bot.messages.at(-1)?.payload.content,
+      `命令：example-state；会话：${scene === 'group' ? '群聊' : '私聊'}`,
+    );
+    assert.equal(bot.errors.length, 0);
+  });
+}

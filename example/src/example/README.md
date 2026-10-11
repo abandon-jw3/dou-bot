@@ -1,6 +1,6 @@
 # 功能示例
 
-- 适用于已安装的 **dou-bot 0.7.0**，AppModule 已注册此模块。
+- 适用于已安装的 **dou-bot 0.8.0**，AppModule 已注册此模块。
 - 按 [项目说明](../../README.md) 启动，发送 `/example` 或 `/示例` 查看入口。
 - 以下按默认 `/` 前缀编写；示例只展示交互，不保存上传文件或身份数据。
 
@@ -43,6 +43,13 @@
 - Slot 示例识别北京、上海、广州和散步、骑行，只回显解析结果。
 - Args 保留完整分词；Rest 收集剩余普通词，不掩盖缺参、重复或未知选项。
 - 输入错误会回复用法；完整帮助用 `/help example-slot`。
+
+## 归一化与上下文数据
+
+- `/example-normalize 双梦`、`/example-normalize 梦江南`：均回复“服务器：梦江南”。
+- `/example-normalize`：默认值也会归一化。
+- `/example-state`：通过中间件注册数据，用 ContextValue 和 ctx.state.get 读取。
+- 代码见 [上下文示例](example-state.controller.ts)，无数据库或外部请求。
 
 ## 图片、文件与身份
 

@@ -1,6 +1,6 @@
 # 把用户输入变成命令参数
 
-先确定用户会发送的文本、前缀和期望回复。以下以 dou-bot 0.7.0 为例；默认前缀是 `/`，例如 `/查询 北京 天气`。设置 `commands.prefix: ''` 后才使用不带前缀的命令。
+先确定用户会发送的文本、前缀和期望回复。以下以 dou-bot 0.8.0 为例；默认前缀是 `/`，例如 `/查询 北京 天气`。设置 `commands.prefix: ''` 后才使用不带前缀的命令。
 
 ## 选择合适的参数
 
@@ -34,9 +34,26 @@ export function City(): ParameterDecorator {
 
 在处理器中用 `@City() city: string`，再声明查询类型 Slot，即可同时接受 `/查询 北京 天气` 和 `/查询 天气 北京`。完整组合见 [命令示例](../assets/minimal-module.ts)。
 
-Slot 至少提供 choices 或 match；两者同时提供时，输入必须同时满足。match 同步返回 boolean，只做匹配。0.7.0 注入的是原始字符串；需要把别名转成统一名称、查实体或加载用户默认配置时，在处理器中调用业务 Service，异步查询用 await，不放进 match 或静态 default。
+Slot 至少提供 choices 或 match；两者同时提供时，输入必须同时满足。match 同步返回 boolean，只做匹配。0.8.0 可用 normalize 同步转换别名；查实体或加载用户配置等异步操作使用业务 Service 或上下文中间件，不放进 match、normalize 或静态 default。
 
 一个词同时命中多个 Slot、同一 Slot 收到多个候选值或缺少必填项都会提示输入错误。两个 Slot 若使用同一套城市词典，不能靠不同参数名区分“出发地”和“目的地”；这类输入改用固定位置或明确选项。
+
+## 统一别名
+
+```ts
+@Slot('server', {
+  choices: ['梦江南', '双梦'],
+  default: '双梦',
+  normalize: (text) => text === '双梦' ? '梦江南' : text,
+})
+server: string
+```
+
+- 先匹配并完成文字校验，再归一化；结果不重新匹配，允许空字符串。
+- 默认值在启动时转换一次；无默认值的可选参数缺省时不调用回调。
+- 同时输入两个别名仍报重复，Args/Rest 和原消息保持原值。
+- 回调必须同步、无副作用，返回非字符串或 Promise 会报 HANDLER_CONTRACT。
+- 异步共享数据见 [上下文中间件](context.md)；参数缺省策略由业务决定。
 
 ## 保留正文与可选参数
 

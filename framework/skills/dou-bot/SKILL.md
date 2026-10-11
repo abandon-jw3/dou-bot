@@ -7,7 +7,7 @@ description: '使用 dou-bot 在用户自己的项目中开发 QQ 官方群聊�
 
 在用户的机器人应用中完成需求，把功能写入其 Controller、Service、模块和测试。沿用已有的业务结构、命令前缀、权限与接入方式；新建项目时，再补齐应用入口和编译配置。
 
-本技能的参考和可复制示例以 **dou-bot 0.7.0** 为基础。已有项目以实际安装的版本、公开类型声明和对应版本文档为准，不为了套用示例更换依赖。用法手册见 [dou-bot 用户文档](https://abandon-jw3.github.io/dou-bot/)。
+本技能的参考和可复制示例以 **dou-bot 0.8.0** 为基础。已有项目以实际安装的版本、公开类型声明和对应版本文档为准，不为了套用示例更换依赖。用法手册见 [dou-bot 用户文档](https://abandon-jw3.github.io/dou-bot/)。
 
 ## 从用户的项目开始
 
@@ -29,10 +29,12 @@ description: '使用 dou-bot 在用户自己的项目中开发 QQ 官方群聊�
 
 按需读取对应文件。需要可运行代码时，使用 [命令与权限示例](assets/minimal-module.ts) 及其 [测试](assets/minimal-module.test.ts)，或 [附件处理示例](assets/attachments-module.ts) 及其 [测试](assets/attachments-module.test.ts)。复制到应用后调整模块注册和相对导入；示例中的词典、权限名单与返回数据由业务决定。
 
+需要在 Guard 和处理器之间共享数据时，读取 [上下文中间件](references/context.md)；完整代码见 [数据准备示例](assets/context-module.ts) 及其 [测试](assets/context-module.test.ts)。
+
 ## 写业务代码时注意
 
 - 参数装饰器声明输入来源；构造注入的类保留为运行时值，接口和配置用显式注入令牌。编译器需要支持传统装饰器及其元数据。
-- 处理器、Service 和 Guard 可以异步执行；`Slot.match` 是同步匹配规则。数据库查询、用户默认配置和异步转换放在业务服务中。
+- 处理器、Service 和 Guard 可以异步执行；`Slot.match` 与 `Slot.normalize` 都是同步规则。异步数据准备可使用中间件；数据库查询与参数缺省策略由业务决定。
 - Provider 和 Guard 通常是单例。本次用户、群和上下文放在方法参数或局部变量中，避免并发请求互相覆盖。
 - 固定的群聊、私聊、用户或角色限制优先使用对应 Guard 装饰器；身份参数用于读取信息，授权仍单独检查。
 - 指令附图用 `Images`；下一条附件用 `prompt` 后筛选；直接上传用 `OnAttachment`。文件下载、保存和内容处理由业务服务完成。

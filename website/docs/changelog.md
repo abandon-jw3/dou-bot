@@ -1,5 +1,16 @@
 # 更新日志
 
+## 0.8.0 · 2026-10-12
+
+- Slot.normalize：把别名统一为处理器需要的字符串，默认值也可归一化。
+- 上下文中间件：同步/异步 prepare、set、provide、ctx.state.get 和 ContextValue。
+- 容量监测：缓存用量、接纳拒绝原因和排队/处理耗时。
+- 修复取消、超时与关闭边界，减少高频路径分配和缓存清扫开销。
+
+升级时，自行构造的 Context / ApplicationSnapshot 需补充新字段；错误阶段增加 middleware、context，错误码增加 CONTEXT_TIMEOUT。
+
+[上下文指南](./guide/context.md) · [归一化](./guide/parameters.md#slot-normalize) · [容量监测](./guide/capacity.md)
+
 ## 0.7.0 · 2026-10-07
 
 - `Attachments` / `Images`：读取同条消息附件并校验数量。

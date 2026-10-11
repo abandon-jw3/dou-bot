@@ -23,7 +23,7 @@
     "test:dev": "node --test scripts/dev.test.mjs"
   },
   "dependencies": {
-    "dou-bot": "0.7.0"
+    "dou-bot": "0.8.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

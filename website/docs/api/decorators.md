@@ -13,6 +13,8 @@
 | 限制访问   | [UseGuards](#useguards)、[GroupOnly](#grouponly)、[PrivateOnly](#privateonly)、[UsersOnly](#usersonly)、[GroupRoles](#grouproles)、[GroupManagersOnly](#groupmanagersonly) |
 | 限制频率   | [Cooldown](#cooldown)                                                                                                                                                      |
 
+准备业务数据用 [UseMiddleware](#usemiddleware)，读取数据用 [ContextValue](#contextvalue) 或 ctx.state.get。
+
 处理器参数只能声明一个来源。完整运行示例见 [示例目录](../examples/hello.md)。
 
 ## Module {#module}
@@ -282,7 +284,7 @@ Slot(name: string, options: SlotOptions): ParameterDecorator
 ```
 
 - 用于命令参数；name 在命令中唯一，至少提供 choices 或 match，同时提供时取交集。
-- required 默认 false，可设 default；match 必须同步返回布尔值且无副作用。
+- required 默认 false，可设 default；match 同步返回布尔值，normalize 可同步转换匹配后的字符串。
 - 重复值或多个 Slot 同时命中会报错，不按声明顺序抢占。
 
 [用法与示例](../guide/parameters.md)。
@@ -299,6 +301,34 @@ Rest(options?: RestOptions): ParameterDecorator
 - 每个命令最多一个，始终最后收集；不掩盖缺参、歧义或选项错误。
 
 [用法与示例](../guide/parameters.md)。
+
+## UseMiddleware {#usemiddleware}
+
+在处理器执行前准备上下文数据。
+
+```ts
+UseMiddleware(...middlewares: readonly InjectionToken<ContextMiddleware>[]): ClassDecorator & MethodDecorator
+```
+
+- 用于模块类、控制器类，以及 Command、OnButton、OnAttachment 方法。
+- 传可见的 Provider 令牌，prepare 可同步或异步，只返回 void。
+- 在 Guard 之前依次执行；模块规则不传播到 imports，原始 On 不执行。
+
+[用法与示例](../guide/context.md)。
+
+## ContextValue {#contextvalue}
+
+把中间件注册的数据注入处理器参数。
+
+```ts
+ContextValue<T>(key: ContextKey<T>): ParameterDecorator
+```
+
+- 用于 Command、OnButton、OnAttachment，直接注入 Key 对应的完整值。
+- 在其他参数通过后读取，冷却之前完成；同 Key 共享加载结果。
+- 不消费输入、不进入帮助，不处理业务默认值或字段选择。
+
+[用法与示例](../guide/context.md)。
 
 ## UseGuards {#useguards}
 

@@ -1,9 +1,11 @@
-# 0.8.0 发行准备
+# 0.8.0 发行与升级
 
-**状态：已完成本地候选验收，尚未上传 npm。** 当前公开版本仍为 0.7.0，latest / next 分别为 0.7.0 / 0.6.0。
+**0.8.0 已于 2026-10-12 01:33:11（Asia/Shanghai）公开发布。** latest / next 分别为 0.8.0 / 0.6.0，匿名下载与候选字节一致。
 
-- 目标：`dou-bot@0.8.0`，MIT，public，npm latest；next 保持不变。
-- 源码基线：`68502e6`，公开契约 **1.14**。
+[发布记录](npm-release-0.8.0.json) · [npm 0.8.0](https://www.npmjs.com/package/dou-bot/v/0.8.0)
+
+- 发布目标：`dou-bot@0.8.0`，MIT，public，npm latest；next 保持不变。
+- 候选基线：`68502e6`；发行提交：`c02e4ac`，标签 `v0.8.0`，公开契约 **1.14**。
 - Node.js：`>=24.0.0 <25`；TypeScript：**5.9.3**。
 - 生产依赖仍为 reflect-metadata 0.2.2、ws 8.22.0。
 - 候选完整性和验收状态见 [候选记录](npm-release-0.8.0-candidate.json)。
@@ -28,7 +30,7 @@
 
 ## 从 0.7.0 升级
 
-发布后在自己的项目执行：
+在自己的项目执行：
 
 ```sh
 npm install --save-exact dou-bot@0.8.0
@@ -78,23 +80,15 @@ npm run benchmark:capacity -- virtual 7200000 release-080
 
 - 包：`framework/work/release/0.8.0/dou-bot-0.8.0.tgz`（仓库根目录下）。
 - SHA-256：`e2c657a18b5efcd97f8b7d59a77fbf789c8b661a0f9ff716202a751730e489b2`。
-- 远端 CI 仍对应 [3907476](https://github.com/abandon-jw3/dou-bot/actions/runs/37514743897)，不覆盖本地 4 个提交及本次候选改动。
-- 本机 `npm whoami` 返回 ENEEDAUTH，正式上传前需要登录。
+- [发行提交 c02e4ac 的 CI](https://github.com/abandon-jw3/dou-bot/actions/runs/38159610573) 共 9 项全部通过后发布。
+- 发布账号为 fine_wei，本人完成了 npm 本次浏览器验证。
 - npm 代理请求曾超时；本轮临时对 registry.npmjs.org 使用直连后，安装、审计和发布预览通过。
 
-## 上传与后续同步
+## 发布后验证与同步
 
-1. 确认发行源码提交及其远端 CI，标签应指向发行提交。
-2. 核对候选 SHA-256 / SHA-512 和输入指纹，上传已验收的同一份 tgz。
-3. 正式发布时完成 npm 账号验证，不在聊天或仓库保存凭证。
-4. 匿名下载 0.8.0，比较候选字节，运行 `npm run test:published`；此命令包含 0.8.0 新 API 消费者。
-5. 将 example、website 的精确依赖和锁文件更新为 registry 0.8.0，同步 vendor 元数据、指南、API 索引及技能。
-6. 在示例、网站和技能中补充新功能演示，完成检查后再部署。
-
-当前 example、website 和技能仍面向已发布 0.7.0；候选升级验证在隔离副本中进行，不改成源码链接或提前声明 npm 0.8.0 已可安装。
-
-完成源码提交、CI 和账号准备并明确执行发布后，在 framework 目录上传同一候选：
-
-```sh
-npm publish ./work/release/0.8.0/dou-bot-0.8.0.tgz --ignore-scripts --access public --tag latest --registry=https://registry.npmjs.org/
-```
+- 上传的是已验收的同一份 tgz；公开 registry 的 SHA-256 / SHA-512 与候选一致。
+- example、website 的依赖和锁文件使用官方 registry 的精确 0.8.0，不使用源码链接。
+- 补充归一化和上下文数据演示；38 项业务测试、7 项开发进程测试、22 项文档示例与 22 项浏览器检查通过。
+- 配套技能同步至 0.8.0，结构校验及 6 项示例测试通过；网站与技能保持面向使用者的分点说明。
+- 发布后的消费者、同步检查和部署结果以 [发布记录](npm-release-0.8.0.json) 为准。
+- 原候选记录保留准备时的提交、认证和 CI 状态，不回写为当时已发布。

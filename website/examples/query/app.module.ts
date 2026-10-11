@@ -15,6 +15,20 @@ export class QueryController {
     return JSON.stringify({ city, topic, notes, page, detail });
   }
 
+  @Command('状态', { description: '将服务器别名统一为同一个名称' })
+  normalize(
+    @Slot('server', {
+      name: '服务器',
+      description: '双梦是梦江南的别名；不填时使用同一个默认服务器',
+      choices: ['梦江南', '双梦'],
+      default: '双梦',
+      normalize: (text) => (text === '双梦' ? '梦江南' : text),
+    })
+    server: string,
+  ): string {
+    return `服务器：${server}`;
+  }
+
   @Command('echo', { description: '查看完整分词' })
   echo(@Args() words: string[]): string {
     return JSON.stringify(words);

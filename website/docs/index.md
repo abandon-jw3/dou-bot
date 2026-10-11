@@ -29,7 +29,7 @@ features:
 ## 创建你的第一个机器人
 
 ```sh
-npm install --save-exact dou-bot@0.7.0
+npm install --save-exact dou-bot@0.8.0
 ```
 
 - 运行环境：Node.js **24.x**，最低 **24.0.0**。
@@ -40,8 +40,8 @@ npm install --save-exact dou-bot@0.7.0
 ## 找到你需要的内容
 
 - **第一次使用**：[框架介绍](./guide/introduction.md) → [快速开始](./guide/quick-start.md) → [模块与依赖注入](./guide/modules.md)。
-- **编写业务**：[命令参数](./guide/parameters.md)、[附件](./guide/attachments.md)、[身份信息](./guide/identity.md)、[权限与冷却](./guide/guards.md)、[二次输入](./guide/prompts.md)。
+- **编写业务**：[命令参数](./guide/parameters.md)、[附件](./guide/attachments.md)、[身份信息](./guide/identity.md)、[权限与冷却](./guide/guards.md)、[二次输入](./guide/prompts.md)、[上下文中间件](./guide/context.md)。
 - **查询细节**：[装饰器参考](./api/decorators.md)、[应用 API](./api/application.md)、[错误与日志](./api/errors.md)。
-- **准备运行**：[WS](./guide/ws.md)、[Webhook](./guide/webhook.md)、[Windows 部署](./guide/deployment.md)。
+- **准备运行**：[WS](./guide/ws.md)、[Webhook](./guide/webhook.md)、[Windows 部署](./guide/deployment.md)、[容量监测](./guide/capacity.md)。
 
-本手册适用于 dou-bot 0.7.0。遇到问题可先查阅 [排错指南](./guide/troubleshooting.md)，也可以 [反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。
+本手册适用于 dou-bot 0.8.0。遇到问题可先查阅 [排错指南](./guide/troubleshooting.md)，也可以 [反馈文档问题](https://github.com/abandon-jw3/dou-bot/issues)。

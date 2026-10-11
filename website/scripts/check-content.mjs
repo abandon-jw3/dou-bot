@@ -38,6 +38,8 @@ const required = [
   'Slot',
   'Rest',
   'UseGuards',
+  'UseMiddleware',
+  'ContextValue',
   'GroupOnly',
   'PrivateOnly',
   'UsersOnly',

@@ -13,7 +13,7 @@ mkdir my-qq-bot
 cd my-qq-bot
 npm init -y
 npm pkg set type=module
-npm install --save-exact dou-bot@0.7.0
+npm install --save-exact dou-bot@0.8.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 

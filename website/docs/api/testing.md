@@ -9,7 +9,7 @@ createTestApplication(root: Type, options?: TestOptions): Promise<TestHarness>
 ```
 
 - root 为模块类。
-- options 保留普通 BotOptions 的业务、日志、执行和 prompt 配置，移除 appId、secret、transport 后重新提供可选 appId，以及 respond 回调。
+- options 保留普通 BotOptions 的业务、日志、执行、context 和 prompt 配置，移除 appId、secret、transport 后重新提供可选 appId，以及 respond 回调。
 - appId 默认 offline-app，凭证和接入由测试工具内部替换。
 - 返回的应用仍需 `await harness.app.start()`，结束时 `await harness.app.close()`。
 

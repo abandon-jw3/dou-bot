@@ -39,6 +39,8 @@ export class ExampleController {
       '/example-option --name 小明 --times 2 --shout：选项',
       '/example-slot 明天 散步 北京 带伞 --detail：无序参数与剩余参数',
       '/example-context：手动回复',
+      '/example-normalize 双梦：服务器别名归一化',
+      '/example-state：上下文中间件与数据注入',
       '/example-group：方法级 Guard',
       '/example-private：类级 Guard',
       '/example-cooldown：同一用户 3 秒冷却',
@@ -122,6 +124,20 @@ export class ExampleController {
     ].join('；');
   }
 
+  @Command('example-normalize', { description: '将服务器别名统一为同一个名称' })
+  normalize(
+    @Slot('server', {
+      name: '服务器',
+      description: '双梦是梦江南的别名；不填时使用同一个默认服务器',
+      choices: ['梦江南', '双梦'],
+      default: '双梦',
+      normalize: (text) => (text === '双梦' ? '梦江南' : text),
+    })
+    server: string,
+  ): string {
+    return `服务器：${server}`;
+  }
+
   @Command('example-context', { description: '通过上下文手动回复当前会话' })
   async context(
     // @Ctx 注入当前调用上下文；命令使用 MessageContext，可读 scene/content 等。
@@ -142,7 +158,7 @@ export class ExampleController {
   }
 
   @Command('example-cooldown', { aliases: ['示例冷却'], description: '按会话内用户限制调用频率' })
-  // @Cooldown 用在 Command/OnButton 方法上；同一方法的命令别名共享冷却。
+  // @Cooldown 用在 Command/OnButton/OnAttachment 方法上；同一方法的命令别名共享冷却。
   // user = 会话内同一用户；session = 同一会话；command = 该处理器全部调用者。
   // 它是进程内的调用冷却，不是互斥锁；业务执行失败也不会退还本次名额。
   @Cooldown({ scope: 'user', durationMs: 3000, message: '请等待 3 秒后再试。' })

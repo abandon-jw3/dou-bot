@@ -20,6 +20,7 @@ new FrameworkError(code: FrameworkErrorCode, message: string, options?: ErrorOpt
 | PROTOCOL / TRANSPORT              | 平台协议或接入问题               |
 | QQ_API                            | QQ HTTP / 业务接口错误           |
 | QUEUE_FULL / RESOURCE_LIMIT       | 队列或其他受管资源达到上限       |
+| CONTEXT_TIMEOUT                   | 中间件准备或数据加载超时         |
 | INVALID_STATE                     | 已关闭上下文、重复等待等状态错误 |
 | SHUTDOWN_TIMEOUT / CLEANUP_FAILED | 关闭超时或资源销毁失败           |
 
@@ -33,7 +34,7 @@ new FrameworkError(code: FrameworkErrorCode, message: string, options?: ErrorOpt
 ## ErrorContext 与 onError
 
 - ErrorContext 提供 phase、appId，以及可选的 eventName、eventId、messageId、controller、method。
-- 阶段包括 bootstrap、transport、protocol、queue、observer、command、button、attachment、send、interaction-ack、guard、cooldown、prompt、shutdown。
+- 阶段包括 middleware、context、bootstrap、transport、protocol、queue、observer、command、button、attachment、send、interaction-ack、guard、cooldown、prompt、shutdown。
 - onError(error, context) 可以同步或异步。
 - 默认回调期限 1000ms；超时后当前应用禁用该自定义回调，使用兜底日志。
 - 回调抛错不会递归调用自己。

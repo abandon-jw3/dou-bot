@@ -27,7 +27,7 @@ build/start 脚本见 [项目结构](./project.md#推荐脚本)。
 
 ## 观测状态
 
-- `app.status` / `app.snapshot()`：查看连接、重连、队列和 prompt。
+- `app.status` / `app.snapshot()`：查看连接、队列、缓存与延迟，见 [容量监测](./capacity.md)。
 - `logger` / `onError`：记录错误码、阶段和必要业务信息。
 - 进程存在不代表 QQ 已连接；日志避免记录完整原始消息或凭证。
 

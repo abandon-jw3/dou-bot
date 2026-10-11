@@ -186,6 +186,7 @@ const skillExamples = [
   'minimal-module.ts',
   'minimal-module.test.ts',
   ...(releasedBaseline ? [] : ['attachments-module.ts', 'attachments-module.test.ts']),
+  ...(releasedBaseline || released070 ? [] : ['context-module.ts', 'context-module.test.ts']),
 ];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline

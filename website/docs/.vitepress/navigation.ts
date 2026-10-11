@@ -45,6 +45,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           text: '用户、群和角色信息',
           link: '/guide/identity',
         },
+        { text: '上下文中间件', link: '/guide/context' },
         {
           text: 'Guard 与冷却',
           link: '/guide/guards',
@@ -90,6 +91,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           text: '离线测试',
           link: '/guide/testing',
         },
+        { text: '容量与运行监测', link: '/guide/capacity' },
         {
           text: 'Windows 部署',
           link: '/guide/deployment',
@@ -153,6 +155,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           text: '三级 Guard',
           link: '/examples/guards',
         },
+        { text: '上下文数据准备', link: '/examples/context' },
         {
           text: '两轮问答',
           link: '/examples/prompt',

@@ -29,16 +29,16 @@ BotFactory.create(root: Type, options: BotOptions): Promise<BotApplication>
 | close()              | Promise&lt;void&gt;  | 按统一期限清理；关闭后不能重启同一实例        |
 | get(token, options?) | 对应的 T             | 读取可见依赖，options.module 可指定模块       |
 | webhookHandler()     | Node RequestListener | 仅 Webhook 接入有效；宿主负责 server 生命周期 |
-| snapshot()           | ApplicationSnapshot  | 当前状态、队列、prompt 和事件计数快照         |
+| snapshot()           | ApplicationSnapshot  | 状态、队列、缓存用量、拒绝和耗时快照          |
 
 - ApplicationStatus 为 created、starting、running、reconnecting、stopping、stopped 或 failed。
 - 快照中的 accepted 是接纳计数，不是业务成功计数。
 
 ## ModuleMetadata 与 Provider
 
-- ModuleMetadata 的 imports、providers、controllers、exports、guards 都是可选数组。
+- ModuleMetadata 的 imports、providers、controllers、exports、guards、middlewares 都是可选数组。
 - 模块只提供自己声明的可见性，不按文件目录自动扫描。
-- guards 按数组顺序作用于本模块控制器。
+- guards / middlewares 按声明顺序作用于本模块控制器。
 - Provider 支持类简写，以及 ClassProvider、ValueProvider、FactoryProvider。
 - InjectionToken 可以是类、抽象类、字符串或 Symbol；工厂依赖用 inject 数组指定，工厂可以返回 Promise。
 

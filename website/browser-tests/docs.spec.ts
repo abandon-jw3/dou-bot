@@ -47,7 +47,15 @@ test('首页、快速开始、主题切换与手机导航', async ({ page, isMob
   expect(errors).toEqual([]);
 });
 
-for (const query of ['二次输入', '管理员', 'UseGuards', 'Slot', 'OnAttachment']) {
+for (const query of [
+  '二次输入',
+  '管理员',
+  'UseGuards',
+  'Slot',
+  'OnAttachment',
+  'UseMiddleware',
+  'ContextValue',
+]) {
   test(`本地搜索：${query}`, async ({ page }) => {
     await page.goto('./');
     await waitForClient(page);
@@ -78,7 +86,7 @@ test('附件和身份指南可以进入可运行示例', async ({ page }, info) 
   await expect(page.locator('h1')).toBeInViewport();
   await expect(page.locator('.vp-doc')).toContainText('@OnAttachment');
   await page.screenshot({
-    path: join(tmpdir(), `dou-bot-070-attachments-${info.project.name}.png`),
+    path: join(tmpdir(), `dou-bot-080-attachments-${info.project.name}.png`),
     animations: 'disabled',
   });
   await page.goto('guide/identity.html');
@@ -108,7 +116,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   await code.locator('button.copy').click({ force: true });
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-    .toContain('npm install --save-exact dou-bot@0.7.0');
+    .toContain('npm install --save-exact dou-bot@0.8.0');
   await page.goto('guide/guards.html#模块统一配置');
   await waitForClient(page);
   await expect(page.locator('#模块统一配置')).toBeInViewport();
@@ -121,4 +129,27 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
     'href',
     'https://github.com/abandon-jw3/dou-bot/tree/main/example',
   );
+});
+
+test('上下文与容量指南使用 0.8.0 的公开 API', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('guide/context.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('上下文中间件');
+  await page.getByRole('link', { name: '上下文示例', exact: true }).click();
+  await expect(page).toHaveURL(/examples\/context/);
+  await expect(page.locator('.vp-doc')).toContainText('@ContextValue');
+  await page.goto('guide/capacity.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('容量与运行监测');
+  await expect(page.locator('.vp-doc')).toContainText('snapshot.capacity.replyScopes.size');
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
+  await page.screenshot({
+    path: join(tmpdir(), `dou-bot-080-capacity-${info.project.name}.png`),
+    animations: 'disabled',
+  });
+  expect(errors).toEqual([]);
 });

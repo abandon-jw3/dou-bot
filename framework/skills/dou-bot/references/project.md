@@ -1,13 +1,13 @@
 # 创建应用与组织业务服务
 
-以下示例使用 dou-bot 0.7.0、Node.js 24.x、TypeScript 5.9.3 和 ESM。先检查用户项目的实际依赖和脚本；已有项目保留自己的目录结构与版本，新项目再补齐必要文件。
+以下示例使用 dou-bot 0.8.0、Node.js 24.x、TypeScript 5.9.3 和 ESM。先检查用户项目的实际依赖和脚本；已有项目保留自己的目录结构与版本，新项目再补齐必要文件。
 
 ## 安装与编译
 
 新项目安装 SDK：
 
 ```sh
-npm install --save-exact dou-bot@0.7.0
+npm install --save-exact dou-bot@0.8.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 

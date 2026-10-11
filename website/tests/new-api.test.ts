@@ -1,3 +1,5 @@
+import { AppModule as Context } from '../examples/context/app.module.js';
+import { AppModule as Query } from '../examples/query/app.module.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
@@ -95,6 +97,26 @@ for (const group of [false, true]) {
       `操作者：operator；群：${group ? 'group' : '私聊'}。`,
     );
     assert.equal(bot.acknowledgments.length, 1);
+    assert.equal(bot.errors.length, 0);
+  });
+}
+
+for (const group of [false, true]) {
+  await test(`0.8 文档：${group ? '群聊' : '私聊'} 的别名与默认服务器`, async (t) => {
+    const bot = await setup(t, Query);
+    for (const input of ['/状态 双梦', '/状态 梦江南', '/状态']) {
+      await bot.dispatch(message(input, group));
+      assert.equal(bot.messages.at(-1)?.payload.content, '服务器：梦江南');
+    }
+    assert.equal(bot.errors.length, 0);
+  });
+  await test(`0.8 文档：${group ? '群聊' : '私聊'} 的上下文注入与懒加载`, async (t) => {
+    const bot = await setup(t, Context);
+    await bot.dispatch(message('/上下文', group));
+    assert.equal(
+      bot.messages[0]?.payload.content,
+      `命令：上下文；会话：${group ? '群聊' : '私聊'}`,
+    );
     assert.equal(bot.errors.length, 0);
   });
 }

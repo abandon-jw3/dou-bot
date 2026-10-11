@@ -1,6 +1,6 @@
 # dou-bot 业务示例
 
-- 使用 **dou-bot 0.7.0**，通过 WS 接收 QQ 官方群聊和私聊消息。
+- 使用 **dou-bot 0.8.0**，通过 WS 接收 QQ 官方群聊和私聊消息。
 - 可单独复制运行，包含命令、附件、身份、权限、按钮和多轮对话。
 - 环境：Node.js **24.21.0**、npm **11.19.0**、TypeScript **5.9.3**。
 
@@ -71,15 +71,16 @@ export class BotController {
 
 ## 选择功能示例
 
-| 功能                 | 试用入口                                           |
-| -------------------- | -------------------------------------------------- |
-| 参数、选项、无序匹配 | `/example-arg`、`/example-option`、`/example-slot` |
-| 图片与分条附件       | `/example-images`、`/example-upload file`          |
-| 直接上传 DOCX        | 发送“报告_20261007.docx”                           |
-| 用户、群、角色       | `/example-identity`                                |
-| 权限和冷却           | `/example-managers`、`/example-cooldown`           |
-| 按钮                 | `/example-button`                                  |
-| 多轮输入             | `/example-prompt`                                  |
+| 功能                   | 试用入口                                           |
+| ---------------------- | -------------------------------------------------- |
+| 参数、选项、无序匹配   | `/example-arg`、`/example-option`、`/example-slot` |
+| 图片与分条附件         | `/example-images`、`/example-upload file`          |
+| 直接上传 DOCX          | 发送“报告_20261007.docx”                           |
+| 用户、群、角色         | `/example-identity`                                |
+| 权限和冷却             | `/example-managers`、`/example-cooldown`           |
+| 按钮                   | `/example-button`                                  |
+| 别名归一化、上下文数据 | `/example-normalize 双梦`、`/example-state`        |
+| 多轮输入               | `/example-prompt`                                  |
 
 完整命令和代码位置见 [示例模块说明](src/example/README.md)。
 

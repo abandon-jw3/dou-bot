@@ -17,7 +17,8 @@
 | controllers | 注册命令、按钮、附件和事件控制器 |
 | exports     | 允许其他模块使用的 Provider 令牌 |
 
-模块统一权限可配置 `guards`，见 [Guard 指南](./guards.md#模块统一配置)。
+- 模块统一权限用 `guards`，见 [Guard 指南](./guards.md#模块统一配置)。
+- 执行前的数据准备用 `middlewares`，见 [上下文中间件](./context.md)。
 
 ## Provider 的几种写法
 

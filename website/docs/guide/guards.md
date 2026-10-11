@@ -50,6 +50,7 @@ class AppModule {}
 - `kind === 'attachment'`：另有本处理器的 `matchedAttachments`。
 - `kind === 'button'`：可读按钮 ID、interactionId 和 data。
 - Guard 先于参数绑定，没有解析后的 Slot 等参数。
+- `await ctx.state.get(KEY)` 可读取中间件准备的数据，见 [上下文中间件](./context.md)。
 - 没有 reply/send/ack/client；异步外部请求应使用 `ctx.signal`。
 
 完整字段见 [GuardContext](../api/contexts.md#guardcontext)。

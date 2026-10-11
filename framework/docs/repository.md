@@ -7,8 +7,8 @@
 | 仓库路径   | 职责                                              | 依赖与产物                                                     |
 | ---------- | ------------------------------------------------- | -------------------------------------------------------------- |
 | framework/ | dou-bot SDK、源码示例、探针、测试、维护文档与技能 | 独立锁文件和 node_modules；dist 为 SDK 产物；唯一 npm 发行目录 |
-| example/   | 可独立复制的机器人业务示例，覆盖 28 个装饰器      | 精确安装 npm dou-bot@0.7.0；dist 为应用产物                    |
-| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 精确安装 npm dou-bot@0.7.0；产物位于 docs/.vitepress/dist      |
+| example/   | 可独立复制的机器人业务示例，覆盖 30 个装饰器      | 精确安装 npm dou-bot@0.8.0；dist 为应用产物                    |
+| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 精确安装 npm dou-bot@0.8.0；产物位于 docs/.vitepress/dist      |
 
 framework/examples 使用当前 SDK 源码进行验证；example 使用已发布包展示业务。framework/docs 保存 SDK 指南及维护记录，framework/skills/dou-bot 是配套技能，website/docs 是面向使用者的站点内容。
 
@@ -62,7 +62,7 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 正在准备 0.8.0，公开契约为 1.14；版本尚未上传 npm。example、website 和技能继续使用 npm 0.7.0，正式发布后再同步。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
+SDK 0.8.0 已发布，公开契约为 1.14；example、website 和技能已同步使用 npm 0.8.0。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
 
 README 和公开指南随 SDK 发包，相对链接必须落在安装包内；仓库维护材料和其他工程使用完整 GitHub 链接。npm run test:package 验证 tarball、文档链接、凭证排除与独立消费者。历史验收 JSON 原文保留，不为了消除旧路径而改写原始证据。
 

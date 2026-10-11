@@ -1,3 +1,4 @@
+import { ExampleStateController, ExampleStateMiddleware } from './example-state.controller.ts';
 import { HelpModule, Module } from 'dou-bot';
 import { ExampleAttachmentsController } from './example-attachments.controller.ts';
 import { ExampleIdentityController } from './example-identity.controller.ts';
@@ -28,10 +29,12 @@ import type { ExampleSettings } from './example.service.ts';
     ExamplePromptController,
     ExampleAttachmentsController,
     ExampleIdentityController,
+    ExampleStateController,
   ],
   // providers 注册服务、Guard 与配置；useValue 的令牌供 @Inject 使用。
   providers: [
     ExampleService,
+    ExampleStateMiddleware,
     GroupOnlyGuard,
     PrivateOnlyGuard,
     {

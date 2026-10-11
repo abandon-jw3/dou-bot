@@ -1,6 +1,6 @@
 # 向用户继续提问
 
-当一次操作需要补充信息或等待下一条附件时，在命令或附件处理器中使用 `await ctx.prompt(...)`。以下示例适用 dou-bot 0.7.0；ButtonContext 和原始事件上下文没有 prompt。
+当一次操作需要补充信息或等待下一条附件时，在命令或附件处理器中使用 `await ctx.prompt(...)`。以下示例适用 dou-bot 0.8.0；ButtonContext 和原始事件上下文没有 prompt。
 
 ## 完成两轮输入
 

@@ -86,6 +86,18 @@ WS 配置不能混入 port/listen 等 Webhook 字段，Webhook 也不能混入 i
 - 单次 prompt 可覆盖 timeoutMs、cancelWords，不能超过全局最长期限。
 - 实际等待容量同时受事件、字节和缓存预算限制。
 
+## 上下文数据
+
+| context 字段     | 默认值 | 作用                            |
+| ---------------- | ------ | ------------------------------- |
+| prepareTimeoutMs | 10000  | 每个中间件准备的最长时间        |
+| loadTimeoutMs    | 10000  | 每个加载器首次读取后的最长时间  |
+| maxEntries       | 64     | 每次处理器执行注册的 Key 数上限 |
+
+- 均为 1～2147483647 的整数，超时报 CONTEXT_TIMEOUT。
+- 首次懒加载计入 maxContextOperations，缓存读取不重复计数。
+- 注册和读取方式见 [上下文中间件](./context.md)。
+
 ## 错误回调示例
 
 以下为 options 中的回调片段：

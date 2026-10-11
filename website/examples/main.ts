@@ -1,3 +1,4 @@
+import { AppModule as Context } from './context/app.module.js';
 import { BotFactory } from 'dou-bot';
 import { AppModule as Client } from './client/app.module.js';
 import { AppModule as Hello } from './hello/app.module.js';
@@ -10,6 +11,7 @@ import { AppModule as Messages } from './messages/app.module.js';
 import { AppModule as Events } from './events/app.module.js';
 
 const modules = {
+  context: Context,
   client: Client,
   hello: Hello,
   query: Query,
@@ -22,7 +24,9 @@ const modules = {
 };
 const name = process.argv[2] ?? 'hello';
 if (!Object.hasOwn(modules, name))
-  throw new Error('示例名应为 hello/query/guards/access/prompt/buttons/events');
+  throw new Error(
+    '示例名应为 hello/query/context/guards/access/prompt/buttons/events/messages/client',
+  );
 const appId = process.env.QQ_APP_ID;
 const secret = process.env.QQ_APP_SECRET;
 if (!appId || !secret) throw new Error('请配置本地 QQ_APP_ID 和 QQ_APP_SECRET');

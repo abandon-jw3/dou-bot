@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "0.8.0",
+  "status": "published",
+  "published": true,
+  "publishedAt": "2026-10-11T17:33:11.635Z",
+  "timeZone": "Asia/Shanghai",
+  "npmAccount": "fine_wei",
+  "publicContract": "1.14",
+  "license": "MIT",
+  "distTags": {
+    "next": "0.6.0",
+    "latest": "0.8.0"
+  },
+  "source": {
+    "commit": "c02e4acf8c41c36724fc5cde191d1d45b608dd88",
+    "tag": "v0.8.0",
+    "candidateInputFingerprint": "91c33d15fc6fc2db04d38f4fd96c94f2de03096c4e38776f8207616a67039bc8"
+  },
+  "artifact": {
+    "registry": "https://registry.npmjs.org/",
+    "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-0.8.0.tgz",
+    "sha256": "e2c657a18b5efcd97f8b7d59a77fbf789c8b661a0f9ff716202a751730e489b2",
+    "shasum": "dbf7b0520b3cf044d89868bfc2a7481a0e3c5d65",
+    "integrity": "sha512-Kx5fax10hR1Azn6OwZkC6Rwkvks7tPAE0P3pdlcQ/er1V+/RXyM01i/RqZxP6cMXeo1V/B0Jp4aWCec+I6teCQ==",
+    "sizeBytes": 207982,
+    "fileCount": 122
+  },
+  "verification": {
+    "anonymousDownload": "passed",
+    "candidateBytesMatch": true,
+    "releaseCommitCI": {
+      "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/38159610573",
+      "conclusion": "success",
+      "headSha": "c02e4acf8c41c36724fc5cde191d1d45b608dd88",
+      "jobs": 9
+    },
+    "postReleaseConsumers": {
+      "status": "passed",
+      "source": "official registry, empty npm configuration and fresh cache",
+      "features": [
+        "legacy-0.6.0",
+        "attachments",
+        "identity",
+        "attachment-routes",
+        "slot-normalization",
+        "context-middleware",
+        "capacity"
+      ],
+      "skillTests": 6,
+      "historicalRegistryCompatibility": {
+        "0.6.0": "passed",
+        "0.7.0": "passed"
+      }
+    },
+    "browserAccountVerification": "completed by the user before npm accepted the upload"
+  },
+  "sync": {
+    "example": {
+      "version": "0.8.0",
+      "registryIntegrityMatches": true,
+      "status": "locally-validated",
+      "businessTests": 38,
+      "devProcessTests": 7,
+      "newDemonstrations": ["example-normalize", "example-state"]
+    },
+    "website": {
+      "version": "0.8.0",
+      "registryIntegrityMatches": true,
+      "status": "locally-validated",
+      "exampleTests": 22,
+      "browserTests": 22,
+      "htmlPages": 42,
+      "localLinksAndAssets": 1924,
+      "documentedDecorators": 30,
+      "publicExports": 148,
+      "newGuides": ["context middleware", "capacity diagnostics"],
+      "browser": "Chromium, desktop and iPhone 13 emulation"
+    },
+    "skill": {
+      "version": "0.8.0",
+      "status": "locally-validated",
+      "structureValidation": "passed",
+      "exampleTests": 6,
+      "scope": "user application development; no user-level skill installation modified"
+    },
+    "deployment": {
+      "workflow": "https://github.com/abandon-jw3/dou-bot/actions/workflows/ci.yml",
+      "trigger": "main push after SDK, example and website checks succeed"
+    }
+  },
+  "boundaries": {
+    "realQQThisRelease": "not-run",
+    "publicQQWebhook": "pending",
+    "multiDayProductionRun": "pending"
+  }
+}

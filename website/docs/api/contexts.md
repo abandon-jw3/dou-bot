@@ -9,6 +9,18 @@
 - 把 raw 和 attachments 作为只读数据使用。
 - 业务自己的外部请求应 await 并传入 signal；回复当前消息时优先使用 ctx.reply，由框架处理消息引用和回复序号。
 
+## state
+
+- MessageContext、ButtonContext、GuardContext 提供只读的 ContextReader。
+- `await ctx.state.get(KEY)` 读取本次执行的数据；没有 set/provide。
+- 原始 QQEventContext 不提供 state。
+
+## MiddlewareContext
+
+- 保留 GuardContext 的场景、身份和路由字段，state 为 ContextWriter。
+- prepare 内可以 set/provide；结束后写权限失效。
+- 不提供 reply、send、ack、prompt、client，见 [上下文中间件](../guide/context.md)。
+
 ## MessageContext
 
 - MessageContext 为 GroupMessageContext 或 PrivateMessageContext。
