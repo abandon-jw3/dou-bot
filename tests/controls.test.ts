@@ -569,6 +569,7 @@ await test('cooldown expiry uses monotonic time, pruning uses one timer and shut
   const clock = new FakeClock();
   const store = new CooldownStore(2, clock);
   const ctx: GuardContext = {
+    state: { get: () => Promise.reject(new Error('No context values in this guard fixture')) },
     appId: 'app',
     userId: 'u',
     scene: 'private',

@@ -240,7 +240,13 @@ node --env-file=.env dist/main.js
 
 源码还提供 `@User()`、`@UserId()`、`@Group()`、`@GroupId()`、`@Role()`，为命令、按钮及附件处理器注入当前事件的身份信息；缺失的群或角色信息为 `undefined`，不发起资料查询。这些装饰器及 `UserInfo`、`GroupInfo` **从 0.7.0 开始提供**。运行 `npm run example:identity` 查看离线源码示例，完整类型和场景说明见 [身份参数](docs/command-parameters.md#身份参数)。
 
+源码中的 `@Slot()` 新增可选 `normalize`，可将“状态 梦江南”和“状态 双梦”统一注入为“梦江南”。该功能属于公开契约 1.12，**尚未发布，npm 0.7.0 不支持**。在本仓库运行 `npm run example:query` 查看离线演示，配置、默认值和错误规则见 [Slot 归一化](docs/command-parameters.md#slot-归一化)。业务示例、文档站和配套技能继续使用 npm 0.7.0。
+
 ## 离线测试
+
+源码契约 1.13 另提供执行前的上下文中间件：`@UseMiddleware()`、`createContextKey()`、`ctx.state` 和 `@ContextValue()`。支持异步 prepare、懒加载及按执行隔离的数据，**尚未发布，npm 0.7.0 不支持**。运行 `npm run example:context` 查看通用离线演示，完整规则见 [上下文中间件](docs/context-middleware.md)。
+
+源码契约 1.14 新增 `app.snapshot().capacity / rejections / timing`，用于查看缓存占用、接纳拒绝原因、排队与处理耗时；**尚未发布，npm 0.7.0 不支持新增字段**。2,000 群的显式容量配置与离线验证方法见 [容量配置与运行监测](docs/capacity.md)。框架默认值保持不变。
 
 测试入口运行真实模块、DI、参数解析与消息编码，在内存中替换网络，不读取 QQ 凭证。示例 `src/offline.ts`：
 

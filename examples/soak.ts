@@ -8,6 +8,9 @@ import {
   Command,
   Controller,
   Ctx,
+  ContextValue,
+  createContextKey,
+  Injectable,
   Module,
   OnButton,
   QQApiError,
@@ -16,7 +19,14 @@ import {
   keyboard,
   button,
 } from '../src/index.js';
-import type { ButtonContext, MessageInput, QQDispatch, QQMessagePayload } from '../src/index.js';
+import type {
+  ButtonContext,
+  ContextMiddleware,
+  MiddlewareContext,
+  MessageInput,
+  QQDispatch,
+  QQMessagePayload,
+} from '../src/index.js';
 import { Application } from '../src/core/application.js';
 import { CountingClock, inspectResources, assertReleased, closeOnAbort } from './soak-support.js';
 import { createControlWorkload } from './soak-controls.js';
@@ -42,6 +52,18 @@ let acknowledgments = 0;
 let injectedFailures = 0;
 let reportedFailures = 0;
 let unexpectedErrors = 0;
+let contextLoads = 0;
+const WORKLOAD_KIND = createContextKey<string>('soak.kind');
+@Injectable()
+class WorkloadContext implements ContextMiddleware {
+  prepare(ctx: MiddlewareContext): void {
+    ctx.state.provide(WORKLOAD_KIND, (signal) => {
+      signal.throwIfAborted();
+      contextLoads++;
+      return ctx.kind;
+    });
+  }
+}
 const remember = (value: string) => {
   const id = Number(value);
   assert.ok(Number.isSafeInteger(id) && id >= 0);
@@ -51,7 +73,11 @@ const remember = (value: string) => {
 };
 @Controller()
 class Commands {
-  @Command('ping') ping(@Arg(0) value: string): MessageInput {
+  @Command('ping') ping(
+    @Arg(0) value: string,
+    @ContextValue(WORKLOAD_KIND) kind: string,
+  ): MessageInput {
+    assert.equal(kind, 'command');
     remember(value);
     const id = Number(value);
     if (id % 17 === 0) return image(png);
@@ -61,13 +87,22 @@ class Commands {
       });
     return 'pong';
   }
-  @OnButton('press') async pressed(@Ctx() context: ButtonContext): Promise<void> {
+  @OnButton('press') async pressed(
+    @Ctx() context: ButtonContext,
+    @ContextValue(WORKLOAD_KIND) kind: string,
+  ): Promise<void> {
+    assert.equal(kind, 'button');
     remember(context.data);
     await context.ack();
     await context.send('button handled');
   }
 }
-@Module({ imports: [controls.module], controllers: [Commands] })
+@Module({
+  imports: [controls.module],
+  controllers: [Commands],
+  providers: [WorkloadContext],
+  middlewares: [WorkloadContext],
+})
 class Root {}
 const app = await Application.create(
   Root,
@@ -245,6 +280,7 @@ try {
     }
     await app.execution.idle();
     assert.equal(handled, accepted);
+    assert.equal(contextLoads, handled);
     await controls.cycle(app, cancellation.signal);
     assert.equal(unexpectedErrors, 0);
     if (performance.now() >= nextSample) {
@@ -308,6 +344,7 @@ try {
     bulk: {
       accepted,
       handled,
+      contextLoads,
       duplicates,
       overloaded,
       tokenRequests,

@@ -1,11 +1,37 @@
 /**
- * dou-bot public API design contract, revision 1.11 — independently controlled attachment routes.
+ * dou-bot public API design contract, revision 1.14 — execution capacity and timing (unreleased).
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
  */
 import type { RequestListener } from 'node:http';
 
 export type Awaitable<T> = T | Promise<T>;
+/** Opaque, invariant token. Phantom members are not runtime properties; use createContextKey. */
+export interface ContextKey<T> {
+  readonly __contextKey: never;
+  readonly __contextType: (value: T) => T;
+}
+export interface ContextReader {
+  get<T>(key: ContextKey<T>): Promise<T>;
+}
+export interface ContextWriter extends ContextReader {
+  set<T>(key: ContextKey<T>, value: T): void;
+  provide<T>(key: ContextKey<T>, loader: (signal: AbortSignal) => Awaitable<T>): void;
+}
+export interface ContextMiddleware {
+  prepare(ctx: MiddlewareContext): Awaitable<void>;
+}
+export type MiddlewareContext = GuardContext & { readonly state: ContextWriter };
+export interface ContextOptions {
+  prepareTimeoutMs?: number;
+  loadTimeoutMs?: number;
+  maxEntries?: number;
+}
+export declare function createContextKey<T>(name: string): ContextKey<T>;
+export declare function UseMiddleware(
+  ...middlewares: readonly InjectionToken<ContextMiddleware>[]
+): ClassDecorator & MethodDecorator;
+export declare function ContextValue<T>(key: ContextKey<T>): ParameterDecorator;
 export type Type<T = object> = new (...args: any[]) => T;
 export type AbstractType<T = object> = abstract new (...args: any[]) => T;
 export type InjectionToken<T = unknown> = Type<T> | AbstractType<T> | string | symbol;
@@ -30,6 +56,7 @@ export interface ModuleMetadata {
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
   guards?: readonly InjectionToken<CanActivate>[];
+  middlewares?: readonly InjectionToken<ContextMiddleware>[];
 }
 export interface OnModuleInit {
   onModuleInit(signal: AbortSignal): Awaitable<void>;
@@ -65,6 +92,7 @@ export interface UsersOnlyOptions extends AccessOptions {
   groupId?: string;
 }
 export type GuardContext = Omit<QQEventContext, 'client'> & {
+  readonly state: ContextReader;
   readonly userId: string;
   readonly controller: Type;
   readonly method: string;
@@ -154,7 +182,11 @@ export type ArgumentOptions = ParameterDescription &
     | { type: 'boolean'; default?: boolean; choices?: never; min?: never; max?: never }
   );
 export type OptionOptions = ArgumentOptions & { alias?: string };
-export type SlotOptions = ParameterDescription & { default?: string } & (
+export type SlotOptions = ParameterDescription & {
+  default?: string;
+  /** Pure synchronous conversion after text checks; defaults are normalized once at bootstrap. */
+  normalize?: (text: string) => string;
+} & (
     | { choices: readonly string[]; match?: (text: string) => boolean }
     | { match: (text: string) => boolean; choices?: readonly string[] }
   );
@@ -276,6 +308,7 @@ export interface BotOptions {
     invalidInput?: 'report' | 'reply';
   };
   execution?: ExecutionOptions;
+  context?: ContextOptions;
   prompts?: PromptConfig;
   interactions?: { acknowledge?: 'auto' | 'manual' };
   logger?: Logger;
@@ -289,6 +322,30 @@ export interface ApplicationSnapshot {
   queue: { pending: number; active: number; retainedBytes: number };
   prompts: { pending: number };
   events: { accepted: number; duplicates: number; rejected: number; failed: number };
+  /** Process-local capacity and cache occupancy; not a QQ platform quota. */
+  capacity: {
+    concurrency: number;
+    queueCapacity: number;
+    queueMaxBytes: number;
+    dedup: { size: number; limit: number };
+    replyScopes: { size: number; limit: number };
+  };
+  /** Each rejected event increments its first applicable reason exactly once. */
+  rejections: {
+    invalidEvent: number;
+    queueFull: number;
+    bytesFull: number;
+    acknowledgmentsFull: number;
+    replyScopesFull: number;
+    dedupFull: number;
+  };
+  /** Lifetime aggregates in milliseconds. No message or user data is retained. */
+  timing: {
+    /** One sample per initial scheduling or prompt resumption. */
+    queueWait: { count: number; totalMs: number; maxMs: number };
+    /** One sample per finished started event; excludes queue and suspended prompt time. */
+    processing: { count: number; totalMs: number; maxMs: number };
+  };
   lastEventAt?: number;
 }
 export interface BotApplication {
@@ -335,6 +392,7 @@ export interface QQEventContext<T = unknown> {
   readonly client: QQClient;
 }
 export interface MessageContextBase extends QQEventContext {
+  readonly state: ContextReader;
   readonly messageId: string;
   readonly userId: string;
   /** Group content omits leading mentions explicitly marked as this bot; raw.d is unchanged. */
@@ -370,6 +428,7 @@ export interface PrivateMessageContext extends MessageContextBase {
 }
 export type MessageContext = GroupMessageContext | PrivateMessageContext;
 export interface ButtonContextBase extends QQEventContext {
+  readonly state: ContextReader;
   readonly interactionId: string;
   readonly userId: string;
   readonly buttonId: string;
@@ -643,6 +702,8 @@ export interface Logger {
 }
 export declare const LOGGER: unique symbol;
 export type ErrorPhase =
+  | 'middleware'
+  | 'context'
   | 'prompt'
   | 'guard'
   | 'cooldown'
@@ -669,6 +730,7 @@ export interface ErrorContext {
 }
 export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<void>;
 export type FrameworkErrorCode =
+  | 'CONTEXT_TIMEOUT'
   | 'CONFIG'
   | 'DEPENDENCY'
   | 'ROUTE_CONFLICT'

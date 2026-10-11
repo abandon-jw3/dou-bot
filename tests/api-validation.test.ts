@@ -8,6 +8,56 @@ import type { TestRequest } from '../src/testing/index.js';
 @Module({})
 class Root {}
 
+await test('sparse button permission lists are rejected before HTTP in both high-level and raw APIs', async (t) => {
+  let requests = 0;
+  const h = await createTestApplication(Root, {
+    respond() {
+      requests++;
+      return undefined;
+    },
+  });
+  t.after(() => h.app.close());
+  const users = new Array<string>(1);
+  const payload: QQMessagePayload = {
+    msg_type: 2,
+    markdown: { content: 'test' },
+    keyboard: {
+      content: {
+        rows: [
+          {
+            buttons: [
+              {
+                id: 'button',
+                render_data: { label: 'test' },
+                action: { type: 1, data: '', permission: { type: 0, specify_user_ids: users } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+  const invalid = (error: unknown) =>
+    error instanceof FrameworkError && error.code === 'HANDLER_CONTRACT';
+  await assert.rejects(h.app.client.api.sendGroupMessage('group', payload), invalid);
+  await assert.rejects(
+    h.app.client.sendMessage(
+      { scene: 'group', groupId: 'group' },
+      markdown('test', {
+        keyboard: keyboard([
+          [
+            button.callback('button', 'test', '', {
+              permission: { type: 'users', userIds: users },
+            }),
+          ],
+        ]),
+      }),
+    ),
+    invalid,
+  );
+  assert.equal(requests, 0);
+});
+
 await test('manager buttons encode QQ permission 1 for all button kinds and reject private targets before HTTP', async (t) => {
   let requests = 0;
   const bot = await createTestApplication(Root, {

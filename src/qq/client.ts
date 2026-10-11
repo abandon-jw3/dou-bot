@@ -13,6 +13,7 @@ import type {
 } from '../contracts.js';
 import type { ResolvedOptions } from '../core/config.js';
 import { FrameworkError } from '../core/errors.js';
+import { isRecord } from '../core/utils.js';
 import {
   assertKeyboardScene,
   copyTarget,
@@ -39,6 +40,10 @@ export class DefaultQQClient extends QQClient {
     input: MessageInput,
     options: SendOptions = {},
   ): Promise<SendResult> {
+    if (!isRecord(options))
+      throw new FrameworkError('HANDLER_CONTRACT', 'Send options must be an object');
+    // Keep one cancellation source across upload and send, even if the caller reuses its object.
+    options = { ...options };
     const target = copyTarget(targetInput);
     const message = snapshotMessage(input, this.options.api.maxUploadBytes);
     const reply: QQReplyFields = options.reply
@@ -57,7 +62,7 @@ export class DefaultQQClient extends QQClient {
       const source = message.source;
       const uploaded =
         typeof source === 'string' || source instanceof Uint8Array
-          ? await this.uploadImage(target, source, options)
+          ? await this.uploadPreparedImage(target, source, options)
           : source;
       if (
         uploaded.appId !== this.options.appId ||
@@ -97,13 +102,23 @@ export class DefaultQQClient extends QQClient {
       (typeof snapshot.source !== 'string' && !(snapshot.source instanceof Uint8Array))
     )
       throw new FrameworkError('HANDLER_CONTRACT', 'Expected image bytes or URL');
+    return this.uploadPreparedImage(target, snapshot.source, options);
+  }
+  /** Inputs here already belong to the SDK snapshot; do not copy image bytes a second time. */
+  private async uploadPreparedImage(
+    target: MessageTarget,
+    source: string | Uint8Array,
+    options?: RequestOptions,
+  ): Promise<UploadedImage> {
     const payload: QQUploadImagePayload =
-      typeof snapshot.source === 'string'
-        ? { file_type: 1, srv_send_msg: false, url: snapshot.source }
+      typeof source === 'string'
+        ? { file_type: 1, srv_send_msg: false, url: source }
         : {
             file_type: 1,
             srv_send_msg: false,
-            file_data: Buffer.from(snapshot.source).toString('base64'),
+            file_data: Buffer.from(source.buffer, source.byteOffset, source.byteLength).toString(
+              'base64',
+            ),
           };
     const started = this.clock.wallTime();
     const file =

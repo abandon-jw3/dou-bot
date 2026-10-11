@@ -95,11 +95,11 @@ export function encodeKeyboard(value: Keyboard): QQKeyboardPayload {
   const seen = new Set<string>();
   return {
     content: {
-      rows: value.rows.map((row) => {
+      rows: Array.from(value.rows, (row) => {
         if (!Array.isArray(row) || row.length === 0 || row.length > 5)
           bad('A keyboard row requires 1–5 buttons');
         return {
-          buttons: row.map((item: KeyboardButton) => {
+          buttons: Array.from(row, (item: KeyboardButton) => {
             if (!isRecord(item)) bad('Invalid button');
             const label = string(item.label, 'button label');
             const options = item.options ?? {};
@@ -134,7 +134,9 @@ export function encodeKeyboard(value: Keyboard): QQKeyboardPayload {
             if (permission.type === 'users') {
               if (!Array.isArray(permission.userIds) || !permission.userIds.length)
                 bad('Button permission requires user ids');
-              userIds = permission.userIds.map((id: unknown) => string(id, 'permission userId'));
+              userIds = Array.from(permission.userIds, (id: unknown) =>
+                string(id, 'permission userId'),
+              );
             }
             let type: number;
             let data: string;

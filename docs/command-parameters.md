@@ -1,10 +1,10 @@
 # 命令参数与最终使用方式
 
-本文适用于 dou-bot 0.7.0 / 公开契约 1.11。它们不增加运行时依赖，群聊、私聊与两种接入方式共用同一套规则。
+本文以 dou-bot 0.7.0 为基础，另说明源码契约 1.12 新增的 Slot `normalize`；该配置尚未发布，npm 0.7.0 不支持。群聊、私聊与两种接入方式共用同一套规则，不增加运行时依赖。
 
 ## 可运行示例
 
-以下 npm 脚本在公开的框架源码仓库目录执行，源码链接可直接访问。独立应用可直接使用下面的公开 API 代码。
+以下 npm 脚本在公开的框架源码仓库目录执行，源码链接可直接访问。独立应用可使用未标注“尚未发布”的公开 API 代码。
 
 ```sh
 npm run example:query
@@ -113,15 +113,74 @@ await app.start();
 
 `SlotOptions` 有 name、description、required、default，以及至少一个 `choices: readonly string[]` 或 `match: (text: string) => boolean`。两者同时提供时取交集。匹配器必须是纯函数、同步返回布尔值；每个分词可能交给多个匹配器。带 default 时也会在启动校验中调用匹配器。引用的业务字典由应用管理，框架仅冻结声明及复制 choices 数组，不复制闭包状态。
 
+源码契约 1.12 另提供可选 `normalize: (text: string) => string`，将已匹配的原始分词转为处理器需要的字符串，详见下一节。
+
 `RestOptions` 仅提供 name、description。每个命令最多一个 Rest。它是普通数组参数，例如 `@Rest() remaining: string[]`；不要写成 JS 可变参数 `...remaining`。Args 也遵守这个规则。
 
+## Slot 归一化
+
+**尚未发布：本节需要包含契约 1.12 的源码或构建包，npm 0.7.0 不能使用 `normalize`。**
+
+同一服务器有不同叫法时，用 `choices` 或 `match` 声明允许输入的名称，再用 `normalize` 返回规范名称：
+
+```ts
+@Command('状态')
+status(
+  @Slot('server', {
+    name: '服务器',
+    description: '双梦是梦江南的别名',
+    required: true,
+    choices: ['梦江南', '双梦'],
+    normalize: (text) => text === '双梦' ? '梦江南' : text,
+  })
+  server: string,
+): string {
+  return `正在查询 ${server} 的状态`;
+}
+```
+
+默认前缀下，`/状态 梦江南` 和 `/状态 双梦` 都向处理器注入 `梦江南`；配置空前缀后可直接发送 `状态 双梦`。`/状态 梦江南 双梦` 仍是重复参数，不会因转换结果相同而自动合并。
+
+多个命令共用字典时，可在自己的业务项目中封装 `@Server()`：
+
+```ts
+import { Slot } from 'dou-bot';
+
+const serverNames = new Map([
+  ['梦江南', '梦江南'],
+  ['双梦', '梦江南'],
+]);
+
+export function Server(): ParameterDecorator {
+  return Slot('server', {
+    name: '服务器',
+    description: '双梦是梦江南的别名',
+    required: true,
+    match: (text) => serverNames.has(text),
+    normalize: (text) => serverNames.get(text)!,
+  });
+}
+```
+
+处理器使用 `@Server() server: string` 即可复用。业务维护名称字典；框架不内置服务器名称，也不访问外部资料服务。
+
+- `choices` / `match` 检查原始分词，所有文字参数的歧义、重复、缺参和多余参数校验通过后，才按处理器参数顺序执行归一化。每个显式提供的 Slot 只调用一次。
+- 回调必须同步、无副作用并返回字符串。转换结果不再交给 `choices` / `match`，可以不属于输入枚举，也允许空字符串；不会自动修剪、去重或再次转换。`required` 仍检查是否提供输入。
+- `default` 先按原匹配规则验证，然后在启动时归一化一次并缓存；后续缺省输入直接使用缓存。没有默认值的可选 Slot 缺省为 `undefined`，不调用回调。`required: true` 仍不能与 `default` 共用。
+- `@Args()`、`@Rest()`、Context 和原始消息不变。帮助展示原始可选值及声明的默认值，不运行回调，也不推断别名映射；通过 `description` 说明用户可用的名称。
+- 非函数配置启动时报 `CONFIG`。回调抛错或返回非字符串（包括 Promise）报 `HANDLER_CONTRACT`；默认值归一化失败阻止启动，处理输入时失败上报一次、不占冷却，不由 `invalidInput: 'reply'` 自动回显。业务应在匹配规则中排除无效输入，异步查询放在 Service。
+- 不配置 `normalize` 时仍注入原分词；此配置只用于命令的 Slot，不扩展到 Arg、Option、原始事件、按钮或附件监听参数。配置快照保存函数引用，闭包状态仍由应用管理。
+
 ## 解析与消费顺序
+
+源码契约 1.13 还提供 `@ContextValue(KEY)`，在已有参数校验与身份注入之后读取上下文数据。它不消费文字，不触发严格文字解析；中间件注册、懒加载和使用边界见 [上下文中间件](context-middleware.md)。此 API 尚未发布。
 
 1. 按原有规则识别命令名、引号、转义和分词；保留空引号内容与被转义的空白。
 2. 提取声明的 Option 及其值，得到普通参数列表。
 3. Arg 按普通参数列表的固定下标绑定，消费相应位置；因此选项本身不占 Arg 下标。
 4. 每个未消费分词匹配全部 Slot：只命中一个才可绑定，命中多个即歧义；一个 Slot 收到多个分词也报错，不按声明顺序抢占。
 5. 检查缺失 Slot；将尚未消费分词按原顺序注入 Rest。
+6. 全部文字校验通过后，按处理器参数顺序归一化显式提供的 Slot；缺省值使用启动时缓存。随后校验附件、注入身份，再进入冷却和处理器。
 
 不论 Rest 在方法参数列表中排第几个，都在最后收集。Slot 只在未被 Option/Arg 消费的分词中匹配。没有 Rest 时，多余普通分词会被拒绝；有 Args 不会改变这一点。
 

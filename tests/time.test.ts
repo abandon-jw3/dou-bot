@@ -17,6 +17,19 @@ import { FakeClock } from './fake-clock.js';
 const silent = { debug() {}, info() {}, warn() {}, error() {} };
 const credentials = { appId: 'fixture-app', secret: 'fixture-secret', logger: silent };
 const memoryTransport = () => ({ start: () => Promise.resolve(), stop: () => Promise.resolve() });
+
+await test('an elapsed deadline rejects late Promise settlement even before the timer callback gets CPU time', async () => {
+  const clock = new FakeClock();
+  let now = 0;
+  clock.monotonic = () => now;
+  const pending = bounded(Promise.resolve('late'), 10, undefined, clock);
+  now = 11;
+  await assert.rejects(
+    pending,
+    (error: unknown) => error instanceof FrameworkError && error.code === 'SHUTDOWN_TIMEOUT',
+  );
+  assert.equal(clock.pending, 0);
+});
 function services(fetcher: FetchPort) {
   const clock = new FakeClock();
   const config = resolveOptions(credentials);

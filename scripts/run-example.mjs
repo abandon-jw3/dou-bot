@@ -7,6 +7,7 @@ if (
     'offline',
     'attachments',
     'identity',
+    'context',
     'query',
     'business',
     'business-qq',
@@ -18,6 +19,8 @@ if (
     'live-controls',
     'live-attachments',
     'benchmark',
+    'benchmark-framework',
+    'capacity',
     'soak',
   ].includes(name)
 )
@@ -25,10 +28,21 @@ if (
 const output = resolve(root, 'work', 'runs', `${name}-${randomUUID()}`);
 await runNode(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json', '--outDir', output]);
 await runNode([
-  ...(name === 'soak' ? ['--expose-gc'] : []),
-  ...(['offline', 'attachments', 'identity', 'query', 'business', 'benchmark', 'soak'].includes(
-    name,
-  )
+  ...(['soak', 'benchmark', 'benchmark-framework', 'capacity'].includes(name)
+    ? ['--expose-gc']
+    : []),
+  ...([
+    'offline',
+    'attachments',
+    'identity',
+    'context',
+    'query',
+    'business',
+    'benchmark',
+    'benchmark-framework',
+    'capacity',
+    'soak',
+  ].includes(name)
     ? []
     : [name === 'live-attachments' ? '--env-file=apps/example/.env' : '--env-file=.env']),
   resolve(output, 'examples', `${name}.js`),

@@ -56,6 +56,8 @@ export function inspectResources(app: Application, clock: CountingClock) {
     ...app.snapshot().queue,
     dedup: size('dedup'),
     replyScopes: size('scopes'),
+    idleDedup: size('idleDedup'),
+    idleScopes: size('idleScopes'),
     tasks: size('tasks'),
     signals: app.execution.managedSignals.size,
     timers: clock.active.size,

@@ -9,6 +9,8 @@ import {
   Command,
   Controller,
   Ctx,
+  ContextValue,
+  createContextKey,
   Group,
   GroupId,
   GroupManagersOnly,
@@ -35,15 +37,28 @@ import type {
   GroupInfo,
   GroupRole,
   MessageContext,
+  ContextMiddleware,
+  MiddlewareContext,
   QQDispatch,
   UserInfo,
 } from '../src/index.js';
 import { qqServer, serve, until } from './helpers.js';
 
 await test('identical private/group messages and buttons produce identical behavior through real WS and Webhook HTTP', async () => {
+  const contextKey = createContextKey<string>('protocol-context');
+  @Injectable()
+  class ContextData implements ContextMiddleware {
+    prepare(ctx: MiddlewareContext): void {
+      ctx.state.provide(contextKey, async () => {
+        await Promise.resolve();
+        return `${ctx.kind}:${ctx.scene}:${ctx.userId}`;
+      });
+    }
+  }
   @Injectable()
   class ModuleGate implements CanActivate {
-    canActivate(ctx: GuardContext): GuardResult {
+    async canActivate(ctx: GuardContext): Promise<GuardResult> {
+      assert.equal(await ctx.state.get(contextKey), `${ctx.kind}:${ctx.scene}:${ctx.userId}`);
       return ctx.userId !== 'blocked' || { allow: false, message: 'module denied' };
     }
   }
@@ -103,7 +118,12 @@ await test('identical private/group messages and buttons produce identical behav
         ]),
       });
     }
-    @Command('echo') echo(@Arg(0) text: string, @Ctx() ctx: MessageContext): string {
+    @Command('echo') echo(
+      @Arg(0) text: string,
+      @Ctx() ctx: MessageContext,
+      @ContextValue(contextKey) data: string,
+    ): string {
+      assert.equal(data, `command:${ctx.scene}:${ctx.userId}`);
       this.calls.push(`${ctx.scene}:echo:${text}`);
       return text;
     }
@@ -169,7 +189,12 @@ await test('identical private/group messages and buttons produce identical behav
       await ctx.send('selected');
     }
   }
-  @Module({ controllers: [Commands], providers: [ModuleGate], guards: [ModuleGate] })
+  @Module({
+    controllers: [Commands],
+    providers: [ModuleGate, ContextData],
+    guards: [ModuleGate],
+    middlewares: [ContextData],
+  })
   class Root {}
   const secret = '0123456789abcdef';
   const backends = [await qqServer(), await qqServer()];
@@ -546,6 +571,11 @@ await test('identical private/group messages and buttons produce identical behav
     assert.deepEqual(errors, []);
     assert.deepEqual(wsBackend.failures, []);
     assert.deepEqual(hookBackend.failures, []);
+    const snapshots = apps.map((app) => app.snapshot());
+    assert.deepEqual(snapshots[0]!.capacity, snapshots[1]!.capacity);
+    assert.deepEqual(snapshots[0]!.rejections, snapshots[1]!.rejections);
+    assert.equal(snapshots[0]!.timing.processing.count, snapshots[1]!.timing.processing.count);
+    assert.ok(snapshots.every((snapshot) => snapshot.timing.processing.count > 0));
   } finally {
     await Promise.all(apps.map((app) => app.close()));
     await host.close();

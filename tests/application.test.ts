@@ -20,6 +20,45 @@ import {
 import type { ButtonContext, MessageContext, QQDispatch } from '../src/index.js';
 import { createTestApplication } from '../src/testing/index.js';
 import { Application } from '../src/core/application.js';
+import { FakeClock } from './fake-clock.js';
+
+await test('a synchronous transport stop failure cannot skip the remaining cleanup stages', async () => {
+  const clock = new FakeClock();
+  let destroyed = false;
+  @Injectable()
+  class Resource {
+    onModuleDestroy(): void {
+      destroyed = true;
+    }
+  }
+  @Module({ providers: [Resource] })
+  class Root {}
+  const app = await Application.create(
+    Root,
+    {
+      appId: 'fixture',
+      secret: 'fixture-secret',
+      logger: { debug() {}, info() {}, warn() {}, error() {} },
+    },
+    {
+      clock,
+      transport: () => ({
+        start: () => Promise.resolve(),
+        stop: () => {
+          throw new Error('fixture stop failed');
+        },
+      }),
+      fetch: () =>
+        Promise.resolve(Response.json({ access_token: 'fixture-token', expires_in: 7200 })),
+    },
+  );
+  await app.start();
+  const result: unknown = await app.close().catch((error: unknown) => error);
+  assert.equal(destroyed, true);
+  assert.equal(app.status, 'stopped');
+  assert.equal(clock.pending, 0);
+  assert.ok(result instanceof FrameworkError && result.code === 'CLEANUP_FAILED');
+});
 
 function privateMessage(id: string, content: string, user = 'u', index?: string): QQDispatch {
   return {

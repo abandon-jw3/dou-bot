@@ -7,6 +7,62 @@ type ContractShape = Omit<typeof Contract, 'LOGGER'> & { LOGGER: symbol };
 const publicApi: ContractShape = runtime;
 void publicApi;
 
+export function readCapacity(snapshot: runtime.ApplicationSnapshot): number {
+  const used: number = snapshot.capacity.replyScopes.size;
+  const rejected: number = snapshot.rejections.queueFull;
+  const wait: number = snapshot.timing.queueWait.totalMs;
+  // @ts-expect-error Capacity fields contain counts, not message identities.
+  void snapshot.capacity.replyScopes.messageIds;
+  // @ts-expect-error Timing is cumulative; percentiles require separate sampling.
+  void snapshot.timing.processing.p95;
+  return used + rejected + wait;
+}
+
+const contextText = runtime.createContextKey<string>('text');
+const contextNumber = runtime.createContextKey<number>('number');
+runtime.ContextValue(contextText);
+const contextMiddleware: runtime.ContextMiddleware = {
+  async prepare(ctx) {
+    ctx.state.set(contextText, 'ready');
+    ctx.state.provide(contextNumber, async (signal) => {
+      signal.throwIfAborted();
+      await Promise.resolve();
+      return 1;
+    });
+    const value: number = await ctx.state.get(contextNumber);
+    void value;
+    if (ctx.scene === 'group') void ctx.groupId;
+    if (ctx.kind === 'attachment') void ctx.matchedAttachments;
+    // @ts-expect-error Middleware does not send messages.
+    void ctx.reply;
+    // @ts-expect-error Keys retain invariant value types.
+    ctx.state.set(contextText, 1);
+    // @ts-expect-error Lazy values must agree with the key type.
+    ctx.state.provide(contextNumber, () => 'wrong');
+  },
+};
+void contextMiddleware;
+runtime.Module({ middlewares: ['middleware'] });
+runtime.UseMiddleware('middleware');
+// @ts-expect-error Tokens can only be created by the factory.
+runtime.ContextValue({});
+// @ts-expect-error Providers are selected by tokens, not instances.
+runtime.UseMiddleware(contextMiddleware);
+// @ts-expect-error Context Key values are invariant.
+const wrongContextKey: runtime.ContextKey<string | number> = contextText;
+void wrongContextKey;
+function readContext(ctx: runtime.MessageContext, raw: runtime.QQEventContext): Promise<string> {
+  const result: Promise<string> = ctx.state.get(contextText);
+  // @ts-expect-error Only middleware can register values.
+  void ctx.state.set;
+  // @ts-expect-error Raw observers do not receive route context data.
+  void raw.state;
+  // @ts-expect-error The context data facade is readonly.
+  ctx.state = { get: () => Promise.reject(new Error('readonly fixture')) };
+  return result;
+}
+void readContext;
+
 // Template sending is intentionally absent, including through intermediate variables.
 // @ts-expect-error Template builder has been removed.
 void runtime.markdownTemplate;
@@ -25,6 +81,11 @@ void unsupportedKeyboard;
 runtime.Arg(0, { type: 'integer', default: 1, min: 1 });
 runtime.Option('detail', { type: 'boolean', alias: 'd', default: false });
 runtime.Slot('city', { choices: ['北京'], match: (text) => text.length > 0 });
+runtime.Slot('server', {
+  choices: ['梦江南', '双梦'],
+  normalize: (text) => (text === '双梦' ? '梦江南' : text),
+});
+runtime.Slot('server', { match: (text) => text === '双梦', default: '双梦', normalize: () => '' });
 runtime.Rest({ name: '补充内容' });
 const attachmentOptions: runtime.AttachmentOptions = { name: '素材', minCount: 1, maxCount: 4 };
 runtime.Attachments(attachmentOptions);
@@ -140,6 +201,18 @@ runtime.Option('flag', { type: 'boolean', default: 'false' });
 runtime.Slot('city', {});
 // @ts-expect-error Slot matching is synchronous.
 runtime.Slot('city', { match: () => Promise.resolve(true) });
+// @ts-expect-error Normalization does not replace a matching rule.
+runtime.Slot('server', { normalize: (text: string) => text });
+// @ts-expect-error Slot normalization is synchronous.
+runtime.Slot('server', { choices: ['双梦'], normalize: () => Promise.resolve('梦江南') });
+// @ts-expect-error Slot normalization returns a string, not an entity.
+runtime.Slot('server', { choices: ['双梦'], normalize: () => ({ name: '梦江南' }) });
+// @ts-expect-error Undefined is reserved for an absent optional Slot.
+runtime.Slot('server', { choices: ['双梦'], normalize: () => undefined });
+// @ts-expect-error Normalization is only available on Slot.
+runtime.Arg(0, { normalize: (text: string) => text });
+// @ts-expect-error Options retain their existing conversion rules.
+runtime.Option('server', { normalize: (text: string) => text });
 // @ts-expect-error Rest injects strings and does not perform scalar conversion.
 runtime.Rest({ type: 'number' });
 

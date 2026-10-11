@@ -1,5 +1,5 @@
 import type { ControllerBinding, Container } from './container.js';
-import type { HandlerMetadata } from './metadata.js';
+import type { HandlerMetadata, ParameterBinding } from './metadata.js';
 import { readHandlers } from './metadata.js';
 import { FrameworkError } from './errors.js';
 import { callable } from './utils.js';
@@ -8,14 +8,21 @@ import { AttachmentRoute } from './attachment-route.js';
 import { CommandArguments } from './arguments.js';
 import { CommandInputError } from './input-error.js';
 import { bindIdentity } from './identity.js';
+import { assertMiddleware } from './context-state.js';
 import { CommandCatalog } from './help.js';
 import { CooldownStore } from './cooldown.js';
 import { assertGuard, guardContext, runGuard } from './guards.js';
 import { createBuiltinGuard, isBuiltinGuard } from './access.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
-import type { EventTask, HandlerLocation } from './execution.js';
-import type { Attachment, CanActivate, ErrorPhase, MessageInput } from '../contracts.js';
+import type { EventTask, HandlerLocation } from './event-task.js';
+import type {
+  Attachment,
+  CanActivate,
+  ContextMiddleware,
+  ErrorPhase,
+  MessageInput,
+} from '../contracts.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
 
 interface Route {
@@ -25,6 +32,10 @@ interface Route {
   attachment?: AttachmentRoute;
   id: number;
   guards: readonly (() => CanActivate)[];
+  middlewares: readonly (() => ContextMiddleware)[];
+  needsContext: boolean;
+  identities: readonly Extract<ParameterBinding, { kind: 'identity' }>[];
+  contextValues: readonly Extract<ParameterBinding, { kind: 'context-value' }>[];
 }
 const location = (route: Route): HandlerLocation => ({
   controller: route.binding.type.name || '(anonymous)',
@@ -36,6 +47,7 @@ export class Dispatcher {
   private readonly attachments: Route[] = [];
   private readonly events = new Map<string, Route[]>();
   private readonly moduleGuardChecks: (() => CanActivate)[] = [];
+  private readonly middlewareChecks: (() => ContextMiddleware)[] = [];
   private readonly clock: Clock;
   private readonly cooldowns: CooldownStore;
   private readonly acknowledge: 'auto' | 'manual';
@@ -55,12 +67,29 @@ export class Dispatcher {
         if (!isBuiltinGuard(declaration))
           this.moduleGuardChecks.push(container.reference(declaration, module));
     let nextId = 0;
+    for (const { module, middlewares } of container.moduleMiddlewares())
+      for (const declaration of middlewares)
+        this.middlewareChecks.push(container.reference(declaration, module));
     for (const binding of container.controllers())
-      for (const metadata of readHandlers(binding.type, binding.moduleGuards)) {
+      for (const metadata of readHandlers(
+        binding.type,
+        binding.moduleGuards,
+        binding.moduleMiddlewares,
+      )) {
         const route: Route = {
           binding,
           metadata,
           id: nextId++,
+          needsContext: metadata.parameters.some((parameter) => parameter.kind === 'context'),
+          identities: metadata.parameters.filter((parameter) => parameter.kind === 'identity'),
+          contextValues: metadata.parameters.filter(
+            (parameter) => parameter.kind === 'context-value',
+          ),
+          middlewares: metadata.middlewares.map((declaration) => {
+            const reference = container.reference(declaration, binding.module);
+            this.middlewareChecks.push(reference);
+            return reference;
+          }),
           guards: metadata.guards.map((declaration) => {
             if (!isBuiltinGuard(declaration))
               return container.reference(declaration, binding.module);
@@ -105,7 +134,8 @@ export class Dispatcher {
       }
   }
 
-  validateGuards(): void {
+  validateControls(): void {
+    for (const reference of this.middlewareChecks) assertMiddleware(reference());
     for (const reference of this.moduleGuardChecks) assertGuard(reference());
     for (const route of new Set([
       ...this.commands.values(),
@@ -135,13 +165,13 @@ export class Dispatcher {
     matched?: readonly Attachment[],
   ): Promise<void> {
     const handler = location(route);
-    let phase: ErrorPhase = 'guard';
+    let phase: ErrorPhase = 'middleware';
     let parsing = false;
     let invoked = false;
     try {
       const cooldown = route.metadata.cooldown;
       const info =
-        route.guards.length || cooldown
+        route.middlewares.length || route.guards.length || cooldown
           ? guardContext(
               task,
               route.binding.type,
@@ -150,6 +180,10 @@ export class Dispatcher {
               matched,
             )
           : undefined;
+      if (info)
+        for (const reference of route.middlewares)
+          await task.contextData(handler).prepare(reference(), info);
+      phase = 'guard';
       if (info)
         for (const reference of route.guards) {
           const result = await runGuard(reference(), info, this.clock);
@@ -161,9 +195,12 @@ export class Dispatcher {
       task.controller.signal.throwIfAborted();
       phase =
         task.event.kind === 'button' ? 'button' : matched === undefined ? 'command' : 'attachment';
-      const context =
-        task.event.kind === 'button' ? task.buttonContext(handler) : task.messageContext(handler);
-      let parameters: unknown[] = route.metadata.parameters.map(() => context);
+      const context = route.needsContext
+        ? task.event.kind === 'button'
+          ? task.buttonContext(handler)
+          : task.messageContext(handler)
+        : undefined;
+      let parameters: unknown[];
       if (task.event.kind === 'message') {
         parsing = true;
         if (matched !== undefined) {
@@ -174,9 +211,12 @@ export class Dispatcher {
           parameters = route.arguments.bind(parsed.tokens, context, task.event.attachments);
         }
         parsing = false;
-      }
-      if (task.event.kind !== 'event')
-        bindIdentity(route.metadata.parameters, parameters, task.event.identity);
+      } else parameters = route.metadata.parameters.map(() => context);
+      if (route.identities.length && task.event.kind !== 'event')
+        bindIdentity(route.identities, parameters, task.event.identity);
+      phase = 'context';
+      for (const parameter of route.contextValues)
+        parameters[parameter.index] = await task.contextData(handler).reader.get(parameter.key);
       task.controller.signal.throwIfAborted();
       phase = 'cooldown';
       if (cooldown && info) {
@@ -226,6 +266,7 @@ export class Dispatcher {
         }
       }
     } finally {
+      task.sealContextData();
       // In manual mode no handler will run to acknowledge a blocked button. ACK only receipt, not business success.
       if (
         !invoked &&
@@ -247,7 +288,7 @@ export class Dispatcher {
       : undefined;
     return (
       (name !== undefined && this.commands.has(name)) ||
-      this.attachments.some((route) => route.attachment!.select(event.attachments).length > 0)
+      this.attachments.some((route) => route.attachment!.matches(event.attachments))
     );
   }
 

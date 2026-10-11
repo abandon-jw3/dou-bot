@@ -1,6 +1,6 @@
 import type { Attachment, CanActivate, GuardContext, GuardResult, Type } from '../contracts.js';
 import type { Clock } from './clock.js';
-import type { EventTask } from './execution.js';
+import type { EventTask } from './event-task.js';
 import { FrameworkError } from './errors.js';
 import { bounded, callable, isObject, isRecord } from './utils.js';
 
@@ -29,6 +29,7 @@ export function guardContext(
       : { scene: 'private' as const, target: Object.freeze({ ...event.target }) };
   return Object.freeze({
     ...base,
+    state: task.contextReader({ controller: controller.name || '(anonymous)', method }),
     ...scene,
     userId: event.userId,
     controller,

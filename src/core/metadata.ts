@@ -5,6 +5,8 @@ import type {
   AccessOptions,
   CommandOptions,
   CanActivate,
+  ContextKey,
+  ContextMiddleware,
   CooldownOptions,
   GroupRole,
   InjectionToken,
@@ -22,6 +24,7 @@ import { isRecord, isType, tokenName } from './utils.js';
 import { rolesGuard, sceneGuard, usersGuard, validateAccessRules } from './access.js';
 import type { GuardDeclaration } from './access.js';
 import type { IdentitySelection } from './identity.js';
+import { assertContextKey } from './context-state.js';
 
 const MODULE = Symbol('module');
 const INJECTABLE = Symbol('injectable');
@@ -30,10 +33,12 @@ const INJECT = Symbol('inject');
 const HANDLERS = Symbol('handlers');
 const PARAMETERS = Symbol('parameters');
 const GUARDS = Symbol('guards');
+const MIDDLEWARES = Symbol('middlewares');
 const COOLDOWN = Symbol('cooldown');
 
 type ParameterDeclaration =
   | { kind: 'context' }
+  | { kind: 'context-value'; key: ContextKey<unknown> }
   | { kind: 'identity'; selection: IdentitySelection }
   | { kind: 'args' }
   | { kind: 'arg'; argument: number; options?: ArgumentOptions }
@@ -50,9 +55,13 @@ export interface HandlerMetadata {
   attachment?: Readonly<OnAttachmentOptions>;
   parameters: readonly ParameterBinding[];
   guards: readonly GuardDeclaration[];
+  middlewares: readonly InjectionToken<ContextMiddleware>[];
   cooldown?: Readonly<CooldownOptions>;
 }
-type HandlerDeclaration = Omit<HandlerMetadata, 'parameters' | 'guards' | 'cooldown'>;
+type HandlerDeclaration = Omit<
+  HandlerMetadata,
+  'parameters' | 'guards' | 'middlewares' | 'cooldown'
+>;
 
 function metadata<T>(key: symbol | string, target: object, method?: string): T | undefined {
   const value: unknown =
@@ -69,6 +78,12 @@ export function Module(data: ModuleMetadata): ClassDecorator {
   if (!Array.isArray(guards) || !Array.from(guards as unknown[]).every(isGuardToken))
     throw new FrameworkError('CONFIG', 'Module guards must be an array of provider tokens');
   const guardSnapshot = Object.freeze([...(guards as InjectionToken<CanActivate>[])]);
+  const middlewares: unknown = data.middlewares === undefined ? [] : data.middlewares;
+  if (!Array.isArray(middlewares) || !Array.from(middlewares as unknown[]).every(isGuardToken))
+    throw new FrameworkError('CONFIG', 'Module middlewares must be an array of provider tokens');
+  const middlewareSnapshot = Object.freeze([
+    ...(middlewares as InjectionToken<ContextMiddleware>[]),
+  ]);
   return (target) => {
     if (metadata(MODULE, target)) throw new FrameworkError('CONFIG', 'Duplicate @Module');
     Reflect.defineMetadata(
@@ -79,6 +94,7 @@ export function Module(data: ModuleMetadata): ClassDecorator {
         controllers: Object.freeze([...(data.controllers ?? [])]),
         exports: Object.freeze([...(data.exports ?? [])]),
         guards: guardSnapshot,
+        middlewares: middlewareSnapshot,
       }),
       target,
     );
@@ -193,6 +209,48 @@ function guardDecorator(guards: readonly GuardDeclaration[]): ClassDecorator & M
   };
 }
 
+export function UseMiddleware(
+  ...middlewares: readonly InjectionToken<ContextMiddleware>[]
+): ClassDecorator & MethodDecorator {
+  if (!middlewares.length || !middlewares.every(isGuardToken))
+    throw new FrameworkError('CONFIG', '@UseMiddleware requires provider tokens');
+  const declarations = [...middlewares];
+  return (target: object, key?: string | symbol, descriptor?: PropertyDescriptor) => {
+    const classLevel = key === undefined && typeof target === 'function';
+    if (
+      !classLevel &&
+      (typeof target === 'function' ||
+        typeof key !== 'string' ||
+        typeof descriptor?.value !== 'function')
+    )
+      throw new FrameworkError(
+        'CONFIG',
+        'Middleware decorators require a class or named instance method',
+      );
+    const previous =
+      metadata<readonly InjectionToken<ContextMiddleware>[]>(MIDDLEWARES, target, key) ?? [];
+    const value = Object.freeze([...declarations, ...previous]);
+    if (classLevel) Reflect.defineMetadata(MIDDLEWARES, value, target);
+    else Reflect.defineMetadata(MIDDLEWARES, value, target, key!);
+  };
+}
+
+function classMiddlewares(type: Type): readonly InjectionToken<ContextMiddleware>[] {
+  const result: InjectionToken<ContextMiddleware>[] = [];
+  let current: unknown = type;
+  while (isType(current)) {
+    result.unshift(
+      ...(metadata<readonly InjectionToken<ContextMiddleware>[]>(MIDDLEWARES, current) ?? []),
+    );
+    current = Object.getPrototypeOf(current);
+  }
+  return result;
+}
+
+export function readModuleMiddlewares(type: Type): readonly InjectionToken<ContextMiddleware>[] {
+  return Object.freeze([...(readModule(type).middlewares ?? []), ...classMiddlewares(type)]);
+}
+
 export function GroupOnly(options: AccessOptions = {}): ClassDecorator & MethodDecorator {
   return guardDecorator([sceneGuard('group', options)]);
 }
@@ -274,6 +332,10 @@ function parameter(declaration: ParameterDeclaration): ParameterDecorator {
   };
 }
 export const Ctx = (): ParameterDecorator => parameter({ kind: 'context' });
+export function ContextValue<T>(key: ContextKey<T>): ParameterDecorator {
+  assertContextKey(key, 'CONFIG');
+  return parameter({ kind: 'context-value', key: key as unknown as ContextKey<unknown> });
+}
 export const User = (): ParameterDecorator => parameter({ kind: 'identity', selection: 'user' });
 export const UserId = (): ParameterDecorator =>
   parameter({ kind: 'identity', selection: 'userId' });
@@ -354,16 +416,26 @@ export function constructorTokens(type: Type, controller = false): InjectionToke
 export function readHandlers(
   type: Type,
   moduleGuards: readonly GuardDeclaration[] = [],
+  moduleMiddlewares: readonly InjectionToken<ContextMiddleware>[] = [],
 ): HandlerMetadata[] {
   const result: HandlerMetadata[] = [];
   const seen = new Set<string>();
   const controllerGuards = [...moduleGuards, ...classGuards(type)];
+  const controllerMiddlewares = [...moduleMiddlewares, ...classMiddlewares(type)];
   validateAccessRules(controllerGuards);
   let prototype: object | null = type.prototype as object;
   while (prototype && prototype !== Object.prototype) {
     const declarations = metadata<HandlerDeclaration[]>(HANDLERS, prototype) ?? [];
     for (const key of Object.getOwnPropertyNames(prototype)) {
       if (seen.has(key)) continue;
+      if (
+        metadata(MIDDLEWARES, prototype, key) &&
+        !declarations.some((entry) => entry.method === key && entry.kind !== 'event')
+      )
+        throw new FrameworkError(
+          'CONFIG',
+          'Method middleware requires @Command, @OnButton or @OnAttachment',
+        );
       if (
         (metadata(GUARDS, prototype, key) || metadata(COOLDOWN, prototype, key)) &&
         !declarations.some((entry) => entry.method === key && entry.kind !== 'event')
@@ -387,13 +459,13 @@ export function readHandlers(
         );
       if (
         metadata<ParameterBinding[]>(PARAMETERS, prototype, key)?.some(
-          (p) => p.kind === 'identity',
+          (p) => p.kind === 'identity' || p.kind === 'context-value',
         ) &&
         !declarations.some((entry) => entry.method === key && entry.kind !== 'event')
       )
         throw new FrameworkError(
           'CONFIG',
-          'Identity parameters require @Command, @OnButton or @OnAttachment',
+          'Identity and context value parameters require @Command, @OnButton or @OnAttachment',
         );
     }
     for (const entry of declarations) {
@@ -413,6 +485,7 @@ export function readHandlers(
             p.index >= count ||
             (entry.kind !== 'command' &&
               p.kind !== 'context' &&
+              !(entry.kind !== 'event' && p.kind === 'context-value') &&
               !(
                 (entry.kind === 'button' || entry.kind === 'attachment') &&
                 p.kind === 'identity'
@@ -438,6 +511,17 @@ export function readHandlers(
         ...entry,
         parameters: [...parameters].sort((a, b) => a.index - b.index),
         guards,
+        middlewares:
+          entry.kind === 'event'
+            ? []
+            : [
+                ...controllerMiddlewares,
+                ...(metadata<readonly InjectionToken<ContextMiddleware>[]>(
+                  MIDDLEWARES,
+                  prototype,
+                  entry.method,
+                ) ?? []),
+              ],
         ...(cooldown === undefined ? {} : { cooldown }),
       });
     }

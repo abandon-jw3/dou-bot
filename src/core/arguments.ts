@@ -16,6 +16,7 @@ interface ValueRule extends Description {
   required: boolean;
   default?: Scalar;
   choices?: readonly Scalar[];
+  choiceSet?: ReadonlySet<Scalar>;
   min?: number;
   max?: number;
 }
@@ -30,8 +31,11 @@ interface SlotParameter extends Description {
   key: string;
   required: boolean;
   default?: string;
+  normalizedDefault?: string;
   choices?: readonly string[];
+  choiceSet?: ReadonlySet<string>;
   match?: (text: string) => boolean;
+  normalize?: (text: string) => string;
 }
 interface AttachmentParameter extends Description {
   kind: 'attachments';
@@ -46,6 +50,7 @@ type CompiledParameter =
   | AttachmentParameter
   | (Description & { kind: 'rest'; index: number })
   | { kind: 'context'; index: number }
+  | Extract<ParameterBinding, { kind: 'context-value' }>
   | Extract<ParameterBinding, { kind: 'identity' }>
   | { kind: 'args'; index: number };
 
@@ -99,8 +104,8 @@ function constraint(value: Scalar, rule: ValueRule): string | undefined {
     if (rule.min !== undefined && value < rule.min) return `${rule.name} 不能小于 ${rule.min}`;
     if (rule.max !== undefined && value > rule.max) return `${rule.name} 不能大于 ${rule.max}`;
   }
-  if (rule.choices && !rule.choices.includes(value))
-    return `${rule.name} 必须是以下值之一：${rule.choices.join('、')}`;
+  if (rule.choiceSet && !rule.choiceSet.has(value))
+    return `${rule.name} 必须是以下值之一：${rule.choices!.join('、')}`;
   return undefined;
 }
 function valueRule(options: Record<string, unknown>, fallback: string): ValueRule {
@@ -134,7 +139,9 @@ function valueRule(options: Record<string, unknown>, fallback: string): ValueRul
     ...(options.min === undefined ? {} : { min: options.min as number }),
     ...(options.max === undefined ? {} : { max: options.max as number }),
     ...(options.default === undefined ? {} : { default: options.default as Scalar }),
-    ...(options.choices === undefined ? {} : { choices: options.choices as Scalar[] }),
+    ...(options.choices === undefined
+      ? {}
+      : { choices: options.choices as Scalar[], choiceSet: new Set(options.choices as Scalar[]) }),
   };
   if (rule.default !== undefined) {
     const error = constraint(rule.default, rule);
@@ -148,7 +155,7 @@ function valueRule(options: Record<string, unknown>, fallback: string): ValueRul
 }
 
 function matches(slot: SlotParameter, value: string): boolean {
-  if (slot.choices && !slot.choices.includes(value)) return false;
+  if (slot.choiceSet && !slot.choiceSet.has(value)) return false;
   if (!slot.match) return true;
   let result: unknown;
   try {
@@ -167,10 +174,34 @@ function matches(slot: SlotParameter, value: string): boolean {
   return result;
 }
 
+function normalizeSlot(slot: SlotParameter, value: string): string {
+  if (!slot.normalize) return value;
+  let result: unknown;
+  try {
+    result = slot.normalize(value);
+  } catch (cause) {
+    throw new FrameworkError('HANDLER_CONTRACT', `Slot normalizer failed: ${slot.key}`, { cause });
+  }
+  if (typeof result !== 'string') {
+    // A rejected Promise is still a contract error, not an unhandled asynchronous rejection.
+    void Promise.resolve(result).catch(() => {});
+    throw new FrameworkError(
+      'HANDLER_CONTRACT',
+      `Slot normalizer must return a synchronous string: ${slot.key}`,
+    );
+  }
+  return result;
+}
+
 const commonKeys = ['name', 'description', 'required', 'default'];
 const valueKeys = [...commonKeys, 'type', 'choices', 'min', 'max'];
 function compile(binding: ParameterBinding): CompiledParameter {
-  if (binding.kind === 'context' || binding.kind === 'args' || binding.kind === 'identity')
+  if (
+    binding.kind === 'context' ||
+    binding.kind === 'context-value' ||
+    binding.kind === 'args' ||
+    binding.kind === 'identity'
+  )
     return binding;
   const options = binding.options ?? {};
   if (binding.kind === 'attachments') {
@@ -191,12 +222,14 @@ function compile(binding: ParameterBinding): CompiledParameter {
   if (binding.kind === 'slot') {
     if (typeof binding.key !== 'string' || !binding.key || /\s/u.test(binding.key))
       config('Invalid Slot name');
-    keys(options, [...commonKeys, 'choices', 'match']);
+    keys(options, [...commonKeys, 'choices', 'match', 'normalize']);
     const description = describe(options, binding.key);
     if (options.match === undefined && options.choices === undefined)
       config('Slot requires choices or match');
     if (options.match !== undefined && typeof options.match !== 'function')
       config('Slot match must be a function');
+    if (options.normalize !== undefined && typeof options.normalize !== 'function')
+      config('Slot normalize must be a function');
     if (
       options.choices !== undefined &&
       (!Array.isArray(options.choices) ||
@@ -214,11 +247,20 @@ function compile(binding: ParameterBinding): CompiledParameter {
       ...description,
       required: options.required === true,
       ...(options.default === undefined ? {} : { default: options.default }),
-      ...(options.choices === undefined ? {} : { choices: options.choices as string[] }),
+      ...(options.choices === undefined
+        ? {}
+        : {
+            choices: options.choices as string[],
+            choiceSet: new Set(options.choices as string[]),
+          }),
       ...(options.match === undefined ? {} : { match: options.match as (text: string) => boolean }),
+      ...(options.normalize === undefined
+        ? {}
+        : { normalize: options.normalize as (text: string) => string }),
     };
     if (slot.default !== undefined && !matches(slot, slot.default))
       config(`Invalid default for Slot ${slot.key}`);
+    if (slot.default !== undefined) slot.normalizedDefault = normalizeSlot(slot, slot.default);
     return slot;
   }
   keys(options, [...valueKeys, ...(binding.kind === 'option' ? ['alias'] : [])]);
@@ -288,6 +330,11 @@ export class CommandArguments {
   private readonly parameters: CompiledParameter[];
   private readonly options = new Map<string, ValueParameter & { kind: 'option' }>();
   private readonly enhanced: boolean;
+  private readonly hasArgs: boolean;
+  private readonly scalars: readonly ValueParameter[];
+  private readonly slots: readonly SlotParameter[];
+  private readonly attachmentParameters: readonly AttachmentParameter[];
+  private readonly rest: Extract<CompiledParameter, { kind: 'rest' }> | undefined;
   constructor(bindings: readonly ParameterBinding[]) {
     this.enhanced = bindings.some(
       (p) =>
@@ -297,6 +344,15 @@ export class CommandArguments {
         (p.kind === 'arg' && p.options !== undefined),
     );
     this.parameters = bindings.map(compile);
+    this.hasArgs = this.parameters.some((parameter) => parameter.kind === 'args');
+    this.scalars = this.parameters.filter(
+      (parameter) => parameter.kind === 'arg' || parameter.kind === 'option',
+    );
+    this.slots = this.parameters.filter((parameter) => parameter.kind === 'slot');
+    this.attachmentParameters = this.parameters.filter(
+      (parameter) => parameter.kind === 'attachments',
+    );
+    this.rest = this.parameters.find((parameter) => parameter.kind === 'rest');
     const positions = new Set<number>();
     const slots = new Set<string>();
     let rest = false;
@@ -329,15 +385,15 @@ export class CommandArguments {
     attachments: readonly Attachment[] = [],
     attachmentRoute = false,
   ): unknown[] {
-    const args = tokens.map((token) => token.value);
+    const args = this.hasArgs ? tokens.map((token) => token.value) : undefined;
     if (!this.enhanced) {
       const values = this.parameters.map((parameter) =>
         parameter.kind === 'context'
           ? context
           : parameter.kind === 'args'
-            ? [...args]
+            ? [...args!]
             : parameter.kind === 'arg'
-              ? args[parameter.argument]
+              ? tokens[parameter.argument]?.value
               : undefined,
       );
       return this.bindAttachments(values, attachments, attachmentRoute);
@@ -375,14 +431,14 @@ export class CommandArguments {
       values.set(option.index, convert(raw, option));
     }
     const consumed = new Set<number>();
-    for (const parameter of this.parameters) {
+    for (const parameter of this.scalars) {
       if (parameter.kind === 'arg') {
         values.set(parameter.index, convert(positional[parameter.argument], parameter));
         if (parameter.argument < positional.length) consumed.add(parameter.argument);
       } else if (parameter.kind === 'option' && !values.has(parameter.index))
         values.set(parameter.index, convert(undefined, parameter));
     }
-    const slots = this.parameters.filter((parameter) => parameter.kind === 'slot');
+    const slots = this.slots;
     // Evaluate all slot rules for a token before selecting its owner.
     for (let i = 0; i < positional.length; i++) {
       if (consumed.has(i)) continue;
@@ -400,19 +456,22 @@ export class CommandArguments {
       consumed.add(i);
     }
     for (const slot of slots)
-      if (!values.has(slot.index)) {
-        if (slot.required) throw new CommandInputError(`缺少必填参数：${slot.name}`);
-        values.set(slot.index, slot.default);
-      }
+      if (!values.has(slot.index) && slot.required)
+        throw new CommandInputError(`缺少必填参数：${slot.name}`);
     const remaining = positional.filter((_, index) => !consumed.has(index));
-    const rest = this.parameters.find((parameter) => parameter.kind === 'rest');
+    const rest = this.rest;
     if (rest) values.set(rest.index, remaining);
     else if (remaining.length) throw new CommandInputError('存在未识别的参数，请检查命令用法');
+    // Normalize only after every text error has been ruled out, in handler parameter order.
+    for (const slot of slots) {
+      const raw = values.get(slot.index) as string | undefined;
+      values.set(slot.index, raw === undefined ? slot.normalizedDefault : normalizeSlot(slot, raw));
+    }
     const bound = this.parameters.map((parameter) =>
       parameter.kind === 'context'
         ? context
         : parameter.kind === 'args'
-          ? [...args]
+          ? [...args!]
           : values.get(parameter.index),
     );
     return this.bindAttachments(bound, attachments, attachmentRoute);
@@ -423,8 +482,7 @@ export class CommandArguments {
     attachments: readonly Attachment[],
     attachmentRoute: boolean,
   ): unknown[] {
-    for (const [index, parameter] of this.parameters.entries()) {
-      if (parameter.kind !== 'attachments') continue;
+    for (const parameter of this.attachmentParameters) {
       const selected = selectAttachmentValues(attachments, parameter.selection, parameter);
       if (selected.status === 'invalid' && selected.reason === 'too-few')
         throw new CommandInputError(
@@ -434,7 +492,7 @@ export class CommandArguments {
         throw new CommandInputError(
           `${parameter.name}数量不能超过 ${selected.limit}（收到 ${selected.count}）。`,
         );
-      values[index] = selected.attachments;
+      values[parameter.index] = selected.attachments;
     }
     return values;
   }
@@ -459,6 +517,7 @@ export class CommandArguments {
       details: ordered.flatMap((parameter) => {
         if (
           parameter.kind === 'context' ||
+          parameter.kind === 'context-value' ||
           parameter.kind === 'args' ||
           parameter.kind === 'identity'
         )

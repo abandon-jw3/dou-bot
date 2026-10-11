@@ -124,7 +124,7 @@ export class Application implements BotApplication {
     const app = new Application(root, options, ports);
     try {
       await app.container.initialize();
-      app.dispatcher.validateGuards();
+      app.dispatcher.validateControls();
       return app;
     } catch (error) {
       app.state = 'failed';
@@ -150,6 +150,7 @@ export class Application implements BotApplication {
       queue: this.execution.snapshot(),
       prompts: this.execution.promptSnapshot(),
       events: { ...this.execution.events },
+      ...this.execution.metrics(),
       ...(this.execution.lastEventAt === undefined
         ? {}
         : { lastEventAt: this.execution.lastEventAt }),
@@ -220,7 +221,7 @@ export class Application implements BotApplication {
         errors.push(error);
       }
     };
-    const stopped = settle(this.transport.stop(deadline));
+    const stopped = settle(Promise.resolve().then(() => this.transport.stop(deadline)));
     if (this.hooksPromise)
       await settle(
         this.hooksPromise.then(

@@ -1,27 +1,22 @@
 import type {
-  ButtonContext,
-  ErrorContext,
-  ErrorPhase,
-  MessageContext,
+  ApplicationSnapshot,
   MessageInput,
   PromptOptions,
   PromptResult,
   QQClient,
-  QQEventContext,
-  SendResult,
 } from '../contracts.js';
 import type { ResolvedOptions } from './config.js';
 import type { ErrorReporter } from './logging.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
 import { normalize, isDispatch } from '../qq/normalize.js';
 import { errorOf, FrameworkError } from './errors.js';
-import { snapshotMessage, targetKey } from '../message/index.js';
+import { targetKey } from '../message/index.js';
 import { bounded } from './utils.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
 import { PromptManager } from './prompts.js';
-
-export type HandlerLocation = Pick<ErrorContext, 'controller' | 'method'>;
+import { EventTask } from './event-task.js';
+import type { HandlerLocation, MessageBinding, ReplyScope } from './event-task.js';
 
 export type Admission =
   | { status: 'accepted' | 'duplicate'; done: Promise<void> }
@@ -31,277 +26,24 @@ interface DedupEntry {
   expiresAt: number;
   done: Promise<void>;
 }
-interface ReplyScope {
-  sequence: number;
-  tail: Promise<void>;
-  references: number;
-  expiresAt: number;
-}
-interface MessageBinding {
-  event: Extract<NormalizedEvent, { kind: 'message' }>;
-  scope: ReplyScope;
-}
-type Ask = (
-  actor: EventTask,
-  source: MessageBinding,
-  question: MessageInput,
-  options: PromptOptions,
-  location?: HandlerLocation,
-) => Promise<PromptResult>;
-
-export class OperationLedger {
-  private sealed = false;
-  private readonly operations: Promise<unknown>[] = [];
-  constructor(
-    private readonly maximum: number,
-    private readonly report: (
-      error: unknown,
-      phase: ErrorPhase,
-      location?: HandlerLocation,
-    ) => void,
-    readonly budget = { count: 0 },
-  ) {}
-  get open(): boolean {
-    return !this.sealed;
-  }
-  run<T>(phase: ErrorPhase, operation: () => Promise<T>, location?: HandlerLocation): Promise<T> {
-    let result: Promise<T>;
-    let registered = false;
-    try {
-      if (this.sealed) throw new FrameworkError('INVALID_STATE', 'Event context has finished');
-      if (this.budget.count >= this.maximum)
-        throw new FrameworkError('RESOURCE_LIMIT', 'Too many context operations');
-      this.budget.count++;
-      registered = true;
-      result = operation();
-    } catch (error) {
-      result = Promise.reject(errorOf(error));
-    }
-    result.catch((error: unknown) => this.report(error, phase, location));
-    if (registered) this.operations.push(result);
-    return result;
-  }
-  async sealAndDrain(): Promise<void> {
-    this.sealed = true;
-    await Promise.allSettled(this.operations);
-    this.operations.length = 0;
-  }
-}
-
-interface TaskLifecycle {
-  managedSignals: Set<AbortSignal>;
-  cancelPrompt(signal: AbortSignal): void;
-}
-
-export class EventTask {
-  readonly controller = new AbortController();
-  readonly ledger: OperationLedger;
-  failed = false;
-  manualReplies = 0;
-  private readonly reported = new Set<unknown>();
-  private acknowledgment: { code: number; promise: Promise<void> } | undefined;
-  constructor(
-    readonly event: NormalizedEvent,
-    private readonly options: ResolvedOptions,
-    private readonly client: QQClient,
-    private readonly reporter: ErrorReporter,
-    private readonly scope?: ReplyScope,
-    private readonly ask?: Ask,
-    private readonly lifecycle?: TaskLifecycle,
-    private readonly parent?: EventTask,
-  ) {
-    this.ledger = new OperationLedger(
-      options.execution.maxContextOperations,
-      (error, phase, location) => this.report(error, phase, location),
-      parent?.ledger.budget,
-    );
-  }
-
-  /** One attachment handler owns its context operations; budgets and reply sequences stay shared. */
-  invocation(): EventTask {
-    const child = new EventTask(
-      this.event,
-      this.options,
-      this.client,
-      this.reporter,
-      this.scope,
-      this.ask,
-      this.lifecycle,
-      this,
-    );
-    this.lifecycle?.managedSignals.add(child.controller.signal);
-    const abort = () => {
-      child.controller.abort(this.controller.signal.reason);
-      this.lifecycle?.managedSignals.delete(child.controller.signal);
-      child.ledger.sealAndDrain().catch(() => {});
-    };
-    this.controller.signal.addEventListener('abort', abort, { once: true });
-    child.detach = () => this.controller.signal.removeEventListener('abort', abort);
-    if (this.controller.signal.aborted) abort();
-    return child;
-  }
-  private detach?: () => void;
-  async endInvocation(): Promise<void> {
-    try {
-      this.lifecycle?.cancelPrompt(this.controller.signal);
-      await this.ledger.sealAndDrain();
-    } finally {
-      this.controller.abort(new FrameworkError('INVALID_STATE', 'Attachment handler has finished'));
-      this.lifecycle?.managedSignals.delete(this.controller.signal);
-      this.detach?.();
-    }
-  }
-
-  report(error: unknown, phase: ErrorPhase, location?: HandlerLocation): void {
-    this.failed = true;
-    if (this.parent) this.parent.failed = true;
-    if (this.reported.has(error)) return;
-    if (this.reported.size < this.options.execution.maxContextOperations + 2)
-      this.reported.add(error);
-    this.reporter.report(error, {
-      phase,
-      appId: this.options.appId,
-      eventName: this.event.raw.t,
-      ...(this.event.raw.id ? { eventId: this.event.raw.id } : {}),
-      ...(this.event.kind === 'message' ? { messageId: this.event.messageId } : {}),
-      ...location,
-    });
-  }
-
-  context(event: NormalizedEvent = this.event): QQEventContext {
-    return Object.freeze({
-      appId: this.options.appId,
-      eventName: event.raw.t,
-      ...(event.raw.id === undefined ? {} : { eventId: event.raw.id }),
-      receivedAt: event.receivedAt,
-      raw: event.raw,
-      signal: this.controller.signal,
-      client: this.client,
-    });
-  }
-
-  messageContext(location?: HandlerLocation, source?: MessageBinding): MessageContext {
-    const event = source?.event ?? this.event;
-    if (event.kind !== 'message') throw new FrameworkError('INVALID_STATE', 'Not a message event');
-    const shared = {
-      ...this.context(event),
-      messageId: event.messageId,
-      userId: event.userId,
-      content: event.content,
-      attachments: event.attachments,
-      ...(event.timestamp === undefined ? {} : { timestamp: event.timestamp }),
-      reply: (message: MessageInput) => {
-        this.manualReplies++;
-        return this.send(message, true, location, source);
-      },
-      send: (message: MessageInput) => this.send(message, false, location, source),
-      prompt: (question: MessageInput, options: PromptOptions = {}) =>
-        this.ledger.run(
-          'prompt',
-          () => {
-            const scope = source?.scope ?? this.scope;
-            if (!this.ask || !scope)
-              throw new FrameworkError('INVALID_STATE', 'Prompt context is unavailable');
-            return this.ask(this, { event, scope }, question, options, location);
-          },
-          location,
-        ),
-    };
-    return event.target.scene === 'group'
-      ? Object.freeze({
-          ...shared,
-          scene: 'group',
-          groupId: event.target.groupId,
-          ...(event.memberRole === undefined ? {} : { memberRole: event.memberRole }),
-          target: event.target,
-        })
-      : Object.freeze({ ...shared, scene: 'private', target: event.target });
-  }
-
-  buttonContext(location?: HandlerLocation): ButtonContext {
-    const event = this.event;
-    if (event.kind !== 'button') throw new FrameworkError('INVALID_STATE', 'Not an interaction');
-    const shared = {
-      ...this.context(),
-      interactionId: event.interactionId,
-      buttonId: event.buttonId,
-      data: event.data,
-      userId: event.userId,
-      ack: (code?: number) => this.ack(code, location),
-      send: (message: MessageInput) => this.send(message, false, location),
-    };
-    return event.target.scene === 'group'
-      ? Object.freeze({ ...shared, scene: 'group', target: event.target })
-      : Object.freeze({ ...shared, scene: 'private', target: event.target });
-  }
-
-  ack(code = 0, location?: HandlerLocation): Promise<void> {
-    if (this.ledger.open && this.acknowledgment?.code === code) return this.acknowledgment.promise;
-    const promise = this.ledger.run(
-      'interaction-ack',
-      () => {
-        if (this.event.kind !== 'button' || !Number.isSafeInteger(code) || code < 0)
-          throw new FrameworkError('HANDLER_CONTRACT', 'Invalid interaction acknowledgment');
-        if (this.acknowledgment)
-          throw new FrameworkError('HANDLER_CONTRACT', 'Acknowledgment code is already fixed');
-        return this.client.api.acknowledgeInteraction(this.event.interactionId, code, {
-          signal: this.controller.signal,
-        });
-      },
-      location,
-    );
-    if (!this.acknowledgment) this.acknowledgment = { code, promise };
-    return promise;
-  }
-
-  send(
-    input: MessageInput,
-    reply: boolean,
-    location?: HandlerLocation,
-    source?: MessageBinding,
-  ): Promise<SendResult> {
-    return this.ledger.run(
-      'send',
-      () => {
-        const event = source?.event ?? this.event;
-        const scope = source?.scope ?? this.scope;
-        if (event.kind === 'event')
-          throw new FrameworkError('INVALID_STATE', 'Event has no send target');
-        const message = snapshotMessage(input, this.options.api.maxUploadBytes);
-        const target = event.target;
-        const signal = this.controller.signal;
-        if (!reply) return this.client.sendMessage(target, message, { signal });
-        if (event.kind !== 'message' || !scope)
-          throw new FrameworkError('INVALID_STATE', 'Interaction IDs cannot be message references');
-        const reference = { messageId: event.messageId, sequence: ++scope.sequence };
-        const result = scope.tail.then(() => {
-          signal.throwIfAborted();
-          return this.client.sendMessage(target, message, { signal, reply: reference });
-        });
-        scope.tail = result.then(
-          () => {},
-          () => {},
-        );
-        return result;
-      },
-      location,
-    );
-  }
-}
-
 interface QueuedTask {
   task: EventTask;
   bytes: number;
   entry?: DedupEntry;
+  key?: string;
   scope?: ReplyScope;
+  scopeKey?: string;
   resolve(): void;
   started: boolean;
   running: boolean;
+  runningSince: number;
+  processingMs: number;
   children: Set<QueuedTask>;
   finished: boolean;
 }
 interface QueueItem {
   queued: QueuedTask;
+  enqueuedAt: number;
   resume?: () => void;
 }
 
@@ -310,6 +52,22 @@ export class Execution {
   readonly events = { accepted: 0, duplicates: 0, rejected: 0, failed: 0 };
   private readonly dedup = new Map<string, DedupEntry>();
   private readonly scopes = new Map<string, ReplyScope>();
+  // TTLs are fixed per cache and the clock is monotonic. Completion/release order
+  // is therefore expiry order. Active entries never occur in these indexes.
+  private readonly idleDedup = new Map<string, DedupEntry>();
+  private readonly idleScopes = new Map<string, ReplyScope>();
+  private readonly rejections: ApplicationSnapshot['rejections'] = {
+    invalidEvent: 0,
+    queueFull: 0,
+    bytesFull: 0,
+    acknowledgmentsFull: 0,
+    replyScopesFull: 0,
+    dedupFull: 0,
+  };
+  private readonly timing: ApplicationSnapshot['timing'] = {
+    queueWait: { count: 0, totalMs: 0, maxMs: 0 },
+    processing: { count: 0, totalMs: 0, maxMs: 0 },
+  };
   private readonly waiting: (QueueItem | undefined)[] = [];
   private readonly prompts: PromptManager<QueuedTask, QueuedTask>;
   private head = 0;
@@ -319,6 +77,7 @@ export class Execution {
   private terminated = false;
   private active = 0;
   private controls = 0;
+  private nextExpiry = Infinity;
   private retainedBytes = 0;
   lastEventAt: number | undefined;
 
@@ -334,8 +93,7 @@ export class Execution {
       suspend: (owner) => {
         if (owner.finished || !owner.running)
           throw new FrameworkError('INVALID_STATE', 'Prompt owner is not executing');
-        owner.running = false;
-        this.active--;
+        this.stopRunning(owner);
         this.notify();
         this.pump();
       },
@@ -344,7 +102,11 @@ export class Execution {
           continuation();
           return;
         }
-        this.waiting.push({ queued: owner, resume: continuation });
+        this.waiting.push({
+          queued: owner,
+          enqueuedAt: this.clock.monotonic(),
+          resume: continuation,
+        });
         this.pump();
       },
       abort: (owner, reason) => owner.task.controller.abort(reason),
@@ -367,6 +129,40 @@ export class Execution {
   }
   promptSnapshot(): { pending: number } {
     return { pending: this.prompts.size };
+  }
+  metrics(): Pick<ApplicationSnapshot, 'capacity' | 'rejections' | 'timing'> {
+    this.prune(this.clock.monotonic());
+    const config = this.options.execution;
+    return {
+      capacity: {
+        concurrency: config.concurrency,
+        queueCapacity: config.queueCapacity,
+        queueMaxBytes: config.queueMaxBytes,
+        dedup: { size: this.dedup.size, limit: config.dedupMaxEntries },
+        replyScopes: { size: this.scopes.size, limit: config.replyScopeMaxEntries },
+      },
+      rejections: { ...this.rejections },
+      timing: {
+        queueWait: { ...this.timing.queueWait },
+        processing: { ...this.timing.processing },
+      },
+    };
+  }
+  private reject(reason: keyof ApplicationSnapshot['rejections']): void {
+    this.events.rejected++;
+    this.rejections[reason]++;
+  }
+  private observe(metric: keyof ApplicationSnapshot['timing'], milliseconds: number): void {
+    const value = this.timing[metric];
+    value.count++;
+    value.totalMs += milliseconds;
+    value.maxMs = Math.max(value.maxMs, milliseconds);
+  }
+  private stopRunning(queued: QueuedTask): void {
+    if (!queued.running) return;
+    queued.processingMs += this.clock.monotonic() - queued.runningSince;
+    queued.running = false;
+    this.active--;
   }
 
   private promptKey(event: Extract<NormalizedEvent, { kind: 'message' }>): string {
@@ -407,7 +203,7 @@ export class Execution {
     }
     // Captured input has already reserved bytes, a dedup entry and a reply scope.
     // Requeue that same task, rather than re-admit it as a duplicate or lose the input.
-    this.waiting.push({ queued: input });
+    this.waiting.push({ queued: input, enqueuedAt: this.clock.monotonic() });
     this.pump();
   }
 
@@ -420,13 +216,13 @@ export class Execution {
       bytes > config.maxEventBytes ||
       !isDispatch(payload)
     ) {
-      this.events.rejected++;
+      this.reject('invalidEvent');
       return { status: 'ignored' };
     }
     try {
       const parsed = normalize(payload, this.clock.wallTime());
       if (parsed.status === 'invalid') {
-        this.events.rejected++;
+        this.reject('invalidEvent');
         this.reporter.report(new FrameworkError('PROTOCOL', parsed.reason), {
           phase: 'protocol',
           appId: this.options.appId,
@@ -441,11 +237,7 @@ export class Execution {
           fields: parsed.conflictingFields,
         });
       const now = this.clock.monotonic();
-      if (
-        this.dedup.size >= config.dedupMaxEntries ||
-        this.scopes.size >= config.replyScopeMaxEntries
-      )
-        this.prune(now);
+      this.prune(now);
       const key =
         event.kind === 'message'
           ? JSON.stringify([
@@ -460,11 +252,7 @@ export class Execution {
             : event.raw.id
               ? JSON.stringify([this.options.appId, event.raw.t, event.raw.id])
               : undefined;
-      let existing = key === undefined ? undefined : this.dedup.get(key);
-      if (existing && !existing.active && existing.expiresAt <= now && key !== undefined) {
-        this.dedup.delete(key);
-        existing = undefined;
-      }
+      const existing = key === undefined ? undefined : this.dedup.get(key);
       if (existing) {
         this.events.duplicates++;
         return { status: 'duplicate', done: existing.done };
@@ -482,33 +270,36 @@ export class Execution {
           ? JSON.stringify([this.options.appId, targetKey(event.target), event.messageId])
           : undefined;
       let scope = scopeKey === undefined ? undefined : this.scopes.get(scopeKey);
-      if (scope && !scope.references && scope.expiresAt <= now && scopeKey !== undefined) {
-        this.scopes.delete(scopeKey);
-        scope = undefined;
-      }
       const autoAck = event.kind === 'button' && this.options.acknowledge === 'auto';
-      if (
-        (!prompt && this.pending + this.active >= config.queueCapacity + config.concurrency) ||
-        this.retainedBytes + bytes > config.queueMaxBytes ||
-        (autoAck && this.controls >= config.concurrency) ||
-        (scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries)
-      ) {
-        this.events.rejected++;
+      const rejection =
+        !prompt && this.pending + this.active >= config.queueCapacity + config.concurrency
+          ? 'queueFull'
+          : this.retainedBytes + bytes > config.queueMaxBytes
+            ? 'bytesFull'
+            : autoAck && this.controls >= config.concurrency
+              ? 'acknowledgmentsFull'
+              : scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries
+                ? 'replyScopesFull'
+                : undefined;
+      if (rejection) {
+        this.reject(rejection);
         return { status: 'overloaded' };
       }
       if (key !== undefined && this.dedup.size >= config.dedupMaxEntries) {
-        const expiredCandidate = [...this.dedup.entries()].find(([, entry]) => !entry.active);
-        if (!expiredCandidate) {
-          this.events.rejected++;
+        const expiredCandidate = this.idleDedup.keys().next().value;
+        if (expiredCandidate === undefined) {
+          this.reject('dedupFull');
           return { status: 'overloaded' };
         }
-        this.dedup.delete(expiredCandidate[0]);
+        this.dedup.delete(expiredCandidate);
+        this.idleDedup.delete(expiredCandidate);
       }
       if (scopeKey !== undefined && !scope) {
         scope = { sequence: 0, tail: Promise.resolve(), references: 0, expiresAt: Infinity };
         this.scopes.set(scopeKey, scope);
       }
       if (scope) {
+        if (scopeKey !== undefined) this.idleScopes.delete(scopeKey);
         scope.references++;
         scope.expiresAt = Infinity;
       }
@@ -537,15 +328,19 @@ export class Execution {
               ),
             ),
         },
+        undefined,
+        this.clock,
       );
       const queued: QueuedTask = {
         task,
         bytes,
-        ...(key === undefined ? {} : { entry }),
-        ...(scope ? { scope } : {}),
+        ...(key === undefined ? {} : { entry, key }),
+        ...(scope && scopeKey !== undefined ? { scope, scopeKey } : {}),
         resolve: complete,
         started: false,
         running: false,
+        runningSince: 0,
+        processingMs: 0,
         children: new Set(),
         finished: false,
       };
@@ -559,7 +354,7 @@ export class Execution {
         if (!this.prompts.claim(prompt, queued, event.content)) this.fallback(queued);
         return { status: 'accepted', done };
       }
-      this.waiting.push({ queued });
+      this.waiting.push({ queued, enqueuedAt: now });
       if (autoAck) {
         this.controls++;
         task.ack().then(
@@ -581,10 +376,25 @@ export class Execution {
     this.notify();
   }
   private prune(now: number): void {
-    for (const [key, entry] of this.dedup)
-      if (!entry.active && entry.expiresAt <= now) this.dedup.delete(key);
-    for (const [key, scope] of this.scopes)
-      if (!scope.references && scope.expiresAt <= now) this.scopes.delete(key);
+    if (now < this.nextExpiry) return;
+    let nextExpiry = Infinity;
+    for (const [key, entry] of this.idleDedup) {
+      if (entry.expiresAt > now) {
+        nextExpiry = Math.min(nextExpiry, entry.expiresAt);
+        break;
+      }
+      this.idleDedup.delete(key);
+      this.dedup.delete(key);
+    }
+    for (const [key, scope] of this.idleScopes) {
+      if (scope.expiresAt > now) {
+        nextExpiry = Math.min(nextExpiry, scope.expiresAt);
+        break;
+      }
+      this.idleScopes.delete(key);
+      this.scopes.delete(key);
+    }
+    this.nextExpiry = nextExpiry;
   }
   private pump(): void {
     while (
@@ -598,6 +408,8 @@ export class Execution {
       const task = item.queued;
       this.active++;
       task.running = true;
+      task.runningSince = this.clock.monotonic();
+      this.observe('queueWait', task.runningSince - item.enqueuedAt);
       if (item.resume) {
         item.resume();
         continue;
@@ -636,22 +448,25 @@ export class Execution {
       queued,
       new FrameworkError('INVALID_STATE', 'Event context has finished'),
     );
-    if (queued.running) {
-      queued.running = false;
-      this.active--;
-    }
+    this.stopRunning(queued);
+    if (queued.started) this.observe('processing', queued.processingMs);
     for (const child of queued.children) this.finish(child);
     queued.children.clear();
     if (queued.task.failed) this.events.failed++;
     this.retainedBytes -= queued.bytes;
-    if (queued.entry) {
+    if (queued.entry && queued.key !== undefined) {
       queued.entry.active = false;
       queued.entry.expiresAt = this.clock.monotonic() + this.options.execution.dedupTtlMs;
+      this.idleDedup.set(queued.key, queued.entry);
+      this.nextExpiry = Math.min(this.nextExpiry, queued.entry.expiresAt);
     }
     if (queued.scope) {
       queued.scope.references--;
-      if (!queued.scope.references)
+      if (!queued.scope.references && queued.scopeKey !== undefined) {
         queued.scope.expiresAt = this.clock.monotonic() + this.options.execution.replyScopeTtlMs;
+        this.idleScopes.set(queued.scopeKey, queued.scope);
+        this.nextExpiry = Math.min(this.nextExpiry, queued.scope.expiresAt);
+      }
     }
     queued.task.controller.abort(new FrameworkError('INVALID_STATE', 'Event context has finished'));
     this.managedSignals.delete(queued.task.controller.signal);
@@ -707,9 +522,7 @@ export class Execution {
           cleanup();
           reject(errorOf(signal.reason));
         };
-        let nextExpiry = Infinity;
-        for (const scope of this.scopes.values())
-          if (!scope.references && scope.expiresAt < nextExpiry) nextExpiry = scope.expiresAt;
+        const nextExpiry = this.idleScopes.values().next().value?.expiresAt ?? Infinity;
         const timer = Number.isFinite(nextExpiry)
           ? this.clock.timeout(wake, Math.max(1, nextExpiry - this.clock.monotonic()))
           : undefined;
@@ -739,6 +552,9 @@ export class Execution {
     }
     this.dedup.clear();
     this.scopes.clear();
+    this.idleDedup.clear();
+    this.idleScopes.clear();
+    this.nextExpiry = Infinity;
     this.notify();
   }
 }

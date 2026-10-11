@@ -5,6 +5,21 @@ const cities = new Set(['北京', '上海', '深圳']);
 
 @Controller()
 class QueryController {
+  // Source-only API: normalize is not available in the published dou-bot@0.7.0.
+  @Command('状态', { description: '将服务器别名统一为规范名称' })
+  status(
+    @Slot('server', {
+      name: '服务器',
+      description: '双梦是梦江南的别名',
+      required: true,
+      choices: ['梦江南', '双梦'],
+      normalize: (value) => (value === '双梦' ? '梦江南' : value),
+    })
+    server: string,
+  ): string {
+    return `归一化后的服务器：${server}`;
+  }
+
   @Command('查询', { aliases: ['查'], description: '演示无序参数、剩余参数和选项' })
   query(
     @Slot('city', { name: '城市', required: true, match: (text) => cities.has(text) })
@@ -41,6 +56,10 @@ const harness = await createTestApplication(AppModule, {
 try {
   await harness.app.start();
   const inputs = [
+    '状态 梦江南',
+    '状态 双梦',
+    '状态 梦江南 双梦',
+    '帮助 状态',
     '查询 北京 天气',
     '查询 天气 北京',
     '查询 今天 天气 北京 详细',

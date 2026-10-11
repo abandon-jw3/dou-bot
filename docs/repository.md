@@ -47,6 +47,8 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 
 ## CI 与文档部署
 
+SDK 性能对照使用 `npm run benchmark:framework -- 5 local`，覆盖无参数命令、回复、严格参数、大枚举、中间件、图片及满容量拒绝。结果保存在 `work/benchmark-framework-local.json`；采用相同环境的多轮中位数比较，不将合成结果当作 QQ 公网吞吐。`npm run soak -- 180000` 执行三分钟离线压力检查，现已包含中间件与上下文读取；历史版本的工作负载不同，不直接比较吞吐。最近一次审查见 [框架审查记录](framework-review-2026-10-11.md)。
+
 唯一工作流为 [ci.yml](../.github/workflows/ci.yml)。每次提交或 PR 分别在 Windows 和 Linux 上检查三个工程；SDK 对最低版本 24.0.0 和 `.nvmrc` 开发版本分别执行完整检查、覆盖率和 30 秒持续运行检查。持续运行报告按系统与版本档位分别命名。业务示例、文档工具使用开发版本；文档同时执行依赖审计和 Linux Chromium 浏览器测试。
 
 只有 `main` 的非 PR 工作流在全部检查成功后部署 Pages。部署产物为 `website/docs/.vitepress/dist`，Pages Source 使用 GitHub Actions，环境为 `github-pages`。
@@ -56,6 +58,8 @@ npm run docs:test:browser    # 桌面和手机浏览器验收，自动启动本�
 修改站点路径时同步检查 `website/docs/.vitepress/config.ts`、`website/playwright.config.ts`、产物链接检查脚本及浏览器断言。线上复验可在 `website` 工程设置 `DOCS_ORIGIN=https://abandon-jw3.github.io` 后运行 `npm run test:browser`。
 
 ## npm 发布与文档版本
+
+容量验证入口为 `npm run benchmark:capacity -- virtual 7200000 local`（两小时虚拟时间）和 `npm run benchmark:capacity -- realtime 3900000 local-realtime`（65 分钟真实计时）。两者均不连接 QQ，使用显式 2,000 群配置及合成下游延迟；监测字段与限制见 [容量指南](capacity.md)。CI 的四组 SDK 矩阵运行虚拟时间版本并保存报告，长时间真实计时由具体任务授权执行。不能将虚拟时长记为真实持续运行。
 
 仍只从主仓库根目录发布 `dou-bot`。SDK 的 `files` 白名单不包含 `apps/` 或 `website/`，`npm run test:package` 会检查实际 tarball，避免将网站工具与示例打入运行时包。
 

@@ -57,7 +57,11 @@ export function filterAttachmentValues(
 ): Attachment[] {
   return kind === 'all'
     ? [...attachments]
-    : attachments.filter((attachment) => category(attachment.contentType) === kind);
+    : attachments.filter((attachment) => matchesAttachmentKind(attachment, kind));
+}
+
+export function matchesAttachmentKind(attachment: Attachment, kind: AttachmentKind): boolean {
+  return kind === 'all' || category(attachment.contentType) === kind;
 }
 
 /** Shared selection and cardinality rules; only the caller decides how to report invalid input. */

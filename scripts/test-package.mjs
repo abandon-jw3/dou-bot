@@ -63,6 +63,8 @@ const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'
 if (pack.name !== 'dou-bot' || manifest.private || manifest.license !== 'MIT')
   throw new Error('Package identity, visibility or license is not ready for distribution');
 const publicGuides = [
+  'docs/capacity.md',
+  'docs/context-middleware.md',
   'docs/command-parameters.md',
   'docs/execution-controls.md',
   'docs/access-control.md',
@@ -182,7 +184,15 @@ const skillExamples = [
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline
   ? []
-  : ['consumer-attachments.ts', 'consumer-identity.ts', 'consumer-attachment-routes.ts'];
+  : [
+      'consumer-attachments.ts',
+      'consumer-identity.ts',
+      'consumer-attachment-routes.ts',
+      // These APIs are source-only until a future release; npm 0.7.0 must remain verifiable.
+      ...(published
+        ? []
+        : ['consumer-slot-normalization.ts', 'consumer-context.ts', 'consumer-capacity.ts']),
+    ];
 if (!releasedBaseline) {
   await writeFile(
     resolve(consumer, 'testing-types.ts'),

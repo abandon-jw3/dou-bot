@@ -32,37 +32,40 @@ export function callable(value: unknown): value is (...args: unknown[]) => unkno
   return typeof value === 'function';
 }
 
+const deadlineError = () => new FrameworkError('SHUTDOWN_TIMEOUT', 'Deadline exceeded');
+
 export function bounded<T>(
   promise: PromiseLike<T>,
   deadline: number,
   signal?: AbortSignal,
   clock: Clock = systemClock,
+  timeoutError: () => Error = deadlineError,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     let finished = false;
-    const settle = (operation: () => void) => {
+    const settle = (operation: () => void, checkDeadline = true) => {
       if (finished) return;
       finished = true;
       timer?.cancel();
       signal?.removeEventListener('abort', abort);
-      operation();
+      // Promise jobs can run before a due timer after synchronous work blocked the event loop.
+      if (checkDeadline && clock.monotonic() >= deadline) reject(timeoutError());
+      else operation();
     };
     const abort = () =>
-      settle(() =>
-        reject(
-          errorOf(signal?.reason ?? new FrameworkError('INVALID_STATE', 'Operation cancelled')),
-        ),
+      settle(
+        () =>
+          reject(
+            errorOf(signal?.reason ?? new FrameworkError('INVALID_STATE', 'Operation cancelled')),
+          ),
+        false,
       );
     const remaining = deadline - clock.monotonic();
     const timer =
       Number.isFinite(deadline) && remaining > 0
-        ? clock.timeout(
-            () => settle(() => reject(new FrameworkError('SHUTDOWN_TIMEOUT', 'Deadline exceeded'))),
-            remaining,
-          )
+        ? clock.timeout(() => settle(() => reject(timeoutError()), false), remaining)
         : undefined;
-    if (remaining <= 0)
-      settle(() => reject(new FrameworkError('SHUTDOWN_TIMEOUT', 'Deadline exceeded')));
+    if (remaining <= 0) settle(() => reject(timeoutError()), false);
     else if (signal?.aborted) abort();
     else signal?.addEventListener('abort', abort, { once: true });
     Promise.resolve(promise).then(

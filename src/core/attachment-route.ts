@@ -1,5 +1,5 @@
 import type { Attachment, OnAttachmentOptions } from '../contracts.js';
-import { attachmentLabels, filterAttachmentValues } from './attachments.js';
+import { attachmentLabels, matchesAttachmentKind } from './attachments.js';
 import { FrameworkError } from './errors.js';
 import { isRecord } from './utils.js';
 
@@ -33,21 +33,26 @@ export class AttachmentRoute {
   }
 
   select(attachments: readonly Attachment[]): readonly Attachment[] {
-    const selected = filterAttachmentValues(attachments, this.options.kind ?? 'all');
-    return Object.freeze(
-      selected.filter((attachment) => {
-        const name = attachment.filename;
-        if (
-          this.extension !== undefined &&
-          (name === undefined || !name.toLowerCase().endsWith(`.${this.extension}`))
-        )
-          return false;
-        if (this.filename === undefined) return true;
-        if (name === undefined) return false;
-        if (typeof this.filename === 'string') return name === this.filename;
-        this.filename.lastIndex = 0;
-        return this.filename.test(name);
-      }),
-    );
+    return Object.freeze(attachments.filter((attachment) => this.matchesOne(attachment)));
+  }
+
+  /** Admission needs only existence, not an allocated selection array. */
+  matches(attachments: readonly Attachment[]): boolean {
+    return attachments.some((attachment) => this.matchesOne(attachment));
+  }
+
+  private matchesOne(attachment: Attachment): boolean {
+    if (!matchesAttachmentKind(attachment, this.options.kind ?? 'all')) return false;
+    const name = attachment.filename;
+    if (
+      this.extension !== undefined &&
+      (name === undefined || !name.toLowerCase().endsWith(`.${this.extension}`))
+    )
+      return false;
+    if (this.filename === undefined) return true;
+    if (name === undefined) return false;
+    if (typeof this.filename === 'string') return name === this.filename;
+    this.filename.lastIndex = 0;
+    return this.filename.test(name);
   }
 }

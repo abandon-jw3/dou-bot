@@ -12,6 +12,7 @@ export {
   OnButton,
   OnAttachment,
   Ctx,
+  ContextValue,
   User,
   UserId,
   Group,
@@ -25,6 +26,7 @@ export {
   Attachments,
   Images,
   UseGuards,
+  UseMiddleware,
   GroupOnly,
   PrivateOnly,
   UsersOnly,
@@ -33,6 +35,7 @@ export {
   Cooldown,
 } from './core/metadata.js';
 export { selectAttachments } from './core/attachments.js';
+export { createContextKey } from './core/context-state.js';
 export { HelpModule } from './core/help.js';
 export { BotFactory } from './core/factory.js';
 export { LOGGER } from './core/logging.js';

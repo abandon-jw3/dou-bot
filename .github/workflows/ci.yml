@@ -33,6 +33,17 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run coverage
+      - name: Capacity and retention regression (two virtual hours)
+        run: npm run benchmark:capacity -- virtual 7200000 ci
+        timeout-minutes: 3
+      - name: Save capacity report
+        if: ${{ always() && hashFiles('work/capacity-review/ci.json') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: capacity-${{ matrix.os }}-${{ matrix.node.label }}
+          path: work/capacity-review/ci.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Sustained workload regression
         run: npm run soak -- 30000
         timeout-minutes: 2

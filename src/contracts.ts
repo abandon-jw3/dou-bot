@@ -3,6 +3,31 @@ import type { RequestListener } from 'node:http';
 
 export type Awaitable<T> = T | Promise<T>;
 
+/** Opaque, invariant token. Phantom members are not runtime properties; use createContextKey. */
+export interface ContextKey<T> {
+  readonly __contextKey: never;
+  readonly __contextType: (value: T) => T;
+}
+export interface ContextReader {
+  get<T>(key: ContextKey<T>): Promise<T>;
+}
+export interface ContextWriter extends ContextReader {
+  set<T>(key: ContextKey<T>, value: T): void;
+  provide<T>(key: ContextKey<T>, loader: (signal: AbortSignal) => Awaitable<T>): void;
+}
+export interface ContextMiddleware {
+  prepare(ctx: MiddlewareContext): Awaitable<void>;
+}
+export type MiddlewareContext = GuardContext & { readonly state: ContextWriter };
+export interface ContextOptions {
+  /** Timeout for each prepare invocation. Default 10000 ms. */
+  prepareTimeoutMs?: number;
+  /** Timeout starting at the first read of each lazy value. Default 10000 ms. */
+  loadTimeoutMs?: number;
+  /** Maximum registered keys per handler invocation. Default 64. */
+  maxEntries?: number;
+}
+
 export type Type<T = object> = new (...args: any[]) => T;
 
 export type AbstractType<T = object> = abstract new (...args: any[]) => T;
@@ -34,6 +59,8 @@ export interface ModuleMetadata {
   exports?: readonly InjectionToken[];
   /** Applied to this module's own controllers before class/method guards; imports are independent. */
   guards?: readonly InjectionToken<CanActivate>[];
+  /** Applied to this module's own controllers; imports are independent. */
+  middlewares?: readonly InjectionToken<ContextMiddleware>[];
 }
 
 export interface OnModuleInit {
@@ -77,6 +104,7 @@ export interface UsersOnlyOptions extends AccessOptions {
 
 /** Read-only request information. Return a decision instead of sending messages from a guard. */
 export type GuardContext = Omit<QQEventContext, 'client'> & {
+  readonly state: ContextReader;
   readonly userId: string;
   readonly controller: Type;
   readonly method: string;
@@ -148,8 +176,12 @@ export type ArgumentOptions = ParameterDescription &
 
 export type OptionOptions = ArgumentOptions & { alias?: string };
 
-/** Matchers must be pure, synchronous predicates. When supplied together, both rules must match. */
-export type SlotOptions = ParameterDescription & { default?: string } & (
+/** Pure synchronous matchers check the original token; choices and match apply together. */
+export type SlotOptions = ParameterDescription & {
+  default?: string;
+  /** Pure synchronous conversion after text checks; defaults are normalized once at bootstrap. */
+  normalize?: (text: string) => string;
+} & (
     | { choices: readonly string[]; match?: (text: string) => boolean }
     | { match: (text: string) => boolean; choices?: readonly string[] }
   );
@@ -269,6 +301,7 @@ export interface BotOptions {
     invalidInput?: 'report' | 'reply';
   };
   execution?: ExecutionOptions;
+  context?: ContextOptions;
   prompts?: PromptConfig;
   interactions?: {
     acknowledge?: 'auto' | 'manual';
@@ -294,6 +327,30 @@ export interface ApplicationSnapshot {
     duplicates: number;
     rejected: number;
     failed: number;
+  };
+  /** Process-local capacity and cache occupancy; not a QQ platform quota. */
+  capacity: {
+    concurrency: number;
+    queueCapacity: number;
+    queueMaxBytes: number;
+    dedup: { size: number; limit: number };
+    replyScopes: { size: number; limit: number };
+  };
+  /** Each rejected event increments its first applicable reason exactly once. */
+  rejections: {
+    invalidEvent: number;
+    queueFull: number;
+    bytesFull: number;
+    acknowledgmentsFull: number;
+    replyScopesFull: number;
+    dedupFull: number;
+  };
+  /** Lifetime aggregates in milliseconds. No message or user data is retained. */
+  timing: {
+    /** One sample per initial scheduling or prompt resumption. */
+    queueWait: { count: number; totalMs: number; maxMs: number };
+    /** One sample per finished started event; excludes queue and suspended prompt time. */
+    processing: { count: number; totalMs: number; maxMs: number };
   };
   lastEventAt?: number;
 }
@@ -354,6 +411,7 @@ export interface QQEventContext<T = unknown> {
 }
 
 export interface MessageContextBase extends QQEventContext {
+  readonly state: ContextReader;
   readonly messageId: string;
   readonly userId: string;
   /** Group content omits leading mentions explicitly marked as this bot; raw.d is unchanged. */
@@ -410,6 +468,7 @@ export interface PrivateMessageContext extends MessageContextBase {
 export type MessageContext = GroupMessageContext | PrivateMessageContext;
 
 export interface ButtonContextBase extends QQEventContext {
+  readonly state: ContextReader;
   readonly interactionId: string;
   readonly userId: string;
   readonly buttonId: string;
@@ -756,6 +815,8 @@ export interface Logger {
 }
 
 export type ErrorPhase =
+  | 'middleware'
+  | 'context'
   | 'prompt'
   | 'guard'
   | 'cooldown'
@@ -784,6 +845,7 @@ export interface ErrorContext {
 export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<void>;
 
 export type FrameworkErrorCode =
+  | 'CONTEXT_TIMEOUT'
   | 'CONFIG'
   | 'DEPENDENCY'
   | 'ROUTE_CONFLICT'

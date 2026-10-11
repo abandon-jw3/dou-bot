@@ -1,5 +1,6 @@
 import type {
   BotOptions,
+  ContextOptions,
   ExecutionOptions,
   QQApiOptions,
   RetryOptions,
@@ -16,6 +17,7 @@ export interface ResolvedOptions {
   secret: string;
   api: Readonly<Required<QQApiOptions>>;
   execution: Readonly<Required<ExecutionOptions>>;
+  context: Readonly<Required<ContextOptions>>;
   prompts: PromptSettings;
   prefix: string;
   invalidInput: 'report' | 'reply';
@@ -119,6 +121,7 @@ export function resolveOptions(raw: BotOptions): ResolvedOptions {
       'transport',
       'commands',
       'execution',
+      'context',
       'prompts',
       'interactions',
       'logger',
@@ -162,6 +165,8 @@ export function resolveOptions(raw: BotOptions): ResolvedOptions {
       'Execution capacities cannot reserve all active and queued tasks',
     );
   const commands = raw.commands ?? {};
+  const context = raw.context === undefined ? {} : raw.context;
+  keys(context, ['prepareTimeoutMs', 'loadTimeoutMs', 'maxEntries'], 'context');
   keys(commands, ['prefix', 'invalidInput'], 'commands');
   const invalidInput = commands.invalidInput === undefined ? 'report' : commands.invalidInput;
   if (invalidInput !== 'report' && invalidInput !== 'reply')
@@ -285,6 +290,11 @@ export function resolveOptions(raw: BotOptions): ResolvedOptions {
     onError: raw.onError,
     transport: Object.freeze(resolvedTransport),
     execution: Object.freeze(execution),
+    context: Object.freeze({
+      prepareTimeoutMs: integer(context.prepareTimeoutMs, 10000, 'context.prepareTimeoutMs'),
+      loadTimeoutMs: integer(context.loadTimeoutMs, 10000, 'context.loadTimeoutMs'),
+      maxEntries: integer(context.maxEntries, 64, 'context.maxEntries'),
+    }),
     prompts: resolvePrompts(raw.prompts),
     api: Object.freeze({
       sandbox,

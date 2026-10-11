@@ -1,6 +1,18 @@
-import type { InjectionToken, ModuleMetadata, Provider, Type } from '../contracts.js';
+import type {
+  ContextMiddleware,
+  InjectionToken,
+  ModuleMetadata,
+  Provider,
+  Type,
+} from '../contracts.js';
 import { FrameworkError } from './errors.js';
-import { constructorTokens, isController, readModule, readModuleGuards } from './metadata.js';
+import {
+  constructorTokens,
+  isController,
+  readModule,
+  readModuleGuards,
+  readModuleMiddlewares,
+} from './metadata.js';
 import type { GuardDeclaration } from './access.js';
 import { bounded, callable, isObject, isType, own, throwIfAborted, tokenName } from './utils.js';
 import { systemClock } from './clock.js';
@@ -20,6 +32,7 @@ interface ModuleNode {
   imports: ModuleNode[];
   bindings: Map<InjectionToken, Binding>;
   guards: readonly GuardDeclaration[];
+  middlewares: readonly InjectionToken<ContextMiddleware>[];
 }
 interface Binding {
   token: InjectionToken;
@@ -34,6 +47,7 @@ export interface ControllerBinding {
   type: Type;
   module: Type;
   moduleGuards: readonly GuardDeclaration[];
+  moduleMiddlewares: readonly InjectionToken<ContextMiddleware>[];
   instance(): object;
 }
 
@@ -94,6 +108,7 @@ export class Container {
         imports: [],
         bindings: new Map(),
         guards: readModuleGuards(type),
+        middlewares: readModuleMiddlewares(type),
       };
       this.modules.set(type, node);
       modulePath.push(type);
@@ -258,7 +273,10 @@ export class Container {
     if (!node) throw new FrameworkError('DEPENDENCY', 'Unknown provider module');
     const binding = this.find(token, node);
     if (binding.controller)
-      throw new FrameworkError('DEPENDENCY', 'Guards must be providers, not controllers');
+      throw new FrameworkError(
+        'DEPENDENCY',
+        'Guards and middleware must be providers, not controllers',
+      );
     return () => {
       if (!binding.ready) throw new FrameworkError('INVALID_STATE', 'Provider is not initialized');
       return binding.value as T;
@@ -267,6 +285,16 @@ export class Container {
 
   moduleGuards(): { module: Type; guards: readonly GuardDeclaration[] }[] {
     return [...this.modules.values()].map((node) => ({ module: node.type, guards: node.guards }));
+  }
+
+  moduleMiddlewares(): {
+    module: Type;
+    middlewares: readonly InjectionToken<ContextMiddleware>[];
+  }[] {
+    return [...this.modules.values()].map((node) => ({
+      module: node.type,
+      middlewares: node.middlewares,
+    }));
   }
 
   controllers(): ControllerBinding[] {
@@ -286,6 +314,7 @@ export class Container {
           type: binding.token as Type,
           module: node.type,
           moduleGuards: node.guards,
+          moduleMiddlewares: node.middlewares,
           instance: () => {
             if (!binding.ready || !isObject(binding.value))
               throw new FrameworkError('INVALID_STATE', 'Controller is not initialized');

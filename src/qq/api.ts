@@ -84,7 +84,7 @@ function validateKeyboard(payload: unknown): void {
         return bad();
       const users: unknown = action.permission.specify_user_ids;
       if (
-        (users !== undefined && (!Array.isArray(users) || !users.every(hasText))) ||
+        (users !== undefined && (!Array.isArray(users) || !Array.from(users).every(hasText))) ||
         (action.permission.type === 0 && (!Array.isArray(users) || !users.length))
       )
         return bad();
@@ -162,6 +162,10 @@ export class HttpQQApi extends QQApi {
     options: ApiRequestOptions,
     textResponse: boolean,
   ): Promise<ApiResponse<unknown>> {
+    if (!isRecord(options))
+      throw new FrameworkError('HANDLER_CONTRACT', 'QQ request options must be an object');
+    // The caller may reuse its options while token acquisition is pending.
+    options = { ...options };
     this.http.assertAllowed(options.signal);
     if (
       typeof path !== 'string' ||
