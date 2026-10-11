@@ -17,7 +17,7 @@ export type QueryPolicy = (context: GuardContext) => Awaitable<GuardResult>;
 const POLICY = Symbol('query-policy');
 const cityWords = new Set(['北京', '上海']);
 
-// This small dictionary belongs to the example business, not to the SDK.
+// 按你的业务维护城市词典。
 export function City(): ParameterDecorator {
   return Slot('city', {
     name: '城市',
@@ -36,7 +36,7 @@ class QueryGuard implements CanActivate {
 
 @Injectable()
 class QueryService {
-  // Demonstrates argument binding only. Replace with the requested real business service.
+  // 在这里接入你的查询服务；本例仅返回用户选择的参数。
   describe(
     city: string,
     topic: string,
@@ -55,7 +55,7 @@ class QueryController {
 
   @Command('查询', {
     aliases: ['查'],
-    description: '展示参数解析，业务数据源由应用接入',
+    description: '选择城市和查询类型',
   })
   @Cooldown({ scope: 'user', durationMs: 3000, message: '请稍后再查询。' })
   query(

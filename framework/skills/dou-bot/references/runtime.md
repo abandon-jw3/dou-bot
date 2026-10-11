@@ -1,104 +1,91 @@
-# Guard、冷却、消息与按钮
+# 权限、回复与按钮交互
 
-## Guard 与执行顺序
+以下用法面向 dou-bot 0.7.0。先明确谁可以触发操作、拒绝时是否提示，以及处理成功后回复什么。
 
-0.7.0 支持 `@Module({ guards: [...] })` 以及模块类上的 UseGuards/内置访问限制。顺序为模块配置 guards → 模块类装饰器 → 控制器类 → 方法；各层累加，重复令牌不自动去重。仅保护本模块 controllers 中的 Command/OnButton，不传播到 imports、父模块或兄弟模块。
+## 限制谁能使用
 
-模块 Guard 从所属模块的 providers/imports/exports 解析，不能传实例或把 GroupOnly() 等装饰器放入 guards 数组。缺失、歧义、Controller 令牌和非法工厂结果会在启动时拒绝，即使模块暂无控制器也会检查。内置规则跨层合并做场景/角色冲突校验；含 OnButton 的模块不能整体使用 GroupRoles/GroupManagersOnly，应把角色规则放到专门的命令控制器。
+| 业务要求                       | 声明                                            |
+| ------------------------------ | ----------------------------------------------- |
+| 只在群聊使用                   | `@GroupOnly()`                                  |
+| 只在私聊使用                   | `@PrivateOnly()`                                |
+| 固定用户名单                   | `@UsersOnly(['openid'], { scene: 'private' })`  |
+| 仅群主                         | `@GroupRoles('owner')`                          |
+| 群主或管理员                   | `@GroupManagersOnly()`                          |
+| 数据库权限、订阅状态等动态规则 | 注册自定义 Guard，再用 `@UseGuards(GuardClass)` |
 
-0.4.0 提供无需注册 Provider 的 GroupOnly、PrivateOnly、UsersOnly、GroupRoles、GroupManagersOnly，均可从 dou-bot 导入。它们与 UseGuards 混合时保持类/方法、继承与代码声明顺序；GroupOnly/PrivateOnly 冲突及空角色交集在启动时报 CONFIG。
+GroupOnly、PrivateOnly、UsersOnly 可用于命令、按钮和附件处理器。GroupRoles、GroupManagersOnly 用于群消息触发的命令或附件处理器；角色缺失或无法识别时拒绝。按钮事件没有足够的群角色信息，不能直接套用这两个角色装饰器。
 
-- `@UsersOnly(['openid'], { scene: 'private', message: false })` 精确匹配名单，可指定 scene 或 groupId（隐含 group）。未指定范围时匹配所有会话，不转换跨场景 OpenID；动态名单仍用业务 Guard。
-- `@GroupRoles('owner')` 仅群主；`@GroupManagersOnly()` 为 owner 或 admin；只读取当前群消息 author.member_role，缺失/未知时拒绝。GroupMessageContext/群消息 GuardContext 暴露可选 memberRole，私聊不携带。
-- 群角色规则仅用于命令；类级或方法级角色规则作用到 OnButton 会报 CONFIG。按钮点击使用 `permission: { type: 'managers' }`，映射 QQ permission.type=1，只能发到群聊。QQClient 和具名私聊 API 在请求前拒绝该权限。
-- GroupOnly、PrivateOnly、UsersOnly 可保护 Command/OnButton。类级规则不限制 On 观察器；不能把规则直接写在 On 方法上。
-- 不从回调、引用作者、mentions 或昵称猜测群角色，不用发送按钮的那个人代替点击者。原生按钮权限不等于可复用的业务授权；命令按钮对应的命令若有权限要求仍声明自己的规则。
+UsersOnly 使用事件中的 OpenID，可以通过 scene 或 groupId 限定范围；日常 QQ 号不能直接代替 OpenID，也不把群成员 ID 与私聊用户 ID 当作同一标识。
 
-命令/按钮按 Guard → 命令参数绑定（仅命令）→ 冷却占用 → 业务方法执行。原始 On 观察器仍先独立执行，不能靠它拒绝后续命令。
+规则放在方法上保护单个入口，放在控制器类上保护该类的业务入口。模块的 guards 或模块类规则只保护本模块 controllers 中的命令、按钮和附件处理器，不自动保护导入模块的控制器。需要统一权限时明确覆盖相关入口；不要把权限检查放在原始 On 观察器里。
+
+自定义 Guard 通过 providers 注册，支持注入权限服务。`canActivate(ctx)` 可以异步返回 true、false 或 `{ allow: false, message: '没有权限' }`。正常拒绝可以静默或提示；抛错属于执行故障，不直接回复内部异常。UseGuards 接收 Provider 令牌，不接收手动构造的实例。
+
+多层规则依次执行：模块配置 → 模块类 → 控制器类 → 方法。列表从左到右，叠加装饰器按代码从上到下；任意规则拒绝就停止当前入口。方法规则与类规则叠加，不会覆盖类上的限制；相同 Guard 重复声明也会重复执行。可运行的自定义权限例子见 [命令与权限模块](../assets/minimal-module.ts)。
+
+GuardContext 提供 userId、scene、target、signal 和路由信息。按 kind 区分 command、button、attachment：附件入口可读取 matchedAttachments，按钮入口可读取 data。Guard 不负责直接发送消息，也拿不到已经绑定的命令参数。
+
+## 限制重复调用
 
 ```ts
-import { Injectable } from 'dou-bot';
-import type { CanActivate, GuardContext, GuardResult } from 'dou-bot';
+@Cooldown({ scope: 'user', durationMs: 3000, message: '请稍后再试。' })
+```
 
-@Injectable()
-export class GroupOnlyGuard implements CanActivate {
-  canActivate(ctx: GuardContext): GuardResult {
-    return ctx.scene === 'group' ? true : { allow: false, message: '请在群聊中使用此指令。' };
+将它加到 Command、OnButton 或 OnAttachment 方法上，一个方法最多一个。可选范围：
+
+| scope   | 共享范围                   |
+| ------- | -------------------------- |
+| user    | 当前会话内的同一用户       |
+| session | 当前群或当前私聊           |
+| command | 该处理器的全部调用者和会话 |
+
+命令别名共享冷却，不同处理器各自计时；查询命令与刷新按钮不会自动共享冷却。message 省略时提示剩余时间，false 表示静默拒绝。
+
+Guard 先执行，再绑定参数并校验附件，随后占用冷却并进入处理器。权限拒绝和参数错误不占冷却；处理器或发送失败后不自动退还。冷却从进入业务时起算，不保证上一次任务已经结束；需要禁止任务重叠时，由业务服务实现互斥。
+
+冷却是单实例内的状态，重启后清空；不能据此实现跨进程的计费或配额。默认最多保存 10,000 条记录，达到限制会报 RESOURCE_LIMIT，按实际用户数及冷却时长配置 `execution.cooldownMaxEntries`。
+
+## 回复消息
+
+命令和附件处理器返回字符串或 MessageInput，会自动引用当前消息回复。需要多步回复时使用 `await ctx.reply(...)`，方法返回 void。`ctx.send(...)` 是普通发送，受 QQ 平台权限与频控约束，不能假定它总能替代引用回复。
+
+常用构建器是 text、image、markdown、keyboard 和 button。图片可用 HTTP(S) URL、有效二进制或已经上传的图片；已上传图片按机器人和目标限制复用，不能直接跨群发送同一 UploadedImage。
+
+```ts
+import { Command, Controller, Ctx, OnButton, button, keyboard, markdown } from 'dou-bot';
+import type { ButtonContext } from 'dou-bot';
+
+@Controller()
+export class ConfirmationController {
+  @Command('确认')
+  ask() {
+    return markdown('是否确认？', {
+      keyboard: keyboard([[button.callback('confirm', '确认', 'continue')]]),
+    });
+  }
+
+  @OnButton('confirm')
+  async confirm(@Ctx() ctx: ButtonContext): Promise<void> {
+    if (ctx.data !== 'continue') return;
+    await ctx.send('已确认。');
   }
 }
 ```
 
-这是群聊限定策略的示例，并非所有机器人都需要它。将 Guard 注册为 providers，并在 Controller 类或 Command/OnButton 方法上使用 `@UseGuards(GroupOnlyGuard)`。传入 Provider 令牌，不能传入 `new GroupOnlyGuard()` 实例。
+把此控制器注册到应用模块的 controllers。这个示例展示按钮消息与回调；真正执行订单、管理等操作前，还要检查操作者、业务状态和授权。
 
-canActivate 可异步返回 true、false 或 `{ allow: false, message?: string }`。true 放行；false 静默拒绝；对象形式可提示。不要返回 `{ allow: true }`、undefined 或随意的其他对象。正常拒绝不计入 failed/onError；抛错及不合法结果上报 guard 阶段，不回显内部异常。
+## 区分按钮的行为
 
-类级 Guard 先于方法级，列表按从左到右执行，多个 UseGuards 声明按代码从上到下执行；继承时先基类类级，再派生类类级，最后是有效方法级。任意一项拒绝即停止。Guard 受模块可见性和生命周期约束，默认单例；支持注入业务权限服务。
+- callback 按钮匹配 OnButton 的 button ID，ctx.data 是业务字符串，不会自动解析 JSON，也不是权限凭证。
+- link 按钮打开链接；command 按钮发送命令文本，不进入 OnButton。命令文本应包含应用实际使用的前缀。
+- 群管理者按钮使用 `permission: { type: 'managers' }`，只发到群聊；发送入口可用 GroupOnly 限定。不要从这份权限配置推断点击者的 Role。
+- 默认自动确认表示“收到点击”，不表示业务成功。manual 模式下，处理器进入后调用 `await ctx.ack()`；被 Guard 或冷却拦截时无需等待业务代码补确认。
+- ButtonContext 提供 send 和 ack，没有 reply 或 prompt。需要从按钮开始多轮提问，可以使用 command 按钮引导用户进入命令流程。
 
-GuardContext 有 userId、scene、target、signal、raw、controller、method、规范 route 等信息。kind 为 command 时有 content/messageId/attachments，button 时有 interactionId/buttonId/data；group 场景还有 groupId。它没有 reply/send/ack/client，也没有已绑定的参数。
+群按钮目标可以从 ctx.target 的 group 分支读取，也可用 GroupId 参数装饰器。interactionId 用于确认点击，不能当作普通消息的 msg_id。发送失败按实际 QQ 错误排查，不伪造引用或盲目重发。
 
-用户身份取平台 OpenID；不要将日常 QQ 号当作 OpenID，也不要假定私聊 user_openid 与群 member_openid 可以跨场景合并。
+## 日志与业务失败
 
-## 冷却
+On 用于观察具体 QQ 事件，例如 C2C_MESSAGE_CREATE、GROUP_AT_MESSAGE_CREATE、GROUP_MESSAGE_CREATE。方法接收 QQEventContext 并返回 void；它没有消息 reply 方法，也不使用命令参数、Guard 或 Cooldown。需要自动处理用户文件时优先使用 OnAttachment。
 
-`@Cooldown({ scope: 'user', durationMs: 3000 })` 用于 Command/OnButton 方法，一个方法最多一个。
-
-| scope   | 同一处理器内的共享范围   |
-| ------- | ------------------------ |
-| user    | 当前会话内同一个用户     |
-| session | 当前群或当前私聊         |
-| command | 该处理器所有调用者及会话 |
-
-命令别名共享记录；不同处理器和不同应用独立。查询与刷新按钮不自动共享冷却。message 省略则提示剩余时间，字符串指定提示，false 静默。durationMs 是 1～2147483647 的整数。
-
-Guard 拒绝与参数错误不占名额；业务抛错或发送失败不退还名额。重复拒绝不延长期限。冷却从业务入口开始，不是“上一请求完成后计时”的互斥锁，也不是跨进程限流器。
-
-execution.cooldownMaxEntries 默认 10000。容量满时清理过期项，仍满则报 RESOURCE_LIMIT，不淘汰有效项以放行。重启会重置进程内记录。
-
-## 消息返回与上下文
-
-命令返回字符串或 MessageInput 即自动引用原消息回复。手动 `await ctx.reply(...)` 后返回 void；不要再 return 第二条消息。`ctx.send(...)` 是普通无引用发送，受 QQ 平台权限约束，不能当成总能成功的 reply 替代品。
-
-上下文只在当前处理周期内使用；不要保存 ctx.reply/send/ack 给晚到定时器。框架会跟踪上下文操作，但业务仍应明确 await；注入原始 QQClient/QQApi 的调用不自动成为上下文操作。
-
-常用构建器的参数顺序：
-
-```ts
-import { text, image, markdown, keyboard, button } from 'dou-bot';
-import type { ImageSource } from 'dou-bot';
-
-export function renderExamples(source: ImageSource) {
-  return [
-    text('消息'),
-    image(source, { caption: '图片说明' }),
-    markdown('**请选择**', {
-      keyboard: keyboard([
-        [
-          button.callback('query:refresh', '刷新', 'opaque-business-token'),
-          button.link('查看页面', 'https://example.com/'),
-          button.command('帮助', '/help', { enter: true }),
-        ],
-      ]),
-    }),
-  ];
-}
-```
-
-command 按钮的文本应符合应用实际前缀；上例采用默认 /。image 可用 HTTP(S) URL、有效二进制或已上传图片。UploadedImage 按机器人、API origin、场景和目标限制复用，不能任意跨目标使用。
-
-本 SDK 使用原始 Markdown 和内联键盘，不提供模板 ID 发送分支。不要发明 markdownTemplate/keyboardTemplate、模板参数或不在公开声明中的便捷方法。按钮默认保留点击前后的标签；visitedLabel 可显式改写，空字符串也有意义。
-
-## 回调和确认
-
-`@OnButton('query:refresh')` 处理 callback 按钮；方法返回 void。链接按钮和 command 按钮不走此回调。`ctx.data` 是字符串，不自动解析 JSON 或证明用户有权限；根据业务校验数据、发起者和目标，需要服务端状态时加有效期与容量限制。
-
-ButtonContext 提供 ack 和 send，没有 reply；统一获取目标可用 ctx.target。群按钮的 groupId 从 ctx.target 的 group 分支取，不假设 ButtonContext 直接暴露 groupId。
-
-默认 auto 会在接纳时确认收到，不代表业务已成功。manual 模式下，进入处理器后由业务调用 `await ctx.ack()`；同一次上下文重复相同 code 会复用，不能再换 code。Guard/冷却阻止处理器时，框架在 manual 模式补做 code=0 的收到确认，且不等待拒绝提示发送。
-
-interactionId 只用于交互确认，不能冒充普通消息 msg_id。按钮回复用 ctx.send，失败保留 QQApiError，不把它改造成假引用或盲目重发。
-
-## 原始事件与异常
-
-`@On` 精确匹配 QQ 事件名，例如 C2C_MESSAGE_CREATE、GROUP_AT_MESSAGE_CREATE、GROUP_MESSAGE_CREATE、INTERACTION_CREATE；不是 Koishi 的通用 message 事件。观察器用 QQEventContext 并返回 void；它没有消息 reply 方法。On 方法不支持命令参数装饰器、Guard 或 Cooldown。
-
-SDK 的输入错误提示只覆盖框架解析阶段。业务已知错误可转换成友好消息，未知异常交给 onError；不要直接把外部响应正文、鉴权信息或异常堆栈回显给聊天。业务网络传递 ctx.signal，发送失败不无条件重试，以免重复产生副作用。
+上下文只在当前执行流程中使用。异步请求传入 ctx.signal 并明确 await；应用要长期保存的是业务数据，而不是 ctx 或它的发送方法。已知业务失败回复清楚的说明，未知异常交给 onError 或应用日志，避免把凭证、外部响应正文或堆栈回显到聊天。

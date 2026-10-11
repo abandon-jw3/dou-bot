@@ -1,25 +1,58 @@
-# 二次输入与会话
+# 向用户继续提问
 
-适用 dou-bot 0.7.0。`MessageContext.prompt(question, options?)` 发问并等待同一应用、会话和用户的下一条消息；不需要新装饰器。ButtonContext/QQEventContext 没有 prompt。
+当一次操作需要补充信息或等待下一条附件时，在命令或附件处理器中使用 `await ctx.prompt(...)`。以下示例适用 dou-bot 0.7.0；ButtonContext 和原始事件上下文没有 prompt。
+
+## 完成两轮输入
+
+下面是已有控制器中的方法，ctx 使用 MessageContext 类型：
 
 ```ts
-const answer = await ctx.prompt('请输入角色名，发送取消退出：', {
-  timeoutMs: 60000,
-  cancelWords: ['取消'],
-});
-if (answer.status !== 'received') return;
-const next = await answer.message.prompt('请输入服务器：');
-if (next.status !== 'received') return;
-await next.message.reply(`${answer.message.content} / ${next.message.content}`);
+@Command('登记')
+async register(@Ctx() ctx: MessageContext): Promise<void> {
+  const role = await ctx.prompt('请输入角色名，发送“取消”退出：');
+  if (role.status !== 'received') {
+    await ctx.reply(role.status === 'timeout' ? '等待超时。' : '已取消。');
+    return;
+  }
+
+  const server = await role.message.prompt('请输入服务器：');
+  if (server.status !== 'received') {
+    await role.message.reply(server.status === 'timeout' ? '等待超时。' : '已取消。');
+    return;
+  }
+  await server.message.reply(`登记信息：${role.message.content} / ${server.message.content}`);
+}
 ```
 
-片段在返回 Promise<void> 的命令处理器中使用，ctx 为 MessageContext。prompt 已手动发送问题，方法最后返回 void；不能再返回自动回复消息。
+从 dou-bot 导入 Command、Ctx，以及 MessageContext 类型。每轮使用新回答的 message.prompt/message.reply，回复就能引用最近的输入。prompt 已发送问题，处理器最终返回 void，不再额外返回自动回复消息。
 
-- 结果为 received（有 message）、timeout 或 cancelled。PromptMessage 是 MessageContext，可读取文字、附件和当前群消息 memberRole；空文字或图片不是超时。
-- 每轮从新输入的 message.reply/message.prompt 回复，避免继续引用最初指令。所有输入上下文由原命令流程管理，共用 signal 与操作预算，结束后不能继续发送或等待。
-- 默认 60 秒，从问题发送成功后计时；全局 prompts 支持 timeoutMs、maxTimeoutMs（默认 300000）、maxPending（默认 1000）、cancelWords（默认 ['取消']）。单次覆盖 timeoutMs/cancelWords，[] 禁用取消词，匹配去除首尾空白后的精确文本。
-- 先注册后发送，快速输入被保留；发送失败时已捕获输入退回普通路由。被成功消费的回答不再执行 Command/On，即使文本看起来像指令；原指令 Guard/冷却不重跑。涉及管理操作时，在最终执行前用新输入角色或业务权限服务复核。
-- 必须 await。一个会话用户只允许一个等待项，重复为 INVALID_STATE，超出容量为 RESOURCE_LIMIT；非法调用配置为 HANDLER_CONTRACT。关闭会中断等待，超时/用户取消则正常返回且不自动提示。
-- 等待释放活跃执行槽，恢复前重新取得槽。回答仍受去重、字节及回复作用域限制；整个流程共用 maxContextOperations，每次 prompt 与发问题分别计数。不要用业务层全局 Map 代替这套生命周期。
-- 交互测试通过 enqueue 驱动：发起命令、等问题记录出现、enqueue 回答、最后等待全部 done/flush。捕获输入的 done 与整段流程一起完成；多轮之间等待下一条问题记录，不能先 await 第一条回答的 dispatch。
-- 群里无需 @ 的二次输入依赖 QQ 实际投递权限。离线测试通过不表示 QQ 客户端已经验证。
+## 处理结果和业务校验
+
+结果有三种：received 带有 message，timeout 和 cancelled 没有。收到图片等附件时 content 可能为空，仍是 received；根据需求检查 message.content 或 message.attachments，不把空文字当作超时。
+
+prompt 只接收下一条输入。输入不符合业务要求时，明确选择回复提示后结束，或在有次数上限的流程中再次提问。文件筛选见 [附件与身份](attachments-identity.md)。
+
+等待绑定到同一应用、会话和用户，不同群或不同用户的消息不会成为回答。同一会话用户只能存在一个等待项；重复等待报 INVALID_STATE。成功作为回答的消息不会再触发普通命令、附件处理器或原始 On 观察器，即使它看起来像一条命令。
+
+原入口的 Guard 和冷却不会在回答时重新执行。确认付款、管理等敏感业务前，按最新回答的身份或业务权限服务再次核验；不能只依赖最初发起时的权限。
+
+## 设置超时和取消
+
+默认等待 60 秒，从问题发送成功后计时；默认取消词为“取消”。单次可以指定：
+
+```ts
+const answer = await ctx.prompt('请输入信息：', {
+  timeoutMs: 30000,
+  cancelWords: ['取消', '/取消'],
+});
+```
+
+取消词去除首尾空白后精确匹配；空数组表示禁用取消词。应用级 prompts 可以设置 timeoutMs、maxTimeoutMs、maxPending 和 cancelWords。默认最大等待时间为 5 分钟，同时等待上限为 1,000；根据业务交互数量配置。
+
+等待期间会释放执行名额，但仍占用会话及相关资源。必须 await 整个流程；处理器结束或应用关闭后，不能继续用旧上下文发送或等待。重启会清空对话状态。
+
+## 测试完整对话
+
+用 enqueue 发起命令，等问题出现在测试消息中，再 enqueue 回答；多轮流程在下一条问题出现后继续。最后等待整个流程完成，不能先等待首条命令的 dispatch 才发送回答。具体测试方法见 [测试与排错](testing.md)。
+
+群里不带 @ 的回答能否收到，取决于 QQ 是否向该机器人投递事件。离线测试验证业务流程，实际客户端收发需要另外确认。

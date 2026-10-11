@@ -30,7 +30,7 @@ function message(content: string, group = false, user?: string): QQDispatch {
   };
 }
 
-await test('consumer module runs real decorators and DI with reordered slots, rest and options', async (t) => {
+await test('查询命令支持参数换序、备注、选项、冷却与帮助', async (t) => {
   const h = await createTestApplication(createQueryModule(policy), {
     commands: { prefix: '', invalidInput: 'reply' },
   });
@@ -59,7 +59,7 @@ await test('consumer module runs real decorators and DI with reordered slots, re
   assert.equal(h.errors.length, 0);
 });
 
-await test('guard runs before parsing; Rest preserves input errors and invalid input does not consume cooldown', async (t) => {
+await test('未授权请求先被拒绝，输入错误不占用冷却', async (t) => {
   const h = await createTestApplication(createQueryModule(policy), {
     commands: { prefix: '', invalidInput: 'reply' },
   });

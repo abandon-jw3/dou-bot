@@ -1,18 +1,19 @@
-# 工程、模块与依赖注入
+# 创建应用与组织业务服务
 
-适用基线：dou-bot 0.7.0。先检查项目实际声明，保留现有结构与用户选定的版本。
+以下示例使用 dou-bot 0.7.0、Node.js 24.x、TypeScript 5.9.3 和 ESM。先检查用户项目的实际依赖和脚本；已有项目保留自己的目录结构与版本，新项目再补齐必要文件。
 
-## 消费 SDK
+## 安装与编译
 
-公开入口只有 `dou-bot` 和 `dou-bot/testing`。根入口加载 reflect-metadata/lite；业务无需添加框架内部的 RuntimePorts、Container 或 WebSocket 类型依赖。
+新项目安装 SDK：
 
-框架 dou-bot@0.7.0 已以 MIT 发布到官方 npm registry，GitHub 框架仓库已改名为 dou-bot 并公开。新项目可声明 `"dou-bot": "0.7.0"` 并提交锁文件。已有本地 tgz 项目迁移时显式执行 `npm install --save-exact dou-bot@0.7.0`，核对锁文件的 resolved 已改为官方 registry URL，保留原包来源与校验记录；不要安装其他项目占用的 dd-bot 包。
+```sh
+npm install --save-exact dou-bot@0.7.0
+npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
+```
 
-业务开发依赖通常包含 TypeScript 与 @types/node，生产依赖只需声明自己使用的 SDK 和业务库。框架内部的 ws 不意味着消费者必须安装 @types/ws。
+已有项目先用 `npm ls dou-bot` 确认版本。业务从 `dou-bot` 导入，测试从 `dou-bot/testing` 导入；应用不需要另外安装 SDK 内部使用的类型或检出 SDK 源码。
 
-## 编译条件
-
-核心 tsconfig 选项如下；合并进项目现有配置，而非覆盖其他选项：
+package.json 设置 `"type": "module"`。下面是需要合并到项目中的编译选项：
 
 ```json
 {
@@ -23,16 +24,18 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "verbatimModuleSyntax": true,
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true
+    "strict": true
   }
 }
 ```
 
-package.json 使用 `"type": "module"`，相对 TS 导入采用生成后的 `.js` 扩展名。用 tsc 生成并运行 JS；不要假定 Node 直接运行 TS、tsx 或默认 SWC/esbuild 配置会产生构造注入所需的传统装饰器元数据。
+参数装饰器和构造注入需要传统装饰器及运行时元数据。使用 tsc 编译后运行 JavaScript；若项目已有其他编译工具，确认它能保留这两项能力，不能仅凭能运行普通 TypeScript 推定 DI 可用。
 
-## 模块与 Provider
+相对导入沿用项目约定。NodeNext 项目可以写 `./service.js`，编译器会找到对应的 TypeScript 源文件；采用 `.ts` 导入的项目，在 TypeScript 5.9.3 中启用 `rewriteRelativeImportExtensions: true`。随附示例使用 `.js`，复制时按项目配置调整。
+
+## 把一个功能放进模块
+
+Controller 接收消息并组织回复，Service 负责查询、保存或计算，Module 注册它们：
 
 ```ts
 import { Command, Controller, Inject, Injectable, Module } from 'dou-bot';
@@ -67,40 +70,48 @@ class QueryController {
 export class AppModule {}
 ```
 
-- 被自动注入的类必须作为运行时值导入，不能用 `import type`。接口、字符串、原始类型或函数依赖用 `@Inject(token)`；不要期待 Object/String/Number 元数据映射到业务服务。
-- Provider 支持类、useClass、useValue 和带 inject 的异步 useFactory。类单例及工厂结果按模块图初始化。
-- 可见性由所属模块的 providers、imports 和 exports 决定。共享服务要由其模块导出，再由消费者模块导入。Controller 不作为 Provider 注入或跨模块导出。
-- QQClient、QQApi、LOGGER 是保留的内置可注入令牌，不能用普通 providers 覆盖。
-- 模块类仅承载声明，不自动实例化。继承带依赖的构造函数时，派生类应明确声明构造和注入；不要依赖被擦除的类型自动继承。
-- `app.get(Service)` 读取根模块可见服务；有需要时使用 `app.get(Service, { module: FeatureModule })`。不要绕过模块可见性直接构造另一份单例。
+把此模块加入应用根模块的 imports，或直接将它作为应用根模块。新增 Controller 要注册到 controllers；服务和自定义 Guard 要注册到 providers。
 
-模块可通过 `guards: [GuardToken]` 或模块类上的 `@UseGuards(...)` 声明统一检查；仅作用于自己 controllers 中的 Command/OnButton，不传播到 imports。Guard 仍需作为可见 Provider 注册；同一规则重复声明会重复执行。详细执行顺序见 [执行控制](runtime.md)。
+- 注入类时使用普通值导入；`import type` 会擦掉构造注入需要的信息。接口和配置对象通过 `@Inject(token)` 绑定。
+- 共享服务由所属模块 exports，再由使用它的模块 imports；不要用 `new Service()` 绕过配置和生命周期。
+- 异步初始化可用带 inject 的 useFactory，例如创建业务 API 客户端。工厂返回的服务仍按应用生命周期使用。
+- 服务和 Guard 默认复用同一实例，不把当前用户或 ctx 放在实例字段中。
+- 模块类用于声明依赖关系；业务状态放在 Service 中。需要从入口获取服务时使用 `app.get(Service)`。
+- 发送能力、原始 QQ API 和日志分别可以注入 QQClient、QQApi、LOGGER；业务配置使用自己的令牌。
 
-## 创建、启动和关闭
+一组功能共用权限时，可在 Module 的 guards 或模块类上声明规则，作用于该模块的命令、按钮和附件处理器。详细用法见 [权限与交互](runtime.md)。
+
+## 连接 QQ 与关闭应用
+
+在应用入口读取本项目的环境配置，检查凭证后创建并启动：
 
 ```ts
 import { BotFactory } from 'dou-bot';
+import { AppModule } from './app.module.js';
+
+const appId = process.env.QQ_APP_ID;
+const secret = process.env.QQ_APP_SECRET;
+if (!appId || !secret) throw new Error('请配置 QQ_APP_ID 和 QQ_APP_SECRET');
 
 const app = await BotFactory.create(AppModule, {
-  appId: process.env.QQ_APP_ID!,
-  secret: process.env.QQ_APP_SECRET!,
+  appId,
+  secret,
   transport: { type: 'ws' },
   commands: { prefix: '/', invalidInput: 'reply' },
 });
 await app.start();
-// 宿主退出时调用并等待 app.close()。
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    app.close().catch(() => {
+      console.error('机器人关闭失败，请检查应用日志。');
+      process.exitCode = 1;
+    });
+  });
+}
 ```
 
-此片段假设业务 AppModule 已定义，实际入口先检查凭证是否存在。create 完成配置、DI 和路由检查；start 才建立接入。close 之后不能重启同一应用实例。
+本片段假设上一节模块保存在 app.module.ts。create 会检查配置、模块和路由，start 才开始接收事件；close 后不能重新启动同一实例。使用项目自己的 build/start 脚本，并在启动命令中明确加载本地 `.env` 或部署环境变量。
 
-`OnModuleInit.onModuleInit(signal)` 和 `OnModuleDestroy.onModuleDestroy(signal)` 可同步或异步。自行创建的资源按生命周期释放；useValue 的资源归调用者所有，不会被框架自动销毁。异步业务应响应 signal，框架无法硬终止任意用户 JavaScript。
+需要初始化数据库连接、缓存等资源时，让注册在 providers 中的 Service 提供 `onModuleInit(signal)` 和 `onModuleDestroy(signal)`，完成初始化与释放。用 useValue 传入的现有资源由应用自己关闭；业务请求应配合 signal 取消。
 
-Webhook 可选：
-
-```ts
-transport: { type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }
-```
-
-也可配置 listen=false 后挂载 `app.webhookHandler()`。保持原始 URL 和未读取的请求体，先完成 start 再接入流量。不要在处理器前用 JSON body parser 消耗签名原文；嵌入模式的 HTTP server 生命周期由宿主管理。
-
-业务 HTTP 请求传入上下文 signal，并使用适合业务的超时/缓存；框架不会替你 await 注入服务发起的任意网络操作。Node 的代理行为按目标版本和现有脚本核实；使用 --use-env-proxy 的已验证消费者采用 Node 24.21.0，不把该开关假定为所有 Node 24 小版本均可用。
+如果用户选用 Webhook，将 transport 配置为 `{ type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }`，再按部署环境提供 HTTPS 入口。集成到现有 HTTP 服务时使用 listen=false 与 `app.webhookHandler()`，在 app.start() 完成后接入流量，保留原始 URL 和未读取的请求体，不能先经过 JSON body parser；已有 HTTP 服务仍由应用负责关闭。

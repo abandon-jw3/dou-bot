@@ -17,7 +17,7 @@ const payload = (id: string, content: string, type = 'file') => ({
   },
 });
 
-await test('attachment starter selects same-message images and direct uploads', async () => {
+await test('同条图片和直接上传的 DOCX 分别进入对应处理器', async () => {
   const bot = await createTestApplication(AppModule);
   await bot.app.start();
   try {
@@ -33,7 +33,7 @@ await test('attachment starter selects same-message images and direct uploads', 
   }
 });
 
-await test('attachment starter prompt owns its file input and replies to the new message', async () => {
+await test('上传问答接收下一条文件并引用该消息回复', async () => {
   const bot = await createTestApplication(AppModule);
   await bot.app.start();
   try {

@@ -1,22 +1,22 @@
-# 命令、Slot、Rest 和选项
+# 把用户输入变成命令参数
 
-## 选择参数形式
+先确定用户会发送的文本、前缀和期望回复。以下以 dou-bot 0.7.0 为例；默认前缀是 `/`，例如 `/查询 北京 天气`。设置 `commands.prefix: ''` 后才使用不带前缀的命令。
 
-| 声明                       | 语义                                                       |
-| -------------------------- | ---------------------------------------------------------- |
-| `@Arg(0)`                  | 旧位置参数，字符串或 undefined，支持业务方法的 JS 默认参数 |
-| `@Arg(0, options)`         | 位置参数，显式类型、必填、默认值、枚举或数值范围           |
-| `@Slot('city', options)`   | 根据业务规则识别任意位置的一个字符串分词                   |
-| `@Rest({ name: '备注' })`  | 收集所有未消费的普通分词，保持原顺序；没有剩余时为 []      |
-| `@Args()`                  | 完整分词快照，包括选项和 --，不参与消费                    |
-| `@Option('page', options)` | 长选项及可选的单字母短别名                                 |
-| `@Ctx()`                   | 当前处理器上下文                                           |
+## 选择合适的参数
 
-所有处理器参数都需要参数装饰器，包括有默认值的参数。命令装饰器只用于实例方法；继承方法可以复用，覆写但不重新声明路由时，原路由不再注册。
+| 用户输入的特点                         | 选择                       | 使用结果                                 |
+| -------------------------------------- | -------------------------- | ---------------------------------------- |
+| 固定位置，如 `/问候 小明`              | `@Arg(0)`                  | 字符串或 undefined，可以使用方法默认参数 |
+| 固定位置且需要类型、范围或必填校验     | `@Arg(0, options)`         | 按配置解析和校验                         |
+| 城市、服务器等关键词可能出现在不同位置 | `@Slot('city', options)`   | 匹配一个原始分词                         |
+| 其余内容作为备注或正文                 | `@Rest()`                  | 保留顺序的字符串数组，没有内容时为 []    |
+| 页码、开关等明确选项                   | `@Option('page', options)` | 解析长选项或短别名                       |
+| 需要完整输入分词作额外分析             | `@Args()`                  | 完整分词快照，不消耗参数                 |
+| 需要回复、会话或取消信号               | `@Ctx()`                   | 当前上下文                               |
 
-`@Command('查询', { aliases: ['查'], description: '查询信息' })` 的名称和别名大小写敏感、不能带空白。注册冲突在启动时失败。默认前缀为 `/`；`commands.prefix` 是一个字符串，可设为 `''`，但不能含空白。群聊/私聊使用同一前缀；空前缀不会额外保留 `/`。
+处理器写在已注册控制器的实例方法上；覆写继承方法时重新声明路由。每个处理器参数都声明来源，包括带默认值的参数。命令名称与 aliases 区分大小写且不含空白；示例词典和前缀由业务决定。多词文本使用引号，例如 `/问候 "Ada Lovelace"`；这里按空白分词，不做中文自然语言切词。
 
-## 无序 Slot 与业务装饰器
+## 用 Slot 接受不同顺序
 
 ```ts
 import { Slot } from 'dou-bot';
@@ -32,43 +32,38 @@ export function City(): ParameterDecorator {
 }
 ```
 
-City() 是返回 Slot 装饰器的工厂。业务方法中 `@City() city: string` 可代替重复声明规则；城市词典属于应用，不是框架内置数据。可编译的完整组合见 [minimal-module.ts](../assets/minimal-module.ts)。
+在处理器中用 `@City() city: string`，再声明查询类型 Slot，即可同时接受 `/查询 北京 天气` 和 `/查询 天气 北京`。完整组合见 [命令示例](../assets/minimal-module.ts)。
 
-Slot 至少声明非空 choices 或同步 match。两者同时使用时取交集。match 必须同步返回 boolean；不要在其中请求 API、写状态或返回 Promise。匹配结果仍为原始分词字符串，没有自动 transform/DTO/实体注入；别名归一化或实体查询放进 Service。
+Slot 至少提供 choices 或 match；两者同时提供时，输入必须同时满足。match 同步返回 boolean，只做匹配。0.7.0 注入的是原始字符串；需要把别名转成统一名称、查实体或加载用户默认配置时，在处理器中调用业务 Service，异步查询用 await，不放进 match 或静态 default。
 
-用户可以输入 `查询 北京 天气` 或 `查询 天气 北京`。额外声明 Rest 后，`查询 今天 天气 北京 详细` 的 Rest 是 `['今天', '详细']`。Rest 在方法参数中的位置不影响其最后收集的行为。
+一个词同时命中多个 Slot、同一 Slot 收到多个候选值或缺少必填项都会提示输入错误。两个 Slot 若使用同一套城市词典，不能靠不同参数名区分“出发地”和“目的地”；这类输入改用固定位置或明确选项。
 
-一个分词命中多个 Slot、一个 Slot 收到多个候选值（即使值相同）或缺少 required Slot 都是输入错误，不能由 Rest 接收。每命令最多一个 Rest，注入普通数组参数，不写成 JS 的 `...remaining`。Slot 名不能重复；两个都接受全部城市的“出发地/目的地” Slot 无法靠改名称消除歧义，应使用明确选项、位置或业务标记区分。
+## 保留正文与可选参数
 
-## 解析顺序与兼容边界
+解析顺序是 Option → Arg → Slot → Rest。Arg 的下标对应去掉选项后的普通参数；Rest 最后收集未使用的词，声明位置不影响这个行为。
 
-新参数模式按以下顺序消费：提取 Option 及其值 → Arg 按剩余普通参数的固定下标绑定 → Slot 匹配尚未消费的分词 → Rest 按原顺序收集。
+使用 Option、Slot、Rest 或带 options 的 Arg 后，多余普通参数会报错；需要接收备注就加 Rest。只使用 `Arg(index)`、Args、Ctx 的命令可以接受额外词；给已有命令增加校验时，检查原来的输入是否仍然可用。
 
-添加 Option、Slot、Rest 或 Arg 的 options 任意一项即启用严格模式。无 Rest 时，多余普通参数会报错；Args 不是兜底。只使用旧 Arg(index)/Args/Ctx 的命令继续接受额外参数，并把选项形状的词当成字符串；扩展旧命令时显式决定是否需要 Rest。
+Rest 不接收有歧义、重复、缺失或错误类型的参数，也不吞掉未知选项。每条命令最多一个 Rest，参数写普通数组，而不是 `...remaining`。Args 只供读取完整分词，不能代替 Rest 接收多余内容。
 
-单引号、双引号、反斜杠转义保留一个分词内的空格及空字符串。此过程不做中文分词或自然语言猜测。
-
-## 类型与选项
+## 页码与开关
 
 ```ts
 @Option('page', { alias: 'p', type: 'integer', min: 1, default: 1 }) page: number
 @Option('detail', { alias: 'd', type: 'boolean', default: false }) detail: boolean
 ```
 
-- runtime type 默认 string；支持 string/integer/number/boolean，不根据 TS 的 `: number` 自动转换。
-- integer 只接受十进制安全整数；number 只接受有限十进制数（含科学计数法）；boolean 值是小写 true/false。
-- required 检查是否提供；显式空字符串算已提供。default 必须满足 type、choices、min/max，不能与 required=true 同用。
-- 数字范围仅用于 number/integer；choices 是非空且不重复的同类型字符串/数字数组，boolean 不用 choices。
-- name/description 用于提示和帮助。没有 default 的可选标量缺省为 undefined，包括 boolean。
+上面是处理器参数片段。可用 `--page 2`、`--page=2`、`-p 2` 或 `-p=2`。`--detail` 表示 true，false 用 `--detail=false`；`--detail false` 的 false 会被当作普通分词。
 
-长选项支持 `--page 2`、`--page=2`；短别名支持 `-p 2`、`-p=2`。长名称以 ASCII 字母开始，随后可含字母、数字、下划线和连字符；短别名是一个 ASCII 字母。重复选项（包括混用别名）拒绝，不支持短选项组合 `-dp2`。
+- type 默认 string，可选 integer、number、boolean；写了 TypeScript 的 `: number` 不会自动转换输入。
+- required 表示必须提供，显式空字符串仍算提供。静态 default 必须符合类型、choices 和范围，不能与 required=true 同用。
+- 可选参数没有 default 时注入 undefined，包括 boolean。需要 false 默认值就明确配置。
+- 数值范围用于 integer/number；choices 用同类型且不重复的字符串或数字值。
+- 未声明的选项、重复传入同一选项及长短别名重复都会报错；不支持 `-dp2` 组合或自动生成 `--no-detail`。
+- 选项形状的正文可用引号、开头转义或 `--` 终止符。终止符之后仍可匹配 Slot。
 
-`--detail` 或 `-d` 表示 true，不消费下一个词。false 写为 `--detail=false`；`--detail false` 中的 false 是普通参数。没有自动生成的 `--no-detail`。
+## 让用户知道怎么使用
 
-未知选项不会被 Rest 吞掉；把选项形状作为正文时使用引号、开头转义或 `--`。终止符自身不进 Rest，后续词仍能匹配 Slot。Args 仍保留完整分词快照。
+在模块 imports 中加入 HelpModule，用户可发送 `/help 查询` 或 `/帮助 查询`；名称也可以是命令别名。help 的参数不再带前缀。用 name、description 和 choices 写清楚参数含义；已有同名 help 路由时先处理冲突。
 
-## 帮助和错误提示
-
-在模块 imports 中加入 HelpModule 才注册 help/帮助。`help 查询` 接受不带前缀的命令名或别名；已有 help/帮助 同名路由会冲突。帮助由声明生成，不运行 Guard 或自动隐藏受限命令。
-
-commands.invalidInput 默认 report；设为 reply 会把框架的解析、缺参、歧义、类型/范围错误及用法回复给用户。业务异常、错误的 Slot 匹配器或任意抛出的 FrameworkError 不会自动变成输入提示；业务预期错误由 Controller 明确转换为合适回复。
+设置 `commands.invalidInput: 'reply'` 后，缺参、类型、范围、歧义等解析错误会回复用法提示；默认 report 只上报错误。业务查询失败不属于解析错误，已知情况由处理器回复说明，未知异常交给应用日志。帮助不会替代实际执行时的权限检查。
