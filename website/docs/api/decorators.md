@@ -1,485 +1,399 @@
 # 装饰器参考
 
-所有装饰器都从 `dou-bot` 导入。先按你要完成的任务选择，再查看参数、使用位置和示例。
+从 `dou-bot` 导入，按功能选择：
 
-| 你要做什么               | 使用哪些装饰器                                                                                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 组织业务并注入服务       | [Module](#module)、[Controller](#controller)、[Injectable](#injectable)、[Inject](#inject)                                                        |
-| 接收命令、事件或按钮点击 | [Command](#command)、[On](#on)、[OnButton](#onbutton)                                                                                             |
-| 读取上下文和文字参数     | [Ctx](#ctx)、[Arg](#arg)、[Args](#args)、[Option](#option)、[Slot](#slot)、[Rest](#rest)                                                          |
-| 限制场景、用户和角色     | [GroupOnly](#grouponly)、[PrivateOnly](#privateonly)、[UsersOnly](#usersonly)、[GroupRoles](#grouproles)、[GroupManagersOnly](#groupmanagersonly) |
-| 自定义权限或限制调用频率 | [UseGuards](#useguards)、[Cooldown](#cooldown)                                                                                                    |
+| 功能       | 装饰器                                                                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 组织业务   | [Module](#module)、[Controller](#controller)、[Injectable](#injectable)、[Inject](#inject)                                                                                 |
+| 接收输入   | [Command](#command)、[OnAttachment](#onattachment)、[OnButton](#onbutton)、[On](#on)                                                                                       |
+| 读取文字   | [Arg](#arg)、[Args](#args)、[Option](#option)、[Slot](#slot)、[Rest](#rest)                                                                                                |
+| 读取附件   | [Attachments](#attachments)、[Images](#images)                                                                                                                             |
+| 读取身份   | [User](#user)、[UserId](#userid)、[Group](#group)、[GroupId](#groupid)、[Role](#role)                                                                                      |
+| 使用上下文 | [Ctx](#ctx)                                                                                                                                                                |
+| 限制访问   | [UseGuards](#useguards)、[GroupOnly](#grouponly)、[PrivateOnly](#privateonly)、[UsersOnly](#usersonly)、[GroupRoles](#grouproles)、[GroupManagersOnly](#groupmanagersonly) |
+| 限制频率   | [Cooldown](#cooldown)                                                                                                                                                      |
 
-下方示例展示装饰器的声明方式；可以直接运行的完整模块见 [示例](../examples/hello.md)。
-
-接收图片和文件时，使用 [Attachments](#attachments)、[Images](#images) 与 [OnAttachment](#onattachment)。读取当前身份时，使用 [User](#user)、[UserId](#userid)、[Group](#group)、[GroupId](#groupid)、[Role](#role)。
+处理器参数只能声明一个来源。完整运行示例见 [示例目录](../examples/hello.md)。
 
 ## Module {#module}
 
-声明模块的依赖、服务、控制器和导出。
+注册模块的依赖、服务和控制器。
 
 ```ts
 Module(metadata: ModuleMetadata): ClassDecorator
 ```
 
-**参数与默认值：** metadata 可包含 imports、providers、controllers、exports、guards；省略数组表示不注册对应项。
+- 用于模块类，配置 imports、providers、controllers、exports、guards。
+- 模块类不自动实例化；guards 只保护本模块直接注册的控制器。
 
-**用在哪里：** 模块类。
-
-```ts
-@Module({ controllers: [HelloController] })
-```
-
-**使用限制：** 模块类本身不被自动实例化。模块 guards 只保护直接注册的控制器。
-
-[教程与完整示例](../guide/modules.md)。
+[用法与示例](../guide/modules.md)。
 
 ## Injectable {#injectable}
 
-标记需要构造注入元数据的服务或 Guard。
+标记需要构造注入的服务或 Guard。
 
 ```ts
 Injectable(): ClassDecorator
 ```
 
-**参数与默认值：** 无参数；还需要在模块 providers 中注册。
+- 还需在模块 providers 注册，默认单例。
+- 每条消息的数据放在方法局部变量中。
 
-**用在哪里：** 需要注入的服务类或 Guard 类。
-
-```ts
-@Injectable()
-```
-
-**使用限制：** 默认是单例；请求状态不应存入共享实例字段。
-
-[教程与完整示例](../guide/modules.md)。
+[用法与示例](../guide/modules.md)。
 
 ## Inject {#inject}
 
-为构造函数参数显式指定运行时令牌。
+为构造参数指定运行时令牌。
 
 ```ts
 Inject(token: InjectionToken): ParameterDecorator
 ```
 
-**参数与默认值：** token 为类、字符串或 Symbol。接口配置通常使用 Symbol。
+- 令牌可用类、字符串或 Symbol；接口配置通常用 Symbol。
+- 写法：`constructor(@Inject(SETTINGS) private readonly settings: Settings) {}`。
 
-**用在哪里：** 构造函数参数。
-
-```ts
-constructor(@Inject(SETTINGS) private readonly settings: Settings) {}
-```
-
-**使用限制：** 接口在运行时被擦除；单写类型注解不能注册接口依赖。
-
-[教程与完整示例](../guide/modules.md)。
+[用法与示例](../guide/modules.md)。
 
 ## Controller {#controller}
 
-标记命令、按钮或事件处理器所在的类。
+标记命令、按钮、附件或事件处理器所在的类。
 
 ```ts
 Controller(): ClassDecorator
 ```
 
-**参数与默认值：** 无参数；模块 controllers 决定是否注册。
+- 还需在模块 controllers 注册。
+- Controller 不作为跨模块共享 Provider。
 
-**用在哪里：** 控制器类。
-
-```ts
-@Controller()
-```
-
-**使用限制：** Controller 不作为跨模块注入或导出的 Provider。
-
-[教程与完整示例](../guide/commands.md)。
+[用法与示例](../guide/commands.md)。
 
 ## OnAttachment {#onattachment}
 
-当用户直接发送符合条件的附件时执行处理器。
+处理用户直接上传的附件。
 
 ```ts
 OnAttachment(options?: OnAttachmentOptions): MethodDecorator
 ```
 
-filename 支持精确文件名或 RegExp，extension 支持一个扩展名，kind 支持 all/image/video/audio/file；条件共同作用于同一个附件。省略筛选条件时监听全部带附件的消息。invalidInput 默认为 report，可设为 reply。
+- 用于控制器实例方法；filename、extension、kind 必须命中同一附件，省略条件时匹配全部附件。
+- invalidInput 默认 report，可设 reply；返回消息自动回复，手动回复后返回 void。
+- 支持 Guard、冷却、附件/身份参数和 prompt；不支持文字参数。
+- 多个匹配处理器独立顺序执行，prompt 和已识别命令优先。
 
-用于实例方法，返回消息可自动回复。支持 Guard、冷却、身份和附件参数、ctx.prompt；不支持文字参数。多个匹配处理器独立顺序执行，prompt 和已识别命令优先。用法见 [自动接收文件](../guide/attachments.md#用户直接上传文件)。
+[用法与示例](../guide/attachments.md#用户直接上传文件)。
 
 ## Attachments {#attachments}
+
+注入 `readonly Attachment[]`。
 
 ```ts
 Attachments(options?: AttachmentOptions): ParameterDecorator
 ```
 
-注入 readonly Attachment[]。命令参数获得本条消息的全部顶层附件，OnAttachment 参数获得本处理器匹配的附件。name/description 用于说明；minCount 默认 0，maxCount 默认无限制，数量边界必须为非负安全整数。
+- 用于 Command、OnAttachment 参数；分别选择当前消息全部附件或本处理器匹配集合。
+- 选项为 name、description、minCount、maxCount；默认最少 0 个、无上限。
+- 数量边界须为非负安全整数且上限不小于下限；校验失败不占冷却。
+- 每个参数获得浅冻结副本，保留顺序和重复项，不消费文字。
 
-各参数获得独立的浅冻结数组，保留顺序和重复项。Guard 之后、冷却之前校验数量，不消费文字。见 [附件指南](../guide/attachments.md)。
+[用法与示例](../guide/attachments.md)。
 
 ## Images {#images}
+
+选择图片并注入 `readonly Attachment[]`。
 
 ```ts
 Images(options?: AttachmentOptions): ParameterDecorator
 ```
 
-与 Attachments 使用相同配置和位置，进一步选择 image MIME；只选择本条消息或本附件处理器匹配集合中的图片。用户将指令与图片同条发送时使用。见 [收图示例](../examples/attachments.md)。
+- 与 Attachments 的选项、位置和数量规则相同，只保留具体的 image MIME。
+- 适合用户将指令和图片同条发送。
+
+[用法与示例](../guide/attachments.md#指令与图片同条发送)。
 
 ## User {#user}
+
+读取当前消息发送者或按钮操作者。
 
 ```ts
 User(): ParameterDecorator
 ```
 
-注入 UserInfo 冻结快照，包含当前用户 id 和平台提供的可选 username、bot、memberRole。用于命令、按钮和附件处理器，不请求额外资料。见 [身份信息](../guide/identity.md)。
+- 用于 Command、OnButton、OnAttachment 参数，无配置项。
+- 注入冻结的 UserInfo：id，以及当前消息提供的可选 username、bot、memberRole。
+- 不查询额外资料；按钮只提供用户 ID。
+
+[用法与示例](../guide/identity.md)。
 
 ## UserId {#userid}
+
+读取当前用户 OpenID。
 
 ```ts
 UserId(): ParameterDecorator
 ```
 
-注入 string，等于当前 ctx.userId；按钮以本次操作者为准。用于命令、按钮和附件处理器。见 [身份与按钮示例](../examples/identity.md)。
+- 用于 Command、OnButton、OnAttachment 参数，无配置项。
+- 注入 string，与 ctx.userId 一致；按钮以本次点击者为准。
+
+[用法与示例](../guide/identity.md)。
 
 ## Group {#group}
+
+读取当前群信息。
 
 ```ts
 Group(): ParameterDecorator
 ```
 
-注入 GroupInfo 或 undefined。群聊为包含 id 的冻结对象，私聊为 undefined；用于命令、按钮和附件处理器。不会查询群名称或成员列表。
+- 用于 Command、OnButton、OnAttachment 参数，无配置项。
+- 群聊注入冻结的 GroupInfo（仅 id），私聊为 undefined；不查询群名或成员列表。
+
+[用法与示例](../guide/identity.md)。
 
 ## GroupId {#groupid}
+
+读取当前群 OpenID。
 
 ```ts
 GroupId(): ParameterDecorator
 ```
 
-注入当前群 OpenID，私聊为 undefined；用于命令、按钮和附件处理器。OpenID 不等于显示用群号。
+- 用于 Command、OnButton、OnAttachment 参数，无配置项。
+- 注入 string 或 undefined；私聊无群 ID，OpenID 不是显示用群号。
+
+[用法与示例](../guide/identity.md)。
 
 ## Role {#role}
+
+读取当前群消息作者的角色。
 
 ```ts
 Role(): ParameterDecorator
 ```
 
-注入 member/admin/owner 或 undefined。角色来自当前群消息，私聊、按钮和未知值均为 undefined。装饰器不拒绝执行，权限限制使用 GroupRoles 等 Guard。见 [身份信息](../guide/identity.md)。
+- 用于 Command、OnButton、OnAttachment 参数，无配置项。
+- 注入 member、admin、owner 或 undefined；私聊、按钮和未知角色均为 undefined。
+- 只读取信息，不限制执行；权限检查使用 GroupRoles。
+
+[用法与示例](../guide/identity.md)。
 
 ## Command {#command}
 
-注册一个命令处理器。
+注册命令处理器。
 
 ```ts
 Command(name: string, options?: CommandOptions): MethodDecorator
 ```
 
-**参数与默认值：** name 不带前缀；options 提供 aliases 和 description，默认无别名和说明。
+- 用于控制器实例方法；name 不带前缀，options 可设 aliases、description。
+- 返回字符串或消息对象自动回复；手动 reply 后返回 void。
+- 名称或别名冲突会导致应用创建失败。
 
-**用在哪里：** 控制器的命令方法。
-
-```ts
-@Command('hello', { aliases: ['hi'], description: '问好' })
-```
-
-**使用限制：** 返回字符串或 MessageInput 自动回复；手动 reply 后返回 void。名称和别名冲突会导致创建失败。
-
-[教程与完整示例](../guide/commands.md)。
+[用法与示例](../guide/commands.md)。
 
 ## On {#on}
 
-按精确 QQ 事件名注册原始事件观察器。
+按精确 QQ 事件名监听原始事件。
 
 ```ts
 On(eventName: string): MethodDecorator
 ```
 
-**参数与默认值：** eventName 必填，例如 C2C_MESSAGE_CREATE。
+- 用于控制器实例方法，例如 `@On('C2C_MESSAGE_CREATE')`。
+- 只支持 Ctx 参数，返回 void，不自动回复。
+- 不受模块/类 Guard 保护，方法上不能添加 Guard 或 Cooldown。
 
-**用在哪里：** 控制器的原始事件处理方法。
-
-```ts
-@On('C2C_MESSAGE_CREATE')
-```
-
-**使用限制：** 处理器返回 void；不受模块/类 Guard 保护，不能在 On 方法上叠加 Guard 或 Cooldown。
-
-[教程与完整示例](../guide/events.md)。
+[用法与示例](../guide/events.md)。
 
 ## OnButton {#onbutton}
 
-按 callback 按钮 ID 处理点击。
+处理 callback 按钮点击。
 
 ```ts
 OnButton(buttonId: string): MethodDecorator
 ```
 
-**参数与默认值：** buttonId 与 button.callback 的第一个参数一致。
+- 用于控制器实例方法，buttonId 与 button.callback 的第一个参数一致。
+- 支持 Ctx 和身份参数；返回 void，业务回复使用 ctx.send。
+- 不处理 link/command 按钮；确认方式见按钮指南。
 
-**用在哪里：** 控制器的按钮回调方法。
-
-```ts
-@OnButton('docs:confirm')
-```
-
-**使用限制：** 只处理回调按钮，不处理 link/command 按钮；返回 void，发送使用 ButtonContext.send。
-
-[教程与完整示例](../guide/buttons.md)。
+[用法与示例](../guide/buttons.md)。
 
 ## Ctx {#ctx}
 
-注入当前路由的上下文。
+注入当前处理器的上下文。
 
 ```ts
 Ctx(): ParameterDecorator
 ```
 
-**参数与默认值：** 无参数；命令为 MessageContext，按钮为 ButtonContext，On 为 QQEventContext。
+- 用于 Command / OnAttachment：MessageContext；OnButton：ButtonContext；On：QQEventContext。
+- 无配置项；各上下文能力不同，例如按钮没有 reply/prompt。
 
-**用在哪里：** Command、On 或 OnButton 方法的参数；参数类型与对应上下文一致。
-
-```ts
-handler(@Ctx() ctx: MessageContext) {}
-```
-
-**使用限制：** 不能将一种上下文的能力假定存在于另一种上下文，例如按钮没有 prompt。
-
-[教程与完整示例](./contexts.md)。
+[用法与示例](./contexts.md)。
 
 ## Arg {#arg}
 
-绑定命令的一个位置参数。
+按固定位置读取命令参数，下标从 0 开始。
 
 ```ts
 Arg(index: number, options?: ArgumentOptions): ParameterDecorator
 ```
 
-**参数与默认值：** index 从 0 开始。无 options 时注入 string 或 undefined；options 显式声明 type、required、default、choices、min/max 等。
+- 无 options 时注入 string 或 undefined；配置 type 才执行类型转换。
+- options 可设 required、default、choices、min/max、name、description。
+- default 不能与 required: true 共用；TS 类型注解不触发转换。
 
-**用在哪里：** 命令方法的参数。
-
-```ts
-name(@Arg(0) value = '朋友') {}
-```
-
-**使用限制：** TypeScript 的 number 注解不会自动转换。default 不能与 required: true 同用。
-
-[教程与完整示例](../guide/parameters.md)。
+[用法与示例](../guide/parameters.md)。
 
 ## Args {#args}
 
-取得命令后全部分词的数组快照。
+读取命令后全部分词。
 
 ```ts
 Args(): ParameterDecorator
 ```
 
-**参数与默认值：** 无参数；包含选项名、选项值和 --，不含命令名。
+- 注入 string[]，包含选项名、选项值和 `--`，不含命令名。
+- 不参与消费，也不代替 Rest；使用普通数组参数，不写 `...words`。
 
-**用在哪里：** 命令方法的参数。
-
-```ts
-echo(@Args() words: string[]) {}
-```
-
-**使用限制：** 不参与消费，也不代替 Rest。使用普通数组参数，不使用 ...words 可变参数语法。
-
-[教程与完整示例](../guide/parameters.md)。
+[用法与示例](../guide/parameters.md)。
 
 ## Option {#option}
 
-绑定长选项和可选的单字母短别名。
+读取命令中的长选项和单字母短别名。
 
 ```ts
 Option(name: string, options?: OptionOptions): ParameterDecorator
 ```
 
-**参数与默认值：** 默认 type 为 string、required 为 false。alias 为单个 ASCII 字母；其他字段与 ArgumentOptions 对应。
+- 默认 type=string、required=false；alias 为单个 ASCII 字母，其余配置同 Arg。
+- 示例：`@Option('page', { alias: 'p', type: 'integer', default: 1 })`。
+- 不支持合并短选项；未知或重复选项报错，布尔 false 写成 `--flag=false`。
 
-**用在哪里：** 命令方法的参数。
-
-```ts
-query(@Option('page', { alias: 'p', type: 'integer', default: 1 }) page: number) {}
-```
-
-**使用限制：** 不支持合并短选项；重复或未知选项会被拒绝。布尔 false 写成 --flag=false。
-
-[教程与完整示例](../guide/parameters.md)。
+[用法与示例](../guide/parameters.md#选项语法)。
 
 ## Slot {#slot}
 
-识别任意位置的单个普通分词。
+从任意位置匹配一个普通分词。
 
 ```ts
 Slot(name: string, options: SlotOptions): ParameterDecorator
 ```
 
-**参数与默认值：** name 在同一命令中唯一；options 至少提供 choices 或 match，两者同时提供取交集。required 默认 false。
+- 用于命令参数；name 在命令中唯一，至少提供 choices 或 match，同时提供时取交集。
+- required 默认 false，可设 default；match 必须同步返回布尔值且无副作用。
+- 重复值或多个 Slot 同时命中会报错，不按声明顺序抢占。
 
-**用在哪里：** 命令方法的参数。
-
-```ts
-query(@Slot('city', { choices: ['北京'], required: true }) city: string) {}
-```
-
-**使用限制：** match 必须同步且无副作用；重复值或多 Slot 歧义报错，不按声明顺序抢占。
-
-[教程与完整示例](../guide/parameters.md)。
+[用法与示例](../guide/parameters.md)。
 
 ## Rest {#rest}
 
-收集未被 Arg、Slot 或 Option 消费的普通分词。
+按原顺序收集剩余普通参数。
 
 ```ts
 Rest(options?: RestOptions): ParameterDecorator
 ```
 
-**参数与默认值：** options 仅 name、description；没有剩余时注入空数组。
+- 用于命令参数，注入 string[]；无剩余时为 []，options 仅 name、description。
+- 每个命令最多一个，始终最后收集；不掩盖缺参、歧义或选项错误。
 
-**用在哪里：** 命令方法的参数。
-
-```ts
-query(@Rest() notes: string[]) {}
-```
-
-**使用限制：** 每个命令最多一个，始终最后消费；不能掩盖必填、歧义或选项错误。
-
-[教程与完整示例](../guide/parameters.md)。
+[用法与示例](../guide/parameters.md)。
 
 ## UseGuards {#useguards}
 
-给模块、控制器或方法追加权限检查。
+添加自定义权限检查。
 
 ```ts
 UseGuards(...tokens: InjectionToken<CanActivate>[]): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** 传一个或多个 Provider 令牌，按声明顺序运行；Guard 需在所属模块可见。
+- 用于模块类、控制器类，或 Command、OnButton、OnAttachment 方法。
+- 传所属模块可见的 Provider 令牌，不传实例；按声明顺序执行。
+- 不同层级规则累加，重复声明会重复执行。
 
-**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
-
-```ts
-@UseGuards(AllowlistGuard, OwnerGuard)
-```
-
-**使用限制：** 传令牌而不是 new Guard()。不同层级累加，重复声明不会自动去重。
-
-[教程与完整示例](../guide/guards.md)。
+[用法与示例](../guide/guards.md)。
 
 ## GroupOnly {#grouponly}
 
-只允许群聊命令或群聊按钮。
+只允许群聊。
 
 ```ts
 GroupOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** message 省略时使用默认拒绝提示，false 静默拒绝，非空字符串自定义提示。
+- 用于模块类、控制器类，或 Command、OnButton、OnAttachment 方法。
+- message 省略用默认提示，非空字符串自定义提示，false 静默拒绝。
+- 无需额外 Provider；与 PrivateOnly 冲突时创建失败。
 
-**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
-
-```ts
-@GroupOnly()
-```
-
-**使用限制：** 无需额外 Provider。可用于模块类；与 PrivateOnly 的冲突在创建时拒绝。
-
-[教程与完整示例](../guide/access.md)。
+[用法与示例](../guide/access.md)。
 
 ## PrivateOnly {#privateonly}
 
-只允许私聊命令或私聊按钮。
+只允许私聊。
 
 ```ts
 PrivateOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** message 与 GroupOnly 相同。
+- 用于模块类、控制器类，或 Command、OnButton、OnAttachment 方法。
+- message 配置同 GroupOnly；模块规则只作用于本模块控制器。
 
-**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
-
-```ts
-@PrivateOnly()
-```
-
-**使用限制：** 模块级规则只覆盖本模块控制器，不传播到 imports。
-
-[教程与完整示例](../guide/access.md)。
+[用法与示例](../guide/access.md)。
 
 ## UsersOnly {#usersonly}
 
-按当前事件的 OpenID 限制调用者。
+按当前用户 OpenID 限制调用者。
 
 ```ts
 UsersOnly(userIds: readonly string[], options?: UsersOnlyOptions): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** userIds 为非空字符串数组；可指定 scene、groupId、message。groupId 隐含群聊。
+- 用于模块类、控制器类，或 Command、OnButton、OnAttachment 方法。
+- 名单不能为空，支持 scene、groupId、message；groupId 隐含群聊，不能配 private。
+- OpenID 不是 QQ 号，不转换群聊和私聊身份；动态名单使用自定义 Guard。
 
-**用在哪里：** 模块类、控制器类，以及 Command 或 OnButton 方法。
-
-```ts
-@UsersOnly(['USER_OPENID'], { scene: 'private' })
-```
-
-**使用限制：** OpenID 不是数字 QQ 号，群聊与私聊身份不应混用。groupId 不能配 private。
-
-[教程与完整示例](../guide/access.md)。
+[用法与示例](../guide/access.md)。
 
 ## GroupRoles {#grouproles}
 
-只允许当前群消息发送者的指定角色。
+只允许指定群角色。
 
 ```ts
 GroupRoles(...roles: GroupRole[]): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** 至少一个 member、admin 或 owner；允许任一列出的角色。使用默认拒绝提示。
+- 至少一个 member、admin、owner，命中任一项即可；使用默认拒绝提示。
+- 用于模块类、控制器类，或 Command、OnAttachment 方法；不能施加到 OnButton。
+- 缺失或未知角色拒绝，不推测身份。
 
-**用在哪里：** 模块类、控制器类或 Command 方法；不能把角色规则施加到 OnButton。
-
-```ts
-@GroupRoles('owner')
-```
-
-**使用限制：** 只支持命令，不能用于 OnButton；缺失或未知角色拒绝，不推测身份。
-
-[教程与完整示例](../guide/access.md)。
+[用法与示例](../guide/access.md)。
 
 ## GroupManagersOnly {#groupmanagersonly}
 
-允许当前群主或管理员。
+只允许群主或管理员。
 
 ```ts
 GroupManagersOnly(options?: AccessOptions): ClassDecorator & MethodDecorator
 ```
 
-**参数与默认值：** 相当于角色 owner 或 admin；message 可自定义或设为 false。
+- 等同允许 owner、admin；message 可省略、自定义或设 false。
+- 用于模块类、控制器类，或 Command、OnAttachment 方法；不能施加到 OnButton。
+- 按钮点击资格使用 `permission: { type: 'managers' }`。
 
-**用在哪里：** 模块类、控制器类或 Command 方法；不能把角色规则施加到 OnButton。
-
-```ts
-@GroupManagersOnly({ message: '仅限群管理者。' })
-```
-
-**使用限制：** 只支持命令。按钮点击资格使用原生 permission: managers，而不是本装饰器。
-
-[教程与完整示例](../guide/access.md)。
+[用法与示例](../guide/access.md)。
 
 ## Cooldown {#cooldown}
 
-限制命令或按钮处理器的调用频率。
+限制处理器的调用频率。
 
 ```ts
 Cooldown(options: CooldownOptions): MethodDecorator
 ```
 
-**参数与默认值：** scope 为 user、session 或 command；durationMs 为正整数。message 默认显示剩余时间，可设为字符串或 false。
+- 用于 Command、OnButton、OnAttachment 方法，每个方法最多一个。
+- scope 为 user、session、command；durationMs 为 1～2147483647 的整数。
+- message 默认显示剩余时间，可自定义或设 false；user 指同会话同用户。
+- Guard 与参数通过后才占用，业务失败不退还；命令别名共享冷却。
 
-**用在哪里：** Command 或 OnButton 方法。
-
-```ts
-@Cooldown({ scope: 'user', durationMs: 3000 })
-```
-
-**使用限制：** 每个方法最多一个；在 Guard 和参数通过后占用，业务失败不返还。user 表示同会话同用户。
-
-[教程与完整示例](../guide/guards.md)。
+[用法与示例](../guide/guards.md#命令冷却)。

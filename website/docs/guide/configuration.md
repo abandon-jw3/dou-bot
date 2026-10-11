@@ -1,6 +1,8 @@
 # 完整配置
 
-入口为 BotFactory.create(AppModule, options)。appId 和 secret 必填，其余配置按下面的默认值处理；未知字段或不合法组合会报 CONFIG。
+- 配置入口：`BotFactory.create(AppModule, options)`。
+- `appId`、`secret` 必填，其他字段使用下表默认值。
+- 未知字段或非法组合报 CONFIG。
 
 ## 顶层选项
 
@@ -25,7 +27,8 @@
 | maxUploadBytes   | 10485760                                  | 二进制上传字节上限                               |
 | maxResponseBytes | 1048576                                   | API 响应字节上限                                 |
 
-通常无需覆盖端点。地址不能含内嵌凭证；baseUrl 是 origin，不是任意路径前缀。
+- 通常保留默认端点。
+- baseUrl 只填 origin，不能带路径前缀或内嵌凭证。
 
 ## WS
 
@@ -67,7 +70,9 @@ WS 配置不能混入 port/listen 等 Webhook 字段，Webhook 也不能混入 i
 | shutdownTimeoutMs                      | 10000           | 整次关闭的总期限           |
 | cooldownMaxEntries                     | 10000           | 冷却记录容量               |
 
-去重和回复作用域容量必须能容纳 concurrency + queueCapacity，字节预算必须不小于单事件上限。容量限制是资源保护，不是精确的 JavaScript 堆内存上限。
+- 去重、回复记录容量至少为 `concurrency + queueCapacity`。
+- queueMaxBytes 至少为 maxEventBytes。
+- 这些限制不代表整个进程的内存上限。
 
 ## 对话等待
 
@@ -78,7 +83,8 @@ WS 配置不能混入 port/listen 等 Webhook 字段，Webhook 也不能混入 i
 | maxPending   | 1000                            |
 | cancelWords  | `['取消']`                      |
 
-每次 ctx.prompt 可以覆盖 timeoutMs 和 cancelWords，但不能超过全局最大期限。多个资源预算共同决定实际可接受的等待数。
+- 单次 prompt 可覆盖 timeoutMs、cancelWords，不能超过全局最长期限。
+- 实际等待容量同时受事件、字节和缓存预算限制。
 
 ## 错误回调示例
 
@@ -90,4 +96,5 @@ onError(error, context) {
 }
 ```
 
-回调不应记录完整原始事件或凭证，也不应执行长时间阻塞任务。超时会使当前应用禁用该自定义回调并回到兜底日志；详见 [错误 API](../api/errors.md)。
+- 只记录必要字段，不记录完整原始事件或凭证。
+- 回调超时后应用改用兜底日志，详见 [错误 API](../api/errors.md)。

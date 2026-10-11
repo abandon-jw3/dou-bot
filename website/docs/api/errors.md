@@ -25,22 +25,28 @@ new FrameworkError(code: FrameworkErrorCode, message: string, options?: ErrorOpt
 
 ## QQApiError
 
-QQApiError 继承 FrameworkError，code 为 QQ_API，name 为 QQApiError。构造参数为 message 和 details，其中 method、path 必填，httpStatus、qqCode、traceId、cause 可选。
-
-捕获后可以用 instanceof QQApiError 区分协议请求失败，再读取可用字段。不要假定每次错误都有 HTTP 状态或 traceId。
+- QQApiError 继承 FrameworkError，code 为 QQ_API，name 为 QQApiError。
+- 构造参数为 message 和 details，其中 method、path 必填，httpStatus、qqCode、traceId、cause 可选。
+- 捕获后可以用 instanceof QQApiError 区分协议请求失败，再读取可用字段。
+- 不要假定每次错误都有 HTTP 状态或 traceId。
 
 ## ErrorContext 与 onError
 
-ErrorContext 提供 phase、appId，以及可选的 eventName、eventId、messageId、controller、method。阶段包括 bootstrap、transport、protocol、queue、observer、command、button、send、interaction-ack、guard、cooldown、prompt、shutdown。
-
-onError(error, context) 可以同步或异步。默认回调期限 1000ms；超时后当前应用禁用该自定义回调，使用兜底日志。回调抛错不会递归调用自己。
-
-正常 Guard 拒绝不是错误。受管操作失败即使被业务 catch，也可能已经由错误渠道记录。errors 中有记录、接纳结果为 accepted，以及用户收到错误提示，可以同时成立。
+- ErrorContext 提供 phase、appId，以及可选的 eventName、eventId、messageId、controller、method。
+- 阶段包括 bootstrap、transport、protocol、queue、observer、command、button、attachment、send、interaction-ack、guard、cooldown、prompt、shutdown。
+- onError(error, context) 可以同步或异步。
+- 默认回调期限 1000ms；超时后当前应用禁用该自定义回调，使用兜底日志。
+- 回调抛错不会递归调用自己。
+- 正常 Guard 拒绝不是错误。
+- 受管操作失败即使被业务 catch，也可能已经由错误渠道记录。
+- errors 中有记录、接纳结果为 accepted，以及用户收到错误提示，可以同时成立。
 
 ## Logger 与 LOGGER
 
-Logger 提供 debug、info、warn、error，签名均为 `(message: string, fields?: Readonly<Record<string, unknown>>) => void`。通过 options.logger 提供实现，或通过 `@Inject(LOGGER)` 注入框架日志令牌。
+- Logger 提供 debug、info、warn、error，签名均为 `(message: string, fields?: Readonly<Record<string, unknown>>) => void`。
+- 通过 options.logger 提供实现，或通过 `@Inject(LOGGER)` 注入框架日志令牌。
 
 <<< @/../examples/events/app.module.ts
 
-保留必要的事件名、阶段与业务状态即可，避免把原始消息、身份列表和凭证写入日志。更多排查步骤见 [排错指南](../guide/troubleshooting.md)。
+- 保留必要的事件名、阶段与业务状态即可，避免把原始消息、身份列表和凭证写入日志。
+- 更多排查步骤见 [排错指南](../guide/troubleshooting.md)。

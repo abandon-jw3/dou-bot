@@ -1,32 +1,40 @@
 # 发送消息与图片
 
-命令返回字符串或消息对象时，框架自动回复当前消息。希望逐步发送时使用 `await ctx.reply()` 并返回 void。
+- 简单回复：从命令返回字符串或消息对象。
+- 分步回复：`await ctx.reply()`，随后返回 `void`。
 
 <<< @/../examples/messages/app.module.ts
 
-这里用 [一张生成的 PNG](https://github.com/abandon-jw3/dou-bot/blob/main/website/examples/messages/fixture-image.ts) 演示发送图片。接入自己的业务时，可以替换为图片 URL 或本地文件的字节，支持的输入见下文。
-
 ## 选择发送方式
 
-| 方式                                           | 引用和用途                                          |
-| ---------------------------------------------- | --------------------------------------------------- |
-| 命令返回消息                                   | 自动引用当前命令消息                                |
-| ctx.reply(message)                             | 引用当前上下文绑定的消息，框架管理回复序号          |
-| ctx.send(message)                              | 显式无引用发送，是否被平台允许取决于账号权限        |
-| QQClient.sendMessage(target, message, options) | 从服务中按显式目标发送，可传 signal、超时和手动引用 |
+| 方式                                           | 用途                           |
+| ---------------------------------------------- | ------------------------------ |
+| 命令返回消息                                   | 自动引用当前命令消息           |
+| ctx.reply(message)                             | 引用当前消息，自动管理回复序号 |
+| ctx.send(message)                              | 无引用发送，受账号权限限制     |
+| QQClient.sendMessage(target, message, options) | 从服务向明确目标发送           |
 
-使用当前上下文的方法时，要在处理器生命周期内 await。已经结束的上下文不能保存下来给定时任务继续用。
+上下文方法要在处理器内 await；定时任务使用 QQClient，不保存旧 Context。
 
 ## 图片来源
 
-`image(source, { caption? })` 接受 HTTP(S) URL、Uint8Array（包括 Node Buffer）或同一应用与目标下仍有效的 UploadedImage。字符串是 URL，不是磁盘文件路径；要发送本地文件，先用 Node 的 readFile 得到字节。
+`image(source, { caption? })` 支持：
 
-SDK 默认二进制上传上限为 10 MiB。平台还可能有独立格式、大小和发送频率限制；SDK 接受某个输入不等于平台一定投递成功。
+- HTTP(S) URL。
+- Uint8Array 或 Node Buffer；本地文件先用 `readFile()` 读取。
+- 同一应用、API 环境和目标下仍有效的 UploadedImage。
 
-UploadedImage 与应用、API 环境和发送目标绑定。不要把给一个群上传的媒体凭据直接发给另一个群或私聊，也不要长期保存过期凭据。
+注意：
+
+- 字符串表示 URL，不表示文件路径。
+- 默认二进制上传上限为 10 MiB；QQ 还可能有独立限制。
+- UploadedImage 不能跨群或私聊目标复用，也不能使用已过期的凭据。
 
 ## 发送结果
 
-SendResult 可能是 `sent` 或 `pending-audit`。后者表示等待平台审核，不应写成已经投递成功；即使是 sent，也表示接口返回成功，不等于用户已确认客户端显示。
+| status        | 含义                           |
+| ------------- | ------------------------------ |
+| sent          | 接口返回成功                   |
+| pending-audit | 等待平台审核，尚不能视为已投递 |
 
-消息助手及选项见 [消息 API](../api/messages.md)，从服务主动发送见 [QQClient](../api/client.md)。
+接口成功不等于客户端已显示。完整选项见 [消息 API](../api/messages.md)，服务主动发送见 [QQClient](../api/client.md)。

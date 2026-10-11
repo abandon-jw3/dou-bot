@@ -1,20 +1,30 @@
 # dou-bot
 
-面向 **QQ 官方机器人群聊和私聊** 的轻量 TypeScript 装饰器框架，支持 WS 与 Webhook。提供类似 NestJS 的模块、依赖注入和装饰器开发方式。
+面向 QQ 官方群聊和私聊的轻量 TypeScript 机器人框架，支持 WebSocket 与 Webhook。
 
-[完整中文用户文档](https://abandon-jw3.github.io/dou-bot/) · [公开示例与文档反馈](https://github.com/abandon-jw3/dou-bot/tree/main/website)
+[中文用户文档](https://abandon-jw3.github.io/dou-bot/) · [完整业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)
 
-当前源码支持 Node.js **24.x（最低 24.0.0）**、ESM，TypeScript 使用 **5.9.3**。开发统一使用 24.21.0；SDK 的 CI 覆盖最低版本及开发版本。运行时只有 `reflect-metadata` 和 `ws` 两个直接依赖；使用 `tsc` 构建，不包含热更新或 Koishi 兼容层。
+## 主要功能
 
-已发布的 `dou-bot@0.6.0` 元数据仍声明 Node.js `>=24`。0.7.0 的安装范围为 `>=24.0.0 <25`；使用 Node.js 25 及更高主版本的应用升级前需切换到支持的 24.x。
-
-npm 包名是 **`dou-bot`**，GitHub 框架仓库也已改名为 `dou-bot`。npm 上的 `dd-bot` 属于其他项目，请使用下面的新导入名。
-
-源码开发在仓库的 `framework/` 目录执行。跨工程安装和检查从仓库根目录进入；目录与命令见 [仓库维护指南](https://github.com/abandon-jw3/dou-bot/blob/main/framework/docs/repository.md)。下文介绍已发布 SDK 的安装与使用，尚未发布的源码 API 会单独标注。
+| 功能         | 用法                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| 命令与参数   | Arg、Slot、Rest、Option 和自动帮助；[参数指南](docs/command-parameters.md)                               |
+| 图片与文件   | 同条图片、追问收附件、直接上传；[附件指南](docs/command-parameters.md#附件参数)                          |
+| 用户与群信息 | User、UserId、Group、GroupId、Role；[身份参数](docs/command-parameters.md#身份参数)                      |
+| 权限与频率   | 内置限制、自定义 Guard、冷却；[访问限制](docs/access-control.md)、[执行控制](docs/execution-controls.md) |
+| 多轮对话     | 等待下一条输入，支持超时与取消；[prompt](docs/prompts.md)                                                |
+| 消息与按钮   | 文字、图片、原始 Markdown、内联按钮                                                                      |
+| 组织业务     | Module、Controller、Service 与依赖注入                                                                   |
+| 离线测试     | 用 dou-bot/testing 测试自己的业务，无需 QQ 凭证                                                          |
 
 ## 安装
 
-dou-bot 0.7.0 已发布到 npm，详见 [发行记录](https://github.com/abandon-jw3/dou-bot/blob/main/framework/docs/npm-release.md)。在自己的机器人项目中安装精确版本：
+- SDK：**dou-bot 0.7.0**，使用精确版本和锁文件。
+- 环境：Node.js **24.x**（最低 **24.0.0**），教程使用 **24.21.0**。
+- 编译：TypeScript **5.9.3**、ESM、传统参数装饰器。
+- 运行依赖：reflect-metadata、ws。
+
+在自己的项目中执行：
 
 ```sh
 npm init -y
@@ -22,8 +32,6 @@ npm pkg set type=module
 npm install --save-exact dou-bot@0.7.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
-
-latest 已指向 0.7.0，next 仍指向 0.6.0；业务项目使用精确版本及锁文件。旧本地 tgz 项目执行 `npm install --save-exact dou-bot@0.7.0`，并提交更新后的锁文件；代码仍从 `dou-bot` 导入。
 
 创建 `tsconfig.json`：
 
@@ -45,7 +53,9 @@ latest 已指向 0.7.0，next 仍指向 0.6.0；业务项目使用精确版本�
 }
 ```
 
-框架使用传统参数装饰器和构造注入元数据。先用 `tsc` 编译再运行；不要用 Node 直接执行 TS 或默认不产生元数据的转译配置替代。业务无需额外安装 `@types/ws`。
+- 保留 experimentalDecorators、emitDecoratorMetadata。
+- 先用 tsc 编译，再由 Node 运行生成的 JavaScript。
+- 业务只从 `dou-bot`、测试只从 `dou-bot/testing` 导入。
 
 ## 最小机器人
 
@@ -121,44 +131,15 @@ npx tsc -p tsconfig.json
 node --env-file=.env dist/main.js
 ```
 
-私聊或在群中向机器人发送 `/hello 小明`，回复为 `你好，小明！`。`Ctrl+C` 关闭应用。群消息是否需要 @ 取决于 QQ 实际向该账号投递的事件；框架同时处理 `GROUP_AT_MESSAGE_CREATE` 与 `GROUP_MESSAGE_CREATE`。
-
-默认前缀是 `/`，可配置为 `!`、`bot:` 或空字符串。`commands: { prefix: '' }` 允许直接发送 `hello 小明`；装饰器始终填写 `hello`，不带前缀。空前缀按消息开头的完整指令名匹配。
-
-## API 与指南
-
-下面的指南随 npm 包一起分发，可在 `node_modules/dou-bot/docs/` 中离线阅读。
-
-| 能力                 | API / 文档                                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 模块与依赖注入       | `@Module`、`@Injectable`、`@Inject`；支持类、值、异步工厂及 imports/exports 可见性                                  |
-| 控制器与路由         | `@Controller`、`@Command`、`@On`、`@OnButton`                                                                       |
-| 参数、无序匹配和帮助 | `@Arg`、`@Args`、`@Ctx`、`@Slot`、`@Rest`、`@Option`、`HelpModule`；[参数指南](docs/command-parameters.md)          |
-| 权限和冷却           | `@UseGuards`、`@Cooldown`；[执行控制](docs/execution-controls.md)、[模块 / 类 / 方法 Guard](docs/module-guards.md)  |
-| 场景、用户和角色限制 | `@GroupOnly`、`@PrivateOnly`、`@UsersOnly`、`@GroupRoles`、`@GroupManagersOnly`；[访问限制](docs/access-control.md) |
-| 二次输入             | `ctx.prompt()` 支持超时、取消、附件、多轮输入；[二次输入指南](docs/prompts.md)                                      |
-| 消息与按钮           | `text`、`image`、`markdown`、`keyboard`、`button`；原始 Markdown 与内联键盘，无需模板 ID                            |
-| 框架服务             | `QQClient`、`QQApi`、`LOGGER` 可注入                                                                                |
-
-模块 Guard 只覆盖本模块直接注册的控制器。执行顺序为模块 → 控制器类 → 方法 → 参数绑定 → 冷却 → 处理器；原始 `@On` 观察器不受该 Guard 链保护。
-
-参数与返回值的完整类型由包入口提供。公开导入只有 `dou-bot` 和 `dou-bot/testing`；不依赖 `dist` 内部路径。调用 `ctx.reply()` 后返回 void，避免又通过返回值自动回复。
-
-当前源码提供 `Attachments`、`Images` 两个同条消息附件装饰器，以及同步筛选校验函数 `selectAttachments` 和语音附件扩展字段；这些 API **从 0.7.0 开始提供**。图片可与指令同条发送；视频、音频、文件通过 `ctx.prompt()` 接收后再筛选。早期未发布的 Videos、Audios、Files 装饰器已移除。运行 `npm run example:attachments` 查看源码示例，规则与迁移说明见 [附件参数](docs/command-parameters.md#附件参数)。
-
-源码新增 `@OnAttachment()`，可按文件名（字符串或正则）、扩展名和附件分类自动接收用户直接上传的文件。支持权限、冷却、身份注入与追问；多个匹配处理器独立、顺序执行。此 API 从 0.7.0 开始提供，用法见 [自动处理上传附件](docs/command-parameters.md#自动处理上传附件)。
-
-源码还提供 `@User()`、`@UserId()`、`@Group()`、`@GroupId()`、`@Role()`，为命令、按钮及附件处理器注入当前事件的身份信息；缺失的群或角色信息为 `undefined`，不发起资料查询。这些装饰器及 `UserInfo`、`GroupInfo` **从 0.7.0 开始提供**。运行 `npm run example:identity` 查看离线源码示例，完整类型和场景说明见 [身份参数](docs/command-parameters.md#身份参数)。
-
-源码中的 `@Slot()` 新增可选 `normalize`，可将“状态 梦江南”和“状态 双梦”统一注入为“梦江南”。该功能属于公开契约 1.12，**尚未发布，npm 0.7.0 不支持**。在本仓库运行 `npm run example:query` 查看离线演示，配置、默认值和错误规则见 [Slot 归一化](docs/command-parameters.md#slot-归一化)。业务示例、文档站和配套技能继续使用 npm 0.7.0。
+- 发送 `/hello 小明`，收到 `你好，小明！`。
+- `/hi` 是别名；省略名字时回复“朋友”。
+- 群聊先 @机器人；不 @ 是否可用取决于账号投递权限。
+- 默认前缀为 `/`，可通过 `commands.prefix` 改为其他字符串或空字符串。
+- `Ctrl+C` 关闭应用；手动 `ctx.reply()` 后返回 void，避免重复回复。
 
 ## 离线测试
 
-源码契约 1.13 另提供执行前的上下文中间件：`@UseMiddleware()`、`createContextKey()`、`ctx.state` 和 `@ContextValue()`。支持异步 prepare、懒加载及按执行隔离的数据，**尚未发布，npm 0.7.0 不支持**。运行 `npm run example:context` 查看通用离线演示，完整规则见 [上下文中间件](docs/context-middleware.md)。
-
-源码契约 1.14 新增 `app.snapshot().capacity / rejections / timing`，用于查看缓存占用、接纳拒绝原因、排队与处理耗时；**尚未发布，npm 0.7.0 不支持新增字段**。2,000 群的显式容量配置与离线验证方法见 [容量配置与运行监测](docs/capacity.md)。框架默认值保持不变。
-
-测试入口运行真实模块、DI、参数解析与消息编码，在内存中替换网络，不读取 QQ 凭证。示例 `src/offline.ts`：
+创建 `src/offline.ts`：
 
 ```ts
 import assert from 'node:assert/strict';
@@ -180,24 +161,45 @@ try {
 }
 ```
 
-运行 `npx tsc -p tsconfig.json` 和 `node dist/offline.js` 即可验证。`messages` 保存模拟发送，`acknowledgments` 保存按钮确认，`errors` 收集错误；`dispatch()` 等待处理完成，`enqueue()` 可驱动二次输入场景。
+```sh
+npx tsc -p tsconfig.json
+node dist/offline.js
+```
+
+- messages 记录模拟发送，acknowledgments 记录按钮确认，errors 收集错误。
+- dispatch 等待当前处理完成；prompt 交互用 enqueue 驱动。
+- 自己的数据库或外部请求需通过业务依赖替换。
 
 ## Webhook 与运行边界
 
-将接入配置替换为下面的内容，由部署环境提供公网 HTTPS 入口：
+使用 Webhook 时替换 transport，并由部署环境提供 HTTPS：
 
 ```ts
 transport: { type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }
 ```
 
-支持地址验证、Ed25519 原始字节验签、签名新鲜度检查、有界读取和去重。也可设置 `listen: false`，将 `app.webhookHandler()` 挂载到自有 Node HTTP server；保持原始路径和未读取的请求体，先完成 `app.start()` 再接入流量。
+- 也可用 `listen: false`，将 `app.webhookHandler()` 挂载到自有 Node server。
+- 保留原始请求体和签名头，完成 app.start 后再接入流量。
+- 公网 QQ 回调尚未完成端到端验证，接入步骤见 [Webhook 指南](https://abandon-jw3.github.io/dou-bot/guide/webhook.html)。
+- 队列、去重、冷却和 prompt 保存在单进程，重启后重置。
+- 重要业务自行持久化和幂等处理；外部异步任务配合 Context 的 signal。
 
-WS 已有 Windows 和 macOS 的真实 QQ 群聊与私聊验证；Webhook 完成本地真实 HTTP、签名和双接入对照验证，**公网 QQ 回调尚待验收**。2026-10-06 已在本次机器人和测试群中验证群主、管理员、普通成员的角色字段与命令权限，以及管理者回调按钮的允许/拒绝路径；此结论不代表所有账号均有相同的投递能力。
+## 未发布功能
 
-队列、去重、冷却与 prompt 状态保存在单进程内。进程崩溃可能丢失已确认但未处理的任务；没有跨进程“恰好一次”保证。业务异步操作应配合上下文 signal，关闭期限不能硬终止任意用户 JavaScript。当前是 0.x 早期版本，升级时应核对 API 变更并锁定版本。
+以下仅存在于当前源码，**npm 0.7.0 不支持**：
 
-## 源码与许可
+| 功能           | 使用说明                                                                        |
+| -------------- | ------------------------------------------------------------------------------- |
+| Slot.normalize | 将匹配到的别名统一为规范值；[归一化](docs/command-parameters.md#slot-归一化)    |
+| 上下文中间件   | 异步准备、懒加载、ctx.state 和 ContextValue；[指南](docs/context-middleware.md) |
+| 容量监测       | snapshot 新增 capacity、rejections、timing；[容量指南](docs/capacity.md)        |
 
-[源码仓库](https://github.com/abandon-jw3/dou-bot) 和 [独立示例项目](https://github.com/abandon-jw3/dou-bot/tree/main/example) 现统一维护于本仓库。更多可运行示例见 [用户文档](https://abandon-jw3.github.io/dou-bot/examples/hello.html)。仓库中的 `framework/skills/dou-bot` 为配套使用技能，调用名为 `$dou-bot`，其代码使用 `dou-bot` 包。
+## 更多资料
 
-SDK、业务示例、文档及配套技能统一采用 [MIT 许可证](LICENSE)。适用的上游版权及许可保留在 [NOTICE](NOTICE) 中；业务示例和文档目录也包含可随独立副本分发的 LICENSE。
+- [模块级权限](docs/module-guards.md)
+- [源码开发](https://github.com/abandon-jw3/dou-bot/blob/main/framework/docs/contributing.md)：SDK 命令在 framework 目录运行。
+- [dou-bot 技能](https://github.com/abandon-jw3/dou-bot/tree/main/framework/skills/dou-bot)：辅助开发机器人业务。
+
+本页链接的本地指南也可在安装后的 `node_modules/dou-bot/docs/` 阅读。
+
+SDK、示例、文档和技能采用 [MIT](LICENSE)，上游声明见 [NOTICE](NOTICE)。

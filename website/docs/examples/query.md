@@ -1,12 +1,13 @@
 # 无序参数与 City
 
-让用户输入“北京 天气”或“天气 北京”，都能得到相同的参数结果。这个示例把城市匹配封装成 `@City()`，并用 Slot、Rest 和 Option 接收主题、备注和选项。
-
-示例只回显解析结果。接入自己的查询服务后，可以把这些参数交给 Service 获取实际数据。
+- 城市与主题可任意排列，用 `@City()` 复用匹配规则。
+- Rest 收集备注，Option 接收页码和详细开关。
+- 示例只回显结果，实际查询接入自己的 Service。
 
 ## 添加到你的项目
 
-先准备 [快速开始](../guide/quick-start.md) 中的项目、启动入口和 `.env`。在 `src/` 中添加下面两个文件，用这里的 AppModule 替换 hello 示例的根模块；保留 `src/main.ts`。
+1. 按 [快速开始](../guide/quick-start.md) 准备项目和 `.env`。
+2. 在 `src/` 添加以下文件，替换 AppModule，保留 `src/main.ts`。
 
 ### src/city.decorator.ts
 
@@ -44,4 +45,5 @@ node --env-file=.env dist/main.js
 
 启动入口保留 `commands.invalidInput: 'reply'`，才能把输入错误回复给用户。群聊中先 @机器人；按 Ctrl+C 结束运行。
 
-修改 City 的城市集合即可接收自己的词表。参数匹配规则和错误处理见 [命令参数](../guide/parameters.md)，为查询逻辑编写断言可参考 [离线测试](../guide/testing.md)。
+- 修改 City 的城市集合即可接收自己的词表。
+- 参数匹配规则和错误处理见 [命令参数](../guide/parameters.md)，为查询逻辑编写断言可参考 [离线测试](../guide/testing.md)。

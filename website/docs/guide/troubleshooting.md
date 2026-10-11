@@ -1,6 +1,6 @@
 # 错误与排查
 
-先区分“没有连接”“没有收到事件”“没有匹配处理器”和“发送被拒绝”。默认日志、onError 和 app.snapshot 可以帮助定位阶段。
+按错误阶段排查，结合日志、`onError` 和 `app.snapshot()` 查看原因。
 
 | 现象                         | 优先检查                                                                         |
 | ---------------------------- | -------------------------------------------------------------------------------- |
@@ -18,14 +18,20 @@
 
 ## 装饰器编译问题
 
-开启 experimentalDecorators 和 emitDecoratorMetadata，用 tsc 生成 JS 后运行。构造注入的类使用值导入；接口配置使用显式 Inject。不要把默认转译工具的“可以运行 TS”理解为一定生成所需元数据。
+- 开启 `experimentalDecorators`、`emitDecoratorMetadata`。
+- 用 tsc 编译后运行，确保生成所需元数据。
+- 构造注入的类使用值导入，接口配置使用 `@Inject(token)`。
 
 ## 请求失败时记录什么
 
-QQApiError 提供 httpStatus、qqCode、traceId、method、path 等字段。ErrorContext 提供 phase 及可用的处理器位置。记录这些字段通常比记录整个 raw 事件更有帮助。
-
-框架不会把失败发送简单自动重试成另一条消息；业务需要结合平台结果决定是否重试并防止重复操作。pending-audit 不代表发送失败，也不表示审核已通过。
+- QQApiError：记录可用的 httpStatus、qqCode、traceId、method、path。
+- ErrorContext：记录 phase 和处理器位置。
+- 重试前判断是否可能重复操作；`pending-audit` 表示等待审核。
 
 ## 如何反馈
 
-到 [项目 Issues](https://github.com/abandon-jw3/dou-bot/issues) 提供 SDK/Node/TypeScript 版本、WS 或 Webhook、最小代码与错误阶段。不要提交 AppSecret、access_token 或完整身份数据。文档问题也可以点击页面底部的编辑链接修正。
+在 [项目 Issues](https://github.com/abandon-jw3/dou-bot/issues) 提供：
+
+- SDK、Node.js、TypeScript 版本及接入方式。
+- 最小复现代码、预期结果、实际结果和错误阶段。
+- 去除 AppSecret、access_token 和真实身份数据的日志。

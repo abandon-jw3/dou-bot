@@ -1,6 +1,8 @@
 # 模块与依赖注入
 
-模块描述对象如何组合，依赖注入负责构造和共享这些对象。下方示例先注册配置值，再把服务注入控制器。
+- `@Module()`：注册控制器、服务和配置。
+- `@Injectable()`：标记可注入的服务。
+- 构造函数：接收已经注册的依赖。
 
 <<< @/../examples/hello/greeting.service.ts
 
@@ -8,18 +10,18 @@
 
 ## Module 的四个基础字段
 
-| 字段        | 作用                                 |
-| ----------- | ------------------------------------ |
-| imports     | 导入其他模块，获取其导出的 Provider  |
-| providers   | 注册当前模块的服务、配置值和工厂     |
-| controllers | 注册当前模块的命令、按钮与事件控制器 |
-| exports     | 允许导入方使用的 Provider 令牌       |
+| 字段        | 作用                             |
+| ----------- | -------------------------------- |
+| imports     | 引入其他模块导出的服务           |
+| providers   | 注册服务、配置值或工厂           |
+| controllers | 注册命令、按钮、附件和事件控制器 |
+| exports     | 允许其他模块使用的 Provider 令牌 |
 
-`guards` 是额外的模块级调用检查，详见 [Guard](./guards.md)。导出一个 Guard 只使其可注入，不会自动保护导入方。
+模块统一权限可配置 `guards`，见 [Guard 指南](./guards.md#模块统一配置)。
 
 ## Provider 的几种写法
 
-以下为配置片段，令牌和服务类由你的业务定义：
+以下是模块的配置片段，令牌和服务类由业务定义：
 
 ```ts
 providers: [
@@ -34,23 +36,26 @@ providers: [
 ];
 ```
 
-- 类简写等同于用该类作为令牌注册类 Provider；类应有 `@Injectable()`。
-- useValue 使用你已经创建的值；资源所有权仍属于调用者。
-- useClass 将令牌绑定到一个实现类。
-- useFactory 可异步返回结果，依赖由 inject 数组显式声明。工厂失败会让创建应用失败。
+| 写法       | 用途                                   |
+| ---------- | -------------------------------------- |
+| 类简写     | 注册带 `@Injectable()` 的服务          |
+| useValue   | 使用已有对象；资源由调用者关闭         |
+| useClass   | 为令牌指定实现类                       |
+| useFactory | 根据 `inject` 中的依赖创建值，支持异步 |
 
-Provider 默认单例。每条消息的数据应放在处理器的局部变量中，避免不同用户互相覆盖。
+- Provider 默认单例，每条消息的数据放在方法局部变量中。
+- 异步工厂失败会导致应用创建失败。
 
-## Symbol、Object.freeze 与 satisfies
+## 注入配置
 
-Symbol 提供唯一的运行时令牌。接口在编译后被擦除，所以接口配置需要 `@Inject(token)`。
+- 接口没有运行时值，使用 `Symbol` 令牌和 `@Inject(token)`。
+- `Object.freeze()` 防止对象顶层属性被改写。
+- `satisfies Settings` 检查配置类型，不创建运行时实例。
 
-`Object.freeze` 限制对象顶层属性被修改；它不是深度冻结。`satisfies Settings` 是 TypeScript 的静态检查，确认值符合接口，不会在运行时创建 Settings 实例。
+## 读取已注册服务
 
-## 模块可见性与 app.get
-
-只有本模块注册或通过 imports/exports 引入的依赖可以被注入。缺失、歧义和循环依赖会在创建阶段报错。
-
-根模块可见的服务使用 `app.get(QueryService)`；有明确需求时使用 `app.get(QueryService, { module: FeatureModule })`。不要为了绕过可见性再手动 new 一个本应单例的服务。
-
-`QQClient`、`QQApi`、`LOGGER` 是内置可注入令牌，不能用普通 Provider 覆盖。
+- 模块只能注入自己的 Provider，或 `imports` 引入的导出项。
+- `app.get(QueryService)` 读取根模块可见的服务。
+- `app.get(QueryService, { module: FeatureModule })` 指定所属模块。
+- `QQClient`、`QQApi`、`LOGGER` 已内置，无需重复注册。
+- 缺失、歧义或循环依赖会在创建时报告错误。

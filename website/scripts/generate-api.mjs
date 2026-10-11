@@ -26,7 +26,7 @@ const program = ts.createProgram(paths, {
 });
 const checker = program.getTypeChecker();
 let body =
-  '# 类型与接口\n\n在这里查阅 dou-bot **0.7.0** 的函数签名、配置字段与返回类型。编写业务时从 `dou-bot` 导入，编写离线测试时从 `dou-bot/testing` 导入；需要了解用法时，先看 [装饰器参考](./decorators.md) 或 [完整示例](../examples/hello.md)。\n\n';
+  '# 类型与接口\n\n适用于 dou-bot **0.7.0**。\n\n- 业务 API 从 `dou-bot` 导入。\n- 离线测试从 `dou-bot/testing` 导入。\n- 用法见 [装饰器参考](./decorators.md) 和 [完整示例](../examples/hello.md)。\n\n';
 let count = 0;
 for (let i = 0; i < entries.length; i++) {
   const file = program.getSourceFile(paths[i]);

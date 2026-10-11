@@ -1,6 +1,6 @@
 # Markdown 与按钮
 
-用 Markdown 展示内容，再加上链接、命令或回调按钮，让用户直接选择下一步操作。下面的 `/menu` 会发送一个可点击的菜单，不需要模板 ID。
+用 Markdown 加上按钮，提供可点击的菜单，无需模板 ID。
 
 <<< @/../examples/buttons/app.module.ts
 
@@ -9,23 +9,27 @@
 | 构建函数                                    | 行为                             |
 | ------------------------------------------- | -------------------------------- |
 | button.link(label, url, options?)           | 打开 HTTP(S) 链接                |
-| button.command(label, command, options?)    | 输入或发送命令；enter 默认 false |
-| button.callback(id, label, data?, options?) | 产生由 OnButton 按 id 路由的回调 |
+| button.command(label, command, options?)    | 填入命令；`enter: true` 直接发送 |
+| button.callback(id, label, data?, options?) | 触发对应 `@OnButton(id)`         |
 
-keyboard 接受二维按钮数组，每个内层数组是一行。行不能为空，每行最多 5 个按钮；平台的额外限制仍以实际接口结果为准。
-
-默认点击后文案与原 label 相同，可用 visitedLabel 修改。style 为 secondary 或 primary；默认 secondary。callback 的 ID 是第一个参数，不能再在 options 中提供另一个 ID。
+- `keyboard()` 接收二维数组，一行 1～5 个按钮。
+- `style`：secondary（默认）或 primary。
+- `visitedLabel`：点击后的文案，默认与 label 相同。
+- callback 的 ID 在首参指定，不能在 options 重复填写。
 
 ## 回调确认与业务结果
 
-默认 `interactions.acknowledge: 'auto'` 自动确认收到交互；手动模式的处理器应 `await ctx.ack()`。Guard 或冷却在手动模式下阻止业务时，框架会做兜底确认。
-
-确认收到不是授权通过，也不是业务操作成功。按钮处理器返回 void，业务回复用 ctx.send；ButtonContext 没有 reply 和 prompt，interactionId 不能作为消息引用。
+- 默认自动 ACK，表示已收到点击。
+- 手动模式设置 `interactions.acknowledge: 'manual'`，处理器内 `await ctx.ack()`。
+- Guard 或冷却阻止手动模式的处理器时，框架补偿确认。
+- 处理器返回 `void`，回复使用 `ctx.send()`；按钮没有 reply/prompt。
+- ACK 不表示业务成功，interactionId 也不是可回复的消息 ID。
 
 ## 限制点击者
 
-ButtonOptions.permission 支持 everyone、users 和 managers。管理者按钮只可发往群聊；详见 [群角色与管理者按钮](./access.md#管理者按钮)。
+- `permission` 支持 everyone、users、managers，详见 [管理者按钮](./access.md#管理者按钮)。
+- managers 只用于群聊；添加后按 [权限检查表](./access.md#实机验收范围) 检查。
+- 修改数据前校验 data、操作对象及业务权限。
+- 命令按钮对应的文字也能手动输入，命令仍需自己的 Guard。
 
-回调数据应按不可信输入校验。真正修改数据的操作还需验证业务身份与操作对象。命令按钮对应的文字也可以由用户手动输入，因此命令自己的 Guard 仍然需要保留。
-
-添加权限后，按 [权限检查表](./access.md#实机验收范围) 用不同身份检查按钮是否符合预期。完整代码和操作步骤见 [按钮示例](../examples/buttons.md)。
+[运行按钮示例](../examples/buttons.md)。

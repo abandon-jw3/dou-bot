@@ -1,10 +1,11 @@
 # 最小 hello
 
-发送 `/hello 小明`，让机器人回复 `你好，小明！`。你将用一个服务生成问候语，用一个控制器接收命令，再用模块把两者注册到应用中。
+发送 `/hello 小明`，收到 `你好，小明！`。示例包含服务注入、命令别名、默认参数和帮助。
 
 ## 准备项目
 
-先按 [快速开始](../guide/quick-start.md) 创建自己的 TypeScript 项目，安装依赖并配置 tsconfig.json。下面的文件都放在这个项目的 `src/` 目录中。
+- 先按 [快速开始](../guide/quick-start.md) 创建自己的 TypeScript 项目，安装依赖并配置 tsconfig.json。
+- 下面的文件都放在这个项目的 `src/` 目录中。
 
 ## 添加业务代码
 
@@ -50,4 +51,5 @@ node --env-file=.env dist/main.js
 
 群聊中先 @机器人再发送命令；按 Ctrl+C 关闭程序。没有回复时查看 [排错指南](../guide/troubleshooting.md)。
 
-接下来可以修改 GreetingService 的回复，或添加新的命令方法。暂时没有 QQ 凭证时，按 [离线测试](../guide/testing.md) 在本地运行同一个 AppModule。
+- 接下来可以修改 GreetingService 的回复，或添加新的命令方法。
+- 暂时没有 QQ 凭证时，按 [离线测试](../guide/testing.md) 在本地运行同一个 AppModule。
