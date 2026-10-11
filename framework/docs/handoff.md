@@ -36,6 +36,12 @@
 
 ## 1. 接手时先确认的状态
 
+0.8.0 发行准备（2026-10-12）：基于 main 的 68502e6，SDK 版本与锁文件调整为 0.8.0，契约仍为 1.14。当前尚未发布，npm latest 仍为 0.7.0；示例、网站和技能仍使用 0.7.0。新增 test:compat:0.7 保留该版本验证，test:published 将验证 0.8.0 的归一化、中间件和容量消费者。候选、升级和验收结果见 [0.8.0 发行准备](release-0.8.0.md)。本轮不启动真实 QQ、不自动提交或推送。
+
+- 本地候选验收通过：两版 Node 各 293 项 SDK 测试、整仓检查、覆盖率、历史 0.6.0 / 0.7.0 消费者及同一 tgz 的隔离示例/文档检查。文档浏览器 16 项通过。
+- 30 秒模拟持续运行与两小时虚拟容量回归通过，非预期错误/容量拒绝分别为 0，关闭资源归零；未重复 65 分钟计时或连接真实 QQ。
+- 候选路径为 framework/work/release/0.8.0/dou-bot-0.8.0.tgz，SHA-256 见候选记录。远端仍为 3907476；当前 npm 未登录，提交推送/CI、认证、正式上传及发布后同步仍待执行。
+
 目录迁移更新（2026-10-11）：基于已提交的 ad0df74，SDK 移至 framework，业务示例移至 example，文档站仍在 website。根目录仅保留跨工程命令，SDK 命令进入 framework 执行。已有源码与历史 JSON 验收数据保持原样，详见 [目录迁移记录](directory-migration-2026-10-11.md)。以下带日期的旧验收叙述保留当时布局；当前操作以本页接续说明和 [仓库指南](repository.md) 为准。迁移验收已通过：两版 Node 各 293 项 SDK 测试、整仓检查、独立消费者、16 项浏览器测试、30 秒持续运行及两小时虚拟容量回归均通过；运行时源码、历史 JSON、公开契约和锁文件保持一致。本轮未提交、推送或发布。
 
 容量更新（2026-10-11）：按 2,000 群、日约 100,000 次调用补充到期索引和 ApplicationSnapshot 的 capacity / rejections / timing，源码契约为 1.14，尚未发布。SDK 默认值不变；显式部署配置和统计口径见 [容量指南](capacity.md)。两版 Node 各 293 项测试、消费者和整仓检查通过；两小时虚拟时间回归和 65 分钟真实计时离线负载均已通过：后者处理 84,300 次调用，容量拒绝和预期外错误为 0，84 次模拟发送失败正确记录，一小时后回复缓存稳定在约 77,400 条，关闭后受管资源全部归零。详细证据及最新运行结论见 [容量审查](capacity-review-2026-10-11.md)。本轮不启动真实 QQ、不提交、推送、部署或发布。
@@ -56,17 +62,17 @@ Slot 归一化更新（2026-10-11）：源码契约为 1.12，新增可选 `Slot
 
 业务示例开发模式更新（2026-10-07）：新增 `apps/example` 的 `npm run dev`，仓库根目录可用 `npm run example:dev`。监听源码、编译配置、依赖清单和 .env，成功编译到独立临时目录后有序重启；错误保留上次成功版本。关闭采用 IPC 握手，正常退出清理监听、编译器与机器人。已通过 36 项业务测试及 7 项离线进程测试；本轮没有启动真实 QQ。正式运行继续使用 build/start，SDK 版本及运行依赖不变。
 
-| 项目            | 当前状态                                                                                                       |
-| --------------- | -------------------------------------------------------------------------------------------------------------- |
-| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                           |
-| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                       |
-| 已发布 npm 版本 | `dou-bot@0.7.0`；latest 指向 0.7.0，next 保持 0.6.0                                                            |
-| 源码状态        | 0.7.0 已发布（契约 1.11，发行源码 abc1cb9）；当前源码契约 1.13 包含尚未发布的 Slot normalize 与上下文中间件    |
-| 业务示例        | `example/` 精确依赖 npm 的 `dou-bot@0.7.0`，覆盖 28 个装饰器                                                   |
-| 文档站          | `website/` 精确依赖 npm 的 `dou-bot@0.7.0`，API 索引为 139 个导出                                              |
-| 配套技能        | 仓库位置 `framework/skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                |
-| 已提交 CI 基线  | [3907476 工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/37514743897) 已通过；不覆盖本轮未提交改动 |
-| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                                    |
+| 项目            | 当前状态                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 唯一开发仓库    | [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot)，公开，默认分支 `main`                                              |
+| 用户文档        | [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)                                                          |
+| 已发布 npm 版本 | `dou-bot@0.7.0`；latest 指向 0.7.0，next 保持 0.6.0                                                                               |
+| 源码状态        | 0.7.0 已发布（契约 1.11，发行源码 abc1cb9）；0.8.0 候选（契约 1.14），包含 Slot normalize、上下文中间件与容量监测                 |
+| 业务示例        | `example/` 精确依赖 npm 的 `dou-bot@0.7.0`，覆盖 28 个装饰器                                                                      |
+| 文档站          | `website/` 精确依赖 npm 的 `dou-bot@0.7.0`，API 索引为 139 个导出                                                                 |
+| 配套技能        | 仓库位置 `framework/skills/dou-bot/`，名称及调用名为 `$dou-bot`                                                                   |
+| 已提交 CI 基线  | [3907476 工作流](https://github.com/abandon-jw3/dou-bot/actions/runs/37514743897) 已通过；不覆盖本地领先的 4 个提交及当前候选变更 |
+| 真实 QQ 服务    | 2026-10-06 基础 WS 收发及本次测试群的三角色权限验收已通过；两轮连接均已关闭                                                       |
 
 **源码与发行包。** 0.7.0 包含 TestAdmission、Attachments / Images、selectAttachments、身份参数与 OnAttachment。官方 registry 下载的字节与验收候选一致；业务示例、网站和技能现使用 0.7.0。发行来源、integrity、标签与同步验收见 [0.7.0 发布记录](npm-release-0.7.0.json)。
 
@@ -347,7 +353,7 @@ SDK 只从 framework 目录发布，发行白名单不包含 `example/`、`websi
 
 > 请先阅读 `framework/docs/handoff.md`、`framework/docs/repository.md`、`framework/docs/api-review-1.0.md` 和根目录 README，核对当前分支、提交、未提交改动及 CI。
 >
-> 这是 dou-bot 单仓库：`framework` 是 SDK，`example` 是业务示例，`website` 是文档站。已发布版本为 0.7.0，示例和文档均精确安装 npm 的 0.7.0。配套技能名称是 `$dou-bot`，按契约 1.11 维护。源码契约为 1.14，包含未发布的 Slot.normalize、上下文中间件与容量监测；根目录仅有跨工程命令，SDK 命令进入 framework 执行。
+> 这是 dou-bot 单仓库：`framework` 是 SDK，`example` 是业务示例，`website` 是文档站。已发布版本为 0.7.0，示例和文档均精确安装 npm 的 0.7.0。配套技能名称是 `$dou-bot`，按契约 1.11 维护。源码正在准备 0.8.0，契约为 1.14，包含 Slot.normalize、上下文中间件与容量监测，尚未上传 npm；根目录仅有跨工程命令，SDK 命令进入 framework 执行。
 >
 > 0.7.0 提供 Attachments / Images、selectAttachments 及相关类型和语音扩展字段；Videos / Audios / Files 从未发布，已从早期源码移除。视频、音频和文件可用 prompt 后筛选；用户直接上传文件可用 OnAttachment。业务示例和网站已有对应演示。
 >

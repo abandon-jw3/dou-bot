@@ -38,6 +38,8 @@ cd framework
 npm run check
 npm run build
 npm run test:compat
+npm run test:compat:0.7
+# 仅在当前版本发布后执行
 npm run test:published
 npm run example:offline
 ```
@@ -60,7 +62,7 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 源码版号仍为 0.7.0，源码契约为 1.14，包含未发布能力。example、website 和技能继续使用 npm 0.7.0 的 API。目录迁移不升级版本或依赖，不触发 npm 发布。
+SDK 正在准备 0.8.0，公开契约为 1.14；版本尚未上传 npm。example、website 和技能继续使用 npm 0.7.0，正式发布后再同步。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
 
 README 和公开指南随 SDK 发包，相对链接必须落在安装包内；仓库维护材料和其他工程使用完整 GitHub 链接。npm run test:package 验证 tarball、文档链接、凭证排除与独立消费者。历史验收 JSON 原文保留，不为了消除旧路径而改写原始证据。
 

@@ -2,6 +2,8 @@
 
 面向 QQ 官方群聊和私聊的轻量 TypeScript 机器人框架，支持 WebSocket 与 Webhook。
 
+本页对应 **0.8.0**，当前发行状态见 [发布记录](https://github.com/abandon-jw3/dou-bot/blob/main/framework/docs/release-0.8.0.md)。
+
 [中文用户文档](https://abandon-jw3.github.io/dou-bot/) · [完整业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)
 
 ## 主要功能
@@ -19,7 +21,7 @@
 
 ## 安装
 
-- SDK：**dou-bot 0.7.0**，使用精确版本和锁文件。
+- SDK：**dou-bot 0.8.0**，使用精确版本和锁文件。
 - 环境：Node.js **24.x**（最低 **24.0.0**），教程使用 **24.21.0**。
 - 编译：TypeScript **5.9.3**、ESM、传统参数装饰器。
 - 运行依赖：reflect-metadata、ws。
@@ -29,7 +31,7 @@
 ```sh
 npm init -y
 npm pkg set type=module
-npm install --save-exact dou-bot@0.7.0
+npm install --save-exact dou-bot@0.8.0
 npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
@@ -184,9 +186,9 @@ transport: { type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }
 - 队列、去重、冷却和 prompt 保存在单进程，重启后重置。
 - 重要业务自行持久化和幂等处理；外部异步任务配合 Context 的 signal。
 
-## 未发布功能
+## 0.8.0 新功能
 
-以下仅存在于当前源码，**npm 0.7.0 不支持**：
+以下 API 从 **0.8.0** 开始提供，0.7.0 不支持：
 
 | 功能           | 使用说明                                                                        |
 | -------------- | ------------------------------------------------------------------------------- |

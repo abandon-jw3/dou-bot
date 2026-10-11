@@ -1,5 +1,7 @@
 # dou-bot 的 npm 发布记录与流程
 
+当前正在准备 **0.8.0**，尚未上传 npm；新功能、升级说明和验收入口见 [0.8.0 发行准备](release-0.8.0.md)。以下 0.7.0 / 0.6.0 记录保留历史状态。
+
 目录迁移后，当前发行命令在 framework 内执行，业务示例位于 example。下文带版本与日期的候选、发布及验收记录保留历史语境；其中 apps/example 是迁移前的业务目录。
 
 状态：**dou-bot@0.7.0 已于 2026-10-07 00:03:50（Asia/Shanghai）公开发布到 npm**，许可证为 MIT，发布账号为 fine_wei。latest 指向 0.7.0，next 保持 0.6.0。匿名下载与已验收候选的 SHA-256 / SHA-512 完全一致，源码标签 v0.7.0 指向 abc1cb9；见 [0.7.0 发布记录](npm-release-0.7.0.json) 和 [npm](https://www.npmjs.com/package/dou-bot/v/0.7.0)。

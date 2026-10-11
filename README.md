@@ -5,7 +5,7 @@
 ## 开始使用
 
 - [在线用户文档](https://abandon-jw3.github.io/dou-bot/)：安装、功能指南和 API。
-- [SDK 安装与使用](framework/README.md)：在自己的项目中安装 `dou-bot@0.7.0`。
+- [SDK 安装与使用](framework/README.md)：SDK 功能与安装方式；当前 npm 版本为 0.7.0。
 - [业务示例](example/README.md)：复制后即可开发，包含命令、附件、权限和对话。
 - [dou-bot 技能](framework/skills/dou-bot/SKILL.md)：辅助编写机器人业务。
 
@@ -19,7 +19,7 @@
 
 - 三个工程独立安装依赖，没有 workspaces 或源码链接。
 - 根 package.json 仅提供跨工程命令，无需在根目录执行 npm install。
-- 源码另有未发布的 Slot.normalize、上下文中间件和容量监测，见 [SDK 说明](framework/README.md#未发布功能)。
+- 正在准备 **0.8.0**：新增 Slot.normalize、上下文中间件和容量监测；[候选与升级说明](framework/docs/release-0.8.0.md)。
 
 ## 在仓库中运行
 

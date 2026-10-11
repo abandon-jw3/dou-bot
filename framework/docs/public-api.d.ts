@@ -1,5 +1,5 @@
 /**
- * dou-bot public API design contract, revision 1.14 — execution capacity and timing (unreleased).
+ * dou-bot public API design contract, revision 1.14 — execution capacity and timing (dou-bot 0.8.0).
  * This declaration is the normative companion to development-plan.md.
  * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
  */

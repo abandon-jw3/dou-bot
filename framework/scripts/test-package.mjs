@@ -6,15 +6,18 @@ import { parseEnv } from 'node:util';
 import ts from 'typescript';
 import { root, runNode } from './paths.mjs';
 
+const arguments_ = process.argv.slice(2);
 if (
-  process.argv
-    .slice(2)
-    .some((argument) => !['--released-baseline', '--published'].includes(argument))
+  arguments_.some(
+    (argument) => !['--released-baseline', '--released-0.7.0', '--published'].includes(argument),
+  )
 )
   throw new Error('Unknown package check argument');
-const releasedBaseline = process.argv.includes('--released-baseline');
-const published = process.argv.includes('--published');
-if (releasedBaseline && published) throw new Error('Choose one registry validation target');
+if (arguments_.length > 1) throw new Error('Choose one registry validation target');
+const releasedBaseline = arguments_.includes('--released-baseline');
+const released070 = arguments_.includes('--released-0.7.0');
+const published = arguments_.includes('--published');
+const freshRegistry = published || released070;
 const output = resolve(root, 'work', 'package-check', randomUUID());
 const consumer = resolve(output, 'consumer');
 await mkdir(consumer, { recursive: true });
@@ -60,6 +63,13 @@ const pack = JSON.parse(
   await npm(['pack', '--json', '--ignore-scripts', '--pack-destination', output], root, true),
 )[0];
 const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+const registryVersion = releasedBaseline
+  ? '0.6.0'
+  : released070
+    ? '0.7.0'
+    : published
+      ? manifest.version
+      : undefined;
 if (pack.name !== 'dou-bot' || manifest.private || manifest.license !== 'MIT')
   throw new Error('Package identity, visibility or license is not ready for distribution');
 const publicGuides = [
@@ -119,11 +129,7 @@ await writeFile(
       private: true,
       type: 'module',
       dependencies: {
-        'dou-bot': releasedBaseline
-          ? '0.6.0'
-          : published
-            ? manifest.version
-            : `file:${relative(consumer, tarball).replaceAll('\\', '/')}`,
+        'dou-bot': registryVersion ?? `file:${relative(consumer, tarball).replaceAll('\\', '/')}`,
       },
       devDependencies: { '@types/node': '24.19.0' },
     },
@@ -131,7 +137,7 @@ await writeFile(
     2,
   ),
 );
-if (published) {
+if (freshRegistry) {
   await writeFile(resolve(output, 'npmrc'), '');
   await writeFile(resolve(output, 'global-npmrc'), '');
 }
@@ -143,10 +149,10 @@ await npm(
     '--no-fund',
     '--registry=https://registry.npmjs.org/',
     '--cache',
-    published
+    freshRegistry
       ? resolve(output, 'fresh-npm-cache')
       : resolve(root, 'work', 'stack-selection', 'npm-cache'),
-    ...(published
+    ...(freshRegistry
       ? [
           '--userconfig',
           resolve(output, 'npmrc'),
@@ -188,8 +194,8 @@ const featureConsumers = releasedBaseline
       'consumer-attachments.ts',
       'consumer-identity.ts',
       'consumer-attachment-routes.ts',
-      // These APIs are source-only until a future release; npm 0.7.0 must remain verifiable.
-      ...(published
+      // 0.8.0 adds these APIs; keep the published 0.7.0 baseline independently verifiable.
+      ...(released070
         ? []
         : ['consumer-slot-normalization.ts', 'consumer-context.ts', 'consumer-capacity.ts']),
     ];
@@ -262,11 +268,31 @@ await runNode(
   ],
   { cwd: consumer },
 );
+await writeFile(
+  resolve(output, 'validation.json'),
+  JSON.stringify(
+    {
+      package: pack.name,
+      version: pack.version,
+      registryVersion: registryVersion ?? null,
+      node: process.versions.node,
+      tarball,
+      consumer,
+      fileCount: pack.files.length,
+      integrity: pack.integrity,
+      featureConsumers,
+      skillExamples,
+    },
+    null,
+    2,
+  ) + '\n',
+);
 console.log(`Package consumer passed; ${pack.files.length} allowed files, no credential matches.`);
+console.log(`Validated artifact: ${tarball}`);
 console.log(
   releasedBaseline
     ? 'Historical consumer verified against published dou-bot@0.6.0.'
-    : published
-      ? `All consumers verified against published dou-bot@${manifest.version} using empty npm configuration and fresh cache.`
+    : freshRegistry
+      ? `Consumers verified against published dou-bot@${registryVersion} using empty npm configuration and fresh cache.`
       : 'Historical 0.6.0 consumer verified against the current tarball.',
 );

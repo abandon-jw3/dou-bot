@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "0.8.0",
+  "status": "candidate-validated-locally",
+  "published": false,
+  "preparedAt": "2026-10-11T17:22:52.821319Z",
+  "preparedDate": "2026-10-12",
+  "timeZone": "Asia/Shanghai",
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest",
+    "nextTagAction": "leave-unchanged"
+  },
+  "registryAtValidation": {
+    "dist-tags": {
+      "next": "0.6.0",
+      "latest": "0.7.0"
+    },
+    "versions": ["0.6.0", "0.7.0"]
+  },
+  "npmAccount": {
+    "whoami": "ENEEDAUTH",
+    "authenticated": false,
+    "note": "npm login and any required account verification are needed for an explicitly requested upload."
+  },
+  "publicContract": "1.14",
+  "nodeRange": ">=24.0.0 <25",
+  "typescript": "5.9.3",
+  "npm": "11.19.0",
+  "platform": {
+    "os": "Darwin",
+    "architecture": "arm64"
+  },
+  "dependencies": {
+    "reflect-metadata": "0.2.2",
+    "ws": "8.22.0"
+  },
+  "source": {
+    "commit": "68502e6ff3bf48bacfba00d5f1e5c0260d3370a2",
+    "dirty": true,
+    "inputFingerprint": "91c33d15fc6fc2db04d38f4fd96c94f2de03096c4e38776f8207616a67039bc8",
+    "fingerprintAlgorithm": "SHA-256 of each sorted SDK-relative path, NUL, file bytes, NUL",
+    "fingerprintedInputs": [
+      "LICENSE",
+      "NOTICE",
+      "README.md",
+      "docs/access-control.md",
+      "docs/capacity.md",
+      "docs/command-parameters.md",
+      "docs/context-middleware.md",
+      "docs/execution-controls.md",
+      "docs/module-guards.md",
+      "docs/prompts.md",
+      "package-lock.json",
+      "package.json",
+      "scripts/build.mjs",
+      "src/contracts.ts",
+      "src/core/access.ts",
+      "src/core/application.ts",
+      "src/core/arguments.ts",
+      "src/core/attachment-route.ts",
+      "src/core/attachments.ts",
+      "src/core/clock.ts",
+      "src/core/config.ts",
+      "src/core/container.ts",
+      "src/core/context-state.ts",
+      "src/core/cooldown.ts",
+      "src/core/dispatcher.ts",
+      "src/core/errors.ts",
+      "src/core/event-task.ts",
+      "src/core/execution.ts",
+      "src/core/factory.ts",
+      "src/core/guards.ts",
+      "src/core/help.ts",
+      "src/core/identity.ts",
+      "src/core/input-error.ts",
+      "src/core/logging.ts",
+      "src/core/metadata.ts",
+      "src/core/parser.ts",
+      "src/core/prompts.ts",
+      "src/core/utils.ts",
+      "src/index.ts",
+      "src/message/index.ts",
+      "src/qq/api.ts",
+      "src/qq/client.ts",
+      "src/qq/http.ts",
+      "src/qq/lifetime.ts",
+      "src/qq/normalize.ts",
+      "src/qq/token.ts",
+      "src/testing/index.ts",
+      "src/transport/types.ts",
+      "src/transport/webhook.ts",
+      "src/transport/ws.ts",
+      "tsconfig.build.json",
+      "tsconfig.json"
+    ],
+    "runtimeFingerprint": "613da1b838f5582e9285a658417e2698fc3b8146549d34d482c91ca23c9efe6a",
+    "runtimeUnchangedFromBase": true,
+    "note": "Prepared from uncommitted release metadata/tooling/docs above the recorded commit; create the release source commit before tagging. Do not tag the old base as v0.8.0."
+  },
+  "artifact": {
+    "path": "work/release/0.8.0/dou-bot-0.8.0.tgz",
+    "sizeBytes": 207982,
+    "unpackedBytes": 888391,
+    "fileCount": 122,
+    "sha256": "e2c657a18b5efcd97f8b7d59a77fbf789c8b661a0f9ff716202a751730e489b2",
+    "shasum": "dbf7b0520b3cf044d89868bfc2a7481a0e3c5d65",
+    "integrity": "sha512-Kx5fax10hR1Azn6OwZkC6Rwkvks7tPAE0P3pdlcQ/er1V+/RXyM01i/RqZxP6cMXeo1V/B0Jp4aWCec+I6teCQ==",
+    "origin": "Copied byte-for-byte from the successful Node 24.21.0 SDK package consumer; Node 24.0.0 produced and checked the identical archive."
+  },
+  "validation": {
+    "sdkChecks": {
+      "nodeVersions": ["24.0.0", "24.21.0"],
+      "status": "passed",
+      "testsPerNode": 293,
+      "publicExports": 148,
+      "bidirectionalTypeChecks": 108,
+      "identicalTarballs": true
+    },
+    "currentTarballConsumers": [
+      "historical-0.6.0",
+      "attachments",
+      "identity",
+      "attachment-routes",
+      "slot-normalization",
+      "context-middleware",
+      "capacity",
+      "skill-examples"
+    ],
+    "skillExampleTests": 4,
+    "historicalRegistryConsumers": {
+      "0.6.0": "passed",
+      "0.7.0": "passed with empty npm configuration and fresh cache"
+    },
+    "repositoryCheck": {
+      "status": "passed",
+      "mode": "cached/offline dependency resolution",
+      "sdkTests": 293,
+      "exampleTests": 36,
+      "exampleDevProcessTests": 7,
+      "websiteTests": 18,
+      "websitePublishedVersion": "0.7.0",
+      "websiteHtmlPages": 39,
+      "websiteLocalLinksAndAssets": 1718
+    },
+    "isolatedCandidateConsumers": {
+      "sameTarball": true,
+      "installation": "Copied tracked application/site files; installed dependencies independently, then installed the candidate tarball. Only isolated manifests, lock/vendor metadata and site API generator/index were adjusted.",
+      "example": {
+        "status": "passed",
+        "businessTests": 36,
+        "devProcessTests": 7
+      },
+      "website": {
+        "status": "passed",
+        "tests": 18,
+        "publicExports": 148,
+        "htmlPages": 39,
+        "localLinksAndAssets": 1727,
+        "browserTests": 16,
+        "viewports": ["desktop 1440x1000", "iPhone 13 emulation in Chromium"],
+        "scope": "Existing user flows compiled and exercised against the candidate; final 0.8.0 site content and version labels will be synchronized after publication."
+      }
+    },
+    "coverage": {
+      "lines": 98.93,
+      "statements": 98.93,
+      "functions": 98.27,
+      "branches": 91.21
+    },
+    "productionDependencyAudit": {
+      "status": "passed",
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    "localWsWebhookParity": "passed as part of SDK tests on both Node versions",
+    "publicationDryRun": {
+      "status": "passed",
+      "ignoreScripts": true,
+      "tag": "latest",
+      "integrityMatchesCandidate": true,
+      "uploaded": false
+    },
+    "soak": {
+      "status": "passed",
+      "durationMs": 30045,
+      "events": {
+        "accepted": 47702,
+        "duplicates": 11189,
+        "rejected": 1060,
+        "failed": 2159
+      },
+      "unexpectedErrors": 0,
+      "allResourcesReleased": true,
+      "scope": "30-second simulated transport/HTTP workload with intentional overload, invalid inputs and injected failures; not real QQ endurance."
+    },
+    "capacity": {
+      "status": "passed",
+      "mode": "virtual",
+      "requestedDurationMs": 7200000,
+      "actualElapsedMs": 14779.956791999999,
+      "groups": 2000,
+      "handled": 154800,
+      "duplicates": 6192,
+      "injectedSendFailures": 155,
+      "reportedFailures": {
+        "send": 155
+      },
+      "rejected": 0,
+      "allResourcesReleased": true,
+      "runtimeSourceSha256": "c11ca288a214c29dc76ccc8b961b42b44a94dcee550456b1bcd0faae75850b47",
+      "runtimeSourceAlgorithm": "SHA-256 of each sorted src-relative path prefixed with src/, then its file bytes (without separators).",
+      "scope": "Two virtual hours with synthetic delays; not two wall-clock hours or QQ platform acceptance."
+    },
+    "localEvidence": {
+      "soak.json": {
+        "path": "work/release/0.8.0/validation/soak.json",
+        "sha256": "3dd37f6000f4f4c6bf1e5c3f4060be1ddca51f108fd6530e71a41c426b4c021e"
+      },
+      "capacity.json": {
+        "path": "work/release/0.8.0/validation/capacity.json",
+        "sha256": "8db2354458f446c4edaf13a65f32d6939ba02ca05d2be53ad09b04e741a16b0f"
+      },
+      "coverage-summary.json": {
+        "path": "work/release/0.8.0/validation/coverage-summary.json",
+        "sha256": "ed3d27cb1783b1bc4395079ea8dec24ab59ce5760d449c4c74bc2b3f285d5f30"
+      },
+      "audit.json": {
+        "path": "work/release/0.8.0/validation/audit.json",
+        "sha256": "701933055585be6f8f0d19afc8b087b650a2c7df4435002bba578791d9ddd953"
+      },
+      "publication-dry-run.json": {
+        "path": "work/release/0.8.0/validation/publication-dry-run.json",
+        "sha256": "117f2b0cae4a6c140e3e7df891d9a917173899860560a543af02bf428dc034aa"
+      }
+    },
+    "environmentNotes": [
+      "Registry requests through the local proxy failed with ECONNRESET/TLS timeout; the release checker temporarily used NO_PROXY for registry.npmjs.org after a direct connectivity check. No repository or global proxy configuration was changed.",
+      "Example file-watcher/process tests and Chromium ran outside the filesystem sandbox.",
+      "The existing 65-minute offline capacity evidence was not rerun; no real QQ connection was started."
+    ]
+  },
+  "ci": {
+    "lastRemoteHead": "39074763f559086f5fbbb3669acefdeba75cce2f",
+    "lastRemoteRun": "https://github.com/abandon-jw3/dou-bot/actions/runs/37514743897",
+    "conclusion": "success",
+    "coversCandidate": false,
+    "localCommitsAhead": 4
+  },
+  "publishedConsumers": {
+    "example": "dou-bot@0.7.0",
+    "website": "dou-bot@0.7.0",
+    "framework/skills/dou-bot": "0.7.0"
+  },
+  "pending": [
+    "commit release changes and push; verify CI for the release commit",
+    "npm authentication and explicit upload of the validated archive",
+    "anonymous registry download, byte comparison and test:published against 0.8.0",
+    "release tag pointing to the actual release source commit",
+    "upgrade example and website registry dependencies, demonstrations, vendor metadata and API index",
+    "update the user-facing dou-bot skill for 0.8.0 and validate its examples",
+    "documentation deployment after the synchronized changes pass CI"
+  ],
+  "liveAcceptance": {
+    "realQQThisPreparation": "not-run",
+    "publicQQWebhook": "pending",
+    "multiDayProductionRun": "pending"
+  }
+}

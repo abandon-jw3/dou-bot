@@ -1,6 +1,6 @@
 # 命令参数
 
-按输入方式选择装饰器。除标注“尚未发布”的部分外，本页适用于 **0.7.0**。
+按输入方式选择装饰器。本页适用于 **0.8.0**，其中 normalize 和 ContextValue 不支持 0.7.0。
 
 ## 参数 API
 
@@ -109,7 +109,7 @@ query(
 
 ## Slot 归一化
 
-**尚未发布，npm 0.7.0 不支持 normalize。**
+**0.8.0 起提供；0.7.0 不支持 normalize。**
 
 将别名转换成处理器使用的统一值：
 
@@ -299,8 +299,8 @@ accept(@Attachments({ maxCount: 1 }) files: readonly Attachment[]): string {
 
 完整运行步骤见 [附件示例](https://abandon-jw3.github.io/dou-bot/examples/attachments.html)。
 
-## 使用未发布的上下文数据
+## 使用上下文数据
 
-- 源码提供 ContextValue，在文字、归一化、附件校验及身份注入后读取数据，再进入冷却。
+- 0.8.0 提供 ContextValue，在文字、归一化、附件校验及身份注入后读取数据，再进入冷却。
 - 不消费输入，不出现在帮助中；npm 0.7.0 不支持。
 - 注册与懒加载见 [上下文中间件](context-middleware.md)。

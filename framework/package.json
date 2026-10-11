@@ -1,6 +1,6 @@
 {
   "name": "dou-bot",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A lightweight decorator-based framework for official QQ bots.",
   "license": "MIT",
   "repository": {
@@ -93,7 +93,8 @@
     "benchmark:capacity": "node scripts/run-example.mjs capacity",
     "soak": "node scripts/run-example.mjs soak",
     "check": "node scripts/check.mjs",
-    "test:published": "node scripts/test-package.mjs --published"
+    "test:published": "node scripts/test-package.mjs --published",
+    "test:compat:0.7": "node scripts/test-package.mjs --released-0.7.0"
   },
   "dependencies": {
     "reflect-metadata": "0.2.2",

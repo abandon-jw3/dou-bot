@@ -1,7 +1,7 @@
 # 容量配置与运行监测
 
 - 容量配置适用于 **0.7.0**。
-- snapshot 的 **capacity、rejections、timing 尚未发布**，npm 0.7.0 不支持这些字段。
+- snapshot 的 **capacity、rejections、timing 从 0.8.0 起提供**，0.7.0 不支持这些字段。
 - 群数不能直接换算容量，应估算消息率、处理耗时及保留记录数量。
 
 ## 从调用量估算
@@ -55,7 +55,7 @@ const app = await BotFactory.create(AppModule, {
 
 ## 读取容量与延迟
 
-以下需要包含新 API 的源码构建包：
+以下读取方式需要 0.8.0：
 
 ```ts
 const snapshot = app.snapshot();
