@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-13",
+  "timeZone": "Asia/Shanghai",
+  "result": "passed",
+  "scope": "Published SDK, public HTTPS and bounded real QQ integration",
+  "startedAt": "2026-10-13T01:39:53.530000+08:00",
+  "stoppedAt": "2026-10-13T01:49:04.291000+08:00",
+  "durationSeconds": 550.761,
+  "sdk": {
+    "name": "dou-bot",
+    "version": "0.8.0",
+    "integrity": "sha512-Kx5fax10hR1Azn6OwZkC6Rwkvks7tPAE0P3pdlcQ/er1V+/RXyM01i/RqZxP6cMXeo1V/B0Jp4aWCec+I6teCQ==",
+    "resolved": "https://registry.npmjs.org/dou-bot/-/dou-bot-0.8.0.tgz",
+    "releaseCommit": "c02e4acf8c41c36724fc5cde191d1d45b608dd88",
+    "workspaceBaseline": "f29fb89a69989ef79da54e9fa22debc3ff373198",
+    "sourceDependency": false
+  },
+  "environment": {
+    "os": "Debian 12",
+    "architecture": "x86_64",
+    "node": "24.21.0",
+    "npm": "11.19.0",
+    "typescript": "5.9.3",
+    "nginx": "1.22.1",
+    "defaultNodePreserved": "22.21.1"
+  },
+  "ingress": {
+    "endpoint": "https://qq.fineiii.xyz/dou-bot/qq",
+    "port": 443,
+    "upstream": "http://127.0.0.1:31080",
+    "publicHealthStatus": 404,
+    "tls": {
+      "domain": "qq.fineiii.xyz",
+      "certificateExpiresAt": "2027-01-10T16:38:19Z",
+      "certificateSha256": "414aeeee7d85aa0a4617def555e94757e5f7cbaad129b9255c7d45e40f670141",
+      "issuer": "Lets Encrypt YE2",
+      "renewalDryRun": "passed",
+      "nginxReloadHook": "passed",
+      "publicTlsVerification": "passed"
+    },
+    "originalVirtualHostsPreserved": true,
+    "officialDocumentation": "https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/event-emit.html"
+  },
+  "offline": {
+    "local": {
+      "node": "24.21.0",
+      "platform": "darwin",
+      "tests": 2,
+      "passed": true,
+      "cases": [
+        "private/group",
+        "scoped commands",
+        "Slot.normalize",
+        "identity",
+        "context middleware/lazy cache",
+        "duplicate event",
+        "images",
+        "DOCX route",
+        "button ACK/send",
+        "prompt reply/cancel",
+        "close"
+      ]
+    },
+    "server": {
+      "node": "24.21.0",
+      "platform": "linux",
+      "tests": 2,
+      "passed": true,
+      "cases": [
+        "private/group",
+        "Slot.normalize",
+        "identity",
+        "context middleware/lazy cache",
+        "close"
+      ]
+    }
+  },
+  "syntheticPublicProtocol": {
+    "timestamp": "2026-10-12T17:40:13.096Z",
+    "endpoint": "https://qq.fineiii.xyz/dou-bot/qq",
+    "type": "synthetic-public-https",
+    "realQQCallbacks": false,
+    "passed": true,
+    "cases": [
+      {
+        "name": "callback requires POST",
+        "expected": 405,
+        "actual": 405,
+        "passed": true,
+        "milliseconds": 105
+      },
+      {
+        "name": "health is not public",
+        "expected": 404,
+        "actual": 404,
+        "passed": true,
+        "milliseconds": 26
+      },
+      {
+        "name": "HTTP redirects to HTTPS 443",
+        "expected": 301,
+        "actual": 301,
+        "passed": true,
+        "milliseconds": 62
+      },
+      {
+        "name": "missing signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 29
+      },
+      {
+        "name": "incorrect signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 118
+      },
+      {
+        "name": "incorrect AppID rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 29
+      },
+      {
+        "name": "malformed JSON rejected",
+        "expected": 400,
+        "actual": 400,
+        "passed": true,
+        "milliseconds": 29
+      },
+      {
+        "name": "stale signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 31
+      },
+      {
+        "name": "body byte changes rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 30
+      },
+      {
+        "name": "signed synthetic event acknowledged",
+        "expected": 200,
+        "actual": 200,
+        "passed": true,
+        "milliseconds": 31
+      },
+      {
+        "name": "URL challenge answered",
+        "expected": 200,
+        "actual": 200,
+        "passed": true,
+        "milliseconds": 29
+      },
+      {
+        "name": "challenge response Ed25519 signature verified",
+        "passed": true
+      },
+      {
+        "name": "oversized body rejected",
+        "expected": 413,
+        "actual": 413,
+        "passed": true,
+        "milliseconds": 33
+      }
+    ]
+  },
+  "realQQ": {
+    "urlValidation": "client-confirmed and signed HTTP 200 observed",
+    "scenes": {
+      "private": {
+        "commandNormalizeIdentityContext": "passed with client confirmation",
+        "buttonCallbackAndReply": "passed with client confirmation",
+        "promptReceivedAndReply": "passed with client confirmation",
+        "commandWithImage": "passed with client confirmation",
+        "directDocxRoute": "passed with client confirmation",
+        "imageExecutions": 1,
+        "docxExecutions": 1,
+        "promptExitBranch": "cancelled",
+        "promptExitClientConfirmed": true,
+        "groupRoleObserved": null
+      },
+      "group": {
+        "commandNormalizeIdentityContext": "passed with client confirmation",
+        "buttonCallbackAndReply": "passed with client confirmation",
+        "promptReceivedAndReply": "passed with client confirmation",
+        "commandWithImage": "passed with client confirmation",
+        "directDocxRoute": "passed with client confirmation",
+        "imageExecutions": 2,
+        "docxExecutions": 1,
+        "promptExitBranch": "timeout",
+        "promptExitClientConfirmed": true,
+        "groupRoleObserved": "owner"
+      }
+    },
+    "events": {
+      "accepted": 18,
+      "duplicates": 0,
+      "rejected": 0,
+      "failed": 0
+    },
+    "frameworkErrors": 0,
+    "capacityRejections": {
+      "invalidEvent": 0,
+      "queueFull": 0,
+      "bytesFull": 0,
+      "acknowledgmentsFull": 0,
+      "replyScopesFull": 0,
+      "dedupFull": 0
+    }
+  },
+  "shutdown": {
+    "service": "dou-bot-validation.service",
+    "status": "inactive",
+    "exitStatus": 0,
+    "startupEnabled": false,
+    "loopbackListenerRemaining": false,
+    "managedResourcesZero": true,
+    "finalSnapshot": {
+      "status": "stopped",
+      "transport": "webhook",
+      "queue": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0
+      },
+      "prompts": {
+        "pending": 0
+      },
+      "events": {
+        "accepted": 18,
+        "duplicates": 0,
+        "rejected": 0,
+        "failed": 0
+      },
+      "capacity": {
+        "concurrency": 4,
+        "queueCapacity": 64,
+        "queueMaxBytes": 16777216,
+        "dedup": {
+          "size": 0,
+          "limit": 512
+        },
+        "replyScopes": {
+          "size": 0,
+          "limit": 512
+        }
+      },
+      "rejections": {
+        "invalidEvent": 0,
+        "queueFull": 0,
+        "bytesFull": 0,
+        "acknowledgmentsFull": 0,
+        "replyScopesFull": 0,
+        "dedupFull": 0
+      },
+      "timing": {
+        "queueWait": {
+          "count": 19,
+          "totalMs": 2.4401769999967655,
+          "maxMs": 0.506902999986778
+        },
+        "processing": {
+          "count": 15,
+          "totalMs": 14151.678372999973,
+          "maxMs": 2169.9118949999684
+        }
+      },
+      "lastEventAt": 1791827241523
+    },
+    "tlsAndNginxRetained": true
+  },
+  "probe": {
+    "lifetimeLimitMs": 1800000,
+    "scope": "One user per scene and one group; fixed commands and filename; no attachment download",
+    "filesSha256": {
+      "package.json": "99883606e5fafb5451f5398e0002f87d70402005af19151124eb95f8f268a82a",
+      "package-lock.json": "8600d48fb338f64b56270c6d7b8666c6daefd642848fe17475ecb77d082f750c",
+      "config.json": "50c98beb75e991838e1f0d5fdba3116115e58fce9ea4cfd3cc4031608342d1a2",
+      "dist/main.js": "b5136cbd00c3dc9f14a91b529b1055af846b000f55703e749d86578e4ac02206",
+      "dist/probe.js": "2b32700493852609dc1b42a467f40eb28e7502d82a25b1d840b032beb893b81a",
+      "dou-bot-validation.service": "ad769dca46374cdcdd3b2622ca7fd348b43e05d244103fc9298860a521dfd303"
+    },
+    "deploymentArchiveSha256": "a8fd3e9b2e580dd63684e72c7e8685d87497be468aa69af3f3a1f773a9fd49a6"
+  },
+  "limitations": [
+    "Real platform retries and cross-restart replay were not tested.",
+    "This was not a multi-day run or a 2000-group capacity test.",
+    "Only the selected bot, accounts and group were tested; all three group roles were not re-tested.",
+    "Video and audio delivery and DOCX content parsing were not tested.",
+    "The temporary bot service is stopped; the HTTPS configuration and restricted credential file are retained."
+  ]
+}

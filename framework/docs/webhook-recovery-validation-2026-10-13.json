@@ -1,0 +1,603 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-13",
+  "timeZone": "Asia/Shanghai",
+  "result": "verified with explicit restart boundaries",
+  "startedAt": "2026-10-13T02:08:34.199000+08:00",
+  "stoppedAt": "2026-10-13T02:21:48.630000+08:00",
+  "durationSeconds": 794.431,
+  "sdk": {
+    "name": "dou-bot",
+    "version": "0.8.0",
+    "sourceDependency": false,
+    "runtimeModified": false,
+    "integrity": "sha512-Kx5fax10hR1Azn6OwZkC6Rwkvks7tPAE0P3pdlcQ/er1V+/RXyM01i/RqZxP6cMXeo1V/B0Jp4aWCec+I6teCQ=="
+  },
+  "environment": {
+    "os": "Debian 12",
+    "architecture": "x86_64",
+    "node": "24.21.0",
+    "typescript": "5.9.3",
+    "endpoint": "https://qq.fineiii.xyz/dou-bot/qq",
+    "publicPort": 443,
+    "gateway": "127.0.0.1:31080",
+    "worker": "127.0.0.1:31081"
+  },
+  "evidencePolicy": {
+    "references": [
+      "Current QQ Open Platform documentation",
+      "dou-bot 0.8.0 public API and implementation",
+      "Observed real QQ callbacks"
+    ],
+    "excludedReferences": [
+      "Tencent official SDK implementations and SDK documentation, per owner instruction"
+    ],
+    "cases": [
+      "HTTP 503 before SDK admission",
+      "Delayed response before SDK admission",
+      "Controlled replay within signature validity",
+      "Worker crash and systemd recovery",
+      "Replay after worker restart"
+    ],
+    "notIncluded": [
+      "Failure ACK d:1 derived from old official SDK",
+      "Long-running load or multi-day real QQ run"
+    ],
+    "acceptanceRule": "Behavioral conclusions require matching test evidence. Documentation and source code supply hypotheses only. Keep offline, synthetic public requests, and real QQ evidence separate. Untested behavior remains unverified."
+  },
+  "offlineValidation": {
+    "local": {
+      "platform": "darwin-arm64",
+      "tests": 5,
+      "passed": true
+    },
+    "server": {
+      "platform": "linux-x64",
+      "tests": 5,
+      "passed": true
+    },
+    "limitation": "The new-instance test used separate applications, not an OS process crash; the actual crash is recorded separately below."
+  },
+  "publicSyntheticValidation": {
+    "timestamp": "2026-10-12T18:09:19.141Z",
+    "endpoint": "https://qq.fineiii.xyz/dou-bot/qq",
+    "type": "synthetic-public-https",
+    "realQQCallbacks": false,
+    "passed": true,
+    "cases": [
+      {
+        "name": "callback requires POST",
+        "expected": 405,
+        "actual": 405,
+        "passed": true,
+        "milliseconds": 271
+      },
+      {
+        "name": "health is not public",
+        "expected": 404,
+        "actual": 404,
+        "passed": true,
+        "milliseconds": 26
+      },
+      {
+        "name": "HTTP redirects to HTTPS 443",
+        "expected": 301,
+        "actual": 301,
+        "passed": true,
+        "milliseconds": 62
+      },
+      {
+        "name": "missing signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 32
+      },
+      {
+        "name": "incorrect signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 33
+      },
+      {
+        "name": "incorrect AppID rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 30
+      },
+      {
+        "name": "malformed JSON rejected",
+        "expected": 400,
+        "actual": 400,
+        "passed": true,
+        "milliseconds": 30
+      },
+      {
+        "name": "stale signature rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 30
+      },
+      {
+        "name": "body byte changes rejected",
+        "expected": 403,
+        "actual": 403,
+        "passed": true,
+        "milliseconds": 31
+      },
+      {
+        "name": "signed synthetic event acknowledged",
+        "expected": 200,
+        "actual": 200,
+        "passed": true,
+        "milliseconds": 32
+      },
+      {
+        "name": "URL challenge answered",
+        "expected": 200,
+        "actual": 200,
+        "passed": true,
+        "milliseconds": 31
+      },
+      {
+        "name": "challenge response Ed25519 signature verified",
+        "passed": true
+      },
+      {
+        "name": "oversized body rejected",
+        "expected": 413,
+        "actual": 413,
+        "passed": true,
+        "milliseconds": 33
+      }
+    ]
+  },
+  "publicControlRoute": {
+    "path": "/control/replay",
+    "status": 404
+  },
+  "realQQHttp503": {
+    "injectedFailures": 2,
+    "failureBeforeSdkAdmission": true,
+    "scenes": {
+      "private": {
+        "messageFingerprint": "5c64732462d5f6da9c688179",
+        "externalDeliveries": 2,
+        "automaticRetryAfterMs": 4501,
+        "handlerExecutions": 1,
+        "replyStatus": "sent",
+        "clientConfirmed": true
+      },
+      "group": {
+        "messageFingerprint": "f0a5121163c46d05f6f0b986",
+        "externalDeliveries": 2,
+        "automaticRetryAfterMs": 4339,
+        "handlerExecutions": 1,
+        "replyStatus": "sent",
+        "clientConfirmed": true
+      }
+    },
+    "controlledReplaysUsed": 0
+  },
+  "realQQDelayedResponse": {
+    "plannedDelayMs": 20000,
+    "temporaryNginxReadTimeoutMs": 45000,
+    "scenes": {
+      "private": {
+        "messageFingerprint": "2213b81d3b661e419fc37027",
+        "externalDeliveries": 2,
+        "automaticRetryAfterMs": 7913,
+        "handlerExecutions": 1,
+        "replyStatus": "sent",
+        "clientConfirmed": true,
+        "peerClosedBeforeResponseMs": 3000
+      },
+      "group": {
+        "messageFingerprint": "d54104900464d7847dd5559a",
+        "externalDeliveries": 2,
+        "automaticRetryAfterMs": 7752,
+        "handlerExecutions": 1,
+        "replyStatus": "sent",
+        "clientConfirmed": true,
+        "peerClosedBeforeResponseMs": 2806
+      }
+    },
+    "controlledReplaysUsed": 0,
+    "inferenceLimit": "These are observed connection closures and retry intervals for this run, not fixed QQ platform guarantees."
+  },
+  "controlledReplay": {
+    "origin": "Real QQ test message bodies and original signature headers replayed to the local SDK worker, within the unchanged signature validity period; no payload was re-signed.",
+    "beforeRestart": {
+      "replays": 4,
+      "acceptedDelta": 0,
+      "duplicateDelta": 4,
+      "executionsPerScene": 1,
+      "snapshot": {
+        "status": "running",
+        "transport": "webhook",
+        "queue": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0
+        },
+        "prompts": {
+          "pending": 0
+        },
+        "events": {
+          "accepted": 8,
+          "duplicates": 4,
+          "rejected": 0,
+          "failed": 0
+        },
+        "capacity": {
+          "concurrency": 4,
+          "queueCapacity": 64,
+          "queueMaxBytes": 16777216,
+          "dedup": {
+            "size": 8,
+            "limit": 512
+          },
+          "replyScopes": {
+            "size": 8,
+            "limit": 512
+          }
+        },
+        "rejections": {
+          "invalidEvent": 0,
+          "queueFull": 0,
+          "bytesFull": 0,
+          "acknowledgmentsFull": 0,
+          "replyScopesFull": 0,
+          "dedupFull": 0
+        },
+        "timing": {
+          "queueWait": {
+            "count": 8,
+            "totalMs": 1.2266999999701511,
+            "maxMs": 0.4829639999952633
+          },
+          "processing": {
+            "count": 8,
+            "totalMs": 4758.234773000062,
+            "maxMs": 1464.352417999995
+          }
+        },
+        "lastEventAt": 1791829034721
+      }
+    },
+    "afterRestart": {
+      "replays": 4,
+      "acceptedDelta": 2,
+      "duplicateDelta": 2,
+      "executionsPerSceneInNewProcess": 1,
+      "totalExecutionsPerSceneAcrossProcesses": 2,
+      "snapshot": {
+        "status": "running",
+        "transport": "webhook",
+        "queue": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0
+        },
+        "prompts": {
+          "pending": 0
+        },
+        "events": {
+          "accepted": 2,
+          "duplicates": 2,
+          "rejected": 0,
+          "failed": 0
+        },
+        "capacity": {
+          "concurrency": 4,
+          "queueCapacity": 64,
+          "queueMaxBytes": 16777216,
+          "dedup": {
+            "size": 2,
+            "limit": 512
+          },
+          "replyScopes": {
+            "size": 2,
+            "limit": 512
+          }
+        },
+        "rejections": {
+          "invalidEvent": 0,
+          "queueFull": 0,
+          "bytesFull": 0,
+          "acknowledgmentsFull": 0,
+          "replyScopesFull": 0,
+          "dedupFull": 0
+        },
+        "timing": {
+          "queueWait": {
+            "count": 2,
+            "totalMs": 0.5666450000007899,
+            "maxMs": 0.4730070000005071
+          },
+          "processing": {
+            "count": 2,
+            "totalMs": 24.169572999999218,
+            "maxMs": 18.32121499999994
+          }
+        },
+        "lastEventAt": 1791829143897
+      }
+    }
+  },
+  "realProcessCrash": {
+    "signal": "SIGKILL",
+    "unit": "dou-bot-recovery-worker.service",
+    "injectedAt": "2026-10-12T18:18:51.017334+00:00",
+    "serverAckBeforeCrash": {
+      "time": "2026-10-12T18:18:49.857Z",
+      "event": "http",
+      "status": 200,
+      "milliseconds": 5,
+      "scene": "private",
+      "case": "crash",
+      "key": "0f367985b062cc5b60e670d6",
+      "origin": "external"
+    },
+    "handlerStarted": true,
+    "handlerCompleted": false,
+    "oldBoot": "93448a2a",
+    "newBoot": "88942543",
+    "oldPid": 2944402,
+    "newPid": 2945423,
+    "systemdAutoRestartsObserved": 1,
+    "gatewayPidUnchanged": true,
+    "observedNewProcessReadyAfterMs": 2953,
+    "unfinishedTaskResumed": false,
+    "crashEventRedeliveryObserved": false,
+    "observationAfterKillSeconds": 177.613,
+    "firstNewProcessSnapshot": {
+      "status": "running",
+      "transport": "webhook",
+      "queue": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0
+      },
+      "prompts": {
+        "pending": 0
+      },
+      "events": {
+        "accepted": 0,
+        "duplicates": 0,
+        "rejected": 0,
+        "failed": 0
+      },
+      "capacity": {
+        "concurrency": 4,
+        "queueCapacity": 64,
+        "queueMaxBytes": 16777216,
+        "dedup": {
+          "size": 0,
+          "limit": 512
+        },
+        "replyScopes": {
+          "size": 0,
+          "limit": 512
+        }
+      },
+      "rejections": {
+        "invalidEvent": 0,
+        "queueFull": 0,
+        "bytesFull": 0,
+        "acknowledgmentsFull": 0,
+        "replyScopesFull": 0,
+        "dedupFull": 0
+      },
+      "timing": {
+        "queueWait": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "processing": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        }
+      }
+    }
+  },
+  "postRestartRealQQ": {
+    "private": {
+      "reply": "sent",
+      "clientConfirmed": true
+    },
+    "group": {
+      "reply": "sent",
+      "clientConfirmed": true
+    }
+  },
+  "unexpectedFrameworkErrors": 0,
+  "shutdown": {
+    "worker": {
+      "boot": "88942543",
+      "pid": 2945423,
+      "errors": 0,
+      "executions": {
+        "private:count_executed": 1,
+        "group:count_executed": 1,
+        "private:base": 1,
+        "group:base": 1
+      },
+      "application": {
+        "status": "stopped",
+        "transport": "webhook",
+        "queue": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0
+        },
+        "prompts": {
+          "pending": 0
+        },
+        "events": {
+          "accepted": 4,
+          "duplicates": 2,
+          "rejected": 0,
+          "failed": 0
+        },
+        "capacity": {
+          "concurrency": 4,
+          "queueCapacity": 64,
+          "queueMaxBytes": 16777216,
+          "dedup": {
+            "size": 0,
+            "limit": 512
+          },
+          "replyScopes": {
+            "size": 0,
+            "limit": 512
+          }
+        },
+        "rejections": {
+          "invalidEvent": 0,
+          "queueFull": 0,
+          "bytesFull": 0,
+          "acknowledgmentsFull": 0,
+          "replyScopesFull": 0,
+          "dedupFull": 0
+        },
+        "timing": {
+          "queueWait": {
+            "count": 4,
+            "totalMs": 0.7776899999898887,
+            "maxMs": 0.4730070000005071
+          },
+          "processing": {
+            "count": 4,
+            "totalMs": 900.8470590000143,
+            "maxMs": 541.746238000007
+          }
+        },
+        "lastEventAt": 1791829238225
+      }
+    },
+    "gateway": {
+      "status": "stopped",
+      "boundScenes": 2,
+      "counts": {
+        "ready": 1,
+        "http": 22,
+        "scope_bound": 2,
+        "external_delivery": 11,
+        "fault_injected": 4,
+        "peer_closed_before_response": 2,
+        "controlled_replay": 8,
+        "stopping": 1
+      },
+      "delayedResponses": 0,
+      "captures": [
+        {
+          "slot": "private:retry",
+          "key": "5c64732462d5f6da9c688179",
+          "firstAt": 1791828827333,
+          "lastAt": 1791828831834,
+          "deliveries": 2,
+          "replays": 0,
+          "retained": false
+        },
+        {
+          "slot": "group:retry",
+          "key": "f0a5121163c46d05f6f0b986",
+          "firstAt": 1791828841900,
+          "lastAt": 1791828846239,
+          "deliveries": 2,
+          "replays": 0,
+          "retained": false
+        },
+        {
+          "slot": "group:delay",
+          "key": "d54104900464d7847dd5559a",
+          "firstAt": 1791828897491,
+          "lastAt": 1791828905243,
+          "deliveries": 2,
+          "replays": 0,
+          "retained": false
+        },
+        {
+          "slot": "private:delay",
+          "key": "2213b81d3b661e419fc37027",
+          "firstAt": 1791828915948,
+          "lastAt": 1791828923861,
+          "deliveries": 2,
+          "replays": 0,
+          "retained": false
+        },
+        {
+          "slot": "group:count",
+          "key": "f08d6b308bc5689b83ed9a59",
+          "firstAt": 1791829021719,
+          "lastAt": 1791829021719,
+          "deliveries": 1,
+          "replays": 4,
+          "retained": false
+        },
+        {
+          "slot": "private:count",
+          "key": "4b6c83c532189679457f824f",
+          "firstAt": 1791829034719,
+          "lastAt": 1791829034719,
+          "deliveries": 1,
+          "replays": 4,
+          "retained": false
+        },
+        {
+          "slot": "private:crash",
+          "key": "0f367985b062cc5b60e670d6",
+          "firstAt": 1791829129852,
+          "lastAt": 1791829129852,
+          "deliveries": 1,
+          "replays": 0,
+          "retained": true
+        }
+      ],
+      "retainedBodiesAfterClose": 0,
+      "boundScopesAfterClose": 0
+    },
+    "bothServicesInactive": true,
+    "bothExitStatuses": 0,
+    "ports31080And31081Closed": true,
+    "nginxOriginalRestored": true,
+    "restoredNginxSha256": "e861a02e1cf7abdb04aea4360f0114b1f994216f0465805a6a2ab54cf1e33b34"
+  },
+  "probe": {
+    "directory": "framework/work/recovery-validation/2026-10-13-c54679",
+    "rawCaptureLocation": "bounded process memory only",
+    "captureTtlMs": 240000,
+    "sourceFilesSha256": {
+      "src/gate.ts": "05bb7ad76ad64d71ea11843f11fc91f265a361ca740909d441f02deea0ed7789",
+      "src/gateway.test.ts": "107428c34e02ed51c353721fe653e527c099efdada50a9b467cfbe7bc302b92b",
+      "src/gateway.ts": "54502fa7a77c06fa6b84beff63c67a62fa0a495a6ec504090a081976faeb3921",
+      "src/http.ts": "c8522b291457de89745ece07affdd598f33711331ae497c26f5633d7ced904a9",
+      "src/module.ts": "eb45f490735d5a77d9be5eb4ecca73cfe0eb16fd6ae99950083b534f67c4f0ce",
+      "src/probe.test.ts": "e476d054eca0bebf846b5235307f155710de4ee90b28f87d3eecb278afb46bb1",
+      "src/worker.ts": "344a1faf622cc6f8476a0f1dcaf1d3e22d2a9e2356e1917174e3333bb863410b",
+      "config.json": "50e6ad17db13c96849ecd7c31c2b3243f4b6f5f6364d493282f4d51635a635f5",
+      "package.json": "b448e47283652d92620b47db47b6c755662dcdb4ac87bcb91e0a90571d568856",
+      "package-lock.json": "bfbd8711b6b6c73a1babe391007f3148fed018d94be77c83218bcf65b47ed6da",
+      "scope.json": "36d0a6576b21ee88388e7c02e4913682ba726846012bf66b5a05541a716f70dc",
+      "control.mjs": "64ec946a77336bd99a9d5385afca323aad3b5a670e03f7045ed8d37b37dbf353",
+      "crash-check.py": "4f7954541350a3d9b9403a808e73220b0f82f7339f6c4a29dfeedafdaa86d1c4",
+      "replay-check.py": "0d3e3bd5934211570027f458a6ce49a4d2d7217802d385d45385b466cfb90d19",
+      "dou-bot-recovery-gateway.service": "b7cef0ef398b7c0e6df84cd90a42abb88c1e7b9977abc2b86bc90348cdd9cbff",
+      "dou-bot-recovery-worker.service": "15ba4fd2a1145037ed1887dfe3fe5fbcb7fee1c8dbb11ee8f9c69211f4ca5888"
+    }
+  },
+  "limitations": [
+    "Only one private test user and one group were exercised.",
+    "HTTP 503 and delayed response were tested; this does not establish behavior for all HTTP status codes or network faults.",
+    "Cross-restart redelivery was controlled replay, not a naturally observed platform retry.",
+    "The gateway stayed running while the SDK worker crashed; gateway, nginx and host failures were not tested.",
+    "No database or external business side effects were used; durable delivery and business idempotency were not implemented.",
+    "This was not a multi-day run or a 2000-group capacity test."
+  ]
+}
