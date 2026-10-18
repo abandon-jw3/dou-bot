@@ -5,7 +5,7 @@ import type { QQDispatch } from '../src/contracts.js';
 const beforeImport = process.memoryUsage().rss;
 const importStarted = performance.now();
 const { Command, Controller, Module } = await import('../src/index.js');
-const { Application } = await import('../src/core/application.js');
+const { SingleTestApplication: Application } = await import('../src/testing/single-bot.js');
 const importMs = performance.now() - importStarted;
 
 @Controller()

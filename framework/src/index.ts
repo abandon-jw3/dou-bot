@@ -37,6 +37,7 @@ export {
 export { selectAttachments } from './core/attachments.js';
 export { createContextKey } from './core/context-state.js';
 export { HelpModule } from './core/help.js';
-export { BotFactory } from './core/factory.js';
+export { AppFactory } from './core/factory.js';
 export { LOGGER } from './core/logging.js';
 export { text, image, markdown, keyboard, button } from './message/index.js';
+export { migrateDatabase } from './database/postgres.js';

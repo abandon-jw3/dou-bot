@@ -1,3 +1,4 @@
+import type { DefaultQQClient } from '../src/qq/client.js';
 import {
   Attachments,
   Command,
@@ -13,7 +14,6 @@ import {
 } from '../src/index.js';
 import type {
   Attachment,
-  BotApplication,
   CanActivate,
   ErrorContext,
   GuardContext,
@@ -176,16 +176,16 @@ export function createAttachmentsProbe(
           : {}),
       });
     },
-    instrument(app: BotApplication): () => void {
-      const send = app.client.sendMessage.bind(app.client);
-      app.client.sendMessage = async (target, input, options) => {
+    instrument(client: DefaultQQClient): () => void {
+      const send = client.sendPreparedMessage.bind(client);
+      client.sendPreparedMessage = async (target, input, options) => {
         const result = await send(target, input, options);
         const info = options?.reply ? messages.get(options.reply.messageId) : undefined;
         if (info) note({ event: 'reply', ...info, status: result.status });
         return result;
       };
       return () => {
-        app.client.sendMessage = send;
+        client.sendPreparedMessage = send;
       };
     },
   };

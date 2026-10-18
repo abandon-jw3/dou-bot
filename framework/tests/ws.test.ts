@@ -1,10 +1,12 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
+import { SingleTestApplication as BotFactory } from '../src/testing/single-bot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
-import { Arg, BotFactory, Command, Controller, FrameworkError, Module } from '../src/index.js';
-import type { BotOptions, QQDispatch, WsTransportOptions } from '../src/index.js';
+import { Arg, Command, Controller, FrameworkError, Module } from '../src/index.js';
+import type { QQDispatch, WsTransportOptions } from '../src/index.js';
 import { deferred, qqServer, until } from './helpers.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 
 const silent = { debug() {}, info() {}, warn() {}, error() {} };
@@ -195,7 +197,13 @@ await test('the startup promise rejects when HELLO never arrives and closes its 
   try {
     await assert.rejects(
       app.start(),
-      (error: unknown) => error instanceof FrameworkError && error.code === 'TRANSPORT',
+      (error: unknown) =>
+        error instanceof FrameworkError &&
+        error.code === 'BOT_UNAVAILABLE' &&
+        error.cause instanceof AggregateError &&
+        error.cause.errors.some(
+          (reason: unknown) => reason instanceof FrameworkError && reason.code === 'TRANSPORT',
+        ),
     );
     assert.equal(app.status, 'failed');
     await until(() => backend.sockets.every((socket) => socket.readyState === WebSocket.CLOSED));
@@ -332,7 +340,7 @@ await test('initial connection failures stop at the configured attempt limit wit
       },
     },
   );
-  const starting = assert.rejects(app.start(), /initial connection attempts exhausted/);
+  const starting = assert.rejects(app.start(), /All configured bots failed/);
   await clock.flush();
   assert.equal(attempts, 1);
   await clock.advance(10);

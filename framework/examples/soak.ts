@@ -27,7 +27,7 @@ import type {
   QQDispatch,
   QQMessagePayload,
 } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { CountingClock, inspectResources, assertReleased, closeOnAbort } from './soak-support.js';
 import { createControlWorkload } from './soak-controls.js';
 import { fixtureImage } from './fixture-image.js';

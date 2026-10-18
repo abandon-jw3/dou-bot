@@ -1,4 +1,4 @@
-import { BotFactory } from '../src/index.js';
+import { createLiveApplication } from './live-application.js';
 import { createBusinessModule } from './business/app.module.js';
 
 const appId = process.env.QQ_APP_ID;
@@ -14,7 +14,7 @@ const root = createBusinessModule({
   privateUsers: ids(process.env.DEMO_PRIVATE_USERS),
   groups: groupId ? [{ groupId, userIds: ids(process.env.DEMO_GROUP_USERS) }] : [],
 });
-const app = await BotFactory.create(root, {
+const app = await createLiveApplication(root, {
   appId,
   secret,
   commands: { prefix: '', invalidInput: 'reply' },

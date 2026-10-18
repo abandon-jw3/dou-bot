@@ -1,8 +1,9 @@
+import { createLiveApplication } from './live-application.js';
 import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { BotFactory, FrameworkError } from '../src/index.js';
+import { FrameworkError } from '../src/index.js';
 import { createAttachmentsProbe } from './attachments-probe.js';
 
 const appId = process.env.QQ_APP_ID;
@@ -21,7 +22,7 @@ function write(entry: object): void {
 }
 const probe = createAttachmentsProbe(nonce, write);
 let heartbeats = 0;
-const app = await BotFactory.create(probe.root, {
+const app = await createLiveApplication(probe.root, {
   appId,
   secret,
   commands: { invalidInput: 'reply' },
@@ -42,7 +43,7 @@ const app = await BotFactory.create(probe.root, {
   },
   onError: (error, context) => probe.onError(error, context),
 });
-const restore = probe.instrument(app);
+const restore = probe.instrument(app.runtime(appId).rawClient);
 let finish!: () => void;
 const finished = new Promise<void>((resolve) => {
   finish = resolve;

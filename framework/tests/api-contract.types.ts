@@ -7,7 +7,7 @@ type ContractShape = Omit<typeof Contract, 'LOGGER'> & { LOGGER: symbol };
 const publicApi: ContractShape = runtime;
 void publicApi;
 
-export function readCapacity(snapshot: runtime.ApplicationSnapshot): number {
+export function readCapacity(snapshot: runtime.BotSnapshot): number {
   const used: number = snapshot.capacity.replyScopes.size;
   const rejected: number = snapshot.rejections.queueFull;
   const wait: number = snapshot.timing.queueWait.totalMs;
@@ -319,3 +319,33 @@ runtime.OnAttachment({
 runtime.OnAttachment({ aliases: ['doc'] });
 // @ts-expect-error Extension is one literal suffix.
 runtime.OnAttachment({ extension: ['docx'] });
+
+// Contract 2.0: application-owned services, explicit private destinations and full context addresses.
+function inspectApplication(app: runtime.Application, ctx: runtime.MessageContext): void {
+  const target: runtime.BotTarget = ctx.target;
+  const selected: runtime.BotHandle = app.bots.get(ctx.appId);
+  const pool: import('pg').Pool = app.get(runtime.Database).pool;
+  void [target, selected, pool];
+  // @ts-expect-error There is no implicit first-account client in a shared application.
+  void app.client;
+  const sender = app.get(runtime.MessageSender);
+  // @ts-expect-error Private proactive sending must select an account.
+  sender.sendMessage({ scene: 'private', userId: 'u' }, 'x').catch(() => {});
+  // @ts-expect-error Context addresses cannot lose the owning account.
+  const incomplete: runtime.BotTarget = { scene: 'group', groupId: 'g' };
+  void incomplete;
+}
+void inspectApplication;
+// @ts-expect-error The removed factory cannot construct isolated copies of business services.
+void runtime.BotFactory;
+// @ts-expect-error Production applications require explicit PostgreSQL configuration.
+const noDatabase: runtime.AppOptions = { bots: [{ appId: 'a', secret: 's' }] };
+void noDatabase;
+
+const misplacedListener: runtime.BotOptions = {
+  appId: 'a',
+  secret: 'fixture',
+  // @ts-expect-error A listener belongs to the application, not an individual account.
+  transport: { type: 'webhook', listen: false },
+};
+void misplacedListener;

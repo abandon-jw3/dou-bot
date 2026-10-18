@@ -38,10 +38,10 @@ export class CooldownStore {
       context.target.scene === 'group' ? context.target.groupId : context.target.userId;
     const key = JSON.stringify(
       options.scope === 'command'
-        ? [route]
+        ? [context.appId, route]
         : options.scope === 'session'
-          ? [route, context.scene, session]
-          : [route, context.scene, session, context.userId],
+          ? [context.appId, route, context.scene, session]
+          : [context.appId, route, context.scene, session, context.userId],
     );
     const now = this.clock.monotonic();
     const expiry = this.entries.get(key);
@@ -62,6 +62,11 @@ export class CooldownStore {
       this.timer?.cancel();
       this.timer = undefined;
     }
+  }
+  resetBot(appId: string): void {
+    for (const key of this.entries.keys())
+      if ((JSON.parse(key) as unknown[])[0] === appId) this.entries.delete(key);
+    this.prune();
   }
   close(): void {
     this.closed = true;

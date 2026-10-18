@@ -1,3 +1,4 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setImmediate as tick } from 'node:timers/promises';
@@ -18,7 +19,6 @@ import {
 } from '../src/index.js';
 import type {
   ArgumentOptions,
-  BotOptions,
   MessageContext,
   OptionOptions,
   QQDispatch,

@@ -13,12 +13,14 @@ import type {
   ModuleMetadata,
   OptionOptions,
   OnAttachmentOptions,
+  Provider,
   RestOptions,
   SlotOptions,
   Type,
   UsersOnlyOptions,
 } from '../contracts.js';
 import { FrameworkError } from './errors.js';
+import { keys } from './config-validation.js';
 import { cooldownOptions } from './cooldown.js';
 import { isRecord, isType, tokenName } from './utils.js';
 import { rolesGuard, sceneGuard, usersGuard, validateAccessRules } from './access.js';
@@ -73,7 +75,14 @@ function metadata<T>(key: symbol | string, target: object, method?: string): T |
 
 export function Module(data: ModuleMetadata): ClassDecorator {
   const input: unknown = data;
-  if (!isRecord(input)) throw new FrameworkError('CONFIG', '@Module requires metadata');
+  keys(
+    input,
+    ['imports', 'providers', 'controllers', 'exports', 'guards', 'middlewares'],
+    '@Module',
+  );
+  for (const key of ['imports', 'providers', 'controllers', 'exports'] as const)
+    if (input[key] !== undefined && !Array.isArray(input[key]))
+      throw new FrameworkError('CONFIG', `Module ${key} must be an array`);
   const guards: unknown = data.guards === undefined ? [] : data.guards;
   if (!Array.isArray(guards) || !Array.from(guards as unknown[]).every(isGuardToken))
     throw new FrameworkError('CONFIG', 'Module guards must be an array of provider tokens');
@@ -84,21 +93,28 @@ export function Module(data: ModuleMetadata): ClassDecorator {
   const middlewareSnapshot = Object.freeze([
     ...(middlewares as InjectionToken<ContextMiddleware>[]),
   ]);
+  const declaration = Object.freeze({
+    imports: Object.freeze([...(data.imports ?? [])]),
+    providers: Object.freeze((data.providers ?? []).map(snapshotProvider)),
+    controllers: Object.freeze([...(data.controllers ?? [])]),
+    exports: Object.freeze([...(data.exports ?? [])]),
+    guards: guardSnapshot,
+    middlewares: middlewareSnapshot,
+  });
   return (target) => {
     if (metadata(MODULE, target)) throw new FrameworkError('CONFIG', 'Duplicate @Module');
-    Reflect.defineMetadata(
-      MODULE,
-      Object.freeze({
-        imports: Object.freeze([...(data.imports ?? [])]),
-        providers: Object.freeze([...(data.providers ?? [])]),
-        controllers: Object.freeze([...(data.controllers ?? [])]),
-        exports: Object.freeze([...(data.exports ?? [])]),
-        guards: guardSnapshot,
-        middlewares: middlewareSnapshot,
-      }),
-      target,
-    );
+    Reflect.defineMetadata(MODULE, declaration, target);
   };
+}
+function snapshotProvider(provider: Provider): Provider {
+  if (!isRecord(provider)) return provider;
+  // Freeze the recipe, not the business value or the provider's singleton instance.
+  return Object.freeze({
+    ...provider,
+    ...(Array.isArray(provider.inject)
+      ? { inject: Object.freeze([...(provider.inject as readonly unknown[])]) }
+      : {}),
+  }) as Provider;
 }
 export function Injectable(): ClassDecorator {
   return (target) => {
@@ -128,6 +144,7 @@ function handler(
   options: CommandOptions = {},
   attachment?: Readonly<OnAttachmentOptions>,
 ): MethodDecorator {
+  keys(options, ['aliases', 'description'], 'handler');
   if (
     !isRecord(options) ||
     (options.aliases !== undefined && !Array.isArray(options.aliases)) ||

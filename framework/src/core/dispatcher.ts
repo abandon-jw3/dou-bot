@@ -50,13 +50,17 @@ export class Dispatcher {
   private readonly middlewareChecks: (() => ContextMiddleware)[] = [];
   private readonly clock: Clock;
   private readonly cooldowns: CooldownStore;
-  private readonly acknowledge: 'auto' | 'manual';
+  private readonly acknowledge: 'auto' | 'manual' | ((appId: string) => 'auto' | 'manual');
   constructor(
     container: Container,
     private readonly prefix: string,
     private readonly invalidInput: 'report' | 'reply' = 'report',
     private readonly catalog = new CommandCatalog(prefix),
-    controls: { clock?: Clock; cooldownMaxEntries?: number; acknowledge?: 'auto' | 'manual' } = {},
+    controls: {
+      clock?: Clock;
+      cooldownMaxEntries?: number;
+      acknowledge?: 'auto' | 'manual' | ((appId: string) => 'auto' | 'manual');
+    } = {},
   ) {
     this.clock = controls.clock ?? systemClock;
     this.cooldowns = new CooldownStore(controls.cooldownMaxEntries ?? 10000, this.clock);
@@ -151,7 +155,8 @@ export class Dispatcher {
   private async hint(task: EventTask, route: Route, message?: string | false): Promise<void> {
     if (
       task.event.kind === 'button' &&
-      this.acknowledge === 'manual' &&
+      (typeof this.acknowledge === 'function' ? this.acknowledge(task.appId) : this.acknowledge) ===
+        'manual' &&
       !task.controller.signal.aborted
     )
       task.ack(0, location(route)).catch(() => {});
@@ -271,11 +276,17 @@ export class Dispatcher {
       if (
         !invoked &&
         task.event.kind === 'button' &&
-        this.acknowledge === 'manual' &&
+        (typeof this.acknowledge === 'function'
+          ? this.acknowledge(task.appId)
+          : this.acknowledge) === 'manual' &&
         !task.controller.signal.aborted
       )
         task.ack(0, handler).catch(() => {});
     }
+  }
+
+  resetBot(appId: string): void {
+    this.cooldowns.resetBot(appId);
   }
 
   handles(event: NormalizedEvent): boolean {

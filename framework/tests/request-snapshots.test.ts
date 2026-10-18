@@ -3,7 +3,7 @@ import test from 'node:test';
 import { setImmediate as tick } from 'node:timers/promises';
 import { Module, image } from '../src/index.js';
 import type { RequestOptions } from '../src/index.js';
-import { createTestApplication } from '../src/testing/index.js';
+import { createHttpFixture as createTestApplication } from './http-fixture.js';
 import { deferred } from './helpers.js';
 
 @Module({})

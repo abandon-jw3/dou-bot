@@ -1,7 +1,5 @@
 # 上下文中间件与数据注入
 
-**0.8.0 起提供；0.7.0 不包含本页 API。**
-
 - `prepare()`：在处理器执行前准备数据，支持同步或异步。
 - `ctx.state.set()`：注册已经取得的数据。
 - `ctx.state.provide()`：注册需要时才执行的加载器。
@@ -133,7 +131,7 @@ const label = await ctx.state.get(ROUTE_LABEL);
 
 ## 超时、资源与错误
 
-在 BotFactory.create 的 options 中配置，以下为默认值：
+在 AppFactory.create 的 options 中配置，以下为默认值：
 
 ```ts
 context: {

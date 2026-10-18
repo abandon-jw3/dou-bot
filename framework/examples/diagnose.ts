@@ -1,4 +1,5 @@
-import { BotFactory, FrameworkError, Module, QQApiError } from '../src/index.js';
+import { createLiveApplication } from './live-application.js';
+import { FrameworkError, Module, QQApiError } from '../src/index.js';
 
 @Module({})
 class ProbeModule {}
@@ -28,17 +29,20 @@ const report = (error: unknown, phase?: string) => {
     ...(phase ? { phase } : {}),
   });
 };
-const app = await BotFactory.create(ProbeModule, {
+const app = await createLiveApplication(ProbeModule, {
   appId,
   secret,
   // No message handlers. A caller can choose the QQ intent mask for this probe.
-  transport: {
-    type: 'ws',
-    intents: Number(process.argv[3] ?? (1 << 25) | (1 << 26)),
-    connectTimeoutMs: 15000,
-    closeTimeoutMs: 500,
-    retry: { initialAttempts: 1 },
-  },
+  transport:
+    mode === 'auth'
+      ? { type: 'webhook', listen: false }
+      : {
+          type: 'ws',
+          intents: Number(process.argv[3] ?? (1 << 25) | (1 << 26)),
+          connectTimeoutMs: 15000,
+          closeTimeoutMs: 500,
+          retry: { initialAttempts: 1 },
+        },
   execution: { shutdownTimeoutMs: 5000 },
   logger: { debug() {}, info() {}, warn() {}, error() {} },
   onError: (error, context) => report(error, context.phase),
@@ -51,12 +55,12 @@ const result: {
   errors: typeof errors;
 } = { mode, gateway: false, wsReady: false, errors };
 try {
+  await app.start();
   if (mode === 'ws') {
-    await app.start();
     result.wsReady = true;
     result.gateway = true;
   } else {
-    const gateway = await app.client.api.getGateway();
+    const gateway = await app.bots.get(appId).client.api.getGateway();
     result.gateway = true;
     result.gatewayHost = new URL(gateway.url).host;
   }

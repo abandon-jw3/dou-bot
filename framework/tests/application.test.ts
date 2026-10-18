@@ -10,7 +10,7 @@ import {
   Module,
   On,
   OnButton,
-  QQClient,
+  BotManager,
   FrameworkError,
   image,
   markdown,
@@ -19,7 +19,7 @@ import {
 } from '../src/index.js';
 import type { ButtonContext, MessageContext, QQDispatch } from '../src/index.js';
 import { createTestApplication } from '../src/testing/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 
 await test('a synchronous transport stop failure cannot skip the remaining cleanup stages', async () => {
@@ -98,7 +98,7 @@ await test('one application runs decorated private and group commands through re
   class Commands {
     constructor(
       readonly service: Greetings,
-      readonly client: QQClient,
+      readonly bots: BotManager,
     ) {}
     @Command('hello', { aliases: ['hi'] }) hello(@Arg(0) name = 'world'): string {
       return this.service.hello(name);
@@ -110,7 +110,7 @@ await test('one application runs decorated private and group commands through re
   assert.equal(harness.app.status, 'created');
   await Promise.all([harness.app.start(), harness.app.start()]);
   try {
-    assert.equal(harness.app.get(Commands).client, harness.app.client);
+    assert.equal(harness.app.get(Commands).bots.get('offline-app').client, harness.app.client);
     await harness.dispatch(privateMessage('a', '/hello "Ada Lovelace"'));
     await harness.dispatch({
       op: 0,

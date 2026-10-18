@@ -58,6 +58,20 @@ function recipeOf(provider: Provider): { token: InjectionToken; recipe: Recipe }
   const count = ['useValue', 'useClass', 'useFactory'].filter((key) => own(provider, key)).length;
   if (count !== 1)
     throw new FrameworkError('DEPENDENCY', 'A provider needs exactly one implementation');
+  const implementation = own(provider, 'useValue')
+    ? 'useValue'
+    : own(provider, 'useClass')
+      ? 'useClass'
+      : 'useFactory';
+  const allowed =
+    implementation === 'useFactory'
+      ? ['provide', implementation, 'inject']
+      : ['provide', implementation];
+  for (const key of Object.keys(provider))
+    if (!allowed.includes(key)) throw new FrameworkError('DEPENDENCY', `Unknown provider.${key}`);
+  const injection: unknown = 'inject' in provider ? provider.inject : undefined;
+  if (injection !== undefined && !Array.isArray(injection))
+    throw new FrameworkError('DEPENDENCY', 'Provider inject must be an array of tokens');
   if ('useValue' in provider)
     return { token: provider.provide, recipe: { kind: 'value', value: provider.useValue } };
   if ('useClass' in provider && isType(provider.useClass))
@@ -84,6 +98,8 @@ export class Container {
   private readonly destroyed = new Set<object>();
   private readonly labels = new WeakMap<object, string>();
   private initialization: Promise<void> | undefined;
+  private closing = false;
+  private closingDeadline = Infinity;
   private readonly root: ModuleNode;
 
   constructor(
@@ -234,6 +250,7 @@ export class Container {
 
   private async construct(): Promise<void> {
     for (const binding of this.order) {
+      if (this.closing) throw new FrameworkError('INVALID_STATE', 'Container is closing');
       if (binding.ready) continue;
       const args = binding.dependencies.map((dependency) => dependency.value);
       const recipe = binding.recipe;
@@ -254,7 +271,11 @@ export class Container {
         this.registered.add(value);
         this.managed.push(value);
         this.labels.set(value, `${binding.owner.type.name}:${tokenName(binding.token)}`);
+        // A factory can finish after the startup/close deadline. Dispose its late resource too.
+        if (this.closing) await this.destroy(this.closingDeadline);
       }
+      if (this.closing)
+        throw new FrameworkError('INVALID_STATE', 'Container closed during construction');
     }
   }
 
@@ -333,7 +354,32 @@ export class Container {
     }
   }
 
+  async callApplicationHooks(
+    name: 'onApplicationReady' | 'onApplicationStopping',
+    signal: AbortSignal,
+  ): Promise<void> {
+    const instances = name === 'onApplicationStopping' ? [...this.managed].reverse() : this.managed;
+    const failures: unknown[] = [];
+    for (const instance of instances) {
+      try {
+        throwIfAborted(signal);
+        const hook: unknown = Reflect.get(instance, name);
+        if (callable(hook)) await hook.call(instance, signal);
+        throwIfAborted(signal);
+      } catch (error) {
+        if (name === 'onApplicationReady') throw error;
+        failures.push(error);
+      }
+    }
+    if (failures.length)
+      throw new FrameworkError('CLEANUP_FAILED', 'Application stopping hooks failed', {
+        cause: new AggregateError(failures),
+      });
+  }
+
   async destroy(deadline: number): Promise<void> {
+    this.closing = true;
+    this.closingDeadline = Math.min(this.closingDeadline, deadline);
     const controller = new AbortController();
     const failures: unknown[] = [];
     let timedOut = false;

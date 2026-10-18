@@ -1,0 +1,1207 @@
+{
+  "schema": 1,
+  "startedAt": "2026-10-13T18:22:09.468Z",
+  "finishedAt": "2026-10-13T18:28:02.849Z",
+  "source": {
+    "gitHead": "07d2c3e34da9fb808615687f8466230cd1ea6607",
+    "dirty": true,
+    "sdkSha256": "80328321b3d254f01602f105f2ab6c0e5755d0c84d7201754ce56956d2082fad",
+    "harnessSha256": "0c23fb9ee3cad9aba97409dd3dbacaf30e1a427420fd61de891e49d77003a010"
+  },
+  "environment": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "logicalCpus": 10,
+    "totalMemoryBytes": 34359738368,
+    "gc": "baseline/end only; no forced GC during load"
+  },
+  "configuration": {
+    "name": "standard",
+    "concurrency": 32,
+    "queueCapacity": 2000,
+    "queueMaxBytes": 33554432,
+    "loadTimeoutMs": 1800,
+    "requestTimeoutMs": 1200,
+    "promptTimeoutMs": 1500,
+    "baseDataMs": 15,
+    "slowDataMs": 450,
+    "baseApiMs": 15,
+    "tokenSeconds": 12,
+    "shutdownTimeoutMs": 800,
+    "driverMaxInFlight": 2048,
+    "phases": [
+      {
+        "name": "warmup",
+        "durationMs": 10000,
+        "rate": 50
+      },
+      {
+        "name": "steady-50",
+        "durationMs": 60000,
+        "rate": 50
+      },
+      {
+        "name": "ramp-200",
+        "durationMs": 45000,
+        "rate": 200
+      },
+      {
+        "name": "ramp-500",
+        "durationMs": 45000,
+        "rate": 500
+      },
+      {
+        "name": "ramp-1000",
+        "durationMs": 45000,
+        "rate": 1000
+      },
+      {
+        "name": "burst-2500",
+        "durationMs": 20000,
+        "rate": 2500
+      },
+      {
+        "name": "large-payload",
+        "durationMs": 20000,
+        "rate": 500,
+        "large": true
+      },
+      {
+        "name": "faults-150",
+        "durationMs": 45000,
+        "rate": 150,
+        "faults": true
+      },
+      {
+        "name": "recovery-50",
+        "durationMs": 60000,
+        "rate": 50
+      }
+    ]
+  },
+  "measurement": {
+    "ingress": "loopback HTTP, JSON parsing and Ed25519 verification",
+    "business": "real-clock local HTTP fixtures; no real QQ, database, TLS or reverse proxy",
+    "arrival": "open-loop primary events; independent of completion, bounded synthetic 503 retries at 100/200 ms; retries and continuations counted separately",
+    "latency": "scheduled arrival to completion, millisecond upper-bound histograms; successful and all terminal events reported separately",
+    "instrumentation": "accept wrapper and handler assertions; bounded route bitset, per-active-event accounting, 1 s SDK resource sampling; generator metadata resides in a separate process",
+    "groups": "2000 possible groups, 85% group traffic, 20% group hotspot; synthetic assumptions"
+  },
+  "clockChecks": [
+    {
+      "pid": 33591,
+      "roundTripMs": 0.34275
+    },
+    {
+      "pid": 33592,
+      "roundTripMs": 0.164625
+    }
+  ],
+  "integrity": "failed",
+  "validationFailure": {
+    "name": "AssertionError",
+    "message": "[\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\"]\n\n18 !== 0\n",
+    "stack": "AssertionError [ERR_ASSERTION]: [\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\",\"Error: connect ECONNRESET 127.0.0.1:50212\"]\n\n18 !== 0\n\n    at main (file:///Users/fine/Documents/UGit/dou-bot/framework/work/mixed-benchmark/build-final/examples/benchmark-mixed.js:287:16)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/fine/Documents/UGit/dou-bot/framework/work/mixed-benchmark/build-final/examples/benchmark-mixed.js:354:5"
+  },
+  "driverErrors": [
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212",
+    "Error: connect ECONNRESET 127.0.0.1:50212"
+  ],
+  "sdkUnexpected": [],
+  "rows": [
+    {
+      "name": "warmup",
+      "seconds": 10.0,
+      "offeredPerSecond": 50,
+      "primary": 500,
+      "primaryAcknowledged": 500,
+      "successfulRoots": 462,
+      "successPerSecondByWallTime": 45.7,
+      "outcomes": {
+        "guard-denied": 20,
+        "success": 462,
+        "continuation": 99,
+        "intentional-business-error": 7,
+        "invalid-input": 11
+      },
+      "admissions": {
+        "accepted": 599,
+        "duplicate": 125,
+        "ignored": 99
+      },
+      "httpStatuses": {
+        "200": 823
+      },
+      "successLatency": {
+        "count": 462,
+        "meanMs": 132.49867196969709,
+        "maxMs": 1544.723917,
+        "p50UpperMs": 41,
+        "p95UpperMs": 476,
+        "p99UpperMs": 1539
+      },
+      "terminalLatency": {
+        "count": 500,
+        "meanMs": 122.77210025599997,
+        "maxMs": 1544.731084,
+        "p50UpperMs": 40,
+        "p95UpperMs": 475,
+        "p99UpperMs": 1539
+      },
+      "queueWait": {
+        "count": 500,
+        "meanMs": 0.25948435199999986,
+        "maxMs": 4.768292,
+        "p50UpperMs": 1,
+        "p95UpperMs": 1,
+        "p99UpperMs": 1
+      },
+      "schedulingLag": {
+        "count": 500,
+        "meanMs": 2.7147159360000015,
+        "maxMs": 6.843292,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "ackLatency": {
+        "count": 823,
+        "meanMs": 1.4480417946537036,
+        "maxMs": 13.728208,
+        "p50UpperMs": 2,
+        "p95UpperMs": 3,
+        "p99UpperMs": 4
+      },
+      "sdkErrors": {
+        "Error": 7,
+        "PARAMETER_PARSE": 11
+      },
+      "sdkRoutes": {
+        "query": 197,
+        "audit": 49,
+        "images": 53,
+        "file": 49,
+        "picture": 14,
+        "prompt": 70,
+        "button": 46,
+        "admin": 33,
+        "failure": 7
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 0,
+        "maxPrompts": 5,
+        "maxRetainedBytes": 3499,
+        "maxRssBytes": 124861704,
+        "maxHeapBytes": 42389480,
+        "meanCpuCores": 0.24489278013902763,
+        "maxEventLoopIntervalP99Ms": 13.598719
+      }
+    },
+    {
+      "name": "steady-50",
+      "seconds": 60.0,
+      "offeredPerSecond": 50,
+      "primary": 3000,
+      "primaryAcknowledged": 3000,
+      "successfulRoots": 2785,
+      "successPerSecondByWallTime": 46.4,
+      "outcomes": {
+        "success": 2785,
+        "invalid-input": 60,
+        "continuation": 545,
+        "guard-denied": 125,
+        "intentional-business-error": 30
+      },
+      "admissions": {
+        "accepted": 3545,
+        "duplicate": 690,
+        "ignored": 545
+      },
+      "httpStatuses": {
+        "200": 4780
+      },
+      "successLatency": {
+        "count": 2785,
+        "meanMs": 141.71244847396775,
+        "maxMs": 1545.307334,
+        "p50UpperMs": 40,
+        "p95UpperMs": 478,
+        "p99UpperMs": 1540
+      },
+      "terminalLatency": {
+        "count": 3000,
+        "meanMs": 131.8743427150003,
+        "maxMs": 1545.312875,
+        "p50UpperMs": 40,
+        "p95UpperMs": 476,
+        "p99UpperMs": 1540
+      },
+      "queueWait": {
+        "count": 3000,
+        "meanMs": 0.22690353333333296,
+        "maxMs": 0.726459,
+        "p50UpperMs": 1,
+        "p95UpperMs": 1,
+        "p99UpperMs": 1
+      },
+      "schedulingLag": {
+        "count": 3000,
+        "meanMs": 2.8016473066666725,
+        "maxMs": 6.654875,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "ackLatency": {
+        "count": 4780,
+        "meanMs": 1.2969647071129686,
+        "maxMs": 10.057917,
+        "p50UpperMs": 2,
+        "p95UpperMs": 3,
+        "p99UpperMs": 3
+      },
+      "sdkErrors": {
+        "PARAMETER_PARSE": 60,
+        "Error": 30
+      },
+      "sdkRoutes": {
+        "query": 1204,
+        "admin": 173,
+        "button": 300,
+        "prompt": 389,
+        "images": 298,
+        "audit": 300,
+        "file": 300,
+        "picture": 121,
+        "failure": 30
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 0,
+        "maxPrompts": 7,
+        "maxRetainedBytes": 4962,
+        "maxRssBytes": 204335144,
+        "maxHeapBytes": 72882352,
+        "meanCpuCores": 0.19659526216163933,
+        "maxEventLoopIntervalP99Ms": 13.426687
+      }
+    },
+    {
+      "name": "ramp-200",
+      "seconds": 45.0,
+      "offeredPerSecond": 200,
+      "primary": 9000,
+      "primaryAcknowledged": 9000,
+      "successfulRoots": 8368,
+      "successPerSecondByWallTime": 185.51111111111112,
+      "outcomes": {
+        "success": 8368,
+        "invalid-input": 175,
+        "guard-denied": 369,
+        "continuation": 1626,
+        "intentional-business-error": 88
+      },
+      "admissions": {
+        "accepted": 10626,
+        "duplicate": 2080,
+        "ignored": 1626
+      },
+      "httpStatuses": {
+        "200": 14332
+      },
+      "successLatency": {
+        "count": 8368,
+        "meanMs": 138.4617164874524,
+        "maxMs": 2561.073334,
+        "p50UpperMs": 38,
+        "p95UpperMs": 475,
+        "p99UpperMs": 1538
+      },
+      "terminalLatency": {
+        "count": 9000,
+        "meanMs": 129.00257488744475,
+        "maxMs": 2561.076959,
+        "p50UpperMs": 38,
+        "p95UpperMs": 473,
+        "p99UpperMs": 1538
+      },
+      "queueWait": {
+        "count": 9000,
+        "meanMs": 0.09786530888888872,
+        "maxMs": 1.353083,
+        "p50UpperMs": 1,
+        "p95UpperMs": 1,
+        "p99UpperMs": 1
+      },
+      "schedulingLag": {
+        "count": 9000,
+        "meanMs": 2.6518688721111094,
+        "maxMs": 7.1535,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "ackLatency": {
+        "count": 14332,
+        "meanMs": 0.848124160898691,
+        "maxMs": 12.769458,
+        "p50UpperMs": 1,
+        "p95UpperMs": 2,
+        "p99UpperMs": 4
+      },
+      "sdkErrors": {
+        "PARAMETER_PARSE": 175,
+        "Error": 88
+      },
+      "sdkRoutes": {
+        "audit": 905,
+        "images": 900,
+        "picture": 367,
+        "prompt": 1162,
+        "button": 903,
+        "query": 3602,
+        "file": 905,
+        "admin": 529,
+        "failure": 88
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 0,
+        "maxPrompts": 18,
+        "maxRetainedBytes": 14662,
+        "maxRssBytes": 227263272,
+        "maxHeapBytes": 81857608,
+        "meanCpuCores": 0.3698429289078738,
+        "maxEventLoopIntervalP99Ms": 13.590527
+      }
+    },
+    {
+      "name": "ramp-500",
+      "seconds": 45.0,
+      "offeredPerSecond": 500,
+      "primary": 22500,
+      "primaryAcknowledged": 22500,
+      "successfulRoots": 20876,
+      "successPerSecondByWallTime": 430.15555555555557,
+      "outcomes": {
+        "guard-denied": 947,
+        "success": 20876,
+        "invalid-input": 453,
+        "intentional-business-error": 224,
+        "continuation": 4099
+      },
+      "admissions": {
+        "accepted": 26599,
+        "duplicate": 5223,
+        "ignored": 4099
+      },
+      "httpStatuses": {
+        "200": 35921
+      },
+      "successLatency": {
+        "count": 20876,
+        "meanMs": 1867.9918748457492,
+        "maxMs": 11183.984584,
+        "p50UpperMs": 1654,
+        "p95UpperMs": 5291,
+        "p99UpperMs": 8301
+      },
+      "terminalLatency": {
+        "count": 22500,
+        "meanMs": 1832.756664774003,
+        "maxMs": 11183.985,
+        "p50UpperMs": 1643,
+        "p95UpperMs": 5150,
+        "p99UpperMs": 8145
+      },
+      "queueWait": {
+        "count": 22500,
+        "meanMs": 1379.3092180782191,
+        "maxMs": 2769.535291,
+        "p50UpperMs": 1379,
+        "p95UpperMs": 2649,
+        "p99UpperMs": 2736
+      },
+      "schedulingLag": {
+        "count": 22500,
+        "meanMs": 2.676613921288887,
+        "maxMs": 6.740792,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "ackLatency": {
+        "count": 35921,
+        "meanMs": 0.7365958749756364,
+        "maxMs": 9.493917,
+        "p50UpperMs": 1,
+        "p95UpperMs": 2,
+        "p99UpperMs": 5
+      },
+      "sdkErrors": {
+        "PARAMETER_PARSE": 453,
+        "Error": 224
+      },
+      "sdkRoutes": {
+        "prompt": 2927,
+        "button": 2249,
+        "admin": 1301,
+        "query": 8997,
+        "audit": 2252,
+        "images": 2252,
+        "picture": 898,
+        "file": 2252,
+        "failure": 224
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 1573,
+        "maxPrompts": 279,
+        "maxRetainedBytes": 839269,
+        "maxRssBytes": 294246392,
+        "maxHeapBytes": 125291440,
+        "meanCpuCores": 0.44466157309595894,
+        "maxEventLoopIntervalP99Ms": 13.787135
+      }
+    },
+    {
+      "name": "ramp-1000",
+      "seconds": 45.0,
+      "offeredPerSecond": 1000,
+      "primary": 45000,
+      "primaryAcknowledged": 21564,
+      "successfulRoots": 19995,
+      "successPerSecondByWallTime": 434.93333333333334,
+      "outcomes": {
+        "intentional-business-error": 231,
+        "guard-denied": 911,
+        "success": 19995,
+        "invalid-input": 427,
+        "continuation": 3918
+      },
+      "admissions": {
+        "accepted": 25482,
+        "duplicate": 5570,
+        "overloaded": 92410,
+        "ignored": 3918
+      },
+      "httpStatuses": {
+        "200": 34970,
+        "503": 92410
+      },
+      "successLatency": {
+        "count": 19995,
+        "meanMs": 4577.215389916931,
+        "maxMs": 12920.489959,
+        "p50UpperMs": 3754,
+        "p95UpperMs": 10926,
+        "p99UpperMs": 11384
+      },
+      "terminalLatency": {
+        "count": 21564,
+        "meanMs": 4509.807070931811,
+        "maxMs": 12920.490667,
+        "p50UpperMs": 3745,
+        "p95UpperMs": 10897,
+        "p99UpperMs": 11380
+      },
+      "queueWait": {
+        "count": 21564,
+        "meanMs": 3522.98182009141,
+        "maxMs": 3869.605,
+        "p50UpperMs": 3510,
+        "p95UpperMs": 3787,
+        "p99UpperMs": 3839
+      },
+      "schedulingLag": {
+        "count": 45000,
+        "meanMs": 2.683321659133342,
+        "maxMs": 13.437792,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "ackLatency": {
+        "count": 127380,
+        "meanMs": 0.8184340920081671,
+        "maxMs": 81.417542,
+        "p50UpperMs": 1,
+        "p95UpperMs": 2,
+        "p99UpperMs": 5
+      },
+      "sdkErrors": {
+        "Error": 231,
+        "PARAMETER_PARSE": 427
+      },
+      "sdkRoutes": {
+        "failure": 231,
+        "query": 8583,
+        "audit": 2128,
+        "images": 2151,
+        "prompt": 2816,
+        "button": 2190,
+        "admin": 1289,
+        "file": 2128,
+        "picture": 838
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 23436,
+      "sdkSampled": {
+        "maxPending": 2002,
+        "maxPrompts": 402,
+        "maxRetainedBytes": 1100159,
+        "maxRssBytes": 329851488,
+        "maxHeapBytes": 150350296,
+        "meanCpuCores": 0.5533631983365113,
+        "maxEventLoopIntervalP99Ms": 16.809983
+      }
+    },
+    {
+      "name": "burst-2500",
+      "seconds": 20.0,
+      "offeredPerSecond": 2500,
+      "primary": 50000,
+      "primaryAcknowledged": 9180,
+      "successfulRoots": 8557,
+      "successPerSecondByWallTime": 423.8,
+      "outcomes": {
+        "invalid-input": 151,
+        "guard-denied": 390,
+        "intentional-business-error": 82,
+        "success": 8557,
+        "continuation": 1730
+      },
+      "admissions": {
+        "overloaded": 138157,
+        "accepted": 10910,
+        "duplicate": 2706,
+        "ignored": 1730
+      },
+      "httpStatuses": {
+        "200": 15346,
+        "503": 138157
+      },
+      "successLatency": {
+        "count": 8557,
+        "meanMs": 4719.097653562832,
+        "maxMs": 13135.098042,
+        "p50UpperMs": 3833,
+        "p95UpperMs": 11155,
+        "p99UpperMs": 11528
+      },
+      "terminalLatency": {
+        "count": 9180,
+        "meanMs": 4653.552036044756,
+        "maxMs": 13135.098292,
+        "p50UpperMs": 3826,
+        "p95UpperMs": 11134,
+        "p99UpperMs": 11511
+      },
+      "queueWait": {
+        "count": 9180,
+        "meanMs": 3592.7419013249596,
+        "maxMs": 3808.173958,
+        "p50UpperMs": 3603,
+        "p95UpperMs": 3714,
+        "p99UpperMs": 3749
+      },
+      "schedulingLag": {
+        "count": 50000,
+        "meanMs": 2.7605246518400155,
+        "maxMs": 32.753375,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "ackLatency": {
+        "count": 153503,
+        "meanMs": 1.3617620432760311,
+        "maxMs": 108.198959,
+        "p50UpperMs": 1,
+        "p95UpperMs": 3,
+        "p99UpperMs": 7
+      },
+      "sdkErrors": {
+        "PARAMETER_PARSE": 151,
+        "Error": 82
+      },
+      "sdkRoutes": {
+        "prompt": 1252,
+        "query": 3610,
+        "images": 939,
+        "button": 932,
+        "audit": 913,
+        "failure": 82,
+        "file": 913,
+        "picture": 357,
+        "admin": 554
+      },
+      "requestErrors": 18,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 40820,
+      "sdkSampled": {
+        "maxPending": 2002,
+        "maxPrompts": 398,
+        "maxRetainedBytes": 1105288,
+        "maxRssBytes": 341517016,
+        "maxHeapBytes": 139395552,
+        "meanCpuCores": 0.710854547737475,
+        "maxEventLoopIntervalP99Ms": 18.546687
+      }
+    },
+    {
+      "name": "large-payload",
+      "seconds": 20.0,
+      "offeredPerSecond": 500,
+      "primary": 10000,
+      "primaryAcknowledged": 4070,
+      "successfulRoots": 4070,
+      "successPerSecondByWallTime": 277.05,
+      "outcomes": {
+        "success": 4070
+      },
+      "admissions": {
+        "overloaded": 22083,
+        "accepted": 4070,
+        "duplicate": 288
+      },
+      "httpStatuses": {
+        "200": 4358,
+        "503": 22083
+      },
+      "successLatency": {
+        "count": 4070,
+        "meanMs": 2687.799755078381,
+        "maxMs": 5221.593584,
+        "p50UpperMs": 2423,
+        "p95UpperMs": 4591,
+        "p99UpperMs": 4918
+      },
+      "terminalLatency": {
+        "count": 4070,
+        "meanMs": 2687.8005519226035,
+        "maxMs": 5221.593959,
+        "p50UpperMs": 2423,
+        "p95UpperMs": 4591,
+        "p99UpperMs": 4918
+      },
+      "queueWait": {
+        "count": 4070,
+        "meanMs": 2425.7277645778913,
+        "maxMs": 4778.507958,
+        "p50UpperMs": 2168,
+        "p95UpperMs": 4351,
+        "p99UpperMs": 4712
+      },
+      "schedulingLag": {
+        "count": 10000,
+        "meanMs": 2.788716986600002,
+        "maxMs": 8.295292,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "ackLatency": {
+        "count": 26441,
+        "meanMs": 1.9199069696683135,
+        "maxMs": 16.466875,
+        "p50UpperMs": 2,
+        "p95UpperMs": 7,
+        "p99UpperMs": 10
+      },
+      "sdkErrors": {},
+      "sdkRoutes": {
+        "query": 4070
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 5930,
+      "sdkSampled": {
+        "maxPending": 2000,
+        "maxPrompts": 405,
+        "maxRetainedBytes": 33554012,
+        "maxRssBytes": 537478256,
+        "maxHeapBytes": 232007768,
+        "meanCpuCores": 0.6974080062064814,
+        "maxEventLoopIntervalP99Ms": 18.055167
+      }
+    },
+    {
+      "name": "faults-150",
+      "seconds": 45.0,
+      "offeredPerSecond": 150,
+      "primary": 6750,
+      "primaryAcknowledged": 6750,
+      "successfulRoots": 4591,
+      "successPerSecondByWallTime": 85.17777777777778,
+      "outcomes": {
+        "success": 4591,
+        "guard-denied": 289,
+        "operational-error": 1674,
+        "intentional-business-error": 66,
+        "invalid-input": 130,
+        "continuation": 850
+      },
+      "admissions": {
+        "accepted": 7600,
+        "duplicate": 1187,
+        "ignored": 850
+      },
+      "httpStatuses": {
+        "200": 9637
+      },
+      "successLatency": {
+        "count": 4591,
+        "meanMs": 10040.389951305155,
+        "maxMs": 35710.914334,
+        "p50UpperMs": 9445,
+        "p95UpperMs": 23448,
+        "p99UpperMs": 33472
+      },
+      "terminalLatency": {
+        "count": 6750,
+        "meanMs": 9953.18784567972,
+        "maxMs": 35710.915626,
+        "p50UpperMs": 9475,
+        "p95UpperMs": 21358,
+        "p99UpperMs": 32416
+      },
+      "queueWait": {
+        "count": 6750,
+        "meanMs": 8436.225916191252,
+        "maxMs": 15077.141917,
+        "p50UpperMs": 8545,
+        "p95UpperMs": 14141,
+        "p99UpperMs": 14967
+      },
+      "schedulingLag": {
+        "count": 6750,
+        "meanMs": 2.7807260302222074,
+        "maxMs": 14.273709,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "ackLatency": {
+        "count": 9637,
+        "meanMs": 0.9889076192798564,
+        "maxMs": 15.60975,
+        "p50UpperMs": 1,
+        "p95UpperMs": 2,
+        "p99UpperMs": 5
+      },
+      "sdkErrors": {
+        "QQ_API": 907,
+        "TRANSPORT": 314,
+        "Error": 66,
+        "CONTEXT_TIMEOUT": 629,
+        "PARAMETER_PARSE": 130
+      },
+      "sdkRoutes": {
+        "query": 2460,
+        "audit": 616,
+        "images": 611,
+        "picture": 252,
+        "file": 616,
+        "button": 617,
+        "prompt": 792,
+        "admin": 350,
+        "failure": 66
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 1896,
+        "maxPrompts": 201,
+        "maxRetainedBytes": 26890613,
+        "maxRssBytes": 486664104,
+        "maxHeapBytes": 187214904,
+        "meanCpuCores": 0.2974329257333808,
+        "maxEventLoopIntervalP99Ms": 16.031743
+      }
+    },
+    {
+      "name": "recovery-50",
+      "seconds": 60.0,
+      "offeredPerSecond": 50,
+      "primary": 3000,
+      "primaryAcknowledged": 3000,
+      "successfulRoots": 2790,
+      "successPerSecondByWallTime": 68.73333333333333,
+      "outcomes": {
+        "success": 2790,
+        "guard-denied": 121,
+        "intentional-business-error": 30,
+        "invalid-input": 59,
+        "continuation": 547
+      },
+      "admissions": {
+        "accepted": 3547,
+        "duplicate": 702,
+        "ignored": 547
+      },
+      "httpStatuses": {
+        "200": 4796
+      },
+      "successLatency": {
+        "count": 2790,
+        "meanMs": 2441.1589147996456,
+        "maxMs": 17695.821584,
+        "p50UpperMs": 67,
+        "p95UpperMs": 13139,
+        "p99UpperMs": 15033
+      },
+      "terminalLatency": {
+        "count": 3000,
+        "meanMs": 2432.864017815996,
+        "maxMs": 17695.822125,
+        "p50UpperMs": 55,
+        "p95UpperMs": 13086,
+        "p99UpperMs": 15005
+      },
+      "queueWait": {
+        "count": 3000,
+        "meanMs": 2264.1989274663288,
+        "maxMs": 15065.296292,
+        "p50UpperMs": 1,
+        "p95UpperMs": 12710,
+        "p99UpperMs": 14680
+      },
+      "schedulingLag": {
+        "count": 3000,
+        "meanMs": 2.824785835666659,
+        "maxMs": 9.008584,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "ackLatency": {
+        "count": 4796,
+        "meanMs": 1.1281501409507961,
+        "maxMs": 12.260875,
+        "p50UpperMs": 2,
+        "p95UpperMs": 2,
+        "p99UpperMs": 3
+      },
+      "sdkErrors": {
+        "Error": 30,
+        "PARAMETER_PARSE": 59
+      },
+      "sdkRoutes": {
+        "query": 1199,
+        "admin": 180,
+        "button": 299,
+        "audit": 301,
+        "picture": 120,
+        "file": 301,
+        "images": 302,
+        "prompt": 389,
+        "failure": 30
+      },
+      "requestErrors": 0,
+      "driverDropped": 0,
+      "notAdmittedPrimary": 0,
+      "sdkSampled": {
+        "maxPending": 1885,
+        "maxPrompts": 246,
+        "maxRetainedBytes": 950903,
+        "maxRssBytes": 352123440,
+        "maxHeapBytes": 131861912,
+        "meanCpuCores": 0.1988258018037483,
+        "maxEventLoopIntervalP99Ms": 12.967935
+      }
+    }
+  ],
+  "groupCoverage": 2000,
+  "sdkCounts": {
+    "prompt:cancelled": 1892,
+    "prompt:received": 5682,
+    "error:Error": 758,
+    "intentionalBusinessErrors": 758,
+    "error:PARAMETER_PARSE": 1466,
+    "prompt:timeout": 1972,
+    "error:QQ_API": 908,
+    "injectedHttpErrors": 908,
+    "error:TRANSPORT": 314,
+    "operationalTimeouts": 943,
+    "error:CONTEXT_TIMEOUT": 629,
+    "error:SHUTDOWN_TIMEOUT": 1,
+    "shutdownErrors": 1
+  },
+  "driverCounts": {
+    "fixtureBytes": 267058324,
+    "dataRequests": 81734,
+    "apiRequests": 102998,
+    "uploads": 2967,
+    "buttonAcks": 7594,
+    "unexpected": 18,
+    "http429Injected": 530,
+    "tokenFailuresInjected": 1,
+    "http503Injected": 377,
+    "dataTimeoutsInjected": 629,
+    "apiTimeoutsInjected": 314,
+    "abortedFixtureRequests": 975
+  },
+  "sdkFinal": {
+    "pending": 0,
+    "active": 0,
+    "retainedBytes": 0,
+    "dedup": 0,
+    "replyScopes": 0,
+    "idleDedup": 0,
+    "idleScopes": 0,
+    "tasks": 0,
+    "signals": 0,
+    "timers": 0,
+    "prompts": 0,
+    "cooldowns": 0
+  },
+  "driverFinal": {
+    "outstanding": 0,
+    "fixtureActive": 0,
+    "responseTimers": 0,
+    "timers": 0
+  },
+  "closeMs": 838.825,
+  "closeError": {
+    "code": "SHUTDOWN_TIMEOUT",
+    "message": "Application cleanup did not finish cleanly"
+  },
+  "shutdownStart": {
+    "pending": 8,
+    "active": 32,
+    "retainedBytes": 19163,
+    "dedup": 50000,
+    "replyScopes": 85432,
+    "idleDedup": 49952,
+    "idleScopes": 85384,
+    "tasks": 48,
+    "signals": 80,
+    "timers": 41,
+    "prompts": 8,
+    "cooldowns": 0
+  },
+  "afterLoad": {
+    "pending": 0,
+    "active": 0,
+    "retainedBytes": 0,
+    "dedup": 50000,
+    "replyScopes": 85384,
+    "idleDedup": 50000,
+    "idleScopes": 85384,
+    "tasks": 0,
+    "signals": 0,
+    "timers": 1,
+    "prompts": 0,
+    "cooldowns": 0
+  },
+  "afterCloseMemory": {
+    "rss": 337344976,
+    "heapTotal": 202080256,
+    "heapUsed": 16184704,
+    "external": 17002450,
+    "arrayBuffers": 11597636
+  },
+  "sdkResourceUsage": {
+    "userCPUTime": 119169662,
+    "systemCPUTime": 10365661,
+    "maxRSS": 556640,
+    "sharedMemorySize": 0,
+    "unsharedDataSize": 0,
+    "unsharedStackSize": 0,
+    "minorPageFault": 512472,
+    "majorPageFault": 92,
+    "swappedOut": 0,
+    "fsRead": 0,
+    "fsWrite": 0,
+    "ipcSent": 572404,
+    "ipcReceived": 587997,
+    "signalsCount": 0,
+    "voluntaryContextSwitches": 0,
+    "involuntaryContextSwitches": 279721
+  },
+  "maximumAuditEntries": 2552,
+  "maximumTokenActive": 1,
+  "tokenRequests": 60,
+  "driverMaximumOutstanding": 576,
+  "recoveryQueueClearedObservedMs": 18788.081209,
+  "recoveryQueueStayedClear": true,
+  "baselineMemory": {
+    "rss": 31527088,
+    "heapTotal": 19742720,
+    "heapUsed": 9853936,
+    "external": 15792486,
+    "arrayBuffers": 11532396
+  },
+  "maxRssBytes": 537478256,
+  "maxHeapBytes": 232007768,
+  "maxRetainedBytes": 33554012,
+  "rawReportSha256": "667fb4aea468d340f1a16fb0ac669539c044cb131e4eeb9b105b98e29f26e05e",
+  "rawReportPath": "work/mixed-benchmark/standard-20261014-d.json",
+  "totals": {
+    "scheduledPrimary": 149750,
+    "httpResponsesIncludingRetriesAndContinuations": 377661,
+    "webhookNetworkErrors": 18,
+    "driverDroppedAttempts": 0,
+    "successfulRootExecutions": 72494,
+    "sdkEvents": {
+      "accepted": 93026,
+      "duplicates": 18571,
+      "rejected": 252650,
+      "failed": 3946
+    },
+    "sdkRejections": {
+      "invalidEvent": 0,
+      "queueFull": 231320,
+      "bytesFull": 21330,
+      "acknowledgmentsFull": 0,
+      "replyScopesFull": 0,
+      "dedupFull": 0
+    }
+  },
+  "assessment": {
+    "sdkInvariants": "passed",
+    "resourceCleanup": "passed",
+    "offeredTrafficDroppedByGenerator": 0,
+    "overallBenchmark": "failed: 18 ECONNRESET errors during the burst phase; not an error-free capacity result",
+    "repeatCountWithCurrentConfiguration": 1
+  },
+  "calibrationRuns": [
+    {
+      "label": "standard-20261014-a",
+      "sha256": "0682ee5cb182074bca7a2139a9a33c36744bb77b810b5955b6c8ef3099f0bf92",
+      "integrity": "failed",
+      "failure": "Worker --sdk exited 0",
+      "source": {
+        "gitHead": "07d2c3e34da9fb808615687f8466230cd1ea6607",
+        "dirty": true,
+        "sdkSha256": "c11ca288a214c29dc76ccc8b961b42b44a94dcee550456b1bcd0faae75850b47",
+        "harnessSha256": "74840259a946dd3114a52596374dc9b548e1917e13691f390731f194840a47f6"
+      },
+      "driverErrors": null,
+      "driverDroppedAttempts": 0,
+      "sdkUnexpectedCount": null
+    },
+    {
+      "label": "standard-20261014-b",
+      "sha256": "282a9620800370676e14522b1eb1c5a45809776e8d260810d21afb9f69210424",
+      "integrity": "failed",
+      "failure": "[{\"message\":\"fetch failed\",\"id\":53423},{\"message\":\"Outcome mismatch: query; successful handlers=0; loads=1; errors=1\",\"id\":53423},{\"message\":\"fetch failed\",\"id\":53424},{\"message\":\"Outcome mismatch: prompt; successful handlers=0; loads=1; errors=1\",\"id\":53424},{\"message\":\"fetch failed\",\"id\":53425},{\"message\":\"Outcome mismatch: query; successful handlers=0; loads=1; errors=1\",\"id\":53425},{\"message\":\"fetch failed\",\"id\":46171},{\"message\":\"Outcome mismatch: prompt; successful handlers=0; loads=1; errors=1\",\"id\":46171},{\"message\":\"fetch failed\",\"id\":53529},{\"message\":\"Outcome mismatch: query; successful handlers=0; loads=1; errors=1\",\"id\":53529},{\"message\":\"fetch failed\",\"id\":53538},{\"message\":\"Outcome mismatch: admin; successful handlers=0; loads=1; errors=1\",\"id\":53538},{\"message\":\"fetch failed\",\"id\":53539},{\"message\":\"Outcome mismatch: prompt; successful handlers=0; loads=1; errors=1\",\"id\":53539},{\"message\":\"fetch failed\",\"id\":53540},{\"message\":\"Outcome mismatch: button; successful handlers=0; loads=1; errors=1\",\"id\":53540},{\"message\":\"fetch failed\",\"id\":53541},{\"message\":\"Outcome mismatch: query; successful handlers=0; loads=1; errors=1\",\"id\":53541},{\"message\":\"fetch failed\",\"id\":53237},{\"message\":\"Outcome mismatch: prompt; successful handlers=0; loads=1; errors=1\",\"id\":53237}]\n\n20341 !== 0\n",
+      "source": {
+        "gitHead": "07d2c3e34da9fb808615687f8466230cd1ea6607",
+        "dirty": true,
+        "sdkSha256": "c11ca288a214c29dc76ccc8b961b42b44a94dcee550456b1bcd0faae75850b47",
+        "harnessSha256": "4134587f7bfa00402f6748efb95016826c418b85427823decd20d2da73a78fec"
+      },
+      "driverErrors": [
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)",
+        "Error: connect EADDRNOTAVAIL 127.0.0.1:50272 - Local (0.0.0.0:0)"
+      ],
+      "driverDroppedAttempts": 8578,
+      "sdkUnexpectedCount": 20341
+    },
+    {
+      "label": "standard-20261014-c",
+      "sha256": "3c6a26ce77866e4c8af5195ebaddd9a1f890b6e4f4c8d1ec5437140111604a8b",
+      "integrity": "failed",
+      "failure": "Generator dropped offered traffic\n\n108 !== 0\n",
+      "source": {
+        "gitHead": "07d2c3e34da9fb808615687f8466230cd1ea6607",
+        "dirty": true,
+        "sdkSha256": "80328321b3d254f01602f105f2ab6c0e5755d0c84d7201754ce56956d2082fad",
+        "harnessSha256": "4134587f7bfa00402f6748efb95016826c418b85427823decd20d2da73a78fec"
+      },
+      "driverErrors": [],
+      "driverDroppedAttempts": 108,
+      "sdkUnexpectedCount": null
+    }
+  ],
+  "connectionRegression": {
+    "overloadResponses": 100,
+    "connectionsBefore": 100,
+    "connectionsAfter": 1,
+    "originalSource": "c11ca288a214c29dc76ccc8b961b42b44a94dcee550456b1bcd0faae75850b47",
+    "fixedSource": "80328321b3d254f01602f105f2ab6c0e5755d0c84d7201754ce56956d2082fad"
+  },
+  "verification": {
+    "node24_0_0": {
+      "check": "passed",
+      "tests": 298,
+      "failures": 0
+    },
+    "node24_21_0": {
+      "check": "passed",
+      "tests": 298,
+      "failures": 0
+    },
+    "sourceTarball": "passed, 122 allowed files; no credential matches; historical 0.6.0 consumer checked against current tarball",
+    "publicApi": {
+      "exports": 148,
+      "bidirectionalTypeChecks": 108,
+      "revision": "1.14"
+    },
+    "coverage": {
+      "lines": 98.93,
+      "statements": 98.93,
+      "functions": 98.27,
+      "branches": 91.22,
+      "branchesTrue": 100
+    },
+    "repositoryCheck": "passed",
+    "finalSmoke": "passed"
+  },
+  "archive": {
+    "path": "work/mixed-benchmark/mixed-benchmark-evidence-2026-10-14.zip",
+    "sha256": "4fbcf7ab96bfa73b03a7e1570f2e8b86f788734bec663cdadbfaac06d7bfde5d",
+    "bytes": 890932,
+    "files": 83
+  }
+}

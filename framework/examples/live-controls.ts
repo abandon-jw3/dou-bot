@@ -1,7 +1,7 @@
+import { createLiveApplication } from './live-application.js';
 import { randomBytes } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { BotFactory } from '../src/index.js';
 import { createControlsProbe } from './controls-probe.js';
 import type { ProbeRecord } from './controls-probe.js';
 
@@ -25,7 +25,7 @@ const finished = new Promise<void>((resolve) => {
   finish = resolve;
 });
 let heartbeats = 0;
-const app = await BotFactory.create(probe.root, {
+const app = await createLiveApplication(probe.root, {
   appId,
   secret,
   commands: { prefix: '', invalidInput: 'reply' },
@@ -42,7 +42,7 @@ const app = await BotFactory.create(probe.root, {
   },
   onError: (error, context) => probe.onError(error, context),
 });
-const restore = probe.instrument(app);
+const restore = probe.instrument(app.runtime(appId).rawClient);
 let timeout: NodeJS.Timeout | undefined;
 let check: NodeJS.Timeout | undefined;
 process.once('SIGINT', () => finish());

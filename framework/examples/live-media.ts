@@ -1,7 +1,7 @@
+import { createLiveApplication } from './live-application.js';
 import { randomBytes } from 'node:crypto';
 import {
   Arg,
-  BotFactory,
   Command,
   Controller,
   Ctx,
@@ -135,7 +135,7 @@ class MediaProbe {
 }
 @Module({ controllers: [MediaProbe] })
 class Root {}
-const app = await BotFactory.create(Root, {
+const app = await createLiveApplication(Root, {
   appId,
   secret,
   commands: { prefix },

@@ -1,11 +1,9 @@
-/**
- * dou-bot public API design contract, revision 1.14 — execution capacity and timing (dou-bot 0.8.0).
- * This declaration is the normative companion to development-plan.md.
- * Target: Node.js 24.x (>=24.0.0 <25), TypeScript legacy decorators, ESM.
- */
+/** Public API contract 2.0: shared application, account-scoped targets and PostgreSQL. Unreleased. */
 import type { RequestListener } from 'node:http';
+import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 export type Awaitable<T> = T | Promise<T>;
+
 /** Opaque, invariant token. Phantom members are not runtime properties; use createContextKey. */
 export interface ContextKey<T> {
   readonly __contextKey: never;
@@ -23,74 +21,89 @@ export interface ContextMiddleware {
 }
 export type MiddlewareContext = GuardContext & { readonly state: ContextWriter };
 export interface ContextOptions {
+  /** Timeout for each prepare invocation. Default 10000 ms. */
   prepareTimeoutMs?: number;
+  /** Timeout starting at the first read of each lazy value. Default 10000 ms. */
   loadTimeoutMs?: number;
+  /** Maximum registered keys per handler invocation. Default 64. */
   maxEntries?: number;
 }
-export declare function createContextKey<T>(name: string): ContextKey<T>;
-export declare function UseMiddleware(
-  ...middlewares: readonly InjectionToken<ContextMiddleware>[]
-): ClassDecorator & MethodDecorator;
-export declare function ContextValue<T>(key: ContextKey<T>): ParameterDecorator;
+
 export type Type<T = object> = new (...args: any[]) => T;
+
 export type AbstractType<T = object> = abstract new (...args: any[]) => T;
+
 export type InjectionToken<T = unknown> = Type<T> | AbstractType<T> | string | symbol;
 
 export interface ClassProvider<T = unknown> {
   provide: InjectionToken<T>;
   useClass: Type<T>;
 }
+
 export interface ValueProvider<T = unknown> {
   provide: InjectionToken<T>;
   useValue: T;
 }
+
 export interface FactoryProvider<T = unknown> {
   provide: InjectionToken<T>;
   inject?: readonly InjectionToken[];
   useFactory: (...dependencies: any[]) => Awaitable<T>;
 }
+
 export type Provider = Type | ClassProvider | ValueProvider | FactoryProvider;
+
 export interface ModuleMetadata {
   imports?: readonly Type[];
   controllers?: readonly Type[];
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
+  /** Applied to this module's own controllers before class/method guards; imports are independent. */
   guards?: readonly InjectionToken<CanActivate>[];
+  /** Applied to this module's own controllers; imports are independent. */
   middlewares?: readonly InjectionToken<ContextMiddleware>[];
 }
+
 export interface OnModuleInit {
   onModuleInit(signal: AbortSignal): Awaitable<void>;
 }
+
 export interface OnModuleDestroy {
   onModuleDestroy(signal: AbortSignal): Awaitable<void>;
 }
 
-export declare function Module(metadata: ModuleMetadata): ClassDecorator;
-export declare function Injectable(): ClassDecorator;
-export declare function Inject(token: InjectionToken): ParameterDecorator;
-export declare function Controller(): ClassDecorator;
 export interface CommandOptions {
   aliases?: readonly string[];
   description?: string;
 }
+
 export type GuardResult = boolean | { readonly allow: false; readonly message?: string };
+
+/** QQ group message author.member_role; missing/unknown values remain undefined. */
 export type GroupRole = 'member' | 'admin' | 'owner';
+/** Frozen snapshot of the current sender or button operator; IDs are scene-specific OpenIDs. */
 export interface UserInfo {
   readonly id: string;
   readonly username?: string;
   readonly bot?: boolean;
   readonly memberRole?: GroupRole;
 }
+/** Frozen group identity from the current event; id is an OpenID, not a displayed group number. */
 export interface GroupInfo {
   readonly id: string;
 }
 export interface AccessOptions {
+  /** Omit for the default denial hint; false denies silently. */
   message?: string | false;
 }
 export interface UsersOnlyOptions extends AccessOptions {
+  /** Compare OpenIDs only in this scene when supplied. */
   scene?: 'group' | 'private';
+  /** Restrict to one group; implies scene=group. */
   groupId?: string;
 }
+
+/** Read-only request information. Return a decision instead of sending messages from a guard. */
 export type GuardContext = Omit<QQEventContext, 'client'> & {
   readonly state: ContextReader;
   readonly userId: string;
@@ -104,9 +117,9 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         readonly groupId: string;
         /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
-        readonly target: Extract<MessageTarget, { scene: 'group' }>;
+        readonly target: Extract<BotTarget, { scene: 'group' }>;
       }
-    | { readonly scene: 'private'; readonly target: Extract<MessageTarget, { scene: 'private' }> }
+    | { readonly scene: 'private'; readonly target: Extract<BotTarget, { scene: 'private' }> }
   ) &
   (
     | {
@@ -133,42 +146,22 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
 export interface CanActivate {
   canActivate(context: GuardContext): Awaitable<GuardResult>;
 }
+
 export interface CooldownOptions {
+  /** Per route: user within a session, whole session, or all callers of the command/button. */
   scope: 'user' | 'session' | 'command';
   durationMs: number;
+  /** Omit for a remaining-time hint; false suppresses the hint. */
   message?: string | false;
 }
-export declare function UseGuards(
-  ...guards: readonly InjectionToken<CanActivate>[]
-): ClassDecorator & MethodDecorator;
-export declare function Cooldown(options: CooldownOptions): MethodDecorator;
-export declare function GroupOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
-export declare function PrivateOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
-export declare function UsersOnly(
-  userIds: readonly string[],
-  options?: UsersOnlyOptions,
-): ClassDecorator & MethodDecorator;
-export declare function GroupRoles(
-  ...roles: readonly GroupRole[]
-): ClassDecorator & MethodDecorator;
-export declare function GroupManagersOnly(
-  options?: AccessOptions,
-): ClassDecorator & MethodDecorator;
-export declare function Command(name: string, options?: CommandOptions): MethodDecorator;
-export declare function On(eventName: string): MethodDecorator;
-export declare function OnButton(buttonId: string): MethodDecorator;
-export declare function OnAttachment(options?: OnAttachmentOptions): MethodDecorator;
-export declare function Ctx(): ParameterDecorator;
-export declare function User(): ParameterDecorator;
-export declare function UserId(): ParameterDecorator;
-export declare function Group(): ParameterDecorator;
-export declare function GroupId(): ParameterDecorator;
-export declare function Role(): ParameterDecorator;
+
 export interface ParameterDescription {
   name?: string;
   description?: string;
   required?: boolean;
 }
+
+/** Runtime conversion is explicit; TypeScript parameter annotations are not inspected. */
 export type ArgumentOptions = ParameterDescription &
   (
     | { type?: 'string'; default?: string; choices?: readonly string[]; min?: never; max?: never }
@@ -181,7 +174,10 @@ export type ArgumentOptions = ParameterDescription &
       }
     | { type: 'boolean'; default?: boolean; choices?: never; min?: never; max?: never }
   );
+
 export type OptionOptions = ArgumentOptions & { alias?: string };
+
+/** Pure synchronous matchers check the original token; choices and match apply together. */
 export type SlotOptions = ParameterDescription & {
   default?: string;
   /** Pure synchronous conversion after text checks; defaults are normalized once at bootstrap. */
@@ -190,16 +186,20 @@ export type SlotOptions = ParameterDescription & {
     | { choices: readonly string[]; match?: (text: string) => boolean }
     | { match: (text: string) => boolean; choices?: readonly string[] }
   );
+
 export interface RestOptions {
   name?: string;
   description?: string;
 }
+
+/** Counts apply to the selected top-level attachments of the current message. */
 export interface AttachmentOptions {
   name?: string;
   description?: string;
   minCount?: number;
   maxCount?: number;
 }
+
 export interface OnAttachmentOptions {
   filename?: string | RegExp;
   extension?: string;
@@ -221,24 +221,13 @@ export type AttachmentSelectionResult =
       readonly count: number;
       readonly limit: number;
     };
-export declare function selectAttachments(
-  attachments: readonly Attachment[],
-  options?: AttachmentSelectionOptions,
-): AttachmentSelectionResult;
-export declare function Arg(index: number, options?: ArgumentOptions): ParameterDecorator;
-export declare function Args(): ParameterDecorator;
-export declare function Option(name: string, options?: OptionOptions): ParameterDecorator;
-export declare function Slot(name: string, options: SlotOptions): ParameterDecorator;
-export declare function Rest(options?: RestOptions): ParameterDecorator;
-export declare function Attachments(options?: AttachmentOptions): ParameterDecorator;
-export declare function Images(options?: AttachmentOptions): ParameterDecorator;
-export declare class HelpModule {}
 
 export interface RetryOptions {
   initialAttempts?: number;
   baseDelayMs?: number;
   maxDelayMs?: number;
 }
+
 export interface WsTransportOptions {
   type: 'ws';
   gatewayUrl?: string;
@@ -256,6 +245,7 @@ export interface WsTransportOptions {
   maxConcurrentRequests?: never;
   maxSignatureAgeMs?: never;
 }
+
 export interface WebhookTransportOptions {
   type: 'webhook';
   listen?: boolean;
@@ -273,7 +263,9 @@ export interface WebhookTransportOptions {
   closeTimeoutMs?: never;
   retry?: never;
 }
+
 export type TransportOptions = WsTransportOptions | WebhookTransportOptions;
+
 export interface QQApiOptions {
   baseUrl?: string;
   tokenEndpoint?: string;
@@ -282,6 +274,7 @@ export interface QQApiOptions {
   maxUploadBytes?: number;
   maxResponseBytes?: number;
 }
+
 export interface ExecutionOptions {
   concurrency?: number;
   queueCapacity?: number;
@@ -296,32 +289,76 @@ export interface ExecutionOptions {
   shutdownTimeoutMs?: number;
   cooldownMaxEntries?: number;
 }
+
+/** Credentials and protocol belong to one account. Business services are application-scoped. */
 export interface BotOptions {
   appId: string;
   secret: string;
-  transport?: TransportOptions;
+  transport?:
+    | WsTransportOptions
+    | (Omit<WebhookTransportOptions, 'listen' | 'host' | 'port'> & {
+        listen?: never;
+        host?: never;
+        port?: never;
+      });
   api?: QQApiOptions;
-  commands?: {
-    /** Exact, case-sensitive prefix. Defaults to '/'; '' allows bare command names. No whitespace. */
-    prefix?: string;
-    /** Defaults to report; reply sends only safe parser/validation diagnostics. */
-    invalidInput?: 'report' | 'reply';
-  };
+  interactions?: { acknowledge?: 'auto' | 'manual' };
+}
+export interface DatabaseOptions {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port?: number;
+  ssl?: boolean | { ca: string; rejectUnauthorized?: boolean };
+  schema?: string;
+  max?: number;
+  connectionTimeoutMs?: number;
+  statementTimeoutMs?: number;
+  idleTimeoutMs?: number;
+}
+export interface OutboundOptions {
+  concurrency?: number;
+  queueCapacity?: number;
+  queueMaxBytes?: number;
+}
+export interface AppOptions {
+  database: DatabaseOptions;
+  bots: readonly BotOptions[];
+  commands?: { prefix?: string; invalidInput?: 'report' | 'reply' };
   execution?: ExecutionOptions;
+  outbound?: OutboundOptions;
   context?: ContextOptions;
   prompts?: PromptConfig;
-  interactions?: { acknowledge?: 'auto' | 'manual' };
+  webhook?: { listen?: boolean; host?: string; port?: number };
   logger?: Logger;
   onError?: ErrorHandler;
 }
-export type ApplicationStatus =
+export interface OnApplicationReady {
+  onApplicationReady(signal: AbortSignal): Awaitable<void>;
+}
+export interface OnApplicationStopping {
+  onApplicationStopping(signal: AbortSignal): Awaitable<void>;
+}
+
+export type BotStatus =
   'created' | 'starting' | 'running' | 'reconnecting' | 'stopping' | 'stopped' | 'failed';
-export interface ApplicationSnapshot {
-  status: ApplicationStatus;
+
+export interface BotSnapshot {
+  status: BotStatus;
   transport: 'ws' | 'webhook';
-  queue: { pending: number; active: number; retainedBytes: number };
   prompts: { pending: number };
-  events: { accepted: number; duplicates: number; rejected: number; failed: number };
+  queue: {
+    pending: number;
+    active: number;
+    retainedBytes: number;
+  };
+  events: {
+    accepted: number;
+    duplicates: number;
+    rejected: number;
+    failed: number;
+  };
   /** Process-local capacity and cache occupancy; not a QQ platform quota. */
   capacity: {
     concurrency: number;
@@ -348,22 +385,97 @@ export interface ApplicationSnapshot {
   };
   lastEventAt?: number;
 }
-export interface BotApplication {
+
+export type ApplicationStatus = Exclude<BotStatus, 'reconnecting'> | 'degraded';
+export interface QueueSnapshot {
+  readonly active: number;
+  readonly pending: number;
+  readonly retainedBytes: number;
+  readonly concurrency: number;
+  readonly queueCapacity: number;
+  readonly queueMaxBytes: number;
+  readonly accepted: number;
+  readonly completed: number;
+  readonly failed: number;
+  readonly rejected: number;
+  readonly rejections: Readonly<{ queueFull: number; bytesFull: number; stopping: number }>;
+  readonly queueWait: Readonly<{ count: number; totalMs: number; maxMs: number }>;
+}
+export interface ApplicationSnapshot {
   readonly status: ApplicationStatus;
-  readonly client: QQClient;
+  readonly bots: readonly (BotSnapshot & { readonly appId: string })[];
+  readonly inbound: {
+    readonly active: number;
+    readonly pending: number;
+    readonly retainedBytes: number;
+    readonly concurrency: number;
+    readonly queueCapacity: number;
+    readonly queueMaxBytes: number;
+  };
+  readonly outbound: QueueSnapshot;
+  readonly database: { readonly total: number; readonly idle: number; readonly waiting: number };
+}
+export interface Application {
+  readonly status: ApplicationStatus;
+  readonly bots: BotManager;
   start(): Promise<void>;
   close(): Promise<void>;
   get<T>(token: InjectionToken<T>, options?: { module?: Type }): T;
   webhookHandler(): RequestListener;
   snapshot(): ApplicationSnapshot;
 }
-export declare const BotFactory: {
-  create(rootModule: Type, options: BotOptions): Promise<BotApplication>;
-};
+export interface BotHandle {
+  readonly appId: string;
+  readonly status: BotStatus;
+  readonly client: QQClient;
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  snapshot(): BotSnapshot;
+}
+export abstract class BotManager {
+  abstract get(appId: string): BotHandle;
+  abstract list(): readonly BotHandle[];
+}
+export abstract class Database {
+  /** Framework-owned; do not call pool.end(). Borrowed clients must be released. */
+  abstract readonly pool: Pool;
+  abstract readonly schema: string;
+  abstract query<R extends QueryResultRow = QueryResultRow>(
+    sql: string,
+    values?: readonly unknown[],
+  ): Promise<QueryResult<R>>;
+  abstract transaction<T>(run: (client: PoolClient) => Awaitable<T>): Promise<T>;
+}
+export type BotTarget = MessageTarget & { readonly appId: string };
+export type GroupTarget = Extract<BotTarget, { scene: 'group' }>;
+export type SendTarget =
+  BotTarget | { readonly scene: 'group'; readonly groupId: string; readonly appId?: never };
+export abstract class MessageSender {
+  abstract sendMessage(
+    target: SendTarget,
+    message: MessageInput,
+    options?: SendOptions,
+  ): Promise<SendResult>;
+}
+/** Addresses are account-scoped OpenIDs. They do not identify a physical group across bots. */
+export abstract class GroupRoutes {
+  abstract list(groupId: string): Promise<readonly GroupTarget[]>;
+  abstract resolve(groupId: string): Promise<GroupTarget>;
+  abstract bind(target: GroupTarget): Promise<void>;
+  /** Remove the explicit preference, keeping learned addresses. */
+  abstract unbind(groupId: string): Promise<void>;
+}
 
 export type MessageTarget =
-  | { readonly scene: 'group'; readonly groupId: string }
-  | { readonly scene: 'private'; readonly userId: string };
+  | {
+      readonly scene: 'group';
+      readonly groupId: string;
+    }
+  | {
+      readonly scene: 'private';
+      readonly userId: string;
+    };
+
 export interface QQDispatch<T = unknown> {
   readonly op: 0;
   readonly t: string;
@@ -371,6 +483,7 @@ export interface QQDispatch<T = unknown> {
   readonly id?: string;
   readonly s?: number;
 }
+
 export interface Attachment {
   readonly url: string;
   readonly filename?: string;
@@ -382,6 +495,7 @@ export interface Attachment {
   readonly asrReferText?: string;
   readonly raw: Readonly<Record<string, unknown>>;
 }
+
 export interface QQEventContext<T = unknown> {
   readonly appId: string;
   readonly eventName: string;
@@ -391,6 +505,7 @@ export interface QQEventContext<T = unknown> {
   readonly signal: AbortSignal;
   readonly client: QQClient;
 }
+
 export interface MessageContextBase extends QQEventContext {
   readonly state: ContextReader;
   readonly messageId: string;
@@ -401,32 +516,53 @@ export interface MessageContextBase extends QQEventContext {
   readonly attachments: readonly Attachment[];
   reply(message: MessageInput): Promise<SendResult>;
   send(message: MessageInput): Promise<SendResult>;
+  /** Ask and await this user's next message. Always await; replies are owned by this workflow. */
   prompt(question: MessageInput, options?: PromptOptions): Promise<PromptResult>;
 }
+
 export interface PromptOptions {
+  /** Wait duration after QQ accepts the question; defaults to the application setting. */
   timeoutMs?: number;
+  /** Exact, case-sensitive matches against trimmed input. [] disables cancellation words. */
   cancelWords?: readonly string[];
 }
 export interface PromptConfig extends PromptOptions {
+  /** Includes questions being sent and continuations awaiting an execution slot. Default 1000. */
   maxPending?: number;
+  /** Upper bound for a per-call timeout. Default 300000 ms. */
   maxTimeoutMs?: number;
 }
+/** Valid until the original command finishes; reply/prompt use this input's message reference. */
 export type PromptMessage = MessageContext;
 export type PromptResult =
   | { readonly status: 'received'; readonly message: PromptMessage }
   | { readonly status: 'timeout' }
   | { readonly status: 'cancelled' };
+
 export interface GroupMessageContext extends MessageContextBase {
   readonly scene: 'group';
   readonly groupId: string;
   readonly memberRole?: GroupRole;
-  readonly target: Extract<MessageTarget, { scene: 'group' }>;
+  readonly target: Extract<
+    BotTarget,
+    {
+      scene: 'group';
+    }
+  >;
 }
+
 export interface PrivateMessageContext extends MessageContextBase {
   readonly scene: 'private';
-  readonly target: Extract<MessageTarget, { scene: 'private' }>;
+  readonly target: Extract<
+    BotTarget,
+    {
+      scene: 'private';
+    }
+  >;
 }
+
 export type MessageContext = GroupMessageContext | PrivateMessageContext;
+
 export interface ButtonContextBase extends QQEventContext {
   readonly state: ContextReader;
   readonly interactionId: string;
@@ -436,43 +572,73 @@ export interface ButtonContextBase extends QQEventContext {
   ack(code?: number): Promise<void>;
   send(message: MessageInput): Promise<SendResult>;
 }
+
 export interface GroupButtonContext extends ButtonContextBase {
   readonly scene: 'group';
-  readonly target: Extract<MessageTarget, { scene: 'group' }>;
+  readonly target: Extract<
+    BotTarget,
+    {
+      scene: 'group';
+    }
+  >;
 }
+
 export interface PrivateButtonContext extends ButtonContextBase {
   readonly scene: 'private';
-  readonly target: Extract<MessageTarget, { scene: 'private' }>;
+  readonly target: Extract<
+    BotTarget,
+    {
+      scene: 'private';
+    }
+  >;
 }
+
 export type ButtonContext = GroupButtonContext | PrivateButtonContext;
+
 export type CommandReturn = MessageInput | void;
 
 export interface TextMessage {
   readonly kind: 'text';
   readonly content: string;
 }
+
 export type ImageSource = string | Uint8Array | UploadedImage;
+
 export interface ImageMessage {
   readonly kind: 'image';
   readonly source: ImageSource;
   readonly caption?: string;
 }
+
 export interface MarkdownBody {
   readonly content: string;
   readonly templateId?: never;
   readonly params?: never;
 }
+
 export interface MarkdownMessage {
   readonly kind: 'markdown';
   readonly body: MarkdownBody;
   readonly keyboard?: Keyboard;
 }
+
 export type OutgoingMessage = TextMessage | ImageMessage | MarkdownMessage;
+
 export type MessageInput = string | OutgoingMessage;
+
 export type ButtonPermission =
-  | { readonly type: 'everyone' }
-  | { readonly type: 'managers' }
-  | { readonly type: 'users'; readonly userIds: readonly string[] };
+  | {
+      readonly type: 'everyone';
+    }
+  | {
+      /** QQ permission.type=1; only supported for group targets. */
+      readonly type: 'managers';
+    }
+  | {
+      readonly type: 'users';
+      readonly userIds: readonly string[];
+    };
+
 export interface ButtonOptions {
   readonly id?: string;
   /** Label after clicking; defaults to the original label. An explicit '' is preserved. */
@@ -480,12 +646,21 @@ export interface ButtonOptions {
   readonly style?: 'secondary' | 'primary';
   readonly permission?: ButtonPermission;
 }
+
 export interface ButtonBase {
   readonly label: string;
 }
-export type CallbackButtonOptions = Omit<ButtonOptions, 'id'> & { readonly id?: never };
+
+export type CallbackButtonOptions = Omit<ButtonOptions, 'id'> & {
+  readonly id?: never;
+};
+
 export type KeyboardButton =
-  | (ButtonBase & { readonly type: 'link'; readonly url: string; readonly options?: ButtonOptions })
+  | (ButtonBase & {
+      readonly type: 'link';
+      readonly url: string;
+      readonly options?: ButtonOptions;
+    })
   | (ButtonBase & {
       readonly type: 'command';
       readonly command: string;
@@ -498,32 +673,12 @@ export type KeyboardButton =
       readonly data: string;
       readonly options?: CallbackButtonOptions;
     });
+
 export interface Keyboard {
   readonly kind: 'inline';
   readonly rows: readonly (readonly KeyboardButton[])[];
   readonly id?: never;
 }
-export declare function text(content: string): TextMessage;
-export declare function image(source: ImageSource, options?: { caption?: string }): ImageMessage;
-export declare function markdown(
-  content: string,
-  options?: { keyboard?: Keyboard },
-): MarkdownMessage;
-export declare function keyboard(rows: readonly (readonly KeyboardButton[])[]): Keyboard;
-export declare const button: {
-  link(label: string, url: string, options?: ButtonOptions): KeyboardButton;
-  command(
-    label: string,
-    command: string,
-    options?: ButtonOptions & { enter?: boolean },
-  ): KeyboardButton;
-  callback(
-    id: string,
-    label: string,
-    data?: string,
-    options?: CallbackButtonOptions,
-  ): KeyboardButton;
-};
 
 export interface UploadedImage {
   readonly kind: 'uploaded-image';
@@ -534,17 +689,21 @@ export interface UploadedImage {
   readonly fileUuid?: string;
   readonly expiresAt?: number;
 }
+
 export interface RequestOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
 }
+
 export interface ReplyReference {
   messageId: string;
   sequence: number;
 }
+
 export interface SendOptions extends RequestOptions {
   reply?: ReplyReference;
 }
+
 export type SendResult =
   | {
       readonly status: 'sent';
@@ -560,29 +719,36 @@ export type SendResult =
       readonly traceId?: string;
       readonly raw: Readonly<Record<string, unknown>>;
     };
+
 export interface BotUser {
   readonly id: string;
   readonly username?: string;
   readonly raw: Readonly<Record<string, unknown>>;
 }
+
 export interface ApiRequestOptions extends RequestOptions {
   query?: Readonly<Record<string, string | number | boolean | undefined>>;
   body?: unknown;
 }
+
 export interface ApiResponse<T> {
   readonly data: T;
   readonly status: number;
   readonly traceId?: string;
 }
+
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-export declare abstract class QQApi {
+
+export abstract class QQApi {
   abstract request<T = unknown>(
     method: HttpMethod,
     path: string,
     options?: ApiRequestOptions,
   ): Promise<ApiResponse<T>>;
   abstract getSelf(options?: RequestOptions): Promise<BotUser>;
-  abstract getGateway(options?: RequestOptions): Promise<{ url: string }>;
+  abstract getGateway(options?: RequestOptions): Promise<{
+    url: string;
+  }>;
   abstract sendGroupMessage(
     groupId: string,
     payload: QQMessagePayload,
@@ -619,7 +785,8 @@ export declare abstract class QQApi {
     options?: RequestOptions,
   ): Promise<void>;
 }
-export declare abstract class QQClient {
+
+export abstract class QQClient {
   abstract readonly api: QQApi;
   abstract getSelf(options?: RequestOptions): Promise<BotUser>;
   abstract sendMessage(
@@ -644,31 +811,60 @@ export interface QQMarkdownPayload {
   custom_template_id?: never;
   params?: never;
 }
+
 export interface QQInlineKeyboardPayload {
   rows: readonly {
     buttons: readonly {
       id?: string;
-      render_data: { label: string; visited_label?: string; style?: number };
+      render_data: {
+        label: string;
+        visited_label?: string;
+        style?: number;
+      };
       action: {
         type: number;
         data: string;
         enter?: boolean;
-        permission: { type: number; specify_user_ids?: readonly string[] };
+        permission: {
+          type: number;
+          specify_user_ids?: readonly string[];
+        };
       };
     }[];
   }[];
 }
+
 export interface QQKeyboardPayload {
   id?: never;
   content: QQInlineKeyboardPayload;
 }
+
 export type QQReplyFields =
-  | { msg_id: string; msg_seq: number; event_id?: never }
-  | { event_id: string; msg_id?: never; msg_seq?: never }
-  | { msg_id?: never; msg_seq?: never; event_id?: never };
+  | {
+      msg_id: string;
+      msg_seq: number;
+      event_id?: never;
+    }
+  | {
+      event_id: string;
+      msg_id?: never;
+      msg_seq?: never;
+    }
+  | {
+      msg_id?: never;
+      msg_seq?: never;
+      event_id?: never;
+    };
+
 export type QQMessagePayload = QQReplyFields &
   (
-    | { msg_type: 0; content: string; markdown?: never; keyboard?: never; media?: never }
+    | {
+        msg_type: 0;
+        content: string;
+        markdown?: never;
+        keyboard?: never;
+        media?: never;
+      }
     | {
         msg_type: 2;
         content?: never;
@@ -681,13 +877,26 @@ export type QQMessagePayload = QQReplyFields &
         content?: string;
         markdown?: never;
         keyboard?: never;
-        media: { file_info: string };
+        media: {
+          file_info: string;
+        };
       }
   );
+
 export type QQUploadImagePayload = {
   file_type: 1;
   srv_send_msg: false;
-} & ({ url: string; file_data?: never } | { url?: never; file_data: string });
+} & (
+  | {
+      url: string;
+      file_data?: never;
+    }
+  | {
+      url?: never;
+      file_data: string;
+    }
+);
+
 export interface QQFileResult {
   file_info: string;
   file_uuid?: string;
@@ -700,8 +909,10 @@ export interface Logger {
   warn(message: string, fields?: Readonly<Record<string, unknown>>): void;
   error(message: string, fields?: Readonly<Record<string, unknown>>): void;
 }
-export declare const LOGGER: unique symbol;
+
 export type ErrorPhase =
+  | 'database'
+  | 'routing'
   | 'middleware'
   | 'context'
   | 'prompt'
@@ -721,15 +932,23 @@ export type ErrorPhase =
 
 export interface ErrorContext {
   readonly phase: ErrorPhase;
-  readonly appId: string;
+  readonly appId?: string;
+  readonly sourceAppId?: string;
   readonly eventName?: string;
   readonly eventId?: string;
   readonly messageId?: string;
   readonly controller?: string;
   readonly method?: string;
 }
+
 export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<void>;
+
 export type FrameworkErrorCode =
+  | 'DATABASE'
+  | 'DATABASE_SCHEMA'
+  | 'ROUTE_NOT_FOUND'
+  | 'ROUTE_AMBIGUOUS'
+  | 'BOT_UNAVAILABLE'
   | 'CONTEXT_TIMEOUT'
   | 'CONFIG'
   | 'DEPENDENCY'
@@ -744,10 +963,120 @@ export type FrameworkErrorCode =
   | 'RESOURCE_LIMIT'
   | 'SHUTDOWN_TIMEOUT'
   | 'CLEANUP_FAILED';
+
+export declare function createContextKey<T>(name: string): ContextKey<T>;
+
+export declare function UseMiddleware(
+  ...middlewares: readonly InjectionToken<ContextMiddleware>[]
+): ClassDecorator & MethodDecorator;
+
+export declare function ContextValue<T>(key: ContextKey<T>): ParameterDecorator;
+
+export declare function Module(metadata: ModuleMetadata): ClassDecorator;
+
+export declare function Injectable(): ClassDecorator;
+
+export declare function Inject(token: InjectionToken): ParameterDecorator;
+
+export declare function Controller(): ClassDecorator;
+
+export declare function UseGuards(
+  ...guards: readonly InjectionToken<CanActivate>[]
+): ClassDecorator & MethodDecorator;
+
+export declare function Cooldown(options: CooldownOptions): MethodDecorator;
+
+export declare function GroupOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
+
+export declare function PrivateOnly(options?: AccessOptions): ClassDecorator & MethodDecorator;
+
+export declare function UsersOnly(
+  userIds: readonly string[],
+  options?: UsersOnlyOptions,
+): ClassDecorator & MethodDecorator;
+
+export declare function GroupRoles(
+  ...roles: readonly GroupRole[]
+): ClassDecorator & MethodDecorator;
+
+export declare function GroupManagersOnly(
+  options?: AccessOptions,
+): ClassDecorator & MethodDecorator;
+
+export declare function Command(name: string, options?: CommandOptions): MethodDecorator;
+
+export declare function On(eventName: string): MethodDecorator;
+
+export declare function OnButton(buttonId: string): MethodDecorator;
+
+export declare function OnAttachment(options?: OnAttachmentOptions): MethodDecorator;
+
+export declare function Ctx(): ParameterDecorator;
+
+export declare function User(): ParameterDecorator;
+
+export declare function UserId(): ParameterDecorator;
+
+export declare function Group(): ParameterDecorator;
+
+export declare function GroupId(): ParameterDecorator;
+
+export declare function Role(): ParameterDecorator;
+
+export declare function selectAttachments(
+  attachments: readonly Attachment[],
+  options?: AttachmentSelectionOptions,
+): AttachmentSelectionResult;
+
+export declare function Arg(index: number, options?: ArgumentOptions): ParameterDecorator;
+
+export declare function Args(): ParameterDecorator;
+
+export declare function Option(name: string, options?: OptionOptions): ParameterDecorator;
+
+export declare function Slot(name: string, options: SlotOptions): ParameterDecorator;
+
+export declare function Rest(options?: RestOptions): ParameterDecorator;
+
+export declare function Attachments(options?: AttachmentOptions): ParameterDecorator;
+
+export declare function Images(options?: AttachmentOptions): ParameterDecorator;
+
+export declare class HelpModule {}
+
+export declare function text(content: string): TextMessage;
+
+export declare function image(source: ImageSource, options?: { caption?: string }): ImageMessage;
+
+export declare function markdown(
+  content: string,
+  options?: { keyboard?: Keyboard },
+): MarkdownMessage;
+
+export declare function keyboard(rows: readonly (readonly KeyboardButton[])[]): Keyboard;
+
+export declare const button: {
+  link(label: string, url: string, options?: ButtonOptions): KeyboardButton;
+  command(
+    label: string,
+    command: string,
+    options?: ButtonOptions & { enter?: boolean },
+  ): KeyboardButton;
+  callback(
+    id: string,
+    label: string,
+    data?: string,
+    options?: CallbackButtonOptions,
+  ): KeyboardButton;
+};
+
+export declare const LOGGER: unique symbol;
+
 export declare class FrameworkError extends Error {
   readonly code: FrameworkErrorCode;
   constructor(code: FrameworkErrorCode, message: string, options?: ErrorOptions);
 }
+
 export declare class QQApiError extends FrameworkError {
   readonly name: 'QQApiError';
   readonly httpStatus?: number;
@@ -767,3 +1096,5 @@ export declare class QQApiError extends FrameworkError {
     },
   );
 }
+export declare const AppFactory: { create(root: Type, options: AppOptions): Promise<Application> };
+export declare function migrateDatabase(options: DatabaseOptions): Promise<void>;

@@ -40,7 +40,7 @@ import type {
 import { createTestApplication } from '../src/testing/index.js';
 import type { TestOptions } from '../src/testing/index.js';
 import { until } from './helpers.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 
 let next = 0;

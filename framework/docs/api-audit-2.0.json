@@ -1,0 +1,888 @@
+{
+  "revision": "2.0",
+  "baseline": "07d2c3e34da9fb808615687f8466230cd1ea6607",
+  "scope": "Every exported root/testing name. Retained means its direct signature and behavior remain; referenced contextual types follow the changed entries.",
+  "entries": [
+    {
+      "module": "root",
+      "name": "Awaitable",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ContextKey",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ContextReader",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ContextWriter",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ContextMiddleware",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "MiddlewareContext",
+      "status": "changed",
+      "note": "Inherits the account-scoped GuardContext target."
+    },
+    {
+      "module": "root",
+      "name": "ContextOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "createContextKey",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UseMiddleware",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ContextValue",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Type",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AbstractType",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "InjectionToken",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ClassProvider",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ValueProvider",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "FactoryProvider",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Provider",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ModuleMetadata",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OnModuleInit",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OnModuleDestroy",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Module",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Injectable",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Inject",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Controller",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "CommandOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GuardResult",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupRole",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UserInfo",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupInfo",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AccessOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UsersOnlyOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GuardContext",
+      "status": "changed",
+      "note": "target now retains appId."
+    },
+    {
+      "module": "root",
+      "name": "CanActivate",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "CooldownOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UseGuards",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Cooldown",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupOnly",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "PrivateOnly",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UsersOnly",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupRoles",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupManagersOnly",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Command",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "On",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OnButton",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OnAttachment",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Ctx",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "User",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UserId",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Group",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupId",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Role",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ParameterDescription",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ArgumentOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OptionOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "SlotOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "RestOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AttachmentOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OnAttachmentOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AttachmentKind",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AttachmentSelectionOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "AttachmentSelectionResult",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "selectAttachments",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Arg",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Args",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Option",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Slot",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Rest",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Attachments",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Images",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "HelpModule",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "RetryOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "WsTransportOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "WebhookTransportOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "TransportOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQApiOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ExecutionOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "BotOptions",
+      "status": "changed",
+      "note": "Account credentials/protocol only; application settings move to AppOptions."
+    },
+    {
+      "module": "root",
+      "name": "ApplicationStatus",
+      "status": "changed",
+      "note": "Application status now includes degraded; account reconnecting belongs to BotStatus."
+    },
+    {
+      "module": "root",
+      "name": "ApplicationSnapshot",
+      "status": "changed",
+      "note": "Application-wide inbound/outbound and database metrics plus per-account snapshots."
+    },
+    {
+      "module": "root",
+      "name": "BotApplication",
+      "status": "removed"
+    },
+    {
+      "module": "root",
+      "name": "BotFactory",
+      "status": "removed"
+    },
+    {
+      "module": "root",
+      "name": "MessageTarget",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQDispatch",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Attachment",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQEventContext",
+      "status": "changed",
+      "note": "Client is now task-scoped and tracked."
+    },
+    {
+      "module": "root",
+      "name": "MessageContextBase",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "PromptOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "PromptConfig",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "PromptMessage",
+      "status": "changed",
+      "note": "Retains the originating application account and execution."
+    },
+    {
+      "module": "root",
+      "name": "PromptResult",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupMessageContext",
+      "status": "changed",
+      "note": "target now retains appId."
+    },
+    {
+      "module": "root",
+      "name": "PrivateMessageContext",
+      "status": "changed",
+      "note": "target now retains appId."
+    },
+    {
+      "module": "root",
+      "name": "MessageContext",
+      "status": "changed",
+      "note": "Full account-scoped target and scoped client lifetime."
+    },
+    {
+      "module": "root",
+      "name": "ButtonContextBase",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "GroupButtonContext",
+      "status": "changed",
+      "note": "target now retains appId."
+    },
+    {
+      "module": "root",
+      "name": "PrivateButtonContext",
+      "status": "changed",
+      "note": "target now retains appId."
+    },
+    {
+      "module": "root",
+      "name": "ButtonContext",
+      "status": "changed",
+      "note": "Full account-scoped target and scoped client lifetime."
+    },
+    {
+      "module": "root",
+      "name": "CommandReturn",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "TextMessage",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ImageSource",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ImageMessage",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "MarkdownBody",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "MarkdownMessage",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "OutgoingMessage",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "MessageInput",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ButtonPermission",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ButtonOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ButtonBase",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "CallbackButtonOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "KeyboardButton",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Keyboard",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "text",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "image",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "markdown",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "keyboard",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "button",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "UploadedImage",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "RequestOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ReplyReference",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "SendOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "SendResult",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "BotUser",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ApiRequestOptions",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ApiResponse",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "HttpMethod",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQApi",
+      "status": "changed",
+      "note": "No implicit account DI binding; access through a selected client."
+    },
+    {
+      "module": "root",
+      "name": "QQClient",
+      "status": "changed",
+      "note": "No implicit account DI binding; select via BotManager or use the event client."
+    },
+    {
+      "module": "root",
+      "name": "QQMarkdownPayload",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQInlineKeyboardPayload",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQKeyboardPayload",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQReplyFields",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQMessagePayload",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQUploadImagePayload",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQFileResult",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "Logger",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "LOGGER",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "ErrorPhase",
+      "status": "changed",
+      "note": "Adds database and routing stages."
+    },
+    {
+      "module": "root",
+      "name": "ErrorContext",
+      "status": "changed",
+      "note": "appId may be absent for application-level errors; sourceAppId identifies a known originating signal."
+    },
+    {
+      "module": "root",
+      "name": "ErrorHandler",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "FrameworkErrorCode",
+      "status": "changed",
+      "note": "Adds database, schema, route lookup and bot availability errors."
+    },
+    {
+      "module": "root",
+      "name": "FrameworkError",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "QQApiError",
+      "status": "retained"
+    },
+    {
+      "module": "root",
+      "name": "DatabaseOptions",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "OutboundOptions",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "AppOptions",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "OnApplicationReady",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "OnApplicationStopping",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "BotStatus",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "BotSnapshot",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "QueueSnapshot",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "Application",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "BotHandle",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "BotManager",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "Database",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "BotTarget",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "GroupTarget",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "SendTarget",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "MessageSender",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "GroupRoutes",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "AppFactory",
+      "status": "added"
+    },
+    {
+      "module": "root",
+      "name": "migrateDatabase",
+      "status": "added"
+    },
+    {
+      "module": "testing",
+      "name": "RecordedMessage",
+      "status": "retained"
+    },
+    {
+      "module": "testing",
+      "name": "TestRequest",
+      "status": "retained"
+    },
+    {
+      "module": "testing",
+      "name": "TestOptions",
+      "status": "changed",
+      "note": "Same single-account fixture fields, referencing the new common/account settings."
+    },
+    {
+      "module": "testing",
+      "name": "TestAdmission",
+      "status": "retained"
+    },
+    {
+      "module": "testing",
+      "name": "TestHarness",
+      "status": "changed",
+      "note": "Single-account test view of the shared runtime, with BotSnapshot."
+    },
+    {
+      "module": "testing",
+      "name": "createTestApplication",
+      "status": "changed",
+      "note": "Uses the new runtime with explicit test-only memory persistence."
+    },
+    {
+      "module": "testing",
+      "name": "TestApplication",
+      "status": "added"
+    },
+    {
+      "module": "testing",
+      "name": "RecordedBotMessage",
+      "status": "added"
+    },
+    {
+      "module": "testing",
+      "name": "MultiTestOptions",
+      "status": "added"
+    },
+    {
+      "module": "testing",
+      "name": "MultiTestHarness",
+      "status": "added"
+    },
+    {
+      "module": "testing",
+      "name": "createMultiTestApplication",
+      "status": "added"
+    }
+  ]
+}

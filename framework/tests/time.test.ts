@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Command, Controller, Ctx, Injectable, Module } from '../src/index.js';
 import type { MessageContext, QQDispatch } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { resolveOptions } from '../src/core/config.js';
 import { ErrorReporter } from '../src/core/logging.js';
 import { FrameworkError, QQApiError } from '../src/core/errors.js';

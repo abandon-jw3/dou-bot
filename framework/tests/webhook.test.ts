@@ -1,11 +1,13 @@
+import type { TestApplication as BotApplication } from '../src/testing/single-bot.js';
+import { SingleTestApplication as BotFactory } from '../src/testing/single-bot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPrivateKey, sign } from 'node:crypto';
-import { request as httpRequest } from 'node:http';
-import { BotFactory, Command, Controller, Module } from '../src/index.js';
-import type { BotApplication, WebhookTransportOptions } from '../src/index.js';
+import { Agent, request as httpRequest } from 'node:http';
+import { Command, Controller, Module } from '../src/index.js';
+import type { WebhookTransportOptions } from '../src/index.js';
 import { deferred, qqServer, serve, until } from './helpers.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 
 const secret = '0123456789abcdef';
@@ -26,6 +28,90 @@ function signedHeaders(body: string, timestamp = String(Math.floor(Date.now() / 
   };
 }
 const silent = { debug() {}, info() {}, warn() {}, error() {} };
+
+await test('authenticated overload reuses HTTP connections and recovers without admitting extra work', async () => {
+  const gate = deferred<void>();
+  let executed = 0;
+  @Controller()
+  class Commands {
+    @Command('hold') async hold(): Promise<void> {
+      executed++;
+      await gate.promise;
+    }
+  }
+  @Module({ controllers: [Commands] })
+  class Root {}
+  const app = await Application.create(
+    Root,
+    {
+      appId: 'fixture-app',
+      secret,
+      logger: silent,
+      transport: { type: 'webhook', listen: false },
+      execution: { concurrency: 1, queueCapacity: 1 },
+    },
+    { fetch: () => Promise.resolve(Response.json({ access_token: 'fixture', expires_in: 7200 })) },
+  );
+  const host = await serve(app.webhookHandler());
+  const agent = new Agent({ keepAlive: true, maxSockets: 1 });
+  let connections = 0;
+  host.server.on('connection', () => {
+    connections++;
+  });
+  const dispatch = async (id: string, invalid = false) => {
+    const body = JSON.stringify({
+      op: 0,
+      t: 'C2C_MESSAGE_CREATE',
+      d: { id, content: '/hold', author: { user_openid: 'user' } },
+    });
+    const headers = { ...signedHeaders(body), 'content-length': String(Buffer.byteLength(body)) };
+    if (invalid) headers['x-signature-ed25519'] = '0'.repeat(128);
+    return await new Promise<{ status: number | undefined; connection: string | undefined }>(
+      (resolve, reject) => {
+        const request = httpRequest(
+          host.url + '/qq',
+          { method: 'POST', agent, headers },
+          (response) => {
+            response.resume();
+            response.once('error', reject);
+            response.once('end', () =>
+              resolve({ status: response.statusCode, connection: response.headers.connection }),
+            );
+          },
+        );
+        request.once('error', reject);
+        request.end(body);
+      },
+    );
+  };
+  await app.start();
+  try {
+    assert.equal((await dispatch('active')).status, 200);
+    assert.equal((await dispatch('queued')).status, 200);
+    for (let i = 0; i < 100; i++) assert.equal((await dispatch(`overflow-${i}`)).status, 503);
+    assert.equal(connections, 1, 'Every overload response must remain reusable');
+    assert.equal(executed, 1);
+    assert.equal(app.snapshot().queue.pending, 1);
+    assert.equal(app.snapshot().events.accepted, 2);
+    assert.equal(app.snapshot().rejections.queueFull, 100);
+    gate.resolve();
+    await app.execution.idle();
+    assert.equal((await dispatch('recovered')).status, 200);
+    await app.execution.idle();
+    assert.equal(connections, 1);
+    assert.equal(executed, 3);
+    const rejected = await dispatch('invalid', true);
+    assert.equal(rejected.status, 403);
+    assert.equal(rejected.connection, 'close');
+    assert.equal((await dispatch('after-invalid')).status, 200);
+    assert.equal(connections, 2);
+  } finally {
+    gate.resolve();
+    agent.destroy();
+    await app.close();
+    await host.close();
+  }
+});
 async function webhook(root: new () => object, extra: Partial<WebhookTransportOptions> = {}) {
   const backend = await qqServer();
   const app = await BotFactory.create(root, {
@@ -172,6 +258,7 @@ await test('Webhook body limits and host server ownership are respected', async 
   try {
     const response = await post(fixture.url, 'x'.repeat(64));
     assert.equal(response.status, 413);
+    assert.equal(response.headers.get('connection'), 'close');
     assert.equal((await fetch(fixture.url + '/health')).status, 200);
     await fixture.app.close();
     assert.equal((await fetch(fixture.url + '/health')).status, 200);
@@ -235,8 +322,11 @@ await test('a client abort during body reading releases its slot and does not le
   try {
     incomplete.write('{');
     let overloaded = false;
-    for (let attempt = 0; attempt < 20 && !overloaded; attempt++)
-      overloaded = (await post(fixture.url, '{}')).status === 503;
+    for (let attempt = 0; attempt < 20 && !overloaded; attempt++) {
+      const response = await post(fixture.url, '{}');
+      overloaded = response.status === 503;
+      if (overloaded) assert.equal(response.headers.get('connection'), 'close');
+    }
     assert.equal(overloaded, true);
     incomplete.destroy();
     let status = 503;
@@ -250,7 +340,7 @@ await test('a client abort during body reading releases its slot and does not le
   }
 });
 
-await test('owned Webhook shutdown closes incomplete HTTP connections at the shared deadline', async () => {
+await test('shared Webhook shutdown closes incomplete HTTP connections within the shared deadline', async () => {
   @Module({})
   class Root {}
   const reservation = await serve((_request, response) => response.end());
@@ -287,7 +377,7 @@ await test('owned Webhook shutdown closes incomplete HTTP connections at the sha
   try {
     // The token refresh timer plus read timer prove the incomplete request entered the handler.
     await until(() => clock.pending === 2);
-    const closing = assert.rejects(app.close(), /cleanup did not finish cleanly/);
+    const closing = app.close();
     await clock.advance(100);
     await closing;
     await until(() => incomplete.destroyed);

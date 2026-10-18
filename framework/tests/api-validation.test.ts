@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FrameworkError, Module, button, keyboard, markdown } from '../src/index.js';
 import type { MessageInput, QQMessagePayload, QQUploadImagePayload } from '../src/index.js';
-import { createTestApplication } from '../src/testing/index.js';
+import { createHttpFixture as createTestApplication } from './http-fixture.js';
 import type { TestRequest } from '../src/testing/index.js';
 
 @Module({})

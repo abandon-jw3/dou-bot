@@ -39,9 +39,12 @@ export class ErrorReporter {
       message: string,
       fields?: Readonly<Record<string, unknown>>,
     ) => {
+      if (!sink && level === 'debug') return;
       try {
-        const safeMessage = this.redact(message);
-        const safeFields = this.sanitize(fields) as Readonly<Record<string, unknown>> | undefined;
+        const secrets = this.sensitive();
+        const safeMessage = this.redact(message, secrets);
+        const safeFields = this.sanitize(fields, secrets) as
+          Readonly<Record<string, unknown>> | undefined;
         if (sink) sink[level](safeMessage, safeFields);
         else if (level !== 'debug') fallback(level, safeMessage, safeFields);
       } catch {
@@ -56,56 +59,69 @@ export class ErrorReporter {
     };
   }
 
-  redact(value: string): string {
+  redact(value: string, secrets: readonly string[] = this.sensitive()): string {
     let result = value;
-    for (const secret of this.sensitive())
-      if (secret) result = result.split(secret).join('[redacted]');
+    for (const secret of secrets) if (secret) result = result.split(secret).join('[redacted]');
     return result.length > 2048 ? `${result.slice(0, 2048)}…` : result;
   }
 
-  private sanitize(value: unknown, depth = 0, seen = new WeakSet<object>()): unknown {
-    if (typeof value === 'string') return this.redact(value);
+  private sanitize(
+    value: unknown,
+    secrets: readonly string[],
+    depth = 0,
+    seen = new WeakSet<object>(),
+  ): unknown {
+    if (typeof value === 'string') return this.redact(value, secrets);
     if (value === null || typeof value !== 'object') return value;
     if (depth >= 3 || seen.has(value)) return '[truncated]';
     seen.add(value);
-    if (value instanceof Error) return { name: value.name, message: this.redact(value.message) };
+    if (value instanceof Error)
+      return {
+        name: this.redact(value.name, secrets),
+        message: this.redact(value.message, secrets),
+      };
     if (Array.isArray(value))
-      return value.slice(0, 20).map((item: unknown) => this.sanitize(item, depth + 1, seen));
+      return value
+        .slice(0, 20)
+        .map((item: unknown) => this.sanitize(item, secrets, depth + 1, seen));
     return Object.fromEntries(
       Object.entries(value)
         .slice(0, 30)
         .map(([key, item]: [string, unknown]) => [
-          this.redact(key),
-          /secret|token|authorization|signature|file_data|body/i.test(key)
+          this.redact(key, secrets),
+          /secret|password|token|authorization|signature|file_data|body/i.test(key)
             ? '[redacted]'
-            : this.sanitize(item, depth + 1, seen),
+            : this.sanitize(item, secrets, depth + 1, seen),
         ]),
     );
   }
 
   private safeError(value: unknown): Error {
     const original = errorOf(value);
-    const message = this.redact(original.message);
+    const secrets = this.sensitive();
+    const message = this.redact(original.message, secrets);
     const error =
       original instanceof QQApiError
         ? new QQApiError(message, {
             method: original.method,
-            path: this.redact(original.path),
+            path: this.redact(original.path, secrets),
             ...(original.httpStatus === undefined ? {} : { httpStatus: original.httpStatus }),
             ...(original.qqCode === undefined
               ? {}
               : {
                   qqCode:
                     typeof original.qqCode === 'string'
-                      ? this.redact(original.qqCode)
+                      ? this.redact(original.qqCode, secrets)
                       : original.qqCode,
                 }),
-            ...(original.traceId === undefined ? {} : { traceId: this.redact(original.traceId) }),
+            ...(original.traceId === undefined
+              ? {}
+              : { traceId: this.redact(original.traceId, secrets) }),
           })
         : original instanceof FrameworkError
           ? new FrameworkError(original.code, message)
           : new Error(message);
-    if (!(error instanceof FrameworkError)) error.name = this.redact(original.name);
+    if (!(error instanceof FrameworkError)) error.name = this.redact(original.name, secrets);
     return error;
   }
   report(value: unknown, context: ErrorContext): void {

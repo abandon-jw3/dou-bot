@@ -60,6 +60,40 @@ jobs:
           path: framework/work/soak-latest.json
           retention-days: 14
           if-no-files-found: error
+  postgres:
+    name: PostgreSQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: dou_bot_test
+          POSTGRES_USER: dou_bot_test
+          POSTGRES_PASSWORD: offline-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dou_bot_test -d dou_bot_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_HOST: 127.0.0.1
+      TEST_DATABASE_PORT: 5432
+      TEST_DATABASE_USER: dou_bot_test
+      TEST_DATABASE_PASSWORD: offline-ci-only
+      TEST_DATABASE_NAME: dou_bot_test
+    defaults:
+      run:
+        working-directory: framework
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: framework/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run test:database
   example:
     name: Example (${{ matrix.os }})
     strategy:
@@ -118,7 +152,7 @@ jobs:
   deploy:
     name: Deploy documentation
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [sdk, example, docs]
+    needs: [sdk, postgres, example, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: read

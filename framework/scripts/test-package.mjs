@@ -6,18 +6,17 @@ import { parseEnv } from 'node:util';
 import ts from 'typescript';
 import { root, runNode } from './paths.mjs';
 
+// The default path validates only the current source contract. Released packages are optional history checks.
 const arguments_ = process.argv.slice(2);
-if (
-  arguments_.some(
-    (argument) => !['--released-baseline', '--released-0.7.0', '--published'].includes(argument),
-  )
-)
-  throw new Error('Unknown package check argument');
-if (arguments_.length > 1) throw new Error('Choose one registry validation target');
-const releasedBaseline = arguments_.includes('--released-baseline');
-const released070 = arguments_.includes('--released-0.7.0');
-const published = arguments_.includes('--published');
-const freshRegistry = published || released070;
+const historyVersions = ['0.6.0', '0.7.0', '0.8.0'];
+const registryVersion = arguments_[0]?.startsWith('--history=')
+  ? arguments_[0].slice('--history='.length)
+  : undefined;
+if (arguments_.length > 1 || (arguments_.length && !historyVersions.includes(registryVersion)))
+  throw new Error('Expected no arguments, or --history=0.6.0 / 0.7.0 / 0.8.0');
+const releasedBaseline = registryVersion === '0.6.0';
+const released070 = registryVersion === '0.7.0';
+const freshRegistry = registryVersion !== undefined;
 const output = resolve(root, 'work', 'package-check', randomUUID());
 const consumer = resolve(output, 'consumer');
 await mkdir(consumer, { recursive: true });
@@ -63,16 +62,11 @@ const pack = JSON.parse(
   await npm(['pack', '--json', '--ignore-scripts', '--pack-destination', output], root, true),
 )[0];
 const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
-const registryVersion = releasedBaseline
-  ? '0.6.0'
-  : released070
-    ? '0.7.0'
-    : published
-      ? manifest.version
-      : undefined;
 if (pack.name !== 'dou-bot' || manifest.private || manifest.license !== 'MIT')
   throw new Error('Package identity, visibility or license is not ready for distribution');
 const publicGuides = [
+  'docs/multi-bot.md',
+  'docs/database.md',
   'docs/capacity.md',
   'docs/context-middleware.md',
   'docs/command-parameters.md',
@@ -165,7 +159,14 @@ await npm(
 );
 await writeFile(
   resolve(consumer, 'consumer.ts'),
-  await readFile(resolve(root, 'scripts/fixtures/consumer-v0.6.0.ts')),
+  await readFile(
+    resolve(
+      root,
+      registryVersion
+        ? 'scripts/fixtures/consumer-v0.6.0.ts'
+        : 'scripts/fixtures/consumer-multi-bot.ts',
+    ),
+  ),
 );
 const compilerOptions = {
   target: ts.ScriptTarget.ES2023,
@@ -182,12 +183,15 @@ const compilerOptions = {
   outDir: resolve(consumer, 'out'),
   skipLibCheck: false,
 };
-const skillExamples = [
-  'minimal-module.ts',
-  'minimal-module.test.ts',
-  ...(releasedBaseline ? [] : ['attachments-module.ts', 'attachments-module.test.ts']),
-  ...(releasedBaseline || released070 ? [] : ['context-module.ts', 'context-module.test.ts']),
-];
+// Skill assets describe released packages; they do not constrain the new source API.
+const skillExamples = registryVersion
+  ? [
+      'minimal-module.ts',
+      'minimal-module.test.ts',
+      ...(releasedBaseline ? [] : ['attachments-module.ts', 'attachments-module.test.ts']),
+      ...(releasedBaseline || released070 ? [] : ['context-module.ts', 'context-module.test.ts']),
+    ]
+  : [];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline
   ? []
@@ -195,10 +199,14 @@ const featureConsumers = releasedBaseline
       'consumer-attachments.ts',
       'consumer-identity.ts',
       'consumer-attachment-routes.ts',
-      // 0.8.0 adds these APIs; keep the published 0.7.0 baseline independently verifiable.
+      // A historical run uses only features present in that release.
       ...(released070
         ? []
-        : ['consumer-slot-normalization.ts', 'consumer-context.ts', 'consumer-capacity.ts']),
+        : [
+            'consumer-slot-normalization.ts',
+            'consumer-context.ts',
+            registryVersion ? 'consumer-capacity.ts' : 'consumer-current-capacity.ts',
+          ]),
     ];
 if (!releasedBaseline) {
   await writeFile(
@@ -260,21 +268,23 @@ program.emit();
 await runNode([resolve(consumer, 'out', 'consumer.js')], { cwd: consumer });
 for (const name of featureConsumers)
   await runNode([resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))], { cwd: consumer });
-await runNode(
-  [
-    '--test',
-    ...skillExamples
-      .filter((name) => name.endsWith('.test.ts'))
-      .map((name) => resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))),
-  ],
-  { cwd: consumer },
-);
+if (skillExamples.some((name) => name.endsWith('.test.ts')))
+  await runNode(
+    [
+      '--test',
+      ...skillExamples
+        .filter((name) => name.endsWith('.test.ts'))
+        .map((name) => resolve(consumer, 'out', name.replace(/\.ts$/u, '.js'))),
+    ],
+    { cwd: consumer },
+  );
 await writeFile(
   resolve(output, 'validation.json'),
   JSON.stringify(
     {
       package: pack.name,
       version: pack.version,
+      mode: registryVersion ? 'historical-release' : 'current-contract',
       registryVersion: registryVersion ?? null,
       node: process.versions.node,
       tarball,
@@ -292,8 +302,8 @@ console.log(`Package consumer passed; ${pack.files.length} allowed files, no cre
 console.log(`Validated artifact: ${tarball}`);
 console.log(
   releasedBaseline
-    ? 'Historical consumer verified against published dou-bot@0.6.0.'
+    ? 'Historical consumer verified against published dou-bot@0.6.0; this does not assert source compatibility.'
     : freshRegistry
       ? `Consumers verified against published dou-bot@${registryVersion} using empty npm configuration and fresh cache.`
-      : 'Historical 0.6.0 consumer verified against the current tarball.',
+      : 'Contract 2.0 consumer verified against the current tarball.',
 );

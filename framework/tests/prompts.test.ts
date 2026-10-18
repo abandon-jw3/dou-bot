@@ -1,3 +1,4 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,7 +13,6 @@ import {
   OnButton,
 } from '../src/index.js';
 import type {
-  BotOptions,
   ButtonContext,
   ErrorContext,
   MessageContext,
@@ -22,7 +22,7 @@ import type {
   QQMessagePayload,
   Type,
 } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import type { Admission } from '../src/core/execution.js';
 import { resolveOptions } from '../src/core/config.js';
 import { deferred } from './helpers.js';

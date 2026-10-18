@@ -1,3 +1,4 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
@@ -11,17 +12,16 @@ import {
   FrameworkError,
   Injectable,
   Module,
-  QQApi,
+  BotManager,
 } from '../src/index.js';
 import type {
-  BotOptions,
   ContextMiddleware,
   ErrorContext,
   MessageContext,
   MiddlewareContext,
   Type,
 } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 import { deferred } from './helpers.js';
 
@@ -207,12 +207,12 @@ await test('preparation and loader signals authorize managed QQ requests while t
     let invoked = false;
     @Injectable()
     class Prepare implements ContextMiddleware {
-      constructor(private readonly api: QQApi) {}
+      constructor(private readonly bots: BotManager) {}
       async prepare(ctx: MiddlewareContext): Promise<void> {
         const read = async (signal: AbortSignal) => {
           waiting = true;
           await gate.promise;
-          return (await this.api.getSelf({ signal })).id;
+          return (await this.bots.get(ctx.appId).client.api.getSelf({ signal })).id;
         };
         if (mode === 'prepare') ctx.state.set(key, await read(ctx.signal));
         else ctx.state.provide(key, read);

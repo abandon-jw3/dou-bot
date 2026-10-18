@@ -2,6 +2,7 @@ import { QQClient, QQApi } from '../contracts.js';
 import type {
   BotUser,
   MessageInput,
+  OutgoingMessage,
   MessageTarget,
   QQMessagePayload,
   QQReplyFields,
@@ -46,6 +47,14 @@ export class DefaultQQClient extends QQClient {
     options = { ...options };
     const target = copyTarget(targetInput);
     const message = snapshotMessage(input, this.options.api.maxUploadBytes);
+    return this.sendPreparedMessage(target, message, options);
+  }
+  /** Internal path: target/message/options are owned snapshots; preserve bytes through upload and send. */
+  async sendPreparedMessage(
+    target: MessageTarget,
+    message: OutgoingMessage,
+    options: SendOptions = {},
+  ): Promise<SendResult> {
     const reply: QQReplyFields = options.reply
       ? { msg_id: options.reply.messageId, msg_seq: options.reply.sequence }
       : {};
@@ -105,11 +114,16 @@ export class DefaultQQClient extends QQClient {
     return this.uploadPreparedImage(target, snapshot.source, options);
   }
   /** Inputs here already belong to the SDK snapshot; do not copy image bytes a second time. */
-  private async uploadPreparedImage(
+  async uploadPreparedImage(
     target: MessageTarget,
     source: string | Uint8Array,
     options?: RequestOptions,
   ): Promise<UploadedImage> {
+    if (
+      source instanceof Uint8Array &&
+      (!source.length || source.length > this.options.api.maxUploadBytes)
+    )
+      throw new FrameworkError('RESOURCE_LIMIT', 'Image size is outside the configured limit');
     const payload: QQUploadImagePayload =
       typeof source === 'string'
         ? { file_type: 1, srv_send_msg: false, url: source }

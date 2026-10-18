@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import type { ClientOptions, RawData } from 'ws';
-import type { QQApi, ApplicationStatus } from '../contracts.js';
+import type { QQApi, BotStatus } from '../contracts.js';
 import type { ResolvedOptions } from '../core/config.js';
 import type { Execution } from '../core/execution.js';
 import type { ErrorReporter } from '../core/logging.js';
@@ -35,7 +35,7 @@ export class WsTransport implements Transport {
     private readonly tokens: TokenManager,
     private readonly execution: Execution,
     private readonly reporter: ErrorReporter,
-    private readonly status: (status: ApplicationStatus) => void,
+    private readonly status: (status: BotStatus) => void,
     private readonly random: () => number = Math.random,
     private readonly clock: Clock = systemClock,
     private readonly socketFactory: SocketFactory = (url, options) => new WebSocket(url, options),

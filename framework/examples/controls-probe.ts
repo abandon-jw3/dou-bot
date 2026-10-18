@@ -1,3 +1,4 @@
+import type { DefaultQQClient } from '../src/qq/client.js';
 import {
   Command,
   Controller,
@@ -15,7 +16,6 @@ import {
   markdown,
 } from '../src/index.js';
 import type {
-  BotApplication,
   ButtonContext,
   CanActivate,
   ErrorContext,
@@ -230,13 +230,12 @@ export function createControlsProbe(nonce: string, record: (entry: ProbeRecord) 
         });
       }
     },
-    instrument(app: BotApplication): () => void {
-      const client = app.client;
-      const send = client.sendMessage.bind(client);
+    instrument(client: DefaultQQClient): () => void {
+      const send = client.sendPreparedMessage.bind(client);
       const api = client.api;
       const ack = api.acknowledgeInteraction.bind(api);
       // Observe the SDK's already-validated results; never bypass transport or API validation.
-      client.sendMessage = async (target, input, options) => {
+      client.sendPreparedMessage = async (target, input, options) => {
         const result = await send(target, input, options);
         const scene = targetScene(target);
         const content = messageText(input);
@@ -265,7 +264,7 @@ export function createControlsProbe(nonce: string, record: (entry: ProbeRecord) 
         }
       };
       return () => {
-        client.sendMessage = send;
+        client.sendPreparedMessage = send;
         api.acknowledgeInteraction = ack;
       };
     },

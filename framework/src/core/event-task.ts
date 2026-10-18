@@ -1,3 +1,5 @@
+import type { ManagedQQClient } from '../qq/managed-client.js';
+import { scopedClient } from '../qq/managed-client.js';
 import type {
   ButtonContext,
   ContextKey,
@@ -95,10 +97,11 @@ export class EventTask {
   private data?: ContextState;
   private dataSealed = false;
   private dataReader?: ContextReader;
+  private scoped?: QQClient;
   constructor(
     readonly event: NormalizedEvent,
     private readonly options: ResolvedOptions,
-    private readonly client: QQClient,
+    private readonly client: ManagedQQClient,
     private readonly reporter: ErrorReporter,
     private readonly scope?: ReplyScope,
     private readonly ask?: Ask,
@@ -188,23 +191,41 @@ export class EventTask {
     });
   }
 
-  context(event: NormalizedEvent = this.event): QQEventContext {
-    return Object.freeze({
+  get appId(): string {
+    return this.options.appId;
+  }
+  contextBase(event: NormalizedEvent = this.event): Omit<QQEventContext, 'client'> {
+    return {
       appId: this.options.appId,
       eventName: event.raw.t,
       ...(event.raw.id === undefined ? {} : { eventId: event.raw.id }),
       receivedAt: event.receivedAt,
       raw: event.raw,
       signal: this.controller.signal,
-      client: this.client,
+    };
+  }
+  private withClient<T extends object>(value: T): Readonly<T & { readonly client: QQClient }> {
+    Object.defineProperty(value, 'client', {
+      enumerable: true,
+      get: () =>
+        (this.scoped ??= scopedClient(
+          this.client,
+          this.controller.signal,
+          (operation) => this.ledger.run('send', operation),
+          this.lifecycle?.managedSignals,
+        )),
     });
+    return Object.freeze(value) as Readonly<T & { readonly client: QQClient }>;
+  }
+  context(event: NormalizedEvent = this.event): QQEventContext {
+    return this.withClient(this.contextBase(event));
   }
 
   messageContext(location?: HandlerLocation, source?: MessageBinding): MessageContext {
     const event = source?.event ?? this.event;
     if (event.kind !== 'message') throw new FrameworkError('INVALID_STATE', 'Not a message event');
     const shared = {
-      ...this.context(event),
+      ...this.contextBase(event),
       state: this.contextReader(location),
       messageId: event.messageId,
       userId: event.userId,
@@ -229,21 +250,25 @@ export class EventTask {
         ),
     };
     return event.target.scene === 'group'
-      ? Object.freeze({
+      ? this.withClient({
           ...shared,
           scene: 'group' as const,
           groupId: event.target.groupId,
           ...(event.memberRole === undefined ? {} : { memberRole: event.memberRole }),
-          target: event.target,
+          target: Object.freeze({ ...event.target, appId: this.options.appId }),
         })
-      : Object.freeze({ ...shared, scene: 'private' as const, target: event.target });
+      : this.withClient({
+          ...shared,
+          scene: 'private' as const,
+          target: Object.freeze({ ...event.target, appId: this.options.appId }),
+        });
   }
 
   buttonContext(location?: HandlerLocation): ButtonContext {
     const event = this.event;
     if (event.kind !== 'button') throw new FrameworkError('INVALID_STATE', 'Not an interaction');
     const shared = {
-      ...this.context(),
+      ...this.contextBase(),
       state: this.contextReader(location),
       interactionId: event.interactionId,
       buttonId: event.buttonId,
@@ -253,8 +278,16 @@ export class EventTask {
       send: (message: MessageInput) => this.send(message, false, location),
     };
     return event.target.scene === 'group'
-      ? Object.freeze({ ...shared, scene: 'group' as const, target: event.target })
-      : Object.freeze({ ...shared, scene: 'private' as const, target: event.target });
+      ? this.withClient({
+          ...shared,
+          scene: 'group' as const,
+          target: Object.freeze({ ...event.target, appId: this.options.appId }),
+        })
+      : this.withClient({
+          ...shared,
+          scene: 'private' as const,
+          target: Object.freeze({ ...event.target, appId: this.options.appId }),
+        });
   }
 
   ack(code = 0, location?: HandlerLocation): Promise<void> {
@@ -292,13 +325,13 @@ export class EventTask {
         const message = snapshotMessage(input, this.options.api.maxUploadBytes);
         const target = event.target;
         const signal = this.controller.signal;
-        if (!reply) return this.client.sendMessage(target, message, { signal });
+        if (!reply) return this.client.sendPreparedMessage(target, message, { signal });
         if (event.kind !== 'message' || !scope)
           throw new FrameworkError('INVALID_STATE', 'Interaction IDs cannot be message references');
         const reference = { messageId: event.messageId, sequence: ++scope.sequence };
         const result = scope.tail.then(() => {
           signal.throwIfAborted();
-          return this.client.sendMessage(target, message, { signal, reply: reference });
+          return this.client.sendPreparedMessage(target, message, { signal, reply: reference });
         });
         scope.tail = result.then(
           () => {},

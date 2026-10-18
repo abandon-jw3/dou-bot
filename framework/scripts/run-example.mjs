@@ -4,6 +4,7 @@ import { runNode, root, repositoryRoot } from './paths.mjs';
 const name = process.argv[2];
 if (
   ![
+    'migrate',
     'offline',
     'attachments',
     'identity',
@@ -20,6 +21,7 @@ if (
     'live-attachments',
     'benchmark',
     'benchmark-framework',
+    'benchmark-mixed',
     'capacity',
     'soak',
   ].includes(name)
@@ -28,7 +30,7 @@ if (
 const output = resolve(root, 'work', 'runs', `${name}-${randomUUID()}`);
 await runNode(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json', '--outDir', output]);
 await runNode([
-  ...(['soak', 'benchmark', 'benchmark-framework', 'capacity'].includes(name)
+  ...(['soak', 'benchmark', 'benchmark-framework', 'benchmark-mixed', 'capacity'].includes(name)
     ? ['--expose-gc']
     : []),
   ...([
@@ -40,6 +42,7 @@ await runNode([
     'business',
     'benchmark',
     'benchmark-framework',
+    'benchmark-mixed',
     'capacity',
     'soak',
   ].includes(name)

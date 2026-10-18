@@ -1,7 +1,7 @@
+import { createLiveApplication } from './live-application.js';
 import { randomBytes } from 'node:crypto';
 import {
   Arg,
-  BotFactory,
   Command,
   Controller,
   Ctx,
@@ -78,7 +78,7 @@ class Probe {
 @Module({ controllers: [Probe] })
 class ProbeModule {}
 
-const app = await BotFactory.create(ProbeModule, {
+const app = await createLiveApplication(ProbeModule, {
   appId,
   secret,
   transport: { type: 'ws', retry: { initialAttempts: 1 }, closeTimeoutMs: 500 },

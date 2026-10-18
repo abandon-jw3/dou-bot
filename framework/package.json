@@ -48,7 +48,9 @@
     "docs/execution-controls.md",
     "docs/access-control.md",
     "docs/prompts.md",
-    "docs/module-guards.md"
+    "docs/module-guards.md",
+    "docs/multi-bot.md",
+    "docs/database.md"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -71,7 +73,6 @@
     "coverage": "c8 --all --src src --extension .ts --include \"src/**/*.ts\" --exclude-after-remap --reporter text --reporter lcov --reporter json-summary node --test \".test-build/tests/**/*.test.js\"",
     "test:package": "node scripts/test-package.mjs",
     "test:api": "node scripts/check-api.mjs",
-    "test:compat": "node scripts/test-package.mjs --released-baseline",
     "test:docs": "node scripts/check-docs.mjs",
     "example:offline": "node scripts/run-example.mjs offline",
     "example:attachments": "node scripts/run-example.mjs attachments",
@@ -93,10 +94,16 @@
     "benchmark:capacity": "node scripts/run-example.mjs capacity",
     "soak": "node scripts/run-example.mjs soak",
     "check": "node scripts/check.mjs",
-    "test:published": "node scripts/test-package.mjs --published",
-    "test:compat:0.7": "node scripts/test-package.mjs --released-0.7.0"
+    "benchmark:mixed": "node scripts/run-example.mjs benchmark-mixed",
+    "database:migrate": "node scripts/run-example.mjs migrate",
+    "test:database": "node scripts/test-database.mjs",
+    "test:history:0.6": "node scripts/test-package.mjs --history=0.6.0",
+    "test:history:0.7": "node scripts/test-package.mjs --history=0.7.0",
+    "test:history:0.8": "node scripts/test-package.mjs --history=0.8.0"
   },
   "dependencies": {
+    "@types/pg": "8.23.1",
+    "pg": "8.23.1",
     "reflect-metadata": "0.2.2",
     "ws": "8.22.0"
   },

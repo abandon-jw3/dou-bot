@@ -15,13 +15,13 @@ import {
   UseMiddleware,
 } from '../src/index.js';
 import type {
-  ApplicationSnapshot,
+  BotSnapshot,
   ContextMiddleware,
   ExecutionOptions,
   MiddlewareContext,
   QQDispatch,
 } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import type { Clock } from '../src/core/clock.js';
 import { FakeClock } from '../tests/fake-clock.js';
 import { CountingClock, assertReleased, inspectResources } from './soak-support.js';
@@ -114,7 +114,7 @@ const samples: {
   elapsedMs: number;
   heapUsed: number;
   rss: number;
-  snapshot: ApplicationSnapshot;
+  snapshot: BotSnapshot;
 }[] = [];
 const latencyBounds = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000, Infinity];
 const latencies = latencyBounds.map(() => 0);

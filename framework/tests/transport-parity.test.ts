@@ -1,3 +1,4 @@
+import { SingleTestApplication as BotFactory } from '../src/testing/single-bot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPrivateKey, sign } from 'node:crypto';
@@ -5,7 +6,6 @@ import {
   Arg,
   Attachments,
   selectAttachments,
-  BotFactory,
   Command,
   Controller,
   Ctx,

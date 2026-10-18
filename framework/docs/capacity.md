@@ -1,7 +1,7 @@
 # 容量配置与运行监测
 
-- 容量配置适用于 **0.7.0**。
-- snapshot 的 **capacity、rejections、timing 从 0.8.0 起提供**，0.7.0 不支持这些字段。
+- 本页启动和快照示例适用于当前未发布源码。
+- 入站和出站预算由整个应用共享；去重、回复和 prompt 状态按账号隔离。
 - 群数不能直接换算容量，应估算消息率、处理耗时及保留记录数量。
 
 ## 从调用量估算
@@ -24,10 +24,9 @@
 以下用于容量估算，**不是默认值，也不是 QQ 配额或吞吐保证**：
 
 ```ts
-const app = await BotFactory.create(AppModule, {
-  appId,
-  secret,
-  transport: { type: 'ws' },
+const app = await AppFactory.create(AppModule, {
+  database, // 见数据库指南；先执行显式迁移
+  bots: [{ appId, secret, transport: { type: 'ws' } }],
   execution: {
     concurrency: 32,
     queueCapacity: 2000,
@@ -55,10 +54,10 @@ const app = await BotFactory.create(AppModule, {
 
 ## 读取容量与延迟
 
-以下读取方式需要 0.8.0：
+读取某个账号的业务统计；应用级队列另见 app.snapshot().inbound / outbound：
 
 ```ts
-const snapshot = app.snapshot();
+const snapshot = app.bots.get(appId).snapshot();
 const { capacity, rejections, timing } = snapshot;
 console.log({
   active: snapshot.queue.active,
@@ -119,4 +118,4 @@ npm run benchmark:capacity -- realtime 3900000 realtime
 - 报告：work/capacity-review/<label>.json。
 - 模拟 2000 个群，常态 20 次/秒，周期高峰 50 次/秒，包含慢请求、重复投递和发送失败。
 - 检查延迟、拒绝、缓存、内存及关闭后的资源计数。
-- 测试使用合成 HTTP，不连接 QQ；结果不能替代真实平台配额和自己的业务压测。
+- 测试使用合成 HTTP 和内存数据库夹具，不连接 QQ 或 PostgreSQL；结果不能替代真实平台配额和自己的业务压测。

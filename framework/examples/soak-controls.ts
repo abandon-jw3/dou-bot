@@ -23,7 +23,7 @@ import type {
   QQDispatch,
   QQMessagePayload,
 } from '../src/index.js';
-import type { Application } from '../src/core/application.js';
+import type { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 
 type Scene = 'private' | 'group';
 type Plan = { scene: Scene; user: string; mode: string };

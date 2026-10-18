@@ -78,7 +78,7 @@ function scope(t: TestContext, options: ContextOptions = {}, budget = 32) {
     method: 'run',
     route: 'run',
     scene: 'private',
-    target: { scene: 'private', userId: 'user' },
+    target: { appId: 'app', scene: 'private', userId: 'user' },
     kind: 'command',
     messageId: 'message',
     content: '/run',

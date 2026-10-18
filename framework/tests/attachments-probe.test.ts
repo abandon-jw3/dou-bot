@@ -1,3 +1,4 @@
+import { SingleTestApplication } from '../src/testing/single-bot.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { setImmediate as tick } from 'node:timers/promises';
@@ -38,7 +39,8 @@ await test('attachment probe uses same-message images and separate media inputs 
     commands: { invalidInput: 'reply' },
     onError: (error, context) => probe.onError(error, context),
   });
-  const restore = probe.instrument(harness.app);
+  assert.ok(harness.app instanceof SingleTestApplication);
+  const restore = probe.instrument(harness.app.runtime.rawClient);
   t.after(async () => {
     await harness.app.close();
     restore();

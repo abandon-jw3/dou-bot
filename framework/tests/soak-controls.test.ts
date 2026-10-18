@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { TestContext } from 'node:test';
 import { createControlWorkload } from '../examples/soak-controls.js';
 import { CountingClock, assertReleased, closeOnAbort } from '../examples/soak-support.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import type { QQMessagePayload } from '../src/index.js';
 
 async function fixture(t: TestContext, corruptQuery = false) {

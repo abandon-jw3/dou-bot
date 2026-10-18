@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Module, QQApiError, FrameworkError, image, markdown } from '../src/index.js';
 import type { QQMessagePayload } from '../src/index.js';
-import { createTestApplication } from '../src/testing/index.js';
+import { createHttpFixture as createTestApplication } from './http-fixture.js';
 import { deferred, serve } from './helpers.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 
 @Module({})
 class Root {}

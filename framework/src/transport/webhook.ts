@@ -1,11 +1,10 @@
 import { createPrivateKey, createPublicKey, sign, verify } from 'node:crypto';
-import { createServer } from 'node:http';
-import type { IncomingMessage, RequestListener, Server, ServerResponse } from 'node:http';
+import type { IncomingMessage, RequestListener, ServerResponse } from 'node:http';
 import type { ResolvedOptions } from '../core/config.js';
 import type { Execution } from '../core/execution.js';
 import type { ErrorReporter } from '../core/logging.js';
 import { FrameworkError } from '../core/errors.js';
-import { bounded, hasControlCharacters, isRecord, own } from '../core/utils.js';
+import { hasControlCharacters, isRecord, own } from '../core/utils.js';
 import { isDispatch } from '../qq/normalize.js';
 import type { Transport } from './types.js';
 import { systemClock } from '../core/clock.js';
@@ -115,7 +114,6 @@ export class WebhookTransport implements Transport {
   private readonly settings: Extract<ResolvedOptions['transport'], { type: 'webhook' }>;
   private readonly verifier: WebhookVerifier;
   private readonly requests = new Set<IncomingMessage>();
-  private server: Server | undefined;
   private running = false;
   private closing = false;
   constructor(
@@ -138,11 +136,16 @@ export class WebhookTransport implements Transport {
       });
     };
   }
-  private reply(response: ServerResponse, status: number, body: unknown = {}): void {
+  private reply(
+    response: ServerResponse,
+    status: number,
+    body: unknown = {},
+    reusable = false,
+  ): void {
     if (response.destroyed || response.writableEnded) return;
     response.statusCode = status;
     response.setHeader('content-type', 'application/json');
-    if (status >= 400) response.setHeader('connection', 'close');
+    if (status >= 400 && !reusable) response.setHeader('connection', 'close');
     response.end(JSON.stringify(body));
   }
   private header(request: IncomingMessage, name: string, required: boolean): string | undefined {
@@ -223,8 +226,13 @@ export class WebhookTransport implements Transport {
         if (signature === undefined || timestamp === undefined) throw new HttpFailure(403);
         const result = this.execution.accept(payload, raw.length);
         if (result.status === 'failed') throw new HttpFailure(500);
-        if (result.status === 'overloaded' || result.status === 'stopping')
-          throw new HttpFailure(503);
+        if (result.status === 'overloaded') {
+          // This authenticated request is fully consumed. Keeping its connection
+          // reusable avoids connection churn when callers retry during overload.
+          this.reply(response, 503, {}, true);
+          return;
+        }
+        if (result.status === 'stopping') throw new HttpFailure(503);
         this.reply(response, 200, { op: 12, d: {} });
       }
     } catch (error) {
@@ -238,48 +246,17 @@ export class WebhookTransport implements Transport {
       this.requests.delete(request);
     }
   }
-  async start(): Promise<void> {
-    if (this.closing) throw new FrameworkError('INVALID_STATE', 'Webhook is closed');
-    if (this.settings.listen) {
-      const server = createServer(this.handler);
-      this.server = server;
-      server.on('error', (error) =>
-        this.reporter.report(error, { phase: 'transport', appId: this.config.appId }),
-      );
-      await new Promise<void>((resolve, reject) => {
-        const error = (failure: Error) => {
-          server.off('listening', listening);
-          reject(failure);
-        };
-        const listening = () => {
-          server.off('error', error);
-          resolve();
-        };
-        server.once('error', error);
-        server.once('listening', listening);
-        server.listen(this.settings.port, this.settings.host);
-      });
-    }
-    if (this.closing) {
-      this.server?.closeAllConnections();
-      this.server?.close();
-      throw new FrameworkError('INVALID_STATE', 'Webhook stopped during startup');
-    }
+  start(): Promise<void> {
+    if (this.closing)
+      return Promise.reject(new FrameworkError('INVALID_STATE', 'Webhook is closed'));
     this.running = true;
+    return Promise.resolve();
   }
-  async stop(deadline: number): Promise<void> {
+  stop(): Promise<void> {
+    // Application owns the shared HTTP listener; an account owns only its in-flight requests.
     this.closing = true;
     this.running = false;
-    if (!this.server) {
-      for (const request of this.requests) request.destroy();
-      return;
-    }
-    const closing = new Promise<void>((resolve) => this.server?.close(() => resolve()));
-    try {
-      await bounded(closing, deadline, undefined, this.clock);
-    } finally {
-      this.server.closeAllConnections();
-      for (const request of this.requests) request.destroy();
-    }
+    for (const request of this.requests) request.destroy();
+    return Promise.resolve();
   }
 }

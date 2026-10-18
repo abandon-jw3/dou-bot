@@ -1,3 +1,4 @@
+import { SingleTestApplication } from '../src/testing/single-bot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createControlsProbe } from '../examples/controls-probe.js';
@@ -14,7 +15,8 @@ await test('live controls probe limits enrollment, observes validated outcomes, 
     interactions: { acknowledge: 'manual' },
     onError: (error, context) => probe.onError(error, context),
   });
-  const restore = probe.instrument(h.app);
+  assert.ok(h.app instanceof SingleTestApplication);
+  const restore = probe.instrument(h.app.runtime.rawClient);
   t.after(async () => {
     await h.app.close();
     restore();

@@ -14,8 +14,7 @@ export function guardContext(
   const event = task.event;
   if (event.kind === 'event')
     throw new FrameworkError('INVALID_STATE', 'Raw observers do not have guards');
-  const { client, ...base } = task.context();
-  void client;
+  const base = task.contextBase();
   const scene =
     event.target.scene === 'group'
       ? {
@@ -24,9 +23,12 @@ export function guardContext(
           ...(event.kind !== 'message' || event.memberRole === undefined
             ? {}
             : { memberRole: event.memberRole }),
-          target: Object.freeze({ ...event.target }),
+          target: Object.freeze({ ...event.target, appId: task.appId }),
         }
-      : { scene: 'private' as const, target: Object.freeze({ ...event.target }) };
+      : {
+          scene: 'private' as const,
+          target: Object.freeze({ ...event.target, appId: task.appId }),
+        };
   return Object.freeze({
     ...base,
     state: task.contextReader({ controller: controller.name || '(anonymous)', method }),

@@ -1,9 +1,10 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Command, Controller, Ctx, Module, OnButton } from '../src/index.js';
-import type { BotOptions, MessageContext, QQDispatch, Type } from '../src/index.js';
-import { Application } from '../src/core/application.js';
-import type { RuntimePorts } from '../src/core/application.js';
+import type { MessageContext, QQDispatch, Type } from '../src/index.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
+import type { RuntimePorts } from '../src/testing/single-bot.js';
 import { FakeClock } from './fake-clock.js';
 import { deferred } from './helpers.js';
 

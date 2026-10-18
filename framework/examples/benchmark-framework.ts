@@ -17,7 +17,7 @@ const {
   UseMiddleware,
   image,
 } = await import('../src/index.js');
-const { Application } = await import('../src/core/application.js');
+const { SingleTestApplication: Application } = await import('../src/testing/single-bot.js');
 const importMs = performance.now() - importStarted;
 const rounds = Number(process.argv[2] ?? 5);
 const label = process.argv[3] ?? 'latest';

@@ -2,6 +2,13 @@
 
 框架、独立业务示例与文档站统一在 [abandon-jw3/dou-bot](https://github.com/abandon-jw3/dou-bot) 维护。当前布局由 ad0df74 基线迁移而来，详见 [目录迁移记录](directory-migration-2026-10-11.md)。换设备前先阅读 [跨设备交接](handoff.md)。
 
+## 当前源码与发布版
+
+- 当前源码契约 2.0 尚未发布：AppFactory、多机器人和必选 PostgreSQL。
+- 新版本独立设计和验收，使用方式见 [SDK README](../README.md) 与 [多机器人指南](multi-bot.md)。
+- 已发布的 npm 0.8.0、业务示例、网站与技能保留各自的发布状态，不作为新 API 的兼容要求。
+- PostgreSQL 专项使用 TEST_DATABASE_* 和随机测试 schema；普通离线检查不读取业务数据库配置。
+
 ## 三个工程的边界
 
 | 仓库路径   | 职责                                              | 依赖与产物                                                     |
@@ -37,12 +44,10 @@ SDK 的构建、测试、覆盖率、消费者、源码示例、诊断和压测�
 cd framework
 npm run check
 npm run build
-npm run test:compat
-npm run test:compat:0.7
-# 仅在当前版本发布后执行
-npm run test:published
 npm run example:offline
 ```
+
+历史发布包可按需使用 `test:history:0.6`、`test:history:0.7`、`test:history:0.8` 单独复验；这些命令不属于新版本检查或发布门槛。
 
 业务示例和网站分别可进入 example、website 后独立运行自己的命令。根目录只保留 install:all、check:all、example:check/build/start/dev 和 docs:dev/build/check/test:browser。后两组通过 npm --prefix 转发参数；SDK 的 pretest、precoverage、prepack 和 prepublishOnly 仅保留在 framework 中。
 
@@ -52,9 +57,11 @@ npm run example:offline
 
 唯一工作流为 [ci.yml](../../.github/workflows/ci.yml)。SDK 在 framework、业务示例在 example、文档站在 website 执行；缓存分别引用对应锁文件，Node 开发版本统一从仓库根 .nvmrc 读取。SDK CI 同时运行仓库级检查，验证根入口不会因只运行子工程检查而失效。
 
-SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆盖率、30 秒持续运行及两小时虚拟容量回归。报告位于 framework/work/soak-latest.json 与 framework/work/capacity-review/ci.json，按平台和 Node 档位分别保存。业务示例、文档工具保留双平台检查；文档另执行依赖审计和 Linux Chromium 浏览器测试。
+SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆盖率、30 秒持续运行及两小时虚拟容量回归。另设 Linux PostgreSQL 17 服务专项，使用 TEST_DATABASE_* 隔离配置并显式要求专项执行。报告位于 framework/work/soak-latest.json 与 framework/work/capacity-review/ci.json，按平台和 Node 档位分别保存。业务示例、文档工具保留双平台检查；文档另执行依赖审计和 Linux Chromium 浏览器测试。
 
 在 framework 内运行 npm run benchmark:framework -- 5 local 做源码性能对照，npm run soak -- 30000 做短时回归，npm run benchmark:capacity -- virtual 7200000 local 覆盖两小时虚拟时间。虚拟时间不等于真实持续运行；65 分钟真实计时命令见 [容量指南](capacity.md)，仅在具体任务授权时执行。结果写入 framework/work，历史数值按原始指纹与工作负载解释。
+
+混合负载使用 `npm run benchmark:mixed -- smoke local-smoke` 验证测试工具，再运行 `npm run benchmark:mixed -- standard local-standard`。完整场景约 6 分钟，涵盖本机 Webhook 验签、慢 HTTP 业务、过载与恢复；结果位于 framework/work/mixed-benchmark。每次使用不同标签，报告不覆盖已有文件。详见 [混合 Benchmark](benchmark-mixed-2026-10-14.md)。
 
 只有 main 的非 PR 工作流在全部检查成功后部署 Pages，产物仍为 website/docs/.vitepress/dist。线上地址为 [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)，base 为 /dou-bot/，页面编辑链接仍指向 website/docs/:path。原 /dou-bot-docs/ 的站点跳转保持；这与本次不保留旧仓库目录是两种不同的路径。
 
@@ -62,7 +69,7 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 0.8.0 已发布，公开契约为 1.14；example、website 和技能已同步使用 npm 0.8.0。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
+SDK 0.8.0 已发布，对应契约为 1.14；当前未发布源码契约为 2.0。example、website 和技能已同步使用 npm 0.8.0。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
 
 README 和公开指南随 SDK 发包，相对链接必须落在安装包内；仓库维护材料和其他工程使用完整 GitHub 链接。npm run test:package 验证 tarball、文档链接、凭证排除与独立消费者。历史验收 JSON 原文保留，不为了消除旧路径而改写原始证据。
 

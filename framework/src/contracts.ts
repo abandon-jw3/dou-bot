@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Public DI constructor/factory signatures accept consumer-defined parameter lists. */
 import type { RequestListener } from 'node:http';
+import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 export type Awaitable<T> = T | Promise<T>;
 
@@ -116,9 +117,9 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         readonly groupId: string;
         /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
-        readonly target: Extract<MessageTarget, { scene: 'group' }>;
+        readonly target: Extract<BotTarget, { scene: 'group' }>;
       }
-    | { readonly scene: 'private'; readonly target: Extract<MessageTarget, { scene: 'private' }> }
+    | { readonly scene: 'private'; readonly target: Extract<BotTarget, { scene: 'private' }> }
   ) &
   (
     | {
@@ -289,32 +290,62 @@ export interface ExecutionOptions {
   cooldownMaxEntries?: number;
 }
 
+/** Credentials and protocol belong to one account. Business services are application-scoped. */
 export interface BotOptions {
   appId: string;
   secret: string;
-  transport?: TransportOptions;
+  transport?:
+    | WsTransportOptions
+    | (Omit<WebhookTransportOptions, 'listen' | 'host' | 'port'> & {
+        listen?: never;
+        host?: never;
+        port?: never;
+      });
   api?: QQApiOptions;
-  commands?: {
-    /** Exact, case-sensitive prefix. Defaults to '/'; '' allows bare command names. No whitespace. */
-    prefix?: string;
-    /** Report all errors; optionally reply with safe command-input diagnostics. Defaults to 'report'. */
-    invalidInput?: 'report' | 'reply';
-  };
+  interactions?: { acknowledge?: 'auto' | 'manual' };
+}
+export interface DatabaseOptions {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port?: number;
+  ssl?: boolean | { ca: string; rejectUnauthorized?: boolean };
+  schema?: string;
+  max?: number;
+  connectionTimeoutMs?: number;
+  statementTimeoutMs?: number;
+  idleTimeoutMs?: number;
+}
+export interface OutboundOptions {
+  concurrency?: number;
+  queueCapacity?: number;
+  queueMaxBytes?: number;
+}
+export interface AppOptions {
+  database: DatabaseOptions;
+  bots: readonly BotOptions[];
+  commands?: { prefix?: string; invalidInput?: 'report' | 'reply' };
   execution?: ExecutionOptions;
+  outbound?: OutboundOptions;
   context?: ContextOptions;
   prompts?: PromptConfig;
-  interactions?: {
-    acknowledge?: 'auto' | 'manual';
-  };
+  webhook?: { listen?: boolean; host?: string; port?: number };
   logger?: Logger;
   onError?: ErrorHandler;
 }
+export interface OnApplicationReady {
+  onApplicationReady(signal: AbortSignal): Awaitable<void>;
+}
+export interface OnApplicationStopping {
+  onApplicationStopping(signal: AbortSignal): Awaitable<void>;
+}
 
-export type ApplicationStatus =
+export type BotStatus =
   'created' | 'starting' | 'running' | 'reconnecting' | 'stopping' | 'stopped' | 'failed';
 
-export interface ApplicationSnapshot {
-  status: ApplicationStatus;
+export interface BotSnapshot {
+  status: BotStatus;
   transport: 'ws' | 'webhook';
   prompts: { pending: number };
   queue: {
@@ -355,19 +386,84 @@ export interface ApplicationSnapshot {
   lastEventAt?: number;
 }
 
-export interface BotApplication {
+export type ApplicationStatus = Exclude<BotStatus, 'reconnecting'> | 'degraded';
+export interface QueueSnapshot {
+  readonly active: number;
+  readonly pending: number;
+  readonly retainedBytes: number;
+  readonly concurrency: number;
+  readonly queueCapacity: number;
+  readonly queueMaxBytes: number;
+  readonly accepted: number;
+  readonly completed: number;
+  readonly failed: number;
+  readonly rejected: number;
+  readonly rejections: Readonly<{ queueFull: number; bytesFull: number; stopping: number }>;
+  readonly queueWait: Readonly<{ count: number; totalMs: number; maxMs: number }>;
+}
+export interface ApplicationSnapshot {
   readonly status: ApplicationStatus;
-  readonly client: QQClient;
+  readonly bots: readonly (BotSnapshot & { readonly appId: string })[];
+  readonly inbound: {
+    readonly active: number;
+    readonly pending: number;
+    readonly retainedBytes: number;
+    readonly concurrency: number;
+    readonly queueCapacity: number;
+    readonly queueMaxBytes: number;
+  };
+  readonly outbound: QueueSnapshot;
+  readonly database: { readonly total: number; readonly idle: number; readonly waiting: number };
+}
+export interface Application {
+  readonly status: ApplicationStatus;
+  readonly bots: BotManager;
   start(): Promise<void>;
   close(): Promise<void>;
-  get<T>(
-    token: InjectionToken<T>,
-    options?: {
-      module?: Type;
-    },
-  ): T;
+  get<T>(token: InjectionToken<T>, options?: { module?: Type }): T;
   webhookHandler(): RequestListener;
   snapshot(): ApplicationSnapshot;
+}
+export interface BotHandle {
+  readonly appId: string;
+  readonly status: BotStatus;
+  readonly client: QQClient;
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  snapshot(): BotSnapshot;
+}
+export abstract class BotManager {
+  abstract get(appId: string): BotHandle;
+  abstract list(): readonly BotHandle[];
+}
+export abstract class Database {
+  /** Framework-owned; do not call pool.end(). Borrowed clients must be released. */
+  abstract readonly pool: Pool;
+  abstract readonly schema: string;
+  abstract query<R extends QueryResultRow = QueryResultRow>(
+    sql: string,
+    values?: readonly unknown[],
+  ): Promise<QueryResult<R>>;
+  abstract transaction<T>(run: (client: PoolClient) => Awaitable<T>): Promise<T>;
+}
+export type BotTarget = MessageTarget & { readonly appId: string };
+export type GroupTarget = Extract<BotTarget, { scene: 'group' }>;
+export type SendTarget =
+  BotTarget | { readonly scene: 'group'; readonly groupId: string; readonly appId?: never };
+export abstract class MessageSender {
+  abstract sendMessage(
+    target: SendTarget,
+    message: MessageInput,
+    options?: SendOptions,
+  ): Promise<SendResult>;
+}
+/** Addresses are account-scoped OpenIDs. They do not identify a physical group across bots. */
+export abstract class GroupRoutes {
+  abstract list(groupId: string): Promise<readonly GroupTarget[]>;
+  abstract resolve(groupId: string): Promise<GroupTarget>;
+  abstract bind(target: GroupTarget): Promise<void>;
+  /** Remove the explicit preference, keeping learned addresses. */
+  abstract unbind(groupId: string): Promise<void>;
 }
 
 export type MessageTarget =
@@ -448,7 +544,7 @@ export interface GroupMessageContext extends MessageContextBase {
   readonly groupId: string;
   readonly memberRole?: GroupRole;
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'group';
     }
@@ -458,7 +554,7 @@ export interface GroupMessageContext extends MessageContextBase {
 export interface PrivateMessageContext extends MessageContextBase {
   readonly scene: 'private';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'private';
     }
@@ -480,7 +576,7 @@ export interface ButtonContextBase extends QQEventContext {
 export interface GroupButtonContext extends ButtonContextBase {
   readonly scene: 'group';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'group';
     }
@@ -490,7 +586,7 @@ export interface GroupButtonContext extends ButtonContextBase {
 export interface PrivateButtonContext extends ButtonContextBase {
   readonly scene: 'private';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'private';
     }
@@ -815,6 +911,8 @@ export interface Logger {
 }
 
 export type ErrorPhase =
+  | 'database'
+  | 'routing'
   | 'middleware'
   | 'context'
   | 'prompt'
@@ -834,7 +932,8 @@ export type ErrorPhase =
 
 export interface ErrorContext {
   readonly phase: ErrorPhase;
-  readonly appId: string;
+  readonly appId?: string;
+  readonly sourceAppId?: string;
   readonly eventName?: string;
   readonly eventId?: string;
   readonly messageId?: string;
@@ -845,6 +944,11 @@ export interface ErrorContext {
 export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<void>;
 
 export type FrameworkErrorCode =
+  | 'DATABASE'
+  | 'DATABASE_SCHEMA'
+  | 'ROUTE_NOT_FOUND'
+  | 'ROUTE_AMBIGUOUS'
+  | 'BOT_UNAVAILABLE'
   | 'CONTEXT_TIMEOUT'
   | 'CONFIG'
   | 'DEPENDENCY'

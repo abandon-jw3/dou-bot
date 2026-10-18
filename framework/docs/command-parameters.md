@@ -1,6 +1,6 @@
 # 命令参数
 
-按输入方式选择装饰器。本页适用于 **0.8.0**，其中 normalize 和 ContextValue 不支持 0.7.0。
+按输入方式选择装饰器。
 
 ## 参数 API
 
@@ -108,8 +108,6 @@ query(
 - 重复声明、无效默认值等配置问题在创建应用时报告。
 
 ## Slot 归一化
-
-**0.8.0 起提供；0.7.0 不支持 normalize。**
 
 将别名转换成处理器使用的统一值：
 
@@ -301,6 +299,6 @@ accept(@Attachments({ maxCount: 1 }) files: readonly Attachment[]): string {
 
 ## 使用上下文数据
 
-- 0.8.0 提供 ContextValue，在文字、归一化、附件校验及身份注入后读取数据，再进入冷却。
-- 不消费输入，不出现在帮助中；npm 0.7.0 不支持。
+- ContextValue 在文字、归一化、附件校验及身份注入后读取数据，再进入冷却。
+- 不消费输入，不出现在帮助中。
 - 注册与懒加载见 [上下文中间件](context-middleware.md)。

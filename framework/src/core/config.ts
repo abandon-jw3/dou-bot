@@ -1,5 +1,5 @@
+import type { SingleBotOptions } from './single-options.js';
 import type {
-  BotOptions,
   ContextOptions,
   ExecutionOptions,
   QQApiOptions,
@@ -8,6 +8,7 @@ import type {
   WsTransportOptions,
 } from '../contracts.js';
 import { FrameworkError } from './errors.js';
+import { integer, keys } from './config-validation.js';
 import { callable, isRecord, nonempty } from './utils.js';
 import { resolvePrompts } from './prompts.js';
 import type { PromptSettings } from './prompts.js';
@@ -43,8 +44,8 @@ export interface ResolvedOptions {
         maxConcurrentRequests: number;
         maxSignatureAgeMs: number;
       };
-  logger: BotOptions['logger'];
-  onError: BotOptions['onError'];
+  logger: SingleBotOptions['logger'];
+  onError: SingleBotOptions['onError'];
 }
 
 const executionDefaults: Required<ExecutionOptions> = {
@@ -62,32 +63,6 @@ const executionDefaults: Required<ExecutionOptions> = {
   cooldownMaxEntries: 10000,
 };
 
-function keys(
-  value: unknown,
-  allowed: readonly string[],
-  label: string,
-): asserts value is Record<string, unknown> {
-  if (!isRecord(value)) throw new FrameworkError('CONFIG', `${label} must be an object`);
-  for (const key of Object.keys(value))
-    if (!allowed.includes(key)) throw new FrameworkError('CONFIG', `Unknown ${label}.${key}`);
-}
-function integer(
-  value: unknown,
-  fallback: number,
-  label: string,
-  minimum = 1,
-  maximum = 2147483647,
-): number {
-  if (value === undefined) return fallback;
-  if (
-    typeof value !== 'number' ||
-    !Number.isSafeInteger(value) ||
-    value < minimum ||
-    value > maximum
-  )
-    throw new FrameworkError('CONFIG', `${label} must be an integer in [${minimum}, ${maximum}]`);
-  return value;
-}
 function boolean(value: unknown, fallback: boolean, label: string): boolean {
   if (value === undefined) return fallback;
   if (typeof value !== 'boolean') throw new FrameworkError('CONFIG', `${label} must be boolean`);
@@ -111,7 +86,7 @@ function address(value: string, originOnly = false): string {
   return originOnly ? url.origin : url.href;
 }
 
-export function resolveOptions(raw: BotOptions): ResolvedOptions {
+export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
   keys(
     raw,
     [

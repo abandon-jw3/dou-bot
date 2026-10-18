@@ -17,7 +17,7 @@ npm run example:attachments
 npm run example:identity
 ```
 
-`check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及历史消费者对当前安装包的兼容检查。`npm run test:compat` 另从 registry 安装已发布的 0.6.0 验证历史消费者；先完成 build/check。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.0.0 最低版本及 `.nvmrc` 开发版本上运行这两项检查；源码支持范围为 Node 24.x，TypeScript 固定为 5.9.3。
+`check` 执行类型、两个公开入口的导出及双向类型契约、ESLint、格式、文档链接、构建、自动测试及当前源码 tarball 的独立消费者检查。新版本独立设计，不以旧版项目兼容性作为验收条件。需要复核历史发布时，可单独执行 `test:history:0.6`、`test:history:0.7` 或 `test:history:0.8`。`coverage` 生成映射回 TypeScript 的覆盖率。GitHub Actions 在 Windows 与 Linux 的 Node 24.0.0 最低版本及 `.nvmrc` 开发版本上运行这两项检查；源码支持范围为 Node 24.x，TypeScript 固定为 5.9.3。
 
 离线示例不读取凭证或连接 QQ。`query` 展示无序 Slot、Rest、Option 与帮助；`business` 组合自定义 City 装饰器、可注入权限服务、Guard、冷却、Markdown 和按钮；`attachments` 演示两种同条附件装饰器，以及 prompt 后调用 selectAttachments 的分条输入、OnAttachment 的直接文件上传，`identity` 演示命令和按钮的五种身份参数装饰器。身份、天气等数据是本地合成示例。源码示例允许相对导入 `src`；复制到独立应用时改用 `dou-bot` 和 `dou-bot/testing`，并先确认所安装版本包含相应 API。
 
@@ -41,7 +41,7 @@ npm run example:identity
 
 attachments 探针最多运行 15 分钟，为五类附件生成随机命令。图片和通用附件入口读取与命令同条发送的附件；视频、音频、文件入口先提问，再接收同一用户在同一会话的下一条消息。只校验这条输入，不自动重试或累积多条附件。启动日志用 inputModes 标明 same-message / next-message，并给出 logPath、stopPath 和截止时间；创建 stopPath 文件或按 Ctrl+C 可提前关闭。
 
-每种场景只绑定首次使用命令的用户和会话，最多接纳 100 条命令，起始消息及回答在内存中最多关联 200 条记录；日志最多 300 条。记录等待、取消、超时、校验失败以及数量、类型和发送结果，不记录身份、附件 URL、文件名或 ASR 正文，也不下载文件。输入是否实际投递仍取决于 QQ 账号权限。该探针使用源码 API，业务示例依赖仍保持 npm 0.6.0。
+每种场景只绑定首次使用命令的用户和会话，最多接纳 100 条命令，起始消息及回答在内存中最多关联 200 条记录；日志最多 300 条。记录等待、取消、超时、校验失败以及数量、类型和发送结果，不记录身份、附件 URL、文件名或 ASR 正文，也不下载文件。输入是否实际投递仍取决于 QQ 账号权限。该探针使用源码 API。
 
 ## 性能与持续运行
 
@@ -53,4 +53,4 @@ attachments 探针最多运行 15 分钟，为五类附件生成随机命令。�
 
 - [开发方案](development-plan.md)、[公开设计契约](public-api.d.ts)、[审查记录](review-report.md)、[技术选型](technology-selection.md)。设计契约不是运行时入口，消费者使用随包生成的类型声明。
 - [发布准备与流程](npm-release.md)。本仓库 CI 只验证，不自动发布 npm。
-- [使用技能](../skills/dou-bot/SKILL.md)。两个技能示例会在独立包消费者中编译及运行，技能调用名为 `$dou-bot`。
+- [使用技能](../skills/dou-bot/SKILL.md)。技能调用名为 `$dou-bot`；发布版技能示例随相应历史包单独验证，当前源码包只验证新契约。

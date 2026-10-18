@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import { Module, FrameworkError, QQApiError } from '../src/index.js';
-import { Application } from '../src/core/application.js';
+import { createLiveApplication } from './live-application.js';
 
 @Module({})
 class Root {}
@@ -18,7 +18,7 @@ let finish!: () => void;
 const completed = new Promise<void>((resolve) => {
   finish = resolve;
 });
-const app = await Application.create(
+const app = await createLiveApplication(
   Root,
   {
     appId,

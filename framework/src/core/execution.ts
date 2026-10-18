@@ -1,10 +1,6 @@
-import type {
-  ApplicationSnapshot,
-  MessageInput,
-  PromptOptions,
-  PromptResult,
-  QQClient,
-} from '../contracts.js';
+import type { ManagedQQClient } from '../qq/managed-client.js';
+import type { ExecutionPool } from './execution-pool.js';
+import type { BotSnapshot, MessageInput, PromptOptions, PromptResult } from '../contracts.js';
 import type { ResolvedOptions } from './config.js';
 import type { ErrorReporter } from './logging.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
@@ -56,7 +52,7 @@ export class Execution {
   // is therefore expiry order. Active entries never occur in these indexes.
   private readonly idleDedup = new Map<string, DedupEntry>();
   private readonly idleScopes = new Map<string, ReplyScope>();
-  private readonly rejections: ApplicationSnapshot['rejections'] = {
+  private readonly rejections: BotSnapshot['rejections'] = {
     invalidEvent: 0,
     queueFull: 0,
     bytesFull: 0,
@@ -64,7 +60,7 @@ export class Execution {
     replyScopesFull: 0,
     dedupFull: 0,
   };
-  private readonly timing: ApplicationSnapshot['timing'] = {
+  private readonly timing: BotSnapshot['timing'] = {
     queueWait: { count: 0, totalMs: 0, maxMs: 0 },
     processing: { count: 0, totalMs: 0, maxMs: 0 },
   };
@@ -80,15 +76,18 @@ export class Execution {
   private nextExpiry = Infinity;
   private retainedBytes = 0;
   lastEventAt: number | undefined;
+  private unregister: (() => void) | undefined;
 
   constructor(
     private readonly options: ResolvedOptions,
-    private readonly client: QQClient,
+    private readonly client: ManagedQQClient,
     private readonly reporter: ErrorReporter,
     private readonly execute: (task: EventTask) => Promise<void>,
-    private readonly handles: (event: NormalizedEvent) => boolean = () => true,
+    private readonly handles: (event: NormalizedEvent) => boolean | 'observe' = () => true,
     private readonly clock: Clock = systemClock,
+    private readonly pool?: ExecutionPool,
   ) {
+    this.unregister = pool?.register({ pending: () => this.pending, step: () => this.pumpOne() });
     this.prompts = new PromptManager(options.prompts, clock, {
       suspend: (owner) => {
         if (owner.finished || !owner.running)
@@ -102,6 +101,7 @@ export class Execution {
           continuation();
           return;
         }
+        this.pool?.enqueued();
         this.waiting.push({
           queued: owner,
           enqueuedAt: this.clock.monotonic(),
@@ -130,7 +130,7 @@ export class Execution {
   promptSnapshot(): { pending: number } {
     return { pending: this.prompts.size };
   }
-  metrics(): Pick<ApplicationSnapshot, 'capacity' | 'rejections' | 'timing'> {
+  metrics(): Pick<BotSnapshot, 'capacity' | 'rejections' | 'timing'> {
     this.prune(this.clock.monotonic());
     const config = this.options.execution;
     return {
@@ -148,11 +148,11 @@ export class Execution {
       },
     };
   }
-  private reject(reason: keyof ApplicationSnapshot['rejections']): void {
+  private reject(reason: keyof BotSnapshot['rejections']): void {
     this.events.rejected++;
     this.rejections[reason]++;
   }
-  private observe(metric: keyof ApplicationSnapshot['timing'], milliseconds: number): void {
+  private observe(metric: keyof BotSnapshot['timing'], milliseconds: number): void {
     const value = this.timing[metric];
     value.count++;
     value.totalMs += milliseconds;
@@ -163,6 +163,7 @@ export class Execution {
     queued.processingMs += this.clock.monotonic() - queued.runningSince;
     queued.running = false;
     this.active--;
+    this.pool?.leave();
   }
 
   private promptKey(event: Extract<NormalizedEvent, { kind: 'message' }>): string {
@@ -203,6 +204,7 @@ export class Execution {
     }
     // Captured input has already reserved bytes, a dedup entry and a reply scope.
     // Requeue that same task, rather than re-admit it as a duplicate or lose the input.
+    this.pool?.enqueued();
     this.waiting.push({ queued: input, enqueuedAt: this.clock.monotonic() });
     this.pump();
   }
@@ -259,11 +261,9 @@ export class Execution {
       }
       const prompt =
         event.kind === 'message' ? this.prompts.find(this.promptKey(event)) : undefined;
-      if (
-        !prompt &&
-        !this.handles(event) &&
-        !(event.kind === 'button' && this.options.acknowledge === 'auto')
-      )
+      const handling = this.handles(event);
+      const observationOnly = !prompt && handling === 'observe' && event.kind !== 'button';
+      if (!prompt && !handling && !(event.kind === 'button' && this.options.acknowledge === 'auto'))
         return { status: 'ignored' };
       const scopeKey =
         event.kind === 'message'
@@ -272,15 +272,18 @@ export class Execution {
       let scope = scopeKey === undefined ? undefined : this.scopes.get(scopeKey);
       const autoAck = event.kind === 'button' && this.options.acknowledge === 'auto';
       const rejection =
-        !prompt && this.pending + this.active >= config.queueCapacity + config.concurrency
+        this.pool?.rejection(bytes, Boolean(prompt)) ??
+        (!this.pool &&
+        !prompt &&
+        this.pending + this.active >= config.queueCapacity + config.concurrency
           ? 'queueFull'
-          : this.retainedBytes + bytes > config.queueMaxBytes
+          : !this.pool && this.retainedBytes + bytes > config.queueMaxBytes
             ? 'bytesFull'
             : autoAck && this.controls >= config.concurrency
               ? 'acknowledgmentsFull'
               : scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries
                 ? 'replyScopesFull'
-                : undefined;
+                : undefined);
       if (rejection) {
         this.reject(rejection);
         return { status: 'overloaded' };
@@ -345,15 +348,17 @@ export class Execution {
         finished: false,
       };
       if (key !== undefined) this.dedup.set(key, entry);
-      this.events.accepted++;
+      if (!observationOnly) this.events.accepted++;
       this.lastEventAt = event.receivedAt;
       this.retainedBytes += bytes;
+      this.pool?.retain(bytes);
       this.managedSignals.add(task.controller.signal);
       this.tasks.add(queued);
       if (prompt && event.kind === 'message') {
         if (!this.prompts.claim(prompt, queued, event.content)) this.fallback(queued);
         return { status: 'accepted', done };
       }
+      this.pool?.enqueued();
       this.waiting.push({ queued, enqueuedAt: now });
       if (autoAck) {
         this.controls++;
@@ -363,7 +368,7 @@ export class Execution {
         );
       }
       this.pump();
-      return { status: 'accepted', done };
+      return observationOnly ? { status: 'ignored' } : { status: 'accepted', done };
     } catch (error) {
       this.events.failed++;
       this.reporter.report(error, { phase: 'protocol', appId: this.options.appId });
@@ -397,14 +402,27 @@ export class Execution {
     this.nextExpiry = nextExpiry;
   }
   private pump(): void {
+    if (this.pool) {
+      this.pool.pump();
+      return;
+    }
+    this.pumpOne(false);
+  }
+  private pumpOne(single = true): boolean {
+    let dispatched = false;
+    let didRun = false;
     while (
+      !dispatched &&
       !this.terminated &&
       this.active < this.options.execution.concurrency &&
       this.pending > 0
     ) {
+      this.pool?.dequeued();
       const item = this.waiting[this.head];
       this.waiting[this.head++] = undefined;
       if (!item || item.queued.finished) continue;
+      dispatched = single;
+      didRun = true;
       const task = item.queued;
       this.active++;
       task.running = true;
@@ -440,6 +458,7 @@ export class Execution {
       this.waiting.splice(0, this.head);
       this.head = 0;
     }
+    return didRun;
   }
   private finish(queued: QueuedTask): void {
     if (queued.finished) return;
@@ -454,6 +473,7 @@ export class Execution {
     queued.children.clear();
     if (queued.task.failed) this.events.failed++;
     this.retainedBytes -= queued.bytes;
+    this.pool?.release(queued.bytes);
     if (queued.entry && queued.key !== undefined) {
       queued.entry.active = false;
       queued.entry.expiresAt = this.clock.monotonic() + this.options.execution.dedupTtlMs;
@@ -502,6 +522,7 @@ export class Execution {
       this.prune(this.clock.monotonic());
       const config = this.options.execution;
       if (
+        (this.pool?.canResume() ?? true) &&
         this.pending <= config.queueCapacity / 2 &&
         this.retainedBytes <= config.queueMaxBytes / 2 &&
         this.controls < config.concurrency &&
@@ -511,6 +532,7 @@ export class Execution {
       await new Promise<void>((resolve, reject) => {
         const cleanup = () => {
           this.changed.delete(wake);
+          stopWatching?.();
           signal.removeEventListener('abort', abort);
           timer?.cancel();
         };
@@ -526,6 +548,7 @@ export class Execution {
         const timer = Number.isFinite(nextExpiry)
           ? this.clock.timeout(wake, Math.max(1, nextExpiry - this.clock.monotonic()))
           : undefined;
+        const stopWatching = this.pool?.onChange(wake);
         this.changed.add(wake);
         signal.addEventListener('abort', abort, { once: true });
         if (signal.aborted) abort();
@@ -540,6 +563,7 @@ export class Execution {
       new FrameworkError('SHUTDOWN_TIMEOUT', 'Application closed before the prompt completed'),
       true,
     );
+    this.pool?.dequeued(this.pending);
     this.waiting.length = 0;
     this.head = 0;
     for (const queued of [...this.tasks]) {
@@ -550,6 +574,8 @@ export class Execution {
       queued.task.ledger.sealAndDrain().catch(() => {});
       this.finish(queued);
     }
+    this.unregister?.();
+    this.unregister = undefined;
     this.dedup.clear();
     this.scopes.clear();
     this.idleDedup.clear();

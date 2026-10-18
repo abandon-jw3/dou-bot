@@ -1,3 +1,4 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Container } from '../src/core/container.js';
@@ -26,7 +27,7 @@ import {
   markdown,
   snapshotMessage,
 } from '../src/message/index.js';
-import type { BotOptions, MessageContext, MessageInput } from '../src/contracts.js';
+import type { MessageContext, MessageInput } from '../src/contracts.js';
 import { TypedProvider as RuntimeProvider } from './fixtures/typed-provider.js';
 import type { TypedProvider } from './fixtures/typed-provider.js';
 

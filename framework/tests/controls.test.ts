@@ -1,3 +1,4 @@
+import type { SingleBotOptions as BotOptions } from '../src/core/single-options.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setImmediate as tick } from 'node:timers/promises';
@@ -17,7 +18,6 @@ import {
   UseGuards,
 } from '../src/index.js';
 import type {
-  BotOptions,
   ButtonContext,
   CanActivate,
   CooldownOptions,
@@ -26,7 +26,7 @@ import type {
   QQDispatch,
 } from '../src/index.js';
 import { createTestApplication } from '../src/testing/index.js';
-import { Application } from '../src/core/application.js';
+import { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 import { CooldownStore } from '../src/core/cooldown.js';
 import { resolveOptions } from '../src/core/config.js';
 import { deferred, until } from './helpers.js';
@@ -573,7 +573,7 @@ await test('cooldown expiry uses monotonic time, pruning uses one timer and shut
     appId: 'app',
     userId: 'u',
     scene: 'private',
-    target: { scene: 'private', userId: 'u' },
+    target: { appId: 'app', scene: 'private', userId: 'u' },
     controller: Root,
     method: 'query',
     route: 'q',

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { systemClock } from '../src/core/clock.js';
 import type { Clock, Timer } from '../src/core/clock.js';
-import type { Application } from '../src/core/application.js';
+import type { SingleTestApplication as Application } from '../src/testing/single-bot.js';
 
 /** Repository diagnostics only; these private resource counters are not SDK API. */
 export class CountingClock implements Clock {

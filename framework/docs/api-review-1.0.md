@@ -12,6 +12,10 @@
 
 2026-10-06 自动附件路由补充：公开契约修订为 1.11，新增 OnAttachment / OnAttachmentOptions、GuardContext 的 attachment 分支与 matchedAttachments，以及 attachment 错误阶段。处理器广播时独立绑定、授权、冷却、回复和追问，整条消息共享资源限制与回复序号。原命令与按钮行为保留；Guard 的旧二分支穷尽判断需要迁移。用法见 [自动附件指南](command-parameters.md#自动处理上传附件)。
 
+2026-10-18 源码架构修订：公开契约 2.0 尚未发布，改为共享应用、多账号及必选 PostgreSQL；原有参数和处理语义保留。完整变更与验证范围见 [重构验收](multi-bot-refactor-2026-10-18.md)。下文是历史版本审查，不代表新的源码契约。
+
+2026-10-18 质量复核：新契约保持 2.0，已复现问题、内部职责调整、性能对照及本轮验收见 [质量审查](quality-review-2026-10-18.md)。
+
 ## 审查结论
 
 2026-10-11 容量补充：源码公开契约为 1.14，新增快照 capacity / rejections / timing，保留旧字段和 SDK 默认配置。已有读取旧字段的代码保持兼容，自行构造 ApplicationSnapshot 的夹具需补充新字段。按 2,000 群设计的显式配置、到期索引及离线负载记录见 [容量审查](capacity-review-2026-10-11.md)；新字段只用于当前源码 tarball，不要求 npm 0.7.0 支持。

@@ -1,8 +1,7 @@
-import type { BotApplication, BotOptions, Type } from '../contracts.js';
-import { Application } from './application.js';
+import type { Application, AppOptions, Type } from '../contracts.js';
+import { Application as RuntimeApplication } from './application.js';
 
-// Keep private runtime ports out of the package's public declaration graph.
-export const BotFactory = {
-  create: async (root: Type, options: BotOptions): Promise<BotApplication> =>
-    Application.create(root, options),
+export const AppFactory = {
+  create: async (root: Type, options: AppOptions): Promise<Application> =>
+    RuntimeApplication.create(root, options),
 };
