@@ -15,6 +15,7 @@ if (
     'qq',
     'diagnose',
     'live-probe',
+    'live-multi-bot',
     'live-media',
     'live-reconnect',
     'live-controls',

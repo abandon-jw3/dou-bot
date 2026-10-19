@@ -1,0 +1,283 @@
+{
+  "date": "2026-10-20",
+  "timeZone": "Asia/Shanghai",
+  "status": "passed-within-tested-scope",
+  "source": {
+    "node": "v24.21.0",
+    "commit": "99230b5c110cc98ac300b1e820856120a2b0c430",
+    "dirty": true,
+    "sdkSha256": "75fac58bfee9295d948f156e9a94476cbd574948491490eaa0be0276acf30413",
+    "probeSha256": "503fe910f4fa5c8e1e5b4fa389d10907d1229e6237e67cef2a65c93a0687dbce"
+  },
+  "scope": {
+    "qqTransport": "two live WS bot accounts",
+    "groupSample": "one physical QQ group, confirmed by the user",
+    "pushTrigger": "real loopback WS fixture; no business upstream connection",
+    "database": "new dedicated PostgreSQL 17.6 configuration only",
+    "notTested": [
+      "mixed WS/Webhook deployment",
+      "network fault and forced reconnect",
+      "whole-process crash and restart",
+      "multi-day live traffic",
+      "2000 real QQ groups",
+      "stopping B while A remains running"
+    ]
+  },
+  "run": {
+    "nonce": "649ae4ab",
+    "startedAt": "2026-10-19T17:20:37.991Z",
+    "closedAt": "2026-10-19T17:26:16.494Z",
+    "durationMs": 338503,
+    "processExitCode": 0,
+    "droppedRecords": 0
+  },
+  "initialization": {
+    "configurationSource": "framework/.env only; no retired TEST_DATABASE values",
+    "otherInstances": "user confirmed none for both accounts",
+    "configurationCorrections": [
+      "DATABASE_SCHEMA hyphens replaced with underscores",
+      "DATABASE_HOST http prefix removed; configured port unchanged"
+    ],
+    "database": {
+      "connected": true,
+      "serverVersion": 170006,
+      "schemaPreviouslyPresent": false,
+      "explicitMigration": "succeeded"
+    }
+  },
+  "results": {
+    "replyResults": [
+      {
+        "at": "2026-10-19T17:21:17.682Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "A",
+        "scene": "private"
+      },
+      {
+        "at": "2026-10-19T17:22:00.659Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "B",
+        "scene": "private"
+      },
+      {
+        "at": "2026-10-19T17:22:36.579Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "B",
+        "scene": "group"
+      },
+      {
+        "at": "2026-10-19T17:22:41.555Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "A",
+        "scene": "group"
+      },
+      {
+        "at": "2026-10-19T17:22:48.916Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "A",
+        "scene": "group"
+      },
+      {
+        "at": "2026-10-19T17:22:49.048Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "B",
+        "scene": "group"
+      },
+      {
+        "at": "2026-10-19T17:25:17.147Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "B",
+        "scene": "group"
+      },
+      {
+        "at": "2026-10-19T17:26:09.696Z",
+        "event": "reply-result",
+        "status": "sent",
+        "account": "A",
+        "scene": "group"
+      }
+    ],
+    "distinctGroupOpenIds": true,
+    "routeChecks": [
+      {
+        "at": "2026-10-19T17:22:54.582Z",
+        "event": "route-check",
+        "account": "A",
+        "matches": true
+      },
+      {
+        "at": "2026-10-19T17:22:54.610Z",
+        "event": "route-check",
+        "account": "B",
+        "matches": true
+      },
+      {
+        "at": "2026-10-19T17:26:16.394Z",
+        "event": "route-check",
+        "account": "A",
+        "matches": true
+      },
+      {
+        "at": "2026-10-19T17:26:16.422Z",
+        "event": "route-check",
+        "account": "B",
+        "matches": true
+      }
+    ],
+    "backgroundPushes": [
+      {
+        "at": "2026-10-19T17:22:59.296Z",
+        "event": "external-ws-send",
+        "account": "A",
+        "sequence": 1,
+        "status": "sent"
+      },
+      {
+        "at": "2026-10-19T17:22:59.992Z",
+        "event": "external-ws-send",
+        "account": "B",
+        "sequence": 1,
+        "status": "sent"
+      },
+      {
+        "at": "2026-10-19T17:23:19.073Z",
+        "event": "external-ws-send",
+        "account": "A",
+        "sequence": 2,
+        "status": "failed",
+        "code": "BOT_UNAVAILABLE"
+      },
+      {
+        "at": "2026-10-19T17:23:20.541Z",
+        "event": "external-ws-send",
+        "account": "B",
+        "sequence": 2,
+        "status": "sent"
+      },
+      {
+        "at": "2026-10-19T17:25:34.289Z",
+        "event": "external-ws-send",
+        "account": "A",
+        "sequence": 3,
+        "status": "sent"
+      },
+      {
+        "at": "2026-10-19T17:25:34.485Z",
+        "event": "external-ws-send",
+        "account": "B",
+        "sequence": 3,
+        "status": "sent"
+      }
+    ],
+    "accountControls": [
+      {
+        "at": "2026-10-19T17:23:19.069Z",
+        "event": "account-control",
+        "action": "stop",
+        "account": "A",
+        "sharedProviderRetained": true
+      },
+      {
+        "at": "2026-10-19T17:25:33.115Z",
+        "event": "account-control",
+        "action": "start",
+        "account": "A",
+        "sharedProviderRetained": true
+      }
+    ],
+    "frameworkErrors": [
+      {
+        "at": "2026-10-19T17:23:19.073Z",
+        "event": "framework-error",
+        "phase": "send",
+        "account": "A",
+        "code": "BOT_UNAVAILABLE"
+      }
+    ],
+    "databasePersistence": {
+      "event": "database-persistence-verified",
+      "at": "2026-10-19T17:23:45.394Z",
+      "registeredBots": 2,
+      "groupAddresses": [
+        {
+          "account": "A",
+          "count": 1
+        },
+        {
+          "account": "B",
+          "count": 1
+        }
+      ],
+      "distinctGroupOpenIds": 2
+    },
+    "cleanup": {
+      "event": "post-close-database-check",
+      "at": "2026-10-19T17:26:34.469Z",
+      "frameworkConnections": 0
+    }
+  },
+  "userConfirmations": [
+    {
+      "step": "private replies A and B",
+      "answer": "两边均收到，标记正确"
+    },
+    {
+      "step": "same physical group replies A and B",
+      "answer": "同一个群，两边均收到且标记正确"
+    },
+    {
+      "step": "background push sequence 1",
+      "answer": "两条均收到，发送机器人正确"
+    },
+    {
+      "step": "A stopped; background push sequence 2; B inbound",
+      "answer": "只收到 B / 2，B 的指令回复也正常"
+    },
+    {
+      "step": "A restarted; background push sequence 3; A inbound",
+      "answer": "两条均收到，A 的指令回复也恢复正常"
+    }
+  ],
+  "offlineValidation": {
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "testsPerVersion": {
+      "total": 341,
+      "passed": 339,
+      "failed": 0,
+      "skipped": 2
+    },
+    "skipReason": "dedicated TEST_DATABASE integration not configured; retired values were not reused",
+    "publicExports": 170,
+    "bidirectionalTypeChecks": 128,
+    "currentTarball": "passed on both Node versions",
+    "notes": "Full checks preceded addition of probe source fingerprints; compilation, lint and all 4 probe tests were then rerun successfully. Live acceptance used the fingerprinted probe above."
+  },
+  "evidence": {
+    "directory": "work/live-multi-bot/649ae4ab",
+    "files": [
+      {
+        "path": "report.json",
+        "sha256": "9cf62e32544dec077d5ec0b41cf860afd9579d7debef4f68862a0da6737bc173"
+      },
+      {
+        "path": "setup.json",
+        "sha256": "8a93732bf73614f56025f2d9d974fd78fe91a0160d55d20e8769577ade73a691"
+      },
+      {
+        "path": "database.json",
+        "sha256": "35d14d393b2ba952b16e3cb2f5afba664f03cedf514dda2bfc4048f046a0a87d"
+      },
+      {
+        "path": "cleanup.json",
+        "sha256": "bc04650923458e81a114f0b783ae05831e40158232f4d9bf156015f0dbe8e6c1"
+      }
+    ]
+  }
+}

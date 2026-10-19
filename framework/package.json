@@ -85,6 +85,7 @@
     "diagnose:auth": "node scripts/run-example.mjs diagnose auth",
     "diagnose:ws": "node scripts/run-example.mjs diagnose ws",
     "probe:live": "node scripts/run-example.mjs live-probe",
+    "probe:multi-bot": "node scripts/run-example.mjs live-multi-bot",
     "probe:media": "node scripts/run-example.mjs live-media",
     "probe:reconnect": "node scripts/run-example.mjs live-reconnect",
     "probe:controls": "node scripts/run-example.mjs live-controls",

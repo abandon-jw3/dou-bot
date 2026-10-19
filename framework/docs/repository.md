@@ -94,3 +94,9 @@ README 和公开指南随 SDK 发包，相对链接必须落在安装包内；�
 本次 `npm audit` 已降为 **0 项告警**。CI 增加 `npm audit --audit-level=moderate`；后续 VitePress 稳定版正式采用已修复的 Vite 后，移除 override 并重新验收。工具依赖只安装在 `website` 工程，SDK 发包检查继续拒绝携带它们。
 
 2026-10-06 部署补充：`a8fbeb7` 的四组 SDK 和两组业务示例 CI 通过，文档任务被 source-map-js 的 [安全公告](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) 阻断。仅将网站锁文件中的传递依赖 source-map-js 从 1.2.1 更新到上游 [1.2.2 修复版本](https://github.com/7rulnik/source-map-js/releases/tag/v1.2.2)，现有依赖范围已兼容，无需新增 override 或调整直接依赖。干净安装后 audit 恢复为 0 项告警，文档完整检查和 12 项浏览器测试通过；VitePress、TypeScript 与 SDK 版本保持。
+
+## 本机双机器人验收
+
+当前源码使用 `npm run probe:multi-bot`，配置仅取 framework/.env。先运行 `--check` 和显式 `--migrate`，再启动双 WS；完整步骤见 [验收指南](live-multi-bot.md)。旧的本机 TEST_DATABASE_* 不再使用。
+
+2026-10-20 已完成真实双 WS 收发、主动群消息、群地址持久化和单账号停止/恢复验证，见 [实测记录](live-multi-bot-2026-10-20.md)。两个验收实例已关闭。

@@ -91,7 +91,10 @@ const env = await readFile(resolve(root, '.env'), 'utf8').catch((error) => {
   if (error.code === 'ENOENT') return '';
   throw error;
 });
-const secrets = [parseEnv(env).QQ_APP_SECRET, process.env.QQ_APP_SECRET].filter(Boolean);
+const localEnv = parseEnv(env);
+const secrets = ['QQ_APP_SECRET', 'QQ_APP_SECRET_A', 'QQ_APP_SECRET_B', 'DATABASE_PASSWORD']
+  .flatMap((key) => [localEnv[key], process.env[key]])
+  .filter(Boolean);
 for (const file of pack.files) {
   if (
     !/^(dist\/|package\.json$|README\.md$|LICENSE$|NOTICE$)/.test(file.path) &&
