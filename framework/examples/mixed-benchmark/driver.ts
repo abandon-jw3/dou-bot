@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Agent, createServer, request } from 'node:http';
 import type { ServerResponse } from 'node:http';
+import type { Socket } from 'node:net';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import {
   Histogram,
@@ -20,7 +21,7 @@ import type { Meta, Profile } from './common.js';
 
 /** An independent open-loop sender and downstream service fixture. No external connections. */
 export async function runDriver(config: Profile, reportPath: string): Promise<void> {
-  const agent = new Agent({ keepAlive: true, maxSockets: Math.min(256, config.driverMaxInFlight) });
+  const agent = new Agent({ keepAlive: true, maxSockets: config.driverMaxSockets });
   const plans = new Map<number, Meta>();
   const actors = new Set<number>();
   const sequences = new Set<string>();
@@ -30,11 +31,14 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
   const responseTimers = new Set<NodeJS.Timeout>();
   const counts: Record<string, number> = {};
   const errors: string[] = [];
+  const transportErrors: Record<string, unknown>[] = [];
+  const sockets = new WeakMap<Socket, { requests: number; created: bigint }>();
   const phases = Array.from({ length: config.phases.length + 1 }, () => ({
     counts: {},
     statuses: {},
     schedulingLag: new Histogram(),
     ackLatency: new Histogram(),
+    socketWait: new Histogram(),
   }));
   const count = (target: Record<string, number>, name: string) => {
     target[name] = (target[name] ?? 0) + 1;
@@ -85,6 +89,13 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
     outstanding++;
     maximumOutstanding = Math.max(maximumOutstanding, outstanding);
     const sent = now();
+    let socket: Socket | undefined;
+    let requestsOnSocket = 0;
+    let connected: bigint | undefined;
+    let localPort: number | undefined;
+    let connectionEstablished = false;
+    let readAtAssignment = 0;
+    let writtenAtAssignment = 0;
     let finished = false;
     const complete = () => {
       if (finished) return false;
@@ -100,6 +111,10 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
         response.on('end', () => {
           if (!complete()) return;
           const status = response.statusCode ?? 0;
+          count(
+            phase.counts,
+            response.headers.connection === 'close' ? 'connectionClose' : 'connectionReusable',
+          );
           count(phase.statuses, String(status));
           if (status === 200 && !acceptedIds.has(meta.id)) {
             acceptedIds.add(meta.id);
@@ -118,14 +133,59 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
         response.on('error', (error) => {
           if (!complete()) return;
           count(phase.counts, 'responseErrors');
+          traceTransportError('response', error);
           if (!stopped) failure(error);
         });
       },
     );
+    const traceTransportError = (source: string, error: NodeJS.ErrnoException) => {
+      count(phase.counts, `transportError:${error.code ?? error.name}`);
+      if (transportErrors.length >= 20) return;
+      transportErrors.push({
+        source,
+        phase: config.phases[meta.phase]?.name ?? 'shutdown',
+        id: meta.id,
+        attempt,
+        code: error.code,
+        syscall: error.syscall,
+        message: error.message,
+        elapsedMs: elapsedMs(sent),
+        reusedSocket: req.reusedSocket,
+        connectionEstablished,
+        requestsOnSocket,
+        localPort,
+        socketAgeMs: connected === undefined ? undefined : elapsedMs(connected),
+        bodyBytes: body.length,
+        requestFinished: req.writableFinished,
+        readBytes: socket === undefined ? undefined : socket.bytesRead - readAtAssignment,
+        writtenBytes: socket === undefined ? undefined : socket.bytesWritten - writtenAtAssignment,
+      });
+    };
+    req.once('socket', (assigned: Socket) => {
+      phase.socketWait.add(elapsedMs(sent));
+      socket = assigned;
+      const info = sockets.get(assigned) ?? { requests: 0, created: now() };
+      if (!sockets.has(assigned)) {
+        sockets.set(assigned, info);
+        count(counts, 'connections');
+      }
+      requestsOnSocket = ++info.requests;
+      connected = info.created;
+      readAtAssignment = assigned.bytesRead;
+      writtenAtAssignment = assigned.bytesWritten;
+      localPort = assigned.localPort;
+      connectionEstablished = !assigned.connecting && assigned.remotePort !== undefined;
+      if (assigned.connecting)
+        assigned.once('connect', () => {
+          localPort = assigned.localPort;
+          connectionEstablished = true;
+        });
+    });
     req.setTimeout(10000, () => req.destroy(new Error('Webhook request timeout')));
     req.on('error', (error) => {
       if (!complete()) return;
       count(phase.counts, 'requestErrors');
+      traceTransportError('request', error);
       if (!stopped) failure(error);
     });
     req.end(body);
@@ -398,6 +458,10 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
       phase: phaseOf(),
       memory: process.memoryUsage(),
       outstanding,
+      agentPending: Object.values(agent.requests).reduce(
+        (sum, queued) => sum + (queued?.length ?? 0),
+        0,
+      ),
       fixtureActive,
       cpuCores: (cpu.user + cpu.system) / (elapsed * 1000),
       eventLoopP99Ms: loop.percentile(99) / 1e6,
@@ -424,12 +488,14 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
       {
         counts,
         errors,
+        transportErrors,
         phases: phases.map((p, index) => ({
           name: config.phases[index]?.name ?? 'shutdown',
           counts: p.counts,
           statuses: p.statuses,
           schedulingLag: p.schedulingLag.snapshot(),
           ackLatency: p.ackLatency.snapshot(),
+          socketWait: p.socketWait.snapshot(),
         })),
         tokenCount,
         maximumTokenActive,

@@ -283,8 +283,17 @@ async function main(): Promise<void> {
     for (;;) {
       const state = await snapshot(sdk, 'sdk-snapshot');
       const resources = object(object(state.data).resources);
-      if (Number(resources.active) === config.concurrency && Number(resources.pending) > 0) {
+      const driverState = await snapshot(driver, 'driver-snapshot');
+      if (
+        Number(resources.active) === config.concurrency &&
+        Number(resources.pending) > 0 &&
+        driverState.outstanding === 0 &&
+        driverState.timers === 0
+      ) {
         report.shutdownStart = state.data;
+        // The experiment targets admitted business work. Finish all injection HTTP
+        // requests before closing the listener, or the harness itself creates resets.
+        report.shutdownDriver = driverState;
         break;
       }
       assert.ok(

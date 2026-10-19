@@ -1,0 +1,4344 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "generatedAt": "2026-10-19T16:36:40.897876+00:00",
+  "baseCommit": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+  "pushed": true,
+  "runtimeChanged": false,
+  "publicApiContract": "2.0",
+  "ci": {
+    "runId": 39283998611,
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39283998611",
+    "reportedState": "completed",
+    "resultEvidence": "The aggregate workflow is completed/success and all ten jobs are completed/success, including Pages deployment. Earlier queued/in_progress metadata lagged behind completed logs and artifacts.",
+    "jobs": [
+      {
+        "name": "sdk-linux-dev",
+        "logSha256": "3fe083e0717973e1300c88e2571d7d329bc648c27a9fa0d36e03c96b91dda893",
+        "evidence": [
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "Contract 2.0 consumer verified against the current tarball.",
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "{\"result\":\"passed\",\"path\":\"work/capacity-review/ci.json\",\"attempted\":154800,\"actualElapsedMs\":30735.139490999998}"
+        ],
+        "soakPassed": true,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-sdk-linux-dev.log"
+      },
+      {
+        "name": "sdk-linux-min",
+        "logSha256": "82bbf9f16c52abe3480730a9a7f8adb4d4bfd6e346127b99f80886e2835839af",
+        "evidence": [
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "Contract 2.0 consumer verified against the current tarball.",
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "{\"result\":\"passed\",\"path\":\"work/capacity-review/ci.json\",\"attempted\":154800,\"actualElapsedMs\":32316.564368}"
+        ],
+        "soakPassed": true,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-sdk-linux-min.log"
+      },
+      {
+        "name": "sdk-windows-dev",
+        "logSha256": "3284abc4d610de365e73b83ad37e3978dc6173d1caf9a311180d8e86a1a632ee",
+        "evidence": [
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "Contract 2.0 consumer verified against the current tarball.",
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "{\"result\":\"passed\",\"path\":\"work/capacity-review/ci.json\",\"attempted\":154800,\"actualElapsedMs\":36419.3527}"
+        ],
+        "soakPassed": true,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-sdk-windows-dev.log"
+      },
+      {
+        "name": "sdk-windows-min",
+        "logSha256": "e6e61fe8d9ef52321300885d260b7e5dc5d02895984b57fb65e4a040158ebd9c",
+        "evidence": [
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "Contract 2.0 consumer verified against the current tarball.",
+          "ℹ tests 335",
+          "ℹ pass 333",
+          "ℹ fail 0",
+          "ℹ skipped 2",
+          "{\"result\":\"passed\",\"path\":\"work/capacity-review/ci.json\",\"attempted\":154800,\"actualElapsedMs\":36208.0018}"
+        ],
+        "soakPassed": true,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-sdk-windows-min.log"
+      },
+      {
+        "name": "example-linux",
+        "logSha256": "58d28e1c64d021160d1c3cbf638bf8289aff5014e62622cdb255df4294918f21",
+        "evidence": [
+          "ℹ tests 38",
+          "ℹ pass 38",
+          "ℹ fail 0",
+          "ℹ skipped 0",
+          "ℹ tests 7",
+          "ℹ pass 7",
+          "ℹ fail 0",
+          "ℹ skipped 0"
+        ],
+        "soakPassed": false,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-example-linux.log"
+      },
+      {
+        "name": "example-windows",
+        "logSha256": "4d07afcfcda3ea733f6e7709b2693523f9ce4fdbcc730712b57ea148beb668fb",
+        "evidence": [
+          "ℹ tests 38",
+          "ℹ pass 38",
+          "ℹ fail 0",
+          "ℹ skipped 0",
+          "ℹ tests 7",
+          "ℹ pass 6",
+          "ℹ fail 0",
+          "ℹ skipped 1"
+        ],
+        "soakPassed": false,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-example-windows.log"
+      },
+      {
+        "name": "docs-linux",
+        "logSha256": "3a9697d89ccca4ba58e4fe7db3bb86306895a9bbbcbe5ae603670d4845a3d2e7",
+        "evidence": [
+          "ℹ tests 22",
+          "ℹ pass 22",
+          "ℹ fail 0",
+          "ℹ skipped 0",
+          "Static site verified: 42 HTML pages, 1924 local links/assets, Pages base and anchors intact.",
+          "  22 passed (30.8s)"
+        ],
+        "soakPassed": false,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-docs-linux.log"
+      },
+      {
+        "name": "docs-windows",
+        "logSha256": "11c235521407deea8b0491d4ca41635cad5652542fbd106d9e625437e1bb3293",
+        "evidence": [
+          "ℹ tests 22",
+          "ℹ pass 22",
+          "ℹ fail 0",
+          "ℹ skipped 0",
+          "Static site verified: 42 HTML pages, 1924 local links/assets, Pages base and anchors intact."
+        ],
+        "soakPassed": false,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-docs-windows.log"
+      },
+      {
+        "name": "postgres",
+        "logSha256": "7d2f2f74890531e8a7d3eb7f7868c743284e70999c60e8c50c9df06a035b9d69",
+        "evidence": ["ℹ tests 5", "ℹ pass 5", "ℹ fail 0", "ℹ skipped 0"],
+        "soakPassed": false,
+        "recordedHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "logPath": "framework/work/production-readiness-2026-10-20/ci-postgres.log"
+      }
+    ],
+    "initialReportedState": "queued",
+    "conclusion": "success",
+    "finalStatus": {
+      "id": 39283998611,
+      "head_sha": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+      "status": "completed",
+      "conclusion": "success",
+      "updated_at": "2026-10-19T16:42:14Z",
+      "html_url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39283998611"
+    },
+    "finalJobs": [
+      {
+        "id": 118164693642,
+        "name": "Docs (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164693862,
+        "name": "SDK (windows-latest, minimum)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164693944,
+        "name": "SDK (ubuntu-latest, minimum)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164693957,
+        "name": "Docs (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164694001,
+        "name": "Example (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164694028,
+        "name": "SDK (windows-latest, development)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164694042,
+        "name": "PostgreSQL integration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164694076,
+        "name": "Example (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118164694081,
+        "name": "SDK (ubuntu-latest, development)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118166621175,
+        "name": "Deploy documentation",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "databasePolicy": "Old local TEST_DATABASE_* configuration is no longer used after the owner update. Database evidence is the isolated CI PostgreSQL 17 job, not a claim that the deprecated connection is usable.",
+  "localTcpControl": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "reports": [
+      {
+        "backlog": 511,
+        "concurrency": 64,
+        "durationMs": 255.071708,
+        "counts": {
+          "connected": 64
+        },
+        "errors": []
+      },
+      {
+        "backlog": 511,
+        "concurrency": 256,
+        "durationMs": 303.81054199999994,
+        "counts": {
+          "ECONNRESET": 128,
+          "connected": 128
+        },
+        "errors": [
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          }
+        ]
+      },
+      {
+        "backlog": 8,
+        "concurrency": 256,
+        "durationMs": 253.77812500000005,
+        "counts": {
+          "ECONNRESET": 248,
+          "connected": 8
+        },
+        "errors": [
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          },
+          {
+            "code": "ECONNRESET",
+            "syscall": "connect",
+            "established": false
+          }
+        ]
+      }
+    ]
+  },
+  "localTcpProbeSource": "import { createServer, createConnection } from 'node:net';\nimport { fork } from 'node:child_process';\nimport { once } from 'node:events';\nif (process.argv[2] === 'server') {\n  const server = createServer(socket => { socket.on('error',()=>{}); socket.end(); });\n  await new Promise(resolve => server.listen({host:'127.0.0.1',port:0,backlog:Number(process.argv[3])},resolve));\n  process.send({port:server.address().port});\n  process.on('message',message=>{\n    if(message==='block')process.send('blocked',()=>{const end=performance.now()+250;while(performance.now()<end){/* Controlled accept delay in this child only. */}});\n    if(message==='stop')server.close(()=>process.disconnect());\n  });\n} else {\n  const reports=[];\n  for(const [backlog,concurrency] of [[511,64],[511,256],[8,256]]){\n    const child=fork(new URL(import.meta.url),['server',String(backlog)],{stdio:['ignore','ignore','inherit','ipc']});\n    const [{port}]=await once(child,'message');\n    child.send('block');await once(child,'message');\n    const errors=[],counts={};\n    const start=performance.now();\n    await Promise.all(Array.from({length:concurrency},()=>new Promise(resolve=>{\n      const socket=createConnection({host:'127.0.0.1',port});let established=false;let finished=false;\n      const done=(code)=>{if(finished)return;finished=true;clearTimeout(timer);counts[code]=(counts[code]??0)+1;socket.destroy();resolve();};\n      const timer=setTimeout(()=>done('timeout'),2000);\n      socket.once('connect',()=>{established=true;});\n      socket.once('end',()=>done('connected'));socket.resume();\n      socket.once('error',error=>{if(errors.length<5)errors.push({code:error.code,syscall:error.syscall,established});done(error.code??error.name);});\n    })));\n    child.send('stop');await once(child,'exit');\n    reports.push({backlog,concurrency,durationMs:performance.now()-start,counts,errors});\n  }\n  console.log(JSON.stringify({node:process.version,platform:process.platform,reports},null,2));\n}\n",
+  "observedSomaxconn": 128,
+  "mixedReports": [
+    {
+      "label": "baseline",
+      "path": "work/mixed-benchmark/readiness-20261020-baseline.json",
+      "sha256": "b3abe90307ab7ab84f0252e307aa7b1b55c805e2d4a730fca4f073a1ad4f2b81",
+      "integrity": "failed",
+      "configuration": {
+        "name": "standard",
+        "concurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "phases": [
+          {
+            "name": "warmup",
+            "durationMs": 10000,
+            "rate": 50
+          },
+          {
+            "name": "steady-50",
+            "durationMs": 60000,
+            "rate": 50
+          },
+          {
+            "name": "ramp-200",
+            "durationMs": 45000,
+            "rate": 200
+          },
+          {
+            "name": "ramp-500",
+            "durationMs": 45000,
+            "rate": 500
+          },
+          {
+            "name": "ramp-1000",
+            "durationMs": 45000,
+            "rate": 1000
+          },
+          {
+            "name": "burst-2500",
+            "durationMs": 20000,
+            "rate": 2500
+          },
+          {
+            "name": "large-payload",
+            "durationMs": 20000,
+            "rate": 500,
+            "large": true
+          },
+          {
+            "name": "faults-150",
+            "durationMs": 45000,
+            "rate": 150,
+            "faults": true
+          },
+          {
+            "name": "recovery-50",
+            "durationMs": 60000,
+            "rate": 50
+          }
+        ]
+      },
+      "source": {
+        "gitHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "dirty": false,
+        "sdkSha256": "07520ff9dd29d75dbb6f433b8aa147258d8e4cf1b24a1cab550c2edee28c674a",
+        "harnessSha256": "83fd835aea072fab77698055894372753866036add027dfbedbdadd3e315d9d7"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpu": "Apple M4",
+        "logicalCpus": 10,
+        "totalMemoryBytes": 34359738368,
+        "gc": "baseline/end only; no forced GC during load"
+      },
+      "plannedPrimary": 149750,
+      "driverDropped": 0,
+      "driverUnexpected": 23,
+      "sdkUnexpected": 0,
+      "transportErrors": null,
+      "httpCounts": null,
+      "httpErrors": null,
+      "maximumOutstanding": 1082,
+      "maximumSampledAgentPending": null,
+      "maximumSampledSdkRssBytes": 569366296,
+      "phases": {
+        "driver": [
+          {
+            "name": "warmup",
+            "counts": {
+              "primary": 500,
+              "primaryAcknowledged": 500,
+              "duplicate": 125,
+              "distractor": 99,
+              "continuationsAcknowledged": 198,
+              "answer": 99
+            },
+            "statuses": {
+              "200": 823
+            },
+            "schedulingLag": {
+              "count": 500,
+              "meanMs": 2.8122534219999986,
+              "maxMs": 6.160167,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 823,
+              "meanMs": 1.2582170972053472,
+              "maxMs": 20.336708,
+              "p50UpperMs": 2,
+              "p95UpperMs": 3,
+              "p99UpperMs": 4
+            }
+          },
+          {
+            "name": "steady-50",
+            "counts": {
+              "primary": 3000,
+              "primaryAcknowledged": 3000,
+              "duplicate": 690,
+              "distractor": 545,
+              "continuationsAcknowledged": 1090,
+              "answer": 545
+            },
+            "statuses": {
+              "200": 4780
+            },
+            "schedulingLag": {
+              "count": 3000,
+              "meanMs": 2.794305263666668,
+              "maxMs": 38.259875,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 4780,
+              "meanMs": 1.284151287238492,
+              "maxMs": 61.214709,
+              "p50UpperMs": 2,
+              "p95UpperMs": 3,
+              "p99UpperMs": 4
+            }
+          },
+          {
+            "name": "ramp-200",
+            "counts": {
+              "primary": 9000,
+              "primaryAcknowledged": 9000,
+              "duplicate": 2080,
+              "distractor": 1626,
+              "continuationsAcknowledged": 3252,
+              "answer": 1626
+            },
+            "statuses": {
+              "200": 14332
+            },
+            "schedulingLag": {
+              "count": 9000,
+              "meanMs": 2.6951155392222126,
+              "maxMs": 11.922417,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 14332,
+              "meanMs": 0.7481350239324572,
+              "maxMs": 12.148667,
+              "p50UpperMs": 1,
+              "p95UpperMs": 2,
+              "p99UpperMs": 4
+            }
+          },
+          {
+            "name": "ramp-500",
+            "counts": {
+              "primary": 22500,
+              "primaryAcknowledged": 19653,
+              "duplicate": 4645,
+              "distractor": 3521,
+              "continuationsAcknowledged": 7042,
+              "answer": 3521,
+              "retry": 13423
+            },
+            "statuses": {
+              "200": 31309,
+              "503": 16301
+            },
+            "schedulingLag": {
+              "count": 22500,
+              "meanMs": 2.75428612137778,
+              "maxMs": 29.3915,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 47610,
+              "meanMs": 0.7388720403906738,
+              "maxMs": 31.650292,
+              "p50UpperMs": 1,
+              "p95UpperMs": 2,
+              "p99UpperMs": 7
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "counts": {
+              "primary": 45000,
+              "primaryAcknowledged": 17192,
+              "duplicate": 5489,
+              "retry": 74876,
+              "distractor": 3240,
+              "continuationsAcknowledged": 6479,
+              "answer": 3240,
+              "requestErrors": 1
+            },
+            "statuses": {
+              "200": 28409,
+              "503": 103435
+            },
+            "schedulingLag": {
+              "count": 45000,
+              "meanMs": 2.9091966428666702,
+              "maxMs": 60.018833,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 8
+            },
+            "ackLatency": {
+              "count": 131844,
+              "meanMs": 1.1284252993613892,
+              "maxMs": 146.359417,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 13
+            }
+          },
+          {
+            "name": "burst-2500",
+            "counts": {
+              "primary": 50000,
+              "primaryAcknowledged": 7286,
+              "duplicate": 3815,
+              "retry": 97734,
+              "requestErrors": 22,
+              "distractor": 1312,
+              "continuationsAcknowledged": 2624,
+              "answer": 1312
+            },
+            "statuses": {
+              "200": 12068,
+              "503": 142083
+            },
+            "schedulingLag": {
+              "count": 50000,
+              "meanMs": 3.0864579314600236,
+              "maxMs": 63.908375,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 19
+            },
+            "ackLatency": {
+              "count": 154151,
+              "meanMs": 3.1158789349663834,
+              "maxMs": 174.232666,
+              "p50UpperMs": 2,
+              "p95UpperMs": 10,
+              "p99UpperMs": 51
+            }
+          },
+          {
+            "name": "large-payload",
+            "counts": {
+              "primary": 10000,
+              "primaryAcknowledged": 3823,
+              "duplicate": 494,
+              "retry": 16312
+            },
+            "statuses": {
+              "200": 4085,
+              "503": 22721
+            },
+            "schedulingLag": {
+              "count": 10000,
+              "meanMs": 2.6773101868000087,
+              "maxMs": 22.659375,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 26806,
+              "meanMs": 1.6678813387674438,
+              "maxMs": 40.757167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 6,
+              "p99UpperMs": 9
+            }
+          },
+          {
+            "name": "faults-150",
+            "counts": {
+              "primary": 6750,
+              "primaryAcknowledged": 6543,
+              "duplicate": 1155,
+              "distractor": 818,
+              "continuationsAcknowledged": 1636,
+              "answer": 818,
+              "retry": 827
+            },
+            "statuses": {
+              "200": 9329,
+              "503": 1039
+            },
+            "schedulingLag": {
+              "count": 6750,
+              "meanMs": 2.76608841185186,
+              "maxMs": 44.618542,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 10368,
+              "meanMs": 1.015711941165121,
+              "maxMs": 98.062791,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 5
+            }
+          },
+          {
+            "name": "recovery-50",
+            "counts": {
+              "primary": 3000,
+              "primaryAcknowledged": 3000,
+              "duplicate": 702,
+              "distractor": 547,
+              "continuationsAcknowledged": 1094,
+              "answer": 547
+            },
+            "statuses": {
+              "200": 4796
+            },
+            "schedulingLag": {
+              "count": 3000,
+              "meanMs": 2.7773156499999985,
+              "maxMs": 10.610292,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 4796,
+              "meanMs": 1.11761838552961,
+              "maxMs": 13.542583,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 4
+            }
+          },
+          {
+            "name": "shutdown",
+            "counts": {
+              "shutdown": 48,
+              "primaryAcknowledged": 48
+            },
+            "statuses": {
+              "200": 48
+            },
+            "schedulingLag": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "ackLatency": {
+              "count": 48,
+              "meanMs": 13.391486229166667,
+              "maxMs": 19.568958,
+              "p50UpperMs": 14,
+              "p95UpperMs": 20,
+              "p99UpperMs": 20
+            }
+          }
+        ],
+        "sdk": [
+          {
+            "name": "warmup",
+            "admissions": {
+              "accepted": 599,
+              "duplicate": 125,
+              "ignored": 99
+            },
+            "outcomes": {
+              "guard-denied": 20,
+              "success": 462,
+              "continuation": 99,
+              "intentional-business-error": 7,
+              "invalid-input": 11
+            },
+            "kinds": {
+              "query": 197,
+              "admin": 53,
+              "file": 49,
+              "images": 53,
+              "picture": 14,
+              "prompt": 70,
+              "button": 46,
+              "answer": 99,
+              "failure": 7,
+              "badargs": 11
+            },
+            "routes": {
+              "query": 197,
+              "audit": 49,
+              "images": 53,
+              "file": 49,
+              "picture": 14,
+              "prompt": 70,
+              "button": 46,
+              "admin": 33,
+              "failure": 7
+            },
+            "loads": 511,
+            "errors": {
+              "Error": 7,
+              "PARAMETER_PARSE": 11
+            },
+            "successfulCompletionsByWallTime": 457,
+            "queueWait": {
+              "count": 500,
+              "meanMs": 0.3070495899999999,
+              "maxMs": 7.131833,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            },
+            "successLatency": {
+              "count": 462,
+              "meanMs": 131.4189972900432,
+              "maxMs": 1541.79925,
+              "p50UpperMs": 40,
+              "p95UpperMs": 477,
+              "p99UpperMs": 1539
+            },
+            "terminalLatency": {
+              "count": 500,
+              "meanMs": 121.80986848999993,
+              "maxMs": 1541.811,
+              "p50UpperMs": 39,
+              "p95UpperMs": 474,
+              "p99UpperMs": 1539
+            }
+          },
+          {
+            "name": "steady-50",
+            "admissions": {
+              "accepted": 3545,
+              "duplicate": 690,
+              "ignored": 545
+            },
+            "outcomes": {
+              "success": 2785,
+              "invalid-input": 60,
+              "continuation": 545,
+              "guard-denied": 125,
+              "intentional-business-error": 30
+            },
+            "kinds": {
+              "query": 1204,
+              "admin": 298,
+              "button": 300,
+              "file": 300,
+              "badargs": 60,
+              "prompt": 389,
+              "images": 298,
+              "answer": 545,
+              "picture": 121,
+              "failure": 30
+            },
+            "routes": {
+              "query": 1204,
+              "admin": 173,
+              "button": 300,
+              "prompt": 389,
+              "images": 298,
+              "audit": 300,
+              "file": 300,
+              "picture": 121,
+              "failure": 30
+            },
+            "loads": 3085,
+            "errors": {
+              "PARAMETER_PARSE": 60,
+              "Error": 30
+            },
+            "successfulCompletionsByWallTime": 2784,
+            "queueWait": {
+              "count": 3000,
+              "meanMs": 0.26501119499999914,
+              "maxMs": 13.0875,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 2785,
+              "meanMs": 141.1524991644523,
+              "maxMs": 1544.578583,
+              "p50UpperMs": 40,
+              "p95UpperMs": 477,
+              "p99UpperMs": 1539
+            },
+            "terminalLatency": {
+              "count": 3000,
+              "meanMs": 131.33877910933325,
+              "maxMs": 1544.582667,
+              "p50UpperMs": 39,
+              "p95UpperMs": 476,
+              "p99UpperMs": 1539
+            }
+          },
+          {
+            "name": "ramp-200",
+            "admissions": {
+              "accepted": 10626,
+              "duplicate": 2080,
+              "ignored": 1626
+            },
+            "outcomes": {
+              "success": 8368,
+              "invalid-input": 175,
+              "guard-denied": 369,
+              "continuation": 1626,
+              "intentional-business-error": 88
+            },
+            "kinds": {
+              "file": 905,
+              "images": 900,
+              "picture": 367,
+              "prompt": 1162,
+              "button": 903,
+              "query": 3602,
+              "admin": 898,
+              "badargs": 175,
+              "answer": 1626,
+              "failure": 88
+            },
+            "routes": {
+              "audit": 905,
+              "images": 900,
+              "picture": 367,
+              "prompt": 1162,
+              "button": 903,
+              "file": 905,
+              "query": 3602,
+              "admin": 529,
+              "failure": 88
+            },
+            "loads": 9273,
+            "errors": {
+              "PARAMETER_PARSE": 175,
+              "Error": 88
+            },
+            "successfulCompletionsByWallTime": 8349,
+            "queueWait": {
+              "count": 9000,
+              "meanMs": 0.10389781366666666,
+              "maxMs": 4.306042,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 8368,
+              "meanMs": 138.00951022980388,
+              "maxMs": 2568.4535,
+              "p50UpperMs": 38,
+              "p95UpperMs": 475,
+              "p99UpperMs": 1537
+            },
+            "terminalLatency": {
+              "count": 9000,
+              "meanMs": 128.5658111235557,
+              "maxMs": 2568.455375,
+              "p50UpperMs": 38,
+              "p95UpperMs": 473,
+              "p99UpperMs": 1537
+            }
+          },
+          {
+            "name": "ramp-500",
+            "admissions": {
+              "accepted": 23174,
+              "duplicate": 4614,
+              "ignored": 3521,
+              "overloaded": 16301
+            },
+            "outcomes": {
+              "guard-denied": 824,
+              "success": 18241,
+              "invalid-input": 392,
+              "intentional-business-error": 196,
+              "continuation": 3521
+            },
+            "kinds": {
+              "prompt": 2531,
+              "button": 1947,
+              "query": 7872,
+              "admin": 1970,
+              "file": 1989,
+              "images": 1962,
+              "picture": 794,
+              "badargs": 392,
+              "failure": 196,
+              "answer": 3521
+            },
+            "routes": {
+              "prompt": 2531,
+              "button": 1947,
+              "admin": 1146,
+              "query": 7872,
+              "audit": 1989,
+              "images": 1962,
+              "picture": 794,
+              "file": 1989,
+              "failure": 196
+            },
+            "loads": 20230,
+            "errors": {
+              "PARAMETER_PARSE": 392,
+              "Error": 196
+            },
+            "successfulCompletionsByWallTime": 16299,
+            "queueWait": {
+              "count": 19653,
+              "meanMs": 3237.4254134255675,
+              "maxMs": 4345.349125,
+              "p50UpperMs": 4179,
+              "p95UpperMs": 4307,
+              "p99UpperMs": 4325
+            },
+            "successLatency": {
+              "count": 18241,
+              "meanMs": 4218.33444702633,
+              "maxMs": 14595.615375,
+              "p50UpperMs": 4281,
+              "p95UpperMs": 12339,
+              "p99UpperMs": 13328
+            },
+            "terminalLatency": {
+              "count": 19653,
+              "meanMs": 4149.495799655532,
+              "maxMs": 14595.615833,
+              "p50UpperMs": 4273,
+              "p95UpperMs": 11607,
+              "p99UpperMs": 13320
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "admissions": {
+              "accepted": 20432,
+              "overloaded": 103435,
+              "duplicate": 4738,
+              "ignored": 3239
+            },
+            "outcomes": {
+              "intentional-business-error": 168,
+              "success": 15990,
+              "guard-denied": 722,
+              "invalid-input": 312,
+              "continuation": 3240
+            },
+            "kinds": {
+              "query": 6797,
+              "failure": 168,
+              "file": 1742,
+              "admin": 1713,
+              "button": 1753,
+              "prompt": 2314,
+              "images": 1719,
+              "picture": 674,
+              "badargs": 312,
+              "answer": 3240
+            },
+            "routes": {
+              "failure": 168,
+              "query": 6797,
+              "audit": 1742,
+              "button": 1753,
+              "prompt": 2314,
+              "file": 1742,
+              "images": 1719,
+              "admin": 991,
+              "picture": 674
+            },
+            "loads": 17732,
+            "errors": {
+              "Error": 168,
+              "PARAMETER_PARSE": 312
+            },
+            "successfulCompletionsByWallTime": 15995,
+            "queueWait": {
+              "count": 17192,
+              "meanMs": 4333.924568200142,
+              "maxMs": 4914.720875,
+              "p50UpperMs": 4318,
+              "p95UpperMs": 4717,
+              "p99UpperMs": 4872
+            },
+            "successLatency": {
+              "count": 15990,
+              "meanMs": 5632.4532315466,
+              "maxMs": 15176.031375,
+              "p50UpperMs": 4548,
+              "p95UpperMs": 13378,
+              "p99UpperMs": 13975
+            },
+            "terminalLatency": {
+              "count": 17192,
+              "meanMs": 5550.868306310065,
+              "maxMs": 15176.031708,
+              "p50UpperMs": 4540,
+              "p95UpperMs": 13343,
+              "p99UpperMs": 13965
+            }
+          },
+          {
+            "name": "burst-2500",
+            "admissions": {
+              "overloaded": 142083,
+              "accepted": 8598,
+              "duplicate": 2158,
+              "ignored": 1312
+            },
+            "outcomes": {
+              "guard-denied": 317,
+              "success": 6758,
+              "intentional-business-error": 64,
+              "invalid-input": 147,
+              "continuation": 1312
+            },
+            "kinds": {
+              "query": 2885,
+              "admin": 748,
+              "file": 750,
+              "picture": 275,
+              "prompt": 955,
+              "button": 741,
+              "images": 721,
+              "failure": 64,
+              "badargs": 147,
+              "answer": 1312
+            },
+            "routes": {
+              "query": 2885,
+              "audit": 750,
+              "picture": 275,
+              "prompt": 955,
+              "button": 741,
+              "images": 721,
+              "file": 750,
+              "failure": 64,
+              "admin": 431
+            },
+            "loads": 7508,
+            "errors": {
+              "Error": 64,
+              "PARAMETER_PARSE": 147
+            },
+            "successfulCompletionsByWallTime": 6725,
+            "queueWait": {
+              "count": 7286,
+              "meanMs": 4524.023749071773,
+              "maxMs": 4925.606791,
+              "p50UpperMs": 4466,
+              "p95UpperMs": 4886,
+              "p99UpperMs": 4915
+            },
+            "successLatency": {
+              "count": 6758,
+              "meanMs": 5800.000969581981,
+              "maxMs": 15161.638083,
+              "p50UpperMs": 4790,
+              "p95UpperMs": 13805,
+              "p99UpperMs": 14295
+            },
+            "terminalLatency": {
+              "count": 7286,
+              "meanMs": 5718.5052726843405,
+              "maxMs": 15161.638708,
+              "p50UpperMs": 4779,
+              "p95UpperMs": 13726,
+              "p99UpperMs": 14268
+            }
+          },
+          {
+            "name": "large-payload",
+            "admissions": {
+              "overloaded": 22721,
+              "accepted": 3823,
+              "duplicate": 262
+            },
+            "outcomes": {
+              "success": 3823
+            },
+            "kinds": {
+              "large": 3823
+            },
+            "routes": {
+              "query": 3823
+            },
+            "loads": 3823,
+            "errors": {},
+            "successfulCompletionsByWallTime": 5242,
+            "queueWait": {
+              "count": 3823,
+              "meanMs": 2577.955222752551,
+              "maxMs": 5414.1245,
+              "p50UpperMs": 2158,
+              "p95UpperMs": 5088,
+              "p99UpperMs": 5336
+            },
+            "successLatency": {
+              "count": 3823,
+              "meanMs": 2840.528947724308,
+              "maxMs": 5900.088417,
+              "p50UpperMs": 2541,
+              "p95UpperMs": 5292,
+              "p99UpperMs": 5554
+            },
+            "terminalLatency": {
+              "count": 3823,
+              "meanMs": 2840.5297596855876,
+              "maxMs": 5900.088833,
+              "p50UpperMs": 2541,
+              "p95UpperMs": 5292,
+              "p99UpperMs": 5554
+            }
+          },
+          {
+            "name": "faults-150",
+            "admissions": {
+              "accepted": 7361,
+              "duplicate": 1150,
+              "ignored": 818,
+              "overloaded": 1039
+            },
+            "outcomes": {
+              "success": 4435,
+              "guard-denied": 276,
+              "operational-error": 1645,
+              "intentional-business-error": 66,
+              "invalid-input": 121,
+              "continuation": 818
+            },
+            "kinds": {
+              "query": 2619,
+              "file": 662,
+              "images": 651,
+              "picture": 270,
+              "prompt": 851,
+              "admin": 652,
+              "button": 651,
+              "failure": 66,
+              "badargs": 121,
+              "answer": 818
+            },
+            "routes": {
+              "query": 2383,
+              "audit": 601,
+              "images": 589,
+              "picture": 246,
+              "file": 601,
+              "button": 594,
+              "prompt": 773,
+              "admin": 343,
+              "failure": 66
+            },
+            "loads": 6742,
+            "errors": {
+              "QQ_API": 891,
+              "TRANSPORT": 315,
+              "Error": 66,
+              "CONTEXT_TIMEOUT": 612,
+              "PARAMETER_PARSE": 121
+            },
+            "successfulCompletionsByWallTime": 3613,
+            "queueWait": {
+              "count": 6543,
+              "meanMs": 9753.628602381335,
+              "maxMs": 16408.221,
+              "p50UpperMs": 9999,
+              "p95UpperMs": 16147,
+              "p99UpperMs": 16232
+            },
+            "successLatency": {
+              "count": 4435,
+              "meanMs": 11545.587214837435,
+              "maxMs": 40023.033167,
+              "p50UpperMs": 10901,
+              "p95UpperMs": 26846,
+              "p99UpperMs": 37003
+            },
+            "terminalLatency": {
+              "count": 6543,
+              "meanMs": 11463.7626879115,
+              "maxMs": 40023.0375,
+              "p50UpperMs": 11008,
+              "p95UpperMs": 24457,
+              "p99UpperMs": 36466
+            }
+          },
+          {
+            "name": "recovery-50",
+            "admissions": {
+              "accepted": 3547,
+              "duplicate": 702,
+              "ignored": 547
+            },
+            "outcomes": {
+              "success": 2790,
+              "guard-denied": 121,
+              "intentional-business-error": 30,
+              "invalid-input": 59,
+              "continuation": 547
+            },
+            "kinds": {
+              "query": 1199,
+              "admin": 301,
+              "button": 299,
+              "file": 301,
+              "picture": 120,
+              "images": 302,
+              "prompt": 389,
+              "failure": 30,
+              "badargs": 59,
+              "answer": 547
+            },
+            "routes": {
+              "query": 1199,
+              "admin": 180,
+              "button": 299,
+              "audit": 301,
+              "file": 301,
+              "picture": 120,
+              "images": 302,
+              "prompt": 389,
+              "failure": 30
+            },
+            "loads": 3091,
+            "errors": {
+              "Error": 30,
+              "PARAMETER_PARSE": 59
+            },
+            "successfulCompletionsByWallTime": 4186,
+            "queueWait": {
+              "count": 3000,
+              "meanMs": 2785.20370246666,
+              "maxMs": 16414.608125,
+              "p50UpperMs": 1,
+              "p95UpperMs": 14087,
+              "p99UpperMs": 16071
+            },
+            "successLatency": {
+              "count": 2790,
+              "meanMs": 3017.4555581121904,
+              "maxMs": 20372.140542,
+              "p50UpperMs": 71,
+              "p95UpperMs": 14792,
+              "p99UpperMs": 16987
+            },
+            "terminalLatency": {
+              "count": 3000,
+              "meanMs": 3006.002442349014,
+              "maxMs": 20372.144292,
+              "p50UpperMs": 70,
+              "p95UpperMs": 14643,
+              "p99UpperMs": 16600
+            }
+          },
+          {
+            "name": "shutdown",
+            "admissions": {
+              "accepted": 48
+            },
+            "outcomes": {
+              "shutdown-cancelled": 48
+            },
+            "kinds": {
+              "shutdown-prompt": 8,
+              "hold": 40
+            },
+            "routes": {
+              "prompt": 8
+            },
+            "loads": 40,
+            "errors": {},
+            "successfulCompletionsByWallTime": 2,
+            "queueWait": {
+              "count": 40,
+              "meanMs": 0.10842709999999997,
+              "maxMs": 0.288125,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "terminalLatency": {
+              "count": 48,
+              "meanMs": 928.8742117708334,
+              "maxMs": 1329.6505,
+              "p50UpperMs": 850,
+              "p95UpperMs": 1330,
+              "p99UpperMs": 1330
+            }
+          }
+        ]
+      },
+      "shutdownDriver": null,
+      "finalResources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "closeMs": 837.637375,
+      "drainMs": 1527.544625
+    },
+    {
+      "label": "connections-256",
+      "path": "work/mixed-benchmark/readiness-20261020-connections-256.json",
+      "sha256": "2664a22e47d5064378758533558b1f07f1bd97a18920ac21ed4f9b83da9e0d2d",
+      "integrity": "failed",
+      "configuration": {
+        "name": "connections",
+        "concurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 256,
+        "phases": [
+          {
+            "name": "warmup",
+            "durationMs": 5000,
+            "rate": 50
+          },
+          {
+            "name": "ramp-1000",
+            "durationMs": 10000,
+            "rate": 1000
+          },
+          {
+            "name": "burst-2500",
+            "durationMs": 10000,
+            "rate": 2500
+          },
+          {
+            "name": "large-payload",
+            "durationMs": 5000,
+            "rate": 500,
+            "large": true
+          },
+          {
+            "name": "faults-150",
+            "durationMs": 10000,
+            "rate": 150,
+            "faults": true
+          },
+          {
+            "name": "recovery-50",
+            "durationMs": 30000,
+            "rate": 50
+          }
+        ]
+      },
+      "source": {
+        "gitHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "dirty": true,
+        "sdkSha256": "07520ff9dd29d75dbb6f433b8aa147258d8e4cf1b24a1cab550c2edee28c674a",
+        "harnessSha256": "faae3174866012c1f7894702432d84201f86623c6c2e375494f832d71bdc0581"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpu": "Apple M4",
+        "logicalCpus": 10,
+        "totalMemoryBytes": 34359738368,
+        "gc": "baseline/end only; no forced GC during load"
+      },
+      "plannedPrimary": 40750,
+      "driverDropped": 0,
+      "driverUnexpected": 4,
+      "sdkUnexpected": 0,
+      "transportErrors": [
+        {
+          "source": "request",
+          "phase": "shutdown",
+          "id": 40797,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "syscall": "read",
+          "message": "read ECONNRESET",
+          "elapsedMs": 18.461375,
+          "reusedSocket": false,
+          "connectionEstablished": false,
+          "requestsOnSocket": 1,
+          "localPort": 62283,
+          "socketAgeMs": 15.816,
+          "bodyBytes": 396,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 737
+        },
+        {
+          "source": "request",
+          "phase": "shutdown",
+          "id": 40798,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "syscall": "read",
+          "message": "read ECONNRESET",
+          "elapsedMs": 18.595875,
+          "reusedSocket": false,
+          "connectionEstablished": false,
+          "requestsOnSocket": 1,
+          "localPort": 62284,
+          "socketAgeMs": 16.006333,
+          "bodyBytes": 394,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 735
+        },
+        {
+          "source": "request",
+          "phase": "shutdown",
+          "id": 40795,
+          "attempt": 1,
+          "code": "ECONNREFUSED",
+          "syscall": "connect",
+          "message": "connect ECONNREFUSED 127.0.0.1:61389",
+          "elapsedMs": 2.637417,
+          "reusedSocket": false,
+          "connectionEstablished": false,
+          "requestsOnSocket": 1,
+          "localPort": 62307,
+          "socketAgeMs": 1.650125,
+          "bodyBytes": 386,
+          "requestFinished": false,
+          "readBytes": 0,
+          "writtenBytes": 727
+        },
+        {
+          "source": "request",
+          "phase": "shutdown",
+          "id": 40796,
+          "attempt": 1,
+          "code": "ECONNREFUSED",
+          "syscall": "connect",
+          "message": "connect ECONNREFUSED 127.0.0.1:61389",
+          "elapsedMs": 2.4085,
+          "reusedSocket": false,
+          "connectionEstablished": false,
+          "requestsOnSocket": 1,
+          "localPort": 62308,
+          "socketAgeMs": 1.847709,
+          "bodyBytes": 394,
+          "requestFinished": false,
+          "readBytes": 0,
+          "writtenBytes": 735
+        }
+      ],
+      "httpCounts": {
+        "connections": 334,
+        "requests": 113946,
+        "status:200": 21360,
+        "status:503": 92586,
+        "socketTimeouts": 296
+      },
+      "httpErrors": [],
+      "maximumOutstanding": 240,
+      "maximumSampledAgentPending": 0,
+      "maximumSampledSdkRssBytes": 462859088,
+      "phases": {
+        "driver": [
+          {
+            "name": "warmup",
+            "counts": {
+              "primary": 250,
+              "connectionReusable": 399,
+              "primaryAcknowledged": 250,
+              "duplicate": 59,
+              "distractor": 45,
+              "continuationsAcknowledged": 90,
+              "answer": 45
+            },
+            "statuses": {
+              "200": 399
+            },
+            "schedulingLag": {
+              "count": 250,
+              "meanMs": 2.825019500000001,
+              "maxMs": 5.952583,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 399,
+              "meanMs": 1.4836146566416033,
+              "maxMs": 6.320667,
+              "p50UpperMs": 2,
+              "p95UpperMs": 3,
+              "p99UpperMs": 4
+            },
+            "socketWait": {
+              "count": 399,
+              "meanMs": 0.3432344310776941,
+              "maxMs": 1.777167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "counts": {
+              "primary": 10000,
+              "connectionReusable": 24913,
+              "primaryAcknowledged": 5882,
+              "duplicate": 1580,
+              "distractor": 1084,
+              "continuationsAcknowledged": 2168,
+              "answer": 1084,
+              "retry": 11165
+            },
+            "statuses": {
+              "200": 9512,
+              "503": 15401
+            },
+            "schedulingLag": {
+              "count": 10000,
+              "meanMs": 2.855827440900007,
+              "maxMs": 40.081833,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 24913,
+              "meanMs": 1.2266412732709846,
+              "maxMs": 62.018375,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 21
+            },
+            "socketWait": {
+              "count": 24913,
+              "meanMs": 0.12849542568137093,
+              "maxMs": 14.314625,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "burst-2500",
+            "counts": {
+              "primary": 25000,
+              "connectionReusable": 77036,
+              "primaryAcknowledged": 3740,
+              "duplicate": 1939,
+              "retry": 48721,
+              "distractor": 688,
+              "continuationsAcknowledged": 1376,
+              "answer": 688
+            },
+            "statuses": {
+              "200": 6242,
+              "503": 70794
+            },
+            "schedulingLag": {
+              "count": 25000,
+              "meanMs": 2.6881451858399994,
+              "maxMs": 15.4995,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 77036,
+              "meanMs": 1.5093757608261096,
+              "maxMs": 61.409292,
+              "p50UpperMs": 2,
+              "p95UpperMs": 5,
+              "p99UpperMs": 10
+            },
+            "socketWait": {
+              "count": 77036,
+              "meanMs": 0.1175690841035371,
+              "maxMs": 5.713458,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "large-payload",
+            "counts": {
+              "primary": 2500,
+              "connectionReusable": 7040,
+              "primaryAcknowledged": 613,
+              "duplicate": 124,
+              "retry": 4416
+            },
+            "statuses": {
+              "200": 651,
+              "503": 6389
+            },
+            "schedulingLag": {
+              "count": 2500,
+              "meanMs": 2.7142201176,
+              "maxMs": 9.326458,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 7040,
+              "meanMs": 1.2145601928977263,
+              "maxMs": 9.203834,
+              "p50UpperMs": 1,
+              "p95UpperMs": 4,
+              "p99UpperMs": 6
+            },
+            "socketWait": {
+              "count": 7040,
+              "meanMs": 0.22606267059659238,
+              "maxMs": 2.460917,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "faults-150",
+            "counts": {
+              "primary": 1500,
+              "connectionReusable": 2123,
+              "primaryAcknowledged": 1500,
+              "duplicate": 261,
+              "distractor": 181,
+              "continuationsAcknowledged": 362,
+              "answer": 181
+            },
+            "statuses": {
+              "200": 2123
+            },
+            "schedulingLag": {
+              "count": 1500,
+              "meanMs": 2.6628617473333347,
+              "maxMs": 7.704166,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 2123,
+              "meanMs": 1.0356185435704193,
+              "maxMs": 69.498958,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 6
+            },
+            "socketWait": {
+              "count": 2123,
+              "meanMs": 0.17525912011304784,
+              "maxMs": 1.40275,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "recovery-50",
+            "counts": {
+              "primary": 1500,
+              "connectionReusable": 2389,
+              "primaryAcknowledged": 1500,
+              "duplicate": 345,
+              "distractor": 272,
+              "continuationsAcknowledged": 544,
+              "answer": 272
+            },
+            "statuses": {
+              "200": 2389
+            },
+            "schedulingLag": {
+              "count": 1500,
+              "meanMs": 2.7975415306666687,
+              "maxMs": 28.684875,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 2389,
+              "meanMs": 1.227909949769781,
+              "maxMs": 69.398916,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 4
+            },
+            "socketWait": {
+              "count": 2389,
+              "meanMs": 0.29264712013394595,
+              "maxMs": 33.647,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "shutdown",
+            "counts": {
+              "shutdown": 48,
+              "connectionReusable": 44,
+              "primaryAcknowledged": 44,
+              "requestErrors": 4,
+              "transportError:ECONNRESET": 2,
+              "connectionClose": 2,
+              "retry": 2,
+              "transportError:ECONNREFUSED": 2
+            },
+            "statuses": {
+              "200": 44,
+              "503": 2
+            },
+            "schedulingLag": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "ackLatency": {
+              "count": 46,
+              "meanMs": 11.89609784782609,
+              "maxMs": 20.105708,
+              "p50UpperMs": 12,
+              "p95UpperMs": 18,
+              "p99UpperMs": 21
+            },
+            "socketWait": {
+              "count": 50,
+              "meanMs": 3.388942479999999,
+              "maxMs": 5.271333,
+              "p50UpperMs": 4,
+              "p95UpperMs": 5,
+              "p99UpperMs": 6
+            }
+          }
+        ],
+        "sdk": [
+          {
+            "name": "warmup",
+            "admissions": {
+              "accepted": 295,
+              "duplicate": 59,
+              "ignored": 45
+            },
+            "outcomes": {
+              "guard-denied": 8,
+              "success": 237,
+              "continuation": 45,
+              "intentional-business-error": 3,
+              "invalid-input": 2
+            },
+            "kinds": {
+              "query": 101,
+              "admin": 24,
+              "file": 28,
+              "images": 29,
+              "picture": 10,
+              "prompt": 33,
+              "button": 20,
+              "answer": 45,
+              "failure": 3,
+              "badargs": 2
+            },
+            "routes": {
+              "query": 101,
+              "audit": 28,
+              "images": 29,
+              "file": 28,
+              "picture": 10,
+              "prompt": 33,
+              "button": 20,
+              "admin": 16,
+              "failure": 3
+            },
+            "loads": 265,
+            "errors": {
+              "Error": 3,
+              "PARAMETER_PARSE": 2
+            },
+            "successfulCompletionsByWallTime": 231,
+            "queueWait": {
+              "count": 250,
+              "meanMs": 0.3245786919999997,
+              "maxMs": 2.417792,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            },
+            "successLatency": {
+              "count": 237,
+              "meanMs": 162.30011869620253,
+              "maxMs": 3241.166916,
+              "p50UpperMs": 41,
+              "p95UpperMs": 942,
+              "p99UpperMs": 1545
+            },
+            "terminalLatency": {
+              "count": 250,
+              "meanMs": 154.07910235200006,
+              "maxMs": 3241.167958,
+              "p50UpperMs": 41,
+              "p95UpperMs": 941,
+              "p99UpperMs": 1545
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "admissions": {
+              "accepted": 6966,
+              "duplicate": 1462,
+              "ignored": 1084,
+              "overloaded": 15401
+            },
+            "outcomes": {
+              "guard-denied": 245,
+              "intentional-business-error": 61,
+              "success": 5460,
+              "invalid-input": 116,
+              "continuation": 1084
+            },
+            "kinds": {
+              "images": 599,
+              "admin": 590,
+              "button": 608,
+              "file": 575,
+              "query": 2332,
+              "prompt": 784,
+              "failure": 61,
+              "badargs": 116,
+              "picture": 217,
+              "answer": 1084
+            },
+            "routes": {
+              "images": 599,
+              "failure": 61,
+              "button": 608,
+              "audit": 575,
+              "query": 2332,
+              "prompt": 784,
+              "admin": 345,
+              "file": 575,
+              "picture": 217
+            },
+            "loads": 6035,
+            "errors": {
+              "Error": 61,
+              "PARAMETER_PARSE": 116
+            },
+            "successfulCompletionsByWallTime": 3469,
+            "queueWait": {
+              "count": 5882,
+              "meanMs": 3142.495155625629,
+              "maxMs": 4400.905458,
+              "p50UpperMs": 3975,
+              "p95UpperMs": 4365,
+              "p99UpperMs": 4376
+            },
+            "successLatency": {
+              "count": 5460,
+              "meanMs": 4286.281655040836,
+              "maxMs": 15136.932083,
+              "p50UpperMs": 4366,
+              "p95UpperMs": 12199,
+              "p99UpperMs": 13755
+            },
+            "terminalLatency": {
+              "count": 5882,
+              "meanMs": 4205.549731251965,
+              "maxMs": 15136.93275,
+              "p50UpperMs": 4345,
+              "p95UpperMs": 11826,
+              "p99UpperMs": 13750
+            }
+          },
+          {
+            "name": "burst-2500",
+            "admissions": {
+              "overloaded": 70794,
+              "accepted": 4428,
+              "duplicate": 1126,
+              "ignored": 688
+            },
+            "outcomes": {
+              "success": 3501,
+              "invalid-input": 63,
+              "guard-denied": 141,
+              "intentional-business-error": 35,
+              "continuation": 688
+            },
+            "kinds": {
+              "file": 365,
+              "query": 1528,
+              "prompt": 501,
+              "images": 382,
+              "admin": 360,
+              "picture": 134,
+              "button": 372,
+              "badargs": 63,
+              "failure": 35,
+              "answer": 688
+            },
+            "routes": {
+              "audit": 365,
+              "query": 1528,
+              "file": 365,
+              "prompt": 501,
+              "images": 382,
+              "admin": 219,
+              "picture": 134,
+              "button": 372,
+              "failure": 35
+            },
+            "loads": 3866,
+            "errors": {
+              "PARAMETER_PARSE": 63,
+              "Error": 35
+            },
+            "successfulCompletionsByWallTime": 3510,
+            "queueWait": {
+              "count": 3740,
+              "meanMs": 4457.854454791978,
+              "maxMs": 4569.484708,
+              "p50UpperMs": 4468,
+              "p95UpperMs": 4545,
+              "p99UpperMs": 4560
+            },
+            "successLatency": {
+              "count": 3501,
+              "meanMs": 5681.87696750815,
+              "maxMs": 15714.788166,
+              "p50UpperMs": 4704,
+              "p95UpperMs": 12584,
+              "p99UpperMs": 14290
+            },
+            "terminalLatency": {
+              "count": 3740,
+              "meanMs": 5613.337596498934,
+              "maxMs": 15714.788541,
+              "p50UpperMs": 4688,
+              "p95UpperMs": 12456,
+              "p99UpperMs": 14268
+            }
+          },
+          {
+            "name": "large-payload",
+            "admissions": {
+              "overloaded": 6389,
+              "accepted": 613,
+              "duplicate": 38
+            },
+            "outcomes": {
+              "success": 613
+            },
+            "kinds": {
+              "large": 613
+            },
+            "routes": {
+              "query": 613
+            },
+            "loads": 613,
+            "errors": {},
+            "successfulCompletionsByWallTime": 1668,
+            "queueWait": {
+              "count": 613,
+              "meanMs": 4484.0060043751955,
+              "maxMs": 5370.45625,
+              "p50UpperMs": 4862,
+              "p95UpperMs": 5328,
+              "p99UpperMs": 5360
+            },
+            "successLatency": {
+              "count": 613,
+              "meanMs": 4725.541399197393,
+              "maxMs": 5852.382958,
+              "p50UpperMs": 5059,
+              "p95UpperMs": 5614,
+              "p99UpperMs": 5797
+            },
+            "terminalLatency": {
+              "count": 613,
+              "meanMs": 4725.542385161501,
+              "maxMs": 5852.384041,
+              "p50UpperMs": 5059,
+              "p95UpperMs": 5614,
+              "p99UpperMs": 5797
+            }
+          },
+          {
+            "name": "faults-150",
+            "admissions": {
+              "accepted": 1681,
+              "duplicate": 261,
+              "ignored": 181
+            },
+            "outcomes": {
+              "success": 1013,
+              "operational-error": 378,
+              "guard-denied": 65,
+              "intentional-business-error": 14,
+              "invalid-input": 30,
+              "continuation": 181
+            },
+            "kinds": {
+              "images": 150,
+              "admin": 151,
+              "prompt": 193,
+              "button": 149,
+              "query": 601,
+              "file": 151,
+              "picture": 61,
+              "failure": 14,
+              "badargs": 30,
+              "answer": 181
+            },
+            "routes": {
+              "images": 138,
+              "prompt": 177,
+              "button": 137,
+              "query": 539,
+              "audit": 137,
+              "file": 137,
+              "picture": 58,
+              "admin": 77,
+              "failure": 14
+            },
+            "loads": 1542,
+            "errors": {
+              "QQ_API": 193,
+              "Error": 14,
+              "TRANSPORT": 72,
+              "PARAMETER_PARSE": 30,
+              "CONTEXT_TIMEOUT": 142
+            },
+            "successfulCompletionsByWallTime": 1493,
+            "queueWait": {
+              "count": 1500,
+              "meanMs": 3702.504005815329,
+              "maxMs": 5566.340458,
+              "p50UpperMs": 3780,
+              "p95UpperMs": 5162,
+              "p99UpperMs": 5512
+            },
+            "successLatency": {
+              "count": 1013,
+              "meanMs": 4400.601523650545,
+              "maxMs": 12876.378209,
+              "p50UpperMs": 4022,
+              "p95UpperMs": 9567,
+              "p99UpperMs": 12125
+            },
+            "terminalLatency": {
+              "count": 1500,
+              "meanMs": 4522.240222793999,
+              "maxMs": 12876.388209,
+              "p50UpperMs": 4069,
+              "p95UpperMs": 9174,
+              "p99UpperMs": 11841
+            }
+          },
+          {
+            "name": "recovery-50",
+            "admissions": {
+              "accepted": 1772,
+              "duplicate": 345,
+              "ignored": 272
+            },
+            "outcomes": {
+              "success": 1391,
+              "guard-denied": 67,
+              "intentional-business-error": 14,
+              "invalid-input": 28,
+              "continuation": 272
+            },
+            "kinds": {
+              "file": 151,
+              "images": 151,
+              "prompt": 195,
+              "query": 599,
+              "admin": 150,
+              "button": 150,
+              "picture": 62,
+              "failure": 14,
+              "badargs": 28,
+              "answer": 272
+            },
+            "routes": {
+              "audit": 151,
+              "images": 151,
+              "prompt": 195,
+              "query": 599,
+              "file": 151,
+              "admin": 83,
+              "button": 150,
+              "picture": 62,
+              "failure": 14
+            },
+            "loads": 1542,
+            "errors": {
+              "Error": 14,
+              "PARAMETER_PARSE": 28
+            },
+            "successfulCompletionsByWallTime": 1840,
+            "queueWait": {
+              "count": 1500,
+              "meanMs": 697.4769854293328,
+              "maxMs": 5562.494458,
+              "p50UpperMs": 1,
+              "p95UpperMs": 4525,
+              "p99UpperMs": 5401
+            },
+            "successLatency": {
+              "count": 1391,
+              "meanMs": 870.6795617347218,
+              "maxMs": 7450.387083,
+              "p50UpperMs": 52,
+              "p95UpperMs": 4797,
+              "p99UpperMs": 5814
+            },
+            "terminalLatency": {
+              "count": 1500,
+              "meanMs": 859.1521458293341,
+              "maxMs": 7450.393708,
+              "p50UpperMs": 43,
+              "p95UpperMs": 4734,
+              "p99UpperMs": 5608
+            }
+          },
+          {
+            "name": "shutdown",
+            "admissions": {
+              "accepted": 44
+            },
+            "outcomes": {
+              "shutdown-cancelled": 44
+            },
+            "kinds": {
+              "shutdown-prompt": 8,
+              "hold": 36
+            },
+            "routes": {
+              "prompt": 8
+            },
+            "loads": 40,
+            "errors": {},
+            "successfulCompletionsByWallTime": 4,
+            "queueWait": {
+              "count": 40,
+              "meanMs": 0.086317775,
+              "maxMs": 0.3335,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "terminalLatency": {
+              "count": 44,
+              "meanMs": 913.8765889545456,
+              "maxMs": 1305.033542,
+              "p50UpperMs": 828,
+              "p95UpperMs": 1305,
+              "p99UpperMs": 1306
+            }
+          }
+        ]
+      },
+      "shutdownDriver": null,
+      "finalResources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "closeMs": 833.337917,
+      "drainMs": 614.514666
+    },
+    {
+      "label": "sockets64",
+      "path": "work/mixed-benchmark/readiness-20261020-sockets64.json",
+      "sha256": "0ed5d005009329727cf749239ea00bde240e2240ce2c885a96cd8620db4a5228",
+      "integrity": "passed",
+      "configuration": {
+        "name": "standard",
+        "concurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 64,
+        "phases": [
+          {
+            "name": "warmup",
+            "durationMs": 10000,
+            "rate": 50
+          },
+          {
+            "name": "steady-50",
+            "durationMs": 60000,
+            "rate": 50
+          },
+          {
+            "name": "ramp-200",
+            "durationMs": 45000,
+            "rate": 200
+          },
+          {
+            "name": "ramp-500",
+            "durationMs": 45000,
+            "rate": 500
+          },
+          {
+            "name": "ramp-1000",
+            "durationMs": 45000,
+            "rate": 1000
+          },
+          {
+            "name": "burst-2500",
+            "durationMs": 20000,
+            "rate": 2500
+          },
+          {
+            "name": "large-payload",
+            "durationMs": 20000,
+            "rate": 500,
+            "large": true
+          },
+          {
+            "name": "faults-150",
+            "durationMs": 45000,
+            "rate": 150,
+            "faults": true
+          },
+          {
+            "name": "recovery-50",
+            "durationMs": 60000,
+            "rate": 50
+          }
+        ]
+      },
+      "source": {
+        "gitHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "dirty": true,
+        "sdkSha256": "07520ff9dd29d75dbb6f433b8aa147258d8e4cf1b24a1cab550c2edee28c674a",
+        "harnessSha256": "99dc7c189d1096af8eaa19346155e62459817612a27600375244b9a6b0fd4a51"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpu": "Apple M4",
+        "logicalCpus": 10,
+        "totalMemoryBytes": 34359738368,
+        "gc": "baseline/end only; no forced GC during load"
+      },
+      "plannedPrimary": 149750,
+      "driverDropped": 0,
+      "driverUnexpected": 0,
+      "sdkUnexpected": 0,
+      "transportErrors": [],
+      "httpCounts": {
+        "connections": 290,
+        "requests": 395703,
+        "status:200": 110849,
+        "socketTimeouts": 250,
+        "status:503": 284854
+      },
+      "httpErrors": [],
+      "maximumOutstanding": 488,
+      "maximumSampledAgentPending": 390,
+      "maximumSampledSdkRssBytes": 544034232,
+      "phases": {
+        "driver": [
+          {
+            "name": "warmup",
+            "counts": {
+              "primary": 500,
+              "connectionReusable": 823,
+              "primaryAcknowledged": 500,
+              "duplicate": 125,
+              "distractor": 99,
+              "continuationsAcknowledged": 198,
+              "answer": 99
+            },
+            "statuses": {
+              "200": 823
+            },
+            "schedulingLag": {
+              "count": 500,
+              "meanMs": 2.7060824839999973,
+              "maxMs": 9.368792,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 823,
+              "meanMs": 1.5390299270959882,
+              "maxMs": 28.146041,
+              "p50UpperMs": 2,
+              "p95UpperMs": 3,
+              "p99UpperMs": 5
+            },
+            "socketWait": {
+              "count": 823,
+              "meanMs": 0.34004223450789817,
+              "maxMs": 4.681375,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "steady-50",
+            "counts": {
+              "primary": 3000,
+              "connectionReusable": 4780,
+              "primaryAcknowledged": 3000,
+              "duplicate": 690,
+              "distractor": 545,
+              "continuationsAcknowledged": 1090,
+              "answer": 545
+            },
+            "statuses": {
+              "200": 4780
+            },
+            "schedulingLag": {
+              "count": 3000,
+              "meanMs": 2.6961309296666665,
+              "maxMs": 49.346292,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 4780,
+              "meanMs": 1.2875638675732237,
+              "maxMs": 42.331042,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 3
+            },
+            "socketWait": {
+              "count": 4780,
+              "meanMs": 0.3106374962343105,
+              "maxMs": 3.726667,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "ramp-200",
+            "counts": {
+              "primary": 9000,
+              "connectionReusable": 14332,
+              "primaryAcknowledged": 9000,
+              "duplicate": 2080,
+              "distractor": 1626,
+              "continuationsAcknowledged": 3252,
+              "answer": 1626
+            },
+            "statuses": {
+              "200": 14332
+            },
+            "schedulingLag": {
+              "count": 9000,
+              "meanMs": 2.58561514866667,
+              "maxMs": 20.810042,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 14332,
+              "meanMs": 0.7740809983951987,
+              "maxMs": 31.407167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 2,
+              "p99UpperMs": 4
+            },
+            "socketWait": {
+              "count": 14332,
+              "meanMs": 0.1465358573820819,
+              "maxMs": 3.667667,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "ramp-500",
+            "counts": {
+              "primary": 22500,
+              "connectionReusable": 47970,
+              "primaryAcknowledged": 19498,
+              "duplicate": 4746,
+              "distractor": 3622,
+              "continuationsAcknowledged": 7244,
+              "answer": 3622,
+              "retry": 13480
+            },
+            "statuses": {
+              "200": 31454,
+              "503": 16516
+            },
+            "schedulingLag": {
+              "count": 22500,
+              "meanMs": 2.914058456088908,
+              "maxMs": 95.231542,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 8
+            },
+            "ackLatency": {
+              "count": 47970,
+              "meanMs": 1.15306530275173,
+              "maxMs": 222.976875,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 16
+            },
+            "socketWait": {
+              "count": 47970,
+              "meanMs": 0.23960574406921079,
+              "maxMs": 70.494333,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "counts": {
+              "primary": 45000,
+              "connectionReusable": 131693,
+              "primaryAcknowledged": 17459,
+              "duplicate": 5471,
+              "retry": 74778,
+              "distractor": 3222,
+              "continuationsAcknowledged": 6444,
+              "answer": 3222
+            },
+            "statuses": {
+              "200": 28612,
+              "503": 103081
+            },
+            "schedulingLag": {
+              "count": 45000,
+              "meanMs": 3.0745197371778072,
+              "maxMs": 155.131125,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 8
+            },
+            "ackLatency": {
+              "count": 131693,
+              "meanMs": 1.3050117411099935,
+              "maxMs": 223.700167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 17
+            },
+            "socketWait": {
+              "count": 131693,
+              "meanMs": 0.3839942396482708,
+              "maxMs": 178.336792,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            }
+          },
+          {
+            "name": "burst-2500",
+            "counts": {
+              "primary": 50000,
+              "connectionReusable": 154238,
+              "primaryAcknowledged": 7507,
+              "duplicate": 3892,
+              "retry": 97568,
+              "distractor": 1389,
+              "continuationsAcknowledged": 2778,
+              "answer": 1389
+            },
+            "statuses": {
+              "200": 12566,
+              "503": 141672
+            },
+            "schedulingLag": {
+              "count": 50000,
+              "meanMs": 2.796631656200022,
+              "maxMs": 53.3375,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 154238,
+              "meanMs": 1.8654148506269694,
+              "maxMs": 65.010208,
+              "p50UpperMs": 1,
+              "p95UpperMs": 6,
+              "p99UpperMs": 24
+            },
+            "socketWait": {
+              "count": 154238,
+              "meanMs": 0.5697254441836689,
+              "maxMs": 44.226167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 18
+            }
+          },
+          {
+            "name": "large-payload",
+            "counts": {
+              "primary": 10000,
+              "connectionReusable": 26969,
+              "primaryAcknowledged": 3726,
+              "duplicate": 494,
+              "retry": 16475
+            },
+            "statuses": {
+              "200": 3992,
+              "503": 22977
+            },
+            "schedulingLag": {
+              "count": 10000,
+              "meanMs": 2.9743761778999933,
+              "maxMs": 60.854167,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 10
+            },
+            "ackLatency": {
+              "count": 26969,
+              "meanMs": 2.179460654084328,
+              "maxMs": 99.980792,
+              "p50UpperMs": 2,
+              "p95UpperMs": 7,
+              "p99UpperMs": 16
+            },
+            "socketWait": {
+              "count": 26969,
+              "meanMs": 0.29772763020505005,
+              "maxMs": 64.65175,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            }
+          },
+          {
+            "name": "faults-150",
+            "counts": {
+              "primary": 6750,
+              "connectionReusable": 10053,
+              "primaryAcknowledged": 6637,
+              "duplicate": 1162,
+              "distractor": 825,
+              "continuationsAcknowledged": 1650,
+              "answer": 825,
+              "retry": 491
+            },
+            "statuses": {
+              "200": 9446,
+              "503": 607
+            },
+            "schedulingLag": {
+              "count": 6750,
+              "meanMs": 2.7613931518518373,
+              "maxMs": 36.462667,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 10053,
+              "meanMs": 0.9870565335720737,
+              "maxMs": 39.718917,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 5
+            },
+            "socketWait": {
+              "count": 10053,
+              "meanMs": 0.19271746105640128,
+              "maxMs": 4.331375,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "recovery-50",
+            "counts": {
+              "primary": 3000,
+              "connectionReusable": 4797,
+              "primaryAcknowledged": 3000,
+              "retry": 1,
+              "duplicate": 702,
+              "distractor": 547,
+              "continuationsAcknowledged": 1094,
+              "answer": 547
+            },
+            "statuses": {
+              "200": 4796,
+              "503": 1
+            },
+            "schedulingLag": {
+              "count": 3000,
+              "meanMs": 2.698062763666665,
+              "maxMs": 35.599667,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 4797,
+              "meanMs": 1.1532045355430465,
+              "maxMs": 36.186084,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 4
+            },
+            "socketWait": {
+              "count": 4797,
+              "meanMs": 0.2736856057952876,
+              "maxMs": 32.20625,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "shutdown",
+            "counts": {
+              "shutdown": 48,
+              "connectionReusable": 48,
+              "primaryAcknowledged": 48
+            },
+            "statuses": {
+              "200": 48
+            },
+            "schedulingLag": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "ackLatency": {
+              "count": 48,
+              "meanMs": 12.016405375000003,
+              "maxMs": 16.794292,
+              "p50UpperMs": 13,
+              "p95UpperMs": 17,
+              "p99UpperMs": 17
+            },
+            "socketWait": {
+              "count": 48,
+              "meanMs": 3.479924541666666,
+              "maxMs": 5.296917,
+              "p50UpperMs": 4,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            }
+          }
+        ],
+        "sdk": [
+          {
+            "name": "warmup",
+            "admissions": {
+              "accepted": 599,
+              "duplicate": 125,
+              "ignored": 99
+            },
+            "outcomes": {
+              "guard-denied": 20,
+              "success": 462,
+              "continuation": 99,
+              "intentional-business-error": 7,
+              "invalid-input": 11
+            },
+            "kinds": {
+              "query": 197,
+              "admin": 53,
+              "file": 49,
+              "images": 53,
+              "picture": 14,
+              "prompt": 70,
+              "button": 46,
+              "answer": 99,
+              "failure": 7,
+              "badargs": 11
+            },
+            "routes": {
+              "query": 197,
+              "audit": 49,
+              "images": 53,
+              "picture": 14,
+              "file": 49,
+              "prompt": 70,
+              "button": 46,
+              "admin": 33,
+              "failure": 7
+            },
+            "loads": 511,
+            "errors": {
+              "Error": 7,
+              "PARAMETER_PARSE": 11
+            },
+            "successfulCompletionsByWallTime": 457,
+            "queueWait": {
+              "count": 500,
+              "meanMs": 0.3379389280000001,
+              "maxMs": 10.86125,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            },
+            "successLatency": {
+              "count": 462,
+              "meanMs": 132.09537355194803,
+              "maxMs": 1542.545917,
+              "p50UpperMs": 41,
+              "p95UpperMs": 473,
+              "p99UpperMs": 1538
+            },
+            "terminalLatency": {
+              "count": 500,
+              "meanMs": 122.46368234200004,
+              "maxMs": 1542.5525,
+              "p50UpperMs": 40,
+              "p95UpperMs": 473,
+              "p99UpperMs": 1538
+            }
+          },
+          {
+            "name": "steady-50",
+            "admissions": {
+              "accepted": 3545,
+              "duplicate": 690,
+              "ignored": 545
+            },
+            "outcomes": {
+              "success": 2785,
+              "invalid-input": 60,
+              "continuation": 545,
+              "guard-denied": 125,
+              "intentional-business-error": 30
+            },
+            "kinds": {
+              "query": 1204,
+              "admin": 298,
+              "button": 300,
+              "file": 300,
+              "badargs": 60,
+              "prompt": 389,
+              "images": 298,
+              "answer": 545,
+              "picture": 121,
+              "failure": 30
+            },
+            "routes": {
+              "query": 1204,
+              "admin": 173,
+              "button": 300,
+              "prompt": 389,
+              "images": 298,
+              "audit": 300,
+              "file": 300,
+              "picture": 121,
+              "failure": 30
+            },
+            "loads": 3085,
+            "errors": {
+              "PARAMETER_PARSE": 60,
+              "Error": 30
+            },
+            "successfulCompletionsByWallTime": 2784,
+            "queueWait": {
+              "count": 3000,
+              "meanMs": 0.2536390866666669,
+              "maxMs": 1.295417,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 2785,
+              "meanMs": 140.86425744308792,
+              "maxMs": 1545.008875,
+              "p50UpperMs": 40,
+              "p95UpperMs": 476,
+              "p99UpperMs": 1539
+            },
+            "terminalLatency": {
+              "count": 3000,
+              "meanMs": 131.07279196633323,
+              "maxMs": 1545.01575,
+              "p50UpperMs": 39,
+              "p95UpperMs": 475,
+              "p99UpperMs": 1538
+            }
+          },
+          {
+            "name": "ramp-200",
+            "admissions": {
+              "accepted": 10626,
+              "duplicate": 2080,
+              "ignored": 1626
+            },
+            "outcomes": {
+              "success": 8368,
+              "invalid-input": 175,
+              "guard-denied": 369,
+              "continuation": 1626,
+              "intentional-business-error": 88
+            },
+            "kinds": {
+              "file": 905,
+              "images": 900,
+              "picture": 367,
+              "prompt": 1162,
+              "button": 903,
+              "query": 3602,
+              "admin": 898,
+              "badargs": 175,
+              "answer": 1626,
+              "failure": 88
+            },
+            "routes": {
+              "audit": 905,
+              "images": 900,
+              "picture": 367,
+              "prompt": 1162,
+              "button": 903,
+              "query": 3602,
+              "file": 905,
+              "admin": 529,
+              "failure": 88
+            },
+            "loads": 9273,
+            "errors": {
+              "PARAMETER_PARSE": 175,
+              "Error": 88
+            },
+            "successfulCompletionsByWallTime": 8348,
+            "queueWait": {
+              "count": 9000,
+              "meanMs": 0.10462702822222181,
+              "maxMs": 3.727208,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 8368,
+              "meanMs": 137.96562830568897,
+              "maxMs": 2577.049542,
+              "p50UpperMs": 38,
+              "p95UpperMs": 475,
+              "p99UpperMs": 1538
+            },
+            "terminalLatency": {
+              "count": 9000,
+              "meanMs": 128.51956516477821,
+              "maxMs": 2577.051458,
+              "p50UpperMs": 38,
+              "p95UpperMs": 473,
+              "p99UpperMs": 1538
+            }
+          },
+          {
+            "name": "ramp-500",
+            "admissions": {
+              "accepted": 23120,
+              "duplicate": 4712,
+              "ignored": 3622,
+              "overloaded": 16516
+            },
+            "outcomes": {
+              "guard-denied": 827,
+              "success": 18077,
+              "invalid-input": 407,
+              "intentional-business-error": 187,
+              "continuation": 3622
+            },
+            "kinds": {
+              "prompt": 2578,
+              "button": 1952,
+              "query": 7769,
+              "admin": 1937,
+              "file": 1945,
+              "images": 1955,
+              "picture": 768,
+              "badargs": 407,
+              "failure": 187,
+              "answer": 3622
+            },
+            "routes": {
+              "prompt": 2578,
+              "button": 1952,
+              "admin": 1110,
+              "query": 7769,
+              "audit": 1945,
+              "images": 1955,
+              "picture": 768,
+              "file": 1945,
+              "failure": 187
+            },
+            "loads": 20022,
+            "errors": {
+              "PARAMETER_PARSE": 407,
+              "Error": 187
+            },
+            "successfulCompletionsByWallTime": 16140,
+            "queueWait": {
+              "count": 19498,
+              "meanMs": 3277.8525429230754,
+              "maxMs": 4596.483125,
+              "p50UpperMs": 4158,
+              "p95UpperMs": 4554,
+              "p99UpperMs": 4582
+            },
+            "successLatency": {
+              "count": 18077,
+              "meanMs": 4293.263211277436,
+              "maxMs": 14878.092125,
+              "p50UpperMs": 4304,
+              "p95UpperMs": 12732,
+              "p99UpperMs": 13543
+            },
+            "terminalLatency": {
+              "count": 19498,
+              "meanMs": 4222.063454565958,
+              "maxMs": 14878.093042,
+              "p50UpperMs": 4294,
+              "p95UpperMs": 12312,
+              "p99UpperMs": 13534
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "admissions": {
+              "overloaded": 103081,
+              "accepted": 20681,
+              "duplicate": 4709,
+              "ignored": 3222
+            },
+            "outcomes": {
+              "success": 16229,
+              "intentional-business-error": 166,
+              "invalid-input": 330,
+              "guard-denied": 734,
+              "continuation": 3222
+            },
+            "kinds": {
+              "images": 1728,
+              "admin": 1762,
+              "prompt": 2302,
+              "button": 1750,
+              "picture": 689,
+              "query": 6992,
+              "file": 1740,
+              "failure": 166,
+              "badargs": 330,
+              "answer": 3222
+            },
+            "routes": {
+              "images": 1728,
+              "admin": 1028,
+              "prompt": 2302,
+              "button": 1750,
+              "picture": 689,
+              "query": 6992,
+              "audit": 1740,
+              "failure": 166,
+              "file": 1740
+            },
+            "loads": 17969,
+            "errors": {
+              "Error": 166,
+              "PARAMETER_PARSE": 330
+            },
+            "successfulCompletionsByWallTime": 16223,
+            "queueWait": {
+              "count": 17459,
+              "meanMs": 4245.096818762719,
+              "maxMs": 4546.77825,
+              "p50UpperMs": 4227,
+              "p95UpperMs": 4405,
+              "p99UpperMs": 4432
+            },
+            "successLatency": {
+              "count": 16229,
+              "meanMs": 5498.462096298505,
+              "maxMs": 14558.091667,
+              "p50UpperMs": 4463,
+              "p95UpperMs": 13166,
+              "p99UpperMs": 13439
+            },
+            "terminalLatency": {
+              "count": 17459,
+              "meanMs": 5419.141080387906,
+              "maxMs": 14558.09225,
+              "p50UpperMs": 4453,
+              "p95UpperMs": 13138,
+              "p99UpperMs": 13432
+            }
+          },
+          {
+            "name": "burst-2500",
+            "admissions": {
+              "overloaded": 141672,
+              "accepted": 8896,
+              "duplicate": 2281,
+              "ignored": 1389
+            },
+            "outcomes": {
+              "guard-denied": 326,
+              "success": 7006,
+              "invalid-input": 116,
+              "intentional-business-error": 59,
+              "continuation": 1389
+            },
+            "kinds": {
+              "picture": 276,
+              "query": 3007,
+              "images": 771,
+              "admin": 778,
+              "button": 740,
+              "file": 753,
+              "badargs": 116,
+              "prompt": 1007,
+              "failure": 59,
+              "answer": 1389
+            },
+            "routes": {
+              "picture": 276,
+              "query": 3007,
+              "images": 771,
+              "button": 740,
+              "audit": 753,
+              "file": 753,
+              "prompt": 1007,
+              "admin": 452,
+              "failure": 59
+            },
+            "loads": 7759,
+            "errors": {
+              "PARAMETER_PARSE": 116,
+              "Error": 59
+            },
+            "successfulCompletionsByWallTime": 6947,
+            "queueWait": {
+              "count": 7507,
+              "meanMs": 4405.210949145601,
+              "maxMs": 4630.968791,
+              "p50UpperMs": 4430,
+              "p95UpperMs": 4577,
+              "p99UpperMs": 4615
+            },
+            "successLatency": {
+              "count": 7006,
+              "meanMs": 5704.852764598506,
+              "maxMs": 15899.73725,
+              "p50UpperMs": 4652,
+              "p95UpperMs": 13530,
+              "p99UpperMs": 14346
+            },
+            "terminalLatency": {
+              "count": 7507,
+              "meanMs": 5628.030070277864,
+              "maxMs": 15899.737583,
+              "p50UpperMs": 4645,
+              "p95UpperMs": 13481,
+              "p99UpperMs": 14334
+            }
+          },
+          {
+            "name": "large-payload",
+            "admissions": {
+              "overloaded": 22977,
+              "accepted": 3726,
+              "duplicate": 266
+            },
+            "outcomes": {
+              "success": 3726
+            },
+            "kinds": {
+              "large": 3726
+            },
+            "routes": {
+              "query": 3726
+            },
+            "loads": 3726,
+            "errors": {},
+            "successfulCompletionsByWallTime": 5177,
+            "queueWait": {
+              "count": 3726,
+              "meanMs": 2633.3055869404184,
+              "maxMs": 5668.065917,
+              "p50UpperMs": 2180,
+              "p95UpperMs": 5347,
+              "p99UpperMs": 5593
+            },
+            "successLatency": {
+              "count": 3726,
+              "meanMs": 2901.430352223835,
+              "maxMs": 6144.659792,
+              "p50UpperMs": 2497,
+              "p95UpperMs": 5598,
+              "p99UpperMs": 5861
+            },
+            "terminalLatency": {
+              "count": 3726,
+              "meanMs": 2901.431335938016,
+              "maxMs": 6144.660208,
+              "p50UpperMs": 2497,
+              "p95UpperMs": 5598,
+              "p99UpperMs": 5861
+            }
+          },
+          {
+            "name": "faults-150",
+            "admissions": {
+              "accepted": 7462,
+              "duplicate": 1159,
+              "ignored": 825,
+              "overloaded": 607
+            },
+            "outcomes": {
+              "success": 4483,
+              "guard-denied": 284,
+              "operational-error": 1678,
+              "intentional-business-error": 66,
+              "invalid-input": 126,
+              "continuation": 825
+            },
+            "kinds": {
+              "query": 2659,
+              "file": 664,
+              "images": 672,
+              "picture": 273,
+              "prompt": 857,
+              "admin": 665,
+              "button": 655,
+              "failure": 66,
+              "badargs": 126,
+              "answer": 825
+            },
+            "routes": {
+              "query": 2420,
+              "audit": 602,
+              "images": 607,
+              "picture": 250,
+              "file": 602,
+              "button": 599,
+              "prompt": 778,
+              "admin": 347,
+              "failure": 66
+            },
+            "loads": 6825,
+            "errors": {
+              "QQ_API": 913,
+              "TRANSPORT": 317,
+              "Error": 66,
+              "CONTEXT_TIMEOUT": 620,
+              "PARAMETER_PARSE": 126
+            },
+            "successfulCompletionsByWallTime": 3680,
+            "queueWait": {
+              "count": 6637,
+              "meanMs": 9445.38455337367,
+              "maxMs": 16240.42475,
+              "p50UpperMs": 9712,
+              "p95UpperMs": 15579,
+              "p99UpperMs": 16208
+            },
+            "successLatency": {
+              "count": 4483,
+              "meanMs": 11150.492216424076,
+              "maxMs": 39055.551459,
+              "p50UpperMs": 10487,
+              "p95UpperMs": 25808,
+              "p99UpperMs": 36605
+            },
+            "terminalLatency": {
+              "count": 6637,
+              "meanMs": 11124.611026194958,
+              "maxMs": 39095.855209,
+              "p50UpperMs": 10785,
+              "p95UpperMs": 24260,
+              "p99UpperMs": 35917
+            }
+          },
+          {
+            "name": "recovery-50",
+            "admissions": {
+              "overloaded": 1,
+              "accepted": 3547,
+              "duplicate": 702,
+              "ignored": 547
+            },
+            "outcomes": {
+              "success": 2790,
+              "guard-denied": 121,
+              "intentional-business-error": 30,
+              "invalid-input": 59,
+              "continuation": 547
+            },
+            "kinds": {
+              "admin": 301,
+              "button": 299,
+              "file": 301,
+              "query": 1199,
+              "picture": 120,
+              "images": 302,
+              "prompt": 389,
+              "failure": 30,
+              "badargs": 59,
+              "answer": 547
+            },
+            "routes": {
+              "admin": 180,
+              "button": 299,
+              "audit": 301,
+              "file": 301,
+              "picture": 120,
+              "query": 1199,
+              "images": 302,
+              "prompt": 389,
+              "failure": 30
+            },
+            "loads": 3091,
+            "errors": {
+              "Error": 30,
+              "PARAMETER_PARSE": 59
+            },
+            "successfulCompletionsByWallTime": 4167,
+            "queueWait": {
+              "count": 3000,
+              "meanMs": 2890.029110104342,
+              "maxMs": 16157.479959,
+              "p50UpperMs": 1,
+              "p95UpperMs": 14030,
+              "p99UpperMs": 15860
+            },
+            "successLatency": {
+              "count": 2790,
+              "meanMs": 3166.6922733910155,
+              "maxMs": 21399.485333,
+              "p50UpperMs": 74,
+              "p95UpperMs": 14806,
+              "p99UpperMs": 17881
+            },
+            "terminalLatency": {
+              "count": 3000,
+              "meanMs": 3152.253733832336,
+              "maxMs": 21399.520792,
+              "p50UpperMs": 73,
+              "p95UpperMs": 14732,
+              "p99UpperMs": 17421
+            }
+          },
+          {
+            "name": "shutdown",
+            "admissions": {
+              "accepted": 48
+            },
+            "outcomes": {
+              "shutdown-cancelled": 48
+            },
+            "kinds": {
+              "shutdown-prompt": 8,
+              "hold": 40
+            },
+            "routes": {
+              "prompt": 8
+            },
+            "loads": 40,
+            "errors": {},
+            "successfulCompletionsByWallTime": 3,
+            "queueWait": {
+              "count": 40,
+              "meanMs": 0.11282302500000001,
+              "maxMs": 0.389959,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            },
+            "successLatency": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "terminalLatency": {
+              "count": 48,
+              "meanMs": 938.3331987708334,
+              "maxMs": 1338.127,
+              "p50UpperMs": 859,
+              "p95UpperMs": 1338,
+              "p99UpperMs": 1339
+            }
+          }
+        ]
+      },
+      "shutdownDriver": {
+        "type": "driver-snapshot",
+        "nonce": "86",
+        "outstanding": 0,
+        "timers": 0,
+        "fixtureActive": 32,
+        "actors": 9414
+      },
+      "finalResources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "closeMs": 840.049417,
+      "drainMs": 1529.287958
+    },
+    {
+      "label": "connections-after-drain",
+      "path": "work/mixed-benchmark/readiness-20261020-connections-after-drain.json",
+      "sha256": "a98b6b8bcb92eb615570d1deb99f1e7ef5853700e70cca4cf1d4df0f7e92f691",
+      "integrity": "passed",
+      "configuration": {
+        "name": "connections",
+        "concurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 256,
+        "phases": [
+          {
+            "name": "warmup",
+            "durationMs": 5000,
+            "rate": 50
+          },
+          {
+            "name": "ramp-1000",
+            "durationMs": 10000,
+            "rate": 1000
+          },
+          {
+            "name": "burst-2500",
+            "durationMs": 10000,
+            "rate": 2500
+          },
+          {
+            "name": "large-payload",
+            "durationMs": 5000,
+            "rate": 500,
+            "large": true
+          },
+          {
+            "name": "faults-150",
+            "durationMs": 10000,
+            "rate": 150,
+            "faults": true
+          },
+          {
+            "name": "recovery-50",
+            "durationMs": 30000,
+            "rate": 50
+          }
+        ]
+      },
+      "source": {
+        "gitHead": "082e88a4ad64f2d54683d5c7c96ca56d24206bc7",
+        "dirty": true,
+        "sdkSha256": "07520ff9dd29d75dbb6f433b8aa147258d8e4cf1b24a1cab550c2edee28c674a",
+        "harnessSha256": "99dc7c189d1096af8eaa19346155e62459817612a27600375244b9a6b0fd4a51"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpu": "Apple M4",
+        "logicalCpus": 10,
+        "totalMemoryBytes": 34359738368,
+        "gc": "baseline/end only; no forced GC during load"
+      },
+      "plannedPrimary": 40750,
+      "driverDropped": 0,
+      "driverUnexpected": 0,
+      "sdkUnexpected": 0,
+      "transportErrors": [],
+      "httpCounts": {
+        "connections": 323,
+        "requests": 114088,
+        "status:200": 21543,
+        "status:503": 92545,
+        "socketTimeouts": 283
+      },
+      "httpErrors": [],
+      "maximumOutstanding": 297,
+      "maximumSampledAgentPending": 0,
+      "maximumSampledSdkRssBytes": 448161992,
+      "phases": {
+        "driver": [
+          {
+            "name": "warmup",
+            "counts": {
+              "primary": 250,
+              "connectionReusable": 399,
+              "primaryAcknowledged": 250,
+              "duplicate": 59,
+              "distractor": 45,
+              "continuationsAcknowledged": 90,
+              "answer": 45
+            },
+            "statuses": {
+              "200": 399
+            },
+            "schedulingLag": {
+              "count": 250,
+              "meanMs": 2.8024593279999994,
+              "maxMs": 5.723583,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 399,
+              "meanMs": 1.497156313283208,
+              "maxMs": 16.839208,
+              "p50UpperMs": 2,
+              "p95UpperMs": 3,
+              "p99UpperMs": 6
+            },
+            "socketWait": {
+              "count": 399,
+              "meanMs": 0.34268075438596485,
+              "maxMs": 5.034125,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "counts": {
+              "primary": 10000,
+              "connectionReusable": 24986,
+              "primaryAcknowledged": 5913,
+              "duplicate": 1601,
+              "distractor": 1105,
+              "continuationsAcknowledged": 2210,
+              "answer": 1105,
+              "retry": 11175
+            },
+            "statuses": {
+              "200": 9610,
+              "503": 15376
+            },
+            "schedulingLag": {
+              "count": 10000,
+              "meanMs": 2.599003081000004,
+              "maxMs": 13.379167,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 24986,
+              "meanMs": 0.7689449062274879,
+              "maxMs": 29.485458,
+              "p50UpperMs": 1,
+              "p95UpperMs": 2,
+              "p99UpperMs": 5
+            },
+            "socketWait": {
+              "count": 24986,
+              "meanMs": 0.10030944841110977,
+              "maxMs": 3.738292,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "burst-2500",
+            "counts": {
+              "primary": 25000,
+              "connectionReusable": 77023,
+              "primaryAcknowledged": 3831,
+              "duplicate": 1942,
+              "retry": 48699,
+              "distractor": 691,
+              "continuationsAcknowledged": 1382,
+              "answer": 691
+            },
+            "statuses": {
+              "200": 6332,
+              "503": 70691
+            },
+            "schedulingLag": {
+              "count": 25000,
+              "meanMs": 2.7314934682399907,
+              "maxMs": 27.78525,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 77023,
+              "meanMs": 1.2363291087467492,
+              "maxMs": 42.389792,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 9
+            },
+            "socketWait": {
+              "count": 77023,
+              "meanMs": 0.11317299470288057,
+              "maxMs": 7.082292,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "large-payload",
+            "counts": {
+              "primary": 2500,
+              "connectionReusable": 7129,
+              "primaryAcknowledged": 612,
+              "duplicate": 124,
+              "retry": 4505
+            },
+            "statuses": {
+              "200": 651,
+              "503": 6478
+            },
+            "schedulingLag": {
+              "count": 2500,
+              "meanMs": 2.8217930807999974,
+              "maxMs": 8.118167,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 7
+            },
+            "ackLatency": {
+              "count": 7129,
+              "meanMs": 1.2041731059054563,
+              "maxMs": 11.564708,
+              "p50UpperMs": 1,
+              "p95UpperMs": 4,
+              "p99UpperMs": 6
+            },
+            "socketWait": {
+              "count": 7129,
+              "meanMs": 0.2253298529948107,
+              "maxMs": 4.421459,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "faults-150",
+            "counts": {
+              "primary": 1500,
+              "connectionReusable": 2114,
+              "primaryAcknowledged": 1500,
+              "duplicate": 258,
+              "distractor": 178,
+              "continuationsAcknowledged": 356,
+              "answer": 178
+            },
+            "statuses": {
+              "200": 2114
+            },
+            "schedulingLag": {
+              "count": 1500,
+              "meanMs": 2.7176938853333343,
+              "maxMs": 12.307667,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 2114,
+              "meanMs": 0.9546306627246933,
+              "maxMs": 11.119167,
+              "p50UpperMs": 1,
+              "p95UpperMs": 3,
+              "p99UpperMs": 5
+            },
+            "socketWait": {
+              "count": 2114,
+              "meanMs": 0.16548868117313126,
+              "maxMs": 0.765,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "recovery-50",
+            "counts": {
+              "primary": 1500,
+              "connectionReusable": 2389,
+              "primaryAcknowledged": 1500,
+              "duplicate": 345,
+              "distractor": 272,
+              "continuationsAcknowledged": 544,
+              "answer": 272
+            },
+            "statuses": {
+              "200": 2389
+            },
+            "schedulingLag": {
+              "count": 1500,
+              "meanMs": 2.6763968833333367,
+              "maxMs": 33.833125,
+              "p50UpperMs": 3,
+              "p95UpperMs": 6,
+              "p99UpperMs": 6
+            },
+            "ackLatency": {
+              "count": 2389,
+              "meanMs": 1.2351271377145248,
+              "maxMs": 33.972833,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 5
+            },
+            "socketWait": {
+              "count": 2389,
+              "meanMs": 0.30831185265801603,
+              "maxMs": 24.919084,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 1
+            }
+          },
+          {
+            "name": "shutdown",
+            "counts": {
+              "shutdown": 48,
+              "connectionReusable": 48,
+              "primaryAcknowledged": 48
+            },
+            "statuses": {
+              "200": 48
+            },
+            "schedulingLag": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "ackLatency": {
+              "count": 48,
+              "meanMs": 4.2713090625,
+              "maxMs": 6.103875,
+              "p50UpperMs": 5,
+              "p95UpperMs": 7,
+              "p99UpperMs": 7
+            },
+            "socketWait": {
+              "count": 48,
+              "meanMs": 1.3223793125000003,
+              "maxMs": 2.002625,
+              "p50UpperMs": 2,
+              "p95UpperMs": 2,
+              "p99UpperMs": 3
+            }
+          }
+        ],
+        "sdk": [
+          {
+            "name": "warmup",
+            "admissions": {
+              "accepted": 295,
+              "duplicate": 59,
+              "ignored": 45
+            },
+            "outcomes": {
+              "guard-denied": 8,
+              "success": 237,
+              "continuation": 45,
+              "intentional-business-error": 3,
+              "invalid-input": 2
+            },
+            "kinds": {
+              "query": 101,
+              "admin": 24,
+              "file": 28,
+              "images": 29,
+              "picture": 10,
+              "prompt": 33,
+              "button": 20,
+              "answer": 45,
+              "failure": 3,
+              "badargs": 2
+            },
+            "routes": {
+              "query": 101,
+              "audit": 28,
+              "images": 29,
+              "file": 28,
+              "picture": 10,
+              "prompt": 33,
+              "button": 20,
+              "admin": 16,
+              "failure": 3
+            },
+            "loads": 265,
+            "errors": {
+              "Error": 3,
+              "PARAMETER_PARSE": 2
+            },
+            "successfulCompletionsByWallTime": 232,
+            "queueWait": {
+              "count": 250,
+              "meanMs": 0.36096019199999996,
+              "maxMs": 6.09025,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 2
+            },
+            "successLatency": {
+              "count": 237,
+              "meanMs": 161.13142051476785,
+              "maxMs": 3179.796375,
+              "p50UpperMs": 41,
+              "p95UpperMs": 941,
+              "p99UpperMs": 1544
+            },
+            "terminalLatency": {
+              "count": 250,
+              "meanMs": 152.98730668,
+              "maxMs": 3179.797583,
+              "p50UpperMs": 41,
+              "p95UpperMs": 939,
+              "p99UpperMs": 1544
+            }
+          },
+          {
+            "name": "ramp-1000",
+            "admissions": {
+              "accepted": 7018,
+              "duplicate": 1487,
+              "ignored": 1105,
+              "overloaded": 15376
+            },
+            "outcomes": {
+              "guard-denied": 247,
+              "invalid-input": 115,
+              "success": 5496,
+              "intentional-business-error": 55,
+              "continuation": 1105
+            },
+            "kinds": {
+              "images": 603,
+              "admin": 586,
+              "button": 575,
+              "file": 601,
+              "query": 2347,
+              "prompt": 783,
+              "badargs": 115,
+              "failure": 55,
+              "picture": 248,
+              "answer": 1105
+            },
+            "routes": {
+              "images": 603,
+              "button": 575,
+              "audit": 601,
+              "query": 2347,
+              "prompt": 783,
+              "admin": 339,
+              "failure": 55,
+              "file": 601,
+              "picture": 248
+            },
+            "loads": 6097,
+            "errors": {
+              "PARAMETER_PARSE": 115,
+              "Error": 55
+            },
+            "successfulCompletionsByWallTime": 3527,
+            "queueWait": {
+              "count": 5913,
+              "meanMs": 3097.2106369665194,
+              "maxMs": 4410.84625,
+              "p50UpperMs": 3922,
+              "p95UpperMs": 4370,
+              "p99UpperMs": 4401
+            },
+            "successLatency": {
+              "count": 5496,
+              "meanMs": 4226.323477168119,
+              "maxMs": 14945.9255,
+              "p50UpperMs": 4301,
+              "p95UpperMs": 12206,
+              "p99UpperMs": 13552
+            },
+            "terminalLatency": {
+              "count": 5913,
+              "meanMs": 4145.885219148992,
+              "maxMs": 14945.926125,
+              "p50UpperMs": 4294,
+              "p95UpperMs": 11864,
+              "p99UpperMs": 13537
+            }
+          },
+          {
+            "name": "burst-2500",
+            "admissions": {
+              "overloaded": 70691,
+              "accepted": 4522,
+              "duplicate": 1119,
+              "ignored": 691
+            },
+            "outcomes": {
+              "invalid-input": 80,
+              "guard-denied": 166,
+              "success": 3552,
+              "intentional-business-error": 33,
+              "continuation": 691
+            },
+            "kinds": {
+              "query": 1548,
+              "admin": 364,
+              "file": 412,
+              "images": 376,
+              "badargs": 80,
+              "prompt": 504,
+              "button": 362,
+              "failure": 33,
+              "picture": 152,
+              "answer": 691
+            },
+            "routes": {
+              "query": 1548,
+              "admin": 198,
+              "audit": 412,
+              "images": 376,
+              "prompt": 504,
+              "button": 362,
+              "file": 412,
+              "failure": 33,
+              "picture": 152
+            },
+            "loads": 3964,
+            "errors": {
+              "PARAMETER_PARSE": 80,
+              "Error": 33
+            },
+            "successfulCompletionsByWallTime": 3512,
+            "queueWait": {
+              "count": 3831,
+              "meanMs": 4396.454198102071,
+              "maxMs": 4509.650167,
+              "p50UpperMs": 4415,
+              "p95UpperMs": 4468,
+              "p99UpperMs": 4477
+            },
+            "successLatency": {
+              "count": 3552,
+              "meanMs": 5628.6435789482,
+              "maxMs": 14719.881042,
+              "p50UpperMs": 4647,
+              "p95UpperMs": 12731,
+              "p99UpperMs": 14029
+            },
+            "terminalLatency": {
+              "count": 3831,
+              "meanMs": 5549.870100207535,
+              "maxMs": 14719.882083,
+              "p50UpperMs": 4632,
+              "p95UpperMs": 12529,
+              "p99UpperMs": 13948
+            }
+          },
+          {
+            "name": "large-payload",
+            "admissions": {
+              "overloaded": 6478,
+              "accepted": 612,
+              "duplicate": 39
+            },
+            "outcomes": {
+              "success": 612
+            },
+            "kinds": {
+              "large": 612
+            },
+            "routes": {
+              "query": 612
+            },
+            "loads": 612,
+            "errors": {},
+            "successfulCompletionsByWallTime": 1692,
+            "queueWait": {
+              "count": 612,
+              "meanMs": 4486.93114298692,
+              "maxMs": 5382.789167,
+              "p50UpperMs": 4834,
+              "p95UpperMs": 5336,
+              "p99UpperMs": 5358
+            },
+            "successLatency": {
+              "count": 612,
+              "meanMs": 4749.8411082614375,
+              "maxMs": 5852.474125,
+              "p50UpperMs": 5087,
+              "p95UpperMs": 5579,
+              "p99UpperMs": 5785
+            },
+            "terminalLatency": {
+              "count": 612,
+              "meanMs": 4749.842157459153,
+              "maxMs": 5852.475125,
+              "p50UpperMs": 5087,
+              "p95UpperMs": 5579,
+              "p99UpperMs": 5785
+            }
+          },
+          {
+            "name": "faults-150",
+            "admissions": {
+              "accepted": 1678,
+              "duplicate": 258,
+              "ignored": 178
+            },
+            "outcomes": {
+              "success": 1018,
+              "operational-error": 373,
+              "guard-denied": 65,
+              "intentional-business-error": 14,
+              "invalid-input": 30,
+              "continuation": 178
+            },
+            "kinds": {
+              "images": 150,
+              "admin": 151,
+              "prompt": 193,
+              "button": 149,
+              "query": 601,
+              "file": 151,
+              "picture": 61,
+              "failure": 14,
+              "badargs": 30,
+              "answer": 178
+            },
+            "routes": {
+              "images": 138,
+              "prompt": 177,
+              "button": 137,
+              "query": 539,
+              "audit": 137,
+              "file": 137,
+              "picture": 58,
+              "admin": 77,
+              "failure": 14
+            },
+            "loads": 1542,
+            "errors": {
+              "QQ_API": 188,
+              "Error": 14,
+              "TRANSPORT": 72,
+              "PARAMETER_PARSE": 30,
+              "CONTEXT_TIMEOUT": 142
+            },
+            "successfulCompletionsByWallTime": 1483,
+            "queueWait": {
+              "count": 1500,
+              "meanMs": 3766.1998351093293,
+              "maxMs": 5611.698458,
+              "p50UpperMs": 4002,
+              "p95UpperMs": 5238,
+              "p99UpperMs": 5573
+            },
+            "successLatency": {
+              "count": 1018,
+              "meanMs": 4508.915881727902,
+              "maxMs": 13074.544792,
+              "p50UpperMs": 4136,
+              "p95UpperMs": 9937,
+              "p99UpperMs": 12155
+            },
+            "terminalLatency": {
+              "count": 1500,
+              "meanMs": 4599.671324065998,
+              "maxMs": 13994.257751,
+              "p50UpperMs": 4176,
+              "p95UpperMs": 9359,
+              "p99UpperMs": 12104
+            }
+          },
+          {
+            "name": "recovery-50",
+            "admissions": {
+              "accepted": 1772,
+              "duplicate": 345,
+              "ignored": 272
+            },
+            "outcomes": {
+              "success": 1391,
+              "guard-denied": 67,
+              "intentional-business-error": 14,
+              "invalid-input": 28,
+              "continuation": 272
+            },
+            "kinds": {
+              "file": 151,
+              "images": 151,
+              "prompt": 195,
+              "query": 599,
+              "admin": 150,
+              "button": 150,
+              "picture": 62,
+              "failure": 14,
+              "badargs": 28,
+              "answer": 272
+            },
+            "routes": {
+              "audit": 151,
+              "images": 151,
+              "prompt": 195,
+              "query": 599,
+              "file": 151,
+              "admin": 83,
+              "button": 150,
+              "picture": 62,
+              "failure": 14
+            },
+            "loads": 1542,
+            "errors": {
+              "Error": 14,
+              "PARAMETER_PARSE": 28
+            },
+            "successfulCompletionsByWallTime": 1855,
+            "queueWait": {
+              "count": 1500,
+              "meanMs": 750.7154566973314,
+              "maxMs": 5611.2025,
+              "p50UpperMs": 1,
+              "p95UpperMs": 4648,
+              "p99UpperMs": 5458
+            },
+            "successLatency": {
+              "count": 1391,
+              "meanMs": 925.8113835370252,
+              "maxMs": 7708.084875,
+              "p50UpperMs": 53,
+              "p95UpperMs": 4964,
+              "p99UpperMs": 5914
+            },
+            "terminalLatency": {
+              "count": 1500,
+              "meanMs": 915.3905705606677,
+              "maxMs": 7708.086583,
+              "p50UpperMs": 45,
+              "p95UpperMs": 4926,
+              "p99UpperMs": 5689
+            }
+          },
+          {
+            "name": "shutdown",
+            "admissions": {
+              "accepted": 48
+            },
+            "outcomes": {
+              "shutdown-cancelled": 48
+            },
+            "kinds": {
+              "shutdown-prompt": 8,
+              "hold": 40
+            },
+            "routes": {
+              "prompt": 8
+            },
+            "loads": 40,
+            "errors": {},
+            "successfulCompletionsByWallTime": 5,
+            "queueWait": {
+              "count": 40,
+              "meanMs": 0.32343960000000005,
+              "maxMs": 5.761542,
+              "p50UpperMs": 1,
+              "p95UpperMs": 1,
+              "p99UpperMs": 6
+            },
+            "successLatency": {
+              "count": 0,
+              "meanMs": 0,
+              "maxMs": 0,
+              "p50UpperMs": 0,
+              "p95UpperMs": 0,
+              "p99UpperMs": 0
+            },
+            "terminalLatency": {
+              "count": 48,
+              "meanMs": 950.8279019375003,
+              "maxMs": 1331.220792,
+              "p50UpperMs": 875,
+              "p95UpperMs": 1331,
+              "p99UpperMs": 1332
+            }
+          }
+        ]
+      },
+      "shutdownDriver": {
+        "type": "driver-snapshot",
+        "nonce": "50",
+        "outstanding": 0,
+        "timers": 0,
+        "fixtureActive": 32,
+        "actors": 3276
+      },
+      "finalResources": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "closeMs": 832.624833,
+      "drainMs": 613.686958
+    }
+  ],
+  "interpretation": [
+    "A controlled native TCP accept delay reproduces connect-stage resets at the host backlog bound without the SDK.",
+    "The unchanged 149750-event offered workload passes at 64 HTTP connections; driver waiting and explicit 503 refusals remain visible.",
+    "The former shutdown test could close before all injection HTTP requests finished; draining those requests removes the shutdown-stage false failures.",
+    "One paired experiment, not confidence intervals or an external QQ/deployment-capacity guarantee."
+  ],
+  "validation": {
+    "node24.21": {
+      "status": "passed",
+      "tests": 337,
+      "passed": 335,
+      "skippedDedicatedDatabase": 2,
+      "publicExports": 170,
+      "bidirectionalChecks": 128,
+      "sourceTarball": "passed"
+    },
+    "node24.0": {
+      "status": "passed",
+      "tests": 337,
+      "passed": 335,
+      "skippedDedicatedDatabase": 2,
+      "publicExports": 170,
+      "bidirectionalChecks": 128,
+      "sourceTarball": "passed"
+    },
+    "coverage": {
+      "lines": {
+        "total": 10035,
+        "covered": 9712,
+        "skipped": 0,
+        "pct": 96.78
+      },
+      "statements": {
+        "total": 10035,
+        "covered": 9712,
+        "skipped": 0,
+        "pct": 96.78
+      },
+      "functions": {
+        "total": 592,
+        "covered": 551,
+        "skipped": 0,
+        "pct": 93.07
+      },
+      "branches": {
+        "total": 3602,
+        "covered": 3264,
+        "skipped": 0,
+        "pct": 90.61
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    }
+  },
+  "archive": {
+    "path": "work/production-readiness-2026-10-20/readiness-evidence-2026-10-20.zip",
+    "sha256": "e3e735b219fd17ae9bc3fed9f042c797022eac5bad9aa27d8c2754f475f23831",
+    "scope": "Raw successful/failed reports, local and CI logs, native TCP probe, harness sources and patch. Deprecated local database attempt excluded."
+  }
+}

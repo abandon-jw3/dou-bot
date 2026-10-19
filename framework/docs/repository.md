@@ -63,6 +63,8 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 混合负载使用 `npm run benchmark:mixed -- smoke local-smoke` 验证测试工具，再运行 `npm run benchmark:mixed -- standard local-standard`。完整场景约 6 分钟，涵盖本机 Webhook 验签、慢 HTTP 业务、过载与恢复；结果位于 framework/work/mixed-benchmark。每次使用不同标签，报告不覆盖已有文件。详见 [混合 Benchmark](benchmark-mixed-2026-10-14.md)。
 
+连接问题可用 `npm run benchmark:mixed -- connections local-connections` 做 70 秒诊断。需要限制客户端连接突发时设置 `DOU_BOT_BENCHMARK_MAX_SOCKETS`；它不改变计划事件速率，报告会记录实际值和客户端等待。实测范围见 [生产准备与连接排查](readiness-2026-10-20.md)。
+
 只有 main 的非 PR 工作流在全部检查成功后部署 Pages，产物仍为 website/docs/.vitepress/dist。线上地址为 [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)，base 为 /dou-bot/，页面编辑链接仍指向 website/docs/:path。原 /dou-bot-docs/ 的站点跳转保持；这与本次不保留旧仓库目录是两种不同的路径。
 
 ## npm 发布与文档版本

@@ -268,7 +268,44 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
       );
     return result;
   };
-  const http = createServer(app.webhookHandler());
+  const httpCounts: Record<string, number> = {};
+  const httpErrors: Record<string, unknown>[] = [];
+  const handler = app.webhookHandler();
+  const http = createServer((request, response) => {
+    count(httpCounts, 'requests');
+    response.once('finish', () => {
+      count(httpCounts, `status:${response.statusCode}`);
+      if (!response.shouldKeepAlive) {
+        count(httpCounts, 'connectionClose');
+        count(
+          httpCounts,
+          request.complete ? 'closeAfterCompleteRequest' : 'closeBeforeCompleteRequest',
+        );
+      }
+    });
+    response.once('close', () => {
+      if (!response.writableFinished) count(httpCounts, 'unfinishedResponses');
+    });
+    handler(request, response);
+  });
+  http.on('connection', (socket) => {
+    count(httpCounts, 'connections');
+    const remotePort = socket.remotePort;
+    socket.once('timeout', () => {
+      count(httpCounts, 'socketTimeouts');
+    });
+    socket.once('error', (error: NodeJS.ErrnoException) => {
+      count(httpCounts, `socketError:${error.code ?? error.name}`);
+      if (httpErrors.length < 20)
+        httpErrors.push({
+          remotePort,
+          code: error.code,
+          message: error.message,
+          bytesRead: socket.bytesRead,
+          bytesWritten: socket.bytesWritten,
+        });
+    });
+  });
   http.requestTimeout = 10000;
   http.headersTimeout = 5000;
   const eventLoop = monitorEventLoopDelay({ resolution: 10 });
@@ -298,6 +335,7 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
       memory,
       resources,
       snapshot: app.snapshot(),
+      outbound: app.application.outgoing.snapshot(),
       cpuCores: elapsed ? (cpu.user + cpu.system) / (elapsed * 1000) : 0,
       eventLoopP99Ms: eventLoop.percentile(99) / 1e6,
       eventLoopMaxMs: eventLoop.max / 1e6,
@@ -344,9 +382,12 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
           closeError,
           final: inspectResources(app, clock),
           snapshot: app.snapshot(),
+          outbound: app.application.outgoing.snapshot(),
           afterCloseMemory: process.memoryUsage(),
           resourceUsage: process.resourceUsage(),
           globalCounts,
+          httpCounts,
+          httpErrors,
           unexpected,
           maximumEntries,
           groups: groups.size,

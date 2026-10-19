@@ -107,3 +107,5 @@ npm run benchmark:mixed -- standard local-standard
 - 反例校验：设置 `DOU_BOT_BENCHMARK_CORRUPT_DATA=1` 运行 smoke，模拟服务会返回错误用户，命令应失败且记录身份断言错误。
 
 旧的串行测试继续作为微基准保留，见 [执行器微基准](benchmark-2026-10-14.md)。它与本轮的业务负载、入口和计时方式不同，不能直接比较吞吐数字。
+
+2026-10-20 后续：当前源码的连接压力对照、压测关闭实验修正及完整复测见 [新记录](readiness-2026-10-20.md)。本文原始数值和结论保留。

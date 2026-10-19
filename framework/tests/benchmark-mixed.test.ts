@@ -93,6 +93,33 @@ await test('mixed benchmark deterministic primary mix covers all routes, roles a
   assert.throws(() => profile('unknown'));
 });
 
+await test('mixed benchmark connection controls preserve event rates and validate driver limits', () => {
+  const previous = process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS;
+  try {
+    delete process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS;
+    const standard = profile('standard');
+    assert.equal(standard.driverMaxSockets, 256);
+    process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS = '64';
+    const limited = profile('standard');
+    assert.equal(limited.driverMaxSockets, 64);
+    assert.deepEqual(limited.phases, standard.phases);
+    assert.equal(limited.driverMaxInFlight, standard.driverMaxInFlight);
+    const focused = profile('connections');
+    assert.equal(
+      focused.phases.reduce((sum, phase) => sum + phase.durationMs, 0),
+      70000,
+    );
+    assert.ok(focused.phases.some((phase) => phase.rate === 2500));
+    for (const value of ['0', '-1', '1.5', 'Infinity', '2049']) {
+      process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS = value;
+      assert.throws(() => profile('standard'));
+    }
+  } finally {
+    if (previous === undefined) delete process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS;
+    else process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS = previous;
+  }
+});
+
 await test('mixed benchmark signs complete bytes and keeps attachment events text-free', () => {
   const meta = makeMeta(1, 0, 1n, profile('smoke'), 'file');
   const payload = event(meta);

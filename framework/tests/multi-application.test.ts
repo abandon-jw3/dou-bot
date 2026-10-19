@@ -16,6 +16,7 @@ import {
   OnAttachment,
   OnButton,
   FrameworkError,
+  QQApiError,
   image,
 } from '../src/index.js';
 import type {
@@ -366,6 +367,94 @@ await test('queued route lookup counts against outbound capacity before database
   gate.resolve('a');
   await Promise.all([one, two]);
   await app.close();
+});
+
+await test('slow route storage and 429/503 responses stay bounded and preserve each sending account', async () => {
+  @Module({})
+  class Root {}
+  const storage = new MemoryPersistence();
+  const gate = deferred<void>();
+  const lookup = storage.lookup.bind(storage);
+  let reading = 0;
+  let maximumReading = 0;
+  storage.lookup = async (groupId) => {
+    reading++;
+    maximumReading = Math.max(maximumReading, reading);
+    try {
+      await gate.promise;
+      return await lookup(groupId);
+    } finally {
+      reading--;
+    }
+  };
+  const requests: [string, string, string][] = [];
+  const fixture = createFixtures({
+    respond: (request) => {
+      if (!request.url.pathname.endsWith('/messages')) return undefined;
+      const appId = request.headers.get('X-Union-Appid')!;
+      const content = (request.body as { content: string }).content;
+      requests.push([appId, request.url.pathname, content]);
+      if (content === 'limited')
+        return Response.json({ code: 990001, message: 'fixture throttling' }, { status: 429 });
+      if (content === 'unavailable')
+        return Response.json({ code: 990002, message: 'fixture outage' }, { status: 503 });
+      return undefined;
+    },
+  });
+  const app = await Application.create(
+    Root,
+    { ...config(), outbound: { concurrency: 2, queueCapacity: 2 } },
+    {
+      persistence: storage,
+      fetch: fixture.fetcher,
+      transport: () => ({ start: async () => {}, stop: async () => {} }),
+    },
+  );
+  await app.start();
+  try {
+    await storage.observe('a', 'ga');
+    await storage.observe('b', 'gb');
+    const sender = app.get(MessageSender);
+    const operations = [
+      sender.sendMessage({ scene: 'group', groupId: 'ga' }, 'limited'),
+      sender.sendMessage({ scene: 'group', groupId: 'gb' }, 'unavailable'),
+      sender.sendMessage({ scene: 'group', groupId: 'ga' }, 'after-a'),
+      sender.sendMessage({ scene: 'group', groupId: 'gb' }, 'after-b'),
+    ];
+    const outcomes = Promise.allSettled(operations);
+    await until(() => reading === 2);
+    assert.equal(requests.length, 0);
+    assert.equal(app.snapshot().outbound.active, 2);
+    assert.equal(app.snapshot().outbound.pending, 2);
+    await assert.rejects(
+      sender.sendMessage({ scene: 'group', groupId: 'ga' }, 'overflow'),
+      code('QUEUE_FULL'),
+    );
+    gate.resolve();
+    const results = await outcomes;
+    for (const [index, status] of [429, 503].entries()) {
+      const result = results[index]!;
+      assert.equal(result.status, 'rejected');
+      if (result.status === 'rejected')
+        assert.ok(result.reason instanceof QQApiError && result.reason.httpStatus === status);
+    }
+    assert.deepEqual(
+      results.slice(2).map((result) => result.status),
+      ['fulfilled', 'fulfilled'],
+    );
+    assert.ok(maximumReading <= 2);
+    assert.deepEqual(requests, [
+      ['a', '/v2/groups/ga/messages', 'limited'],
+      ['b', '/v2/groups/gb/messages', 'unavailable'],
+      ['a', '/v2/groups/ga/messages', 'after-a'],
+      ['b', '/v2/groups/gb/messages', 'after-b'],
+    ]);
+    assert.equal(app.snapshot().outbound.retainedBytes, 0);
+    assert.equal(app.status, 'running');
+  } finally {
+    gate.resolve();
+    await app.close();
+  }
 });
 
 await test('partial startup failure is isolated, recovery and manual stop preserve shared providers', async () => {

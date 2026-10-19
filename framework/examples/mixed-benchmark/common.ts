@@ -28,7 +28,7 @@ export interface Phase {
   large?: boolean;
 }
 export interface Profile {
-  name: 'smoke' | 'standard';
+  name: 'smoke' | 'standard' | 'connections';
   phases: Phase[];
   concurrency: number;
   queueCapacity: number;
@@ -42,58 +42,84 @@ export interface Profile {
   tokenSeconds: number;
   shutdownTimeoutMs: number;
   driverMaxInFlight: number;
+  driverMaxSockets: number;
 }
 export function profile(name: string): Profile {
-  assert.ok(name === 'smoke' || name === 'standard', 'Profile must be smoke or standard');
-  return name === 'smoke'
-    ? {
-        name,
-        concurrency: 2,
-        queueCapacity: 12,
-        queueMaxBytes: 192 * 1024,
-        loadTimeoutMs: 300,
-        requestTimeoutMs: 250,
-        promptTimeoutMs: 250,
-        baseDataMs: 5,
-        slowDataMs: 70,
-        baseApiMs: 3,
-        tokenSeconds: 2,
-        shutdownTimeoutMs: 150,
-        driverMaxInFlight: 128,
-        phases: [
-          { name: 'steady', durationMs: 2000, rate: 25 },
-          { name: 'burst', durationMs: 2000, rate: 300 },
-          { name: 'large', durationMs: 1500, rate: 200, large: true },
-          { name: 'faults', durationMs: 2000, rate: 50, faults: true },
-          { name: 'recovery', durationMs: 3000, rate: 15 },
-        ],
-      }
-    : {
-        name,
-        concurrency: 32,
-        queueCapacity: 2000,
-        queueMaxBytes: 32 * 1024 * 1024,
-        loadTimeoutMs: 1800,
-        requestTimeoutMs: 1200,
-        promptTimeoutMs: 1500,
-        baseDataMs: 15,
-        slowDataMs: 450,
-        baseApiMs: 15,
-        tokenSeconds: 12,
-        shutdownTimeoutMs: 800,
-        driverMaxInFlight: 2048,
-        phases: [
-          { name: 'warmup', durationMs: 10000, rate: 50 },
-          { name: 'steady-50', durationMs: 60000, rate: 50 },
-          { name: 'ramp-200', durationMs: 45000, rate: 200 },
-          { name: 'ramp-500', durationMs: 45000, rate: 500 },
-          { name: 'ramp-1000', durationMs: 45000, rate: 1000 },
-          { name: 'burst-2500', durationMs: 20000, rate: 2500 },
-          { name: 'large-payload', durationMs: 20000, rate: 500, large: true },
-          { name: 'faults-150', durationMs: 45000, rate: 150, faults: true },
-          { name: 'recovery-50', durationMs: 60000, rate: 50 },
-        ],
-      };
+  assert.ok(
+    name === 'smoke' || name === 'standard' || name === 'connections',
+    'Profile must be smoke, standard or connections',
+  );
+  const config: Profile =
+    name === 'smoke'
+      ? {
+          name,
+          concurrency: 2,
+          queueCapacity: 12,
+          queueMaxBytes: 192 * 1024,
+          loadTimeoutMs: 300,
+          requestTimeoutMs: 250,
+          promptTimeoutMs: 250,
+          baseDataMs: 5,
+          slowDataMs: 70,
+          baseApiMs: 3,
+          tokenSeconds: 2,
+          shutdownTimeoutMs: 150,
+          driverMaxInFlight: 128,
+          driverMaxSockets: 128,
+          phases: [
+            { name: 'steady', durationMs: 2000, rate: 25 },
+            { name: 'burst', durationMs: 2000, rate: 300 },
+            { name: 'large', durationMs: 1500, rate: 200, large: true },
+            { name: 'faults', durationMs: 2000, rate: 50, faults: true },
+            { name: 'recovery', durationMs: 3000, rate: 15 },
+          ],
+        }
+      : {
+          name,
+          concurrency: 32,
+          queueCapacity: 2000,
+          queueMaxBytes: 32 * 1024 * 1024,
+          loadTimeoutMs: 1800,
+          requestTimeoutMs: 1200,
+          promptTimeoutMs: 1500,
+          baseDataMs: 15,
+          slowDataMs: 450,
+          baseApiMs: 15,
+          tokenSeconds: 12,
+          shutdownTimeoutMs: 800,
+          driverMaxInFlight: 2048,
+          driverMaxSockets: 256,
+          phases: [
+            { name: 'warmup', durationMs: 10000, rate: 50 },
+            { name: 'steady-50', durationMs: 60000, rate: 50 },
+            { name: 'ramp-200', durationMs: 45000, rate: 200 },
+            { name: 'ramp-500', durationMs: 45000, rate: 500 },
+            { name: 'ramp-1000', durationMs: 45000, rate: 1000 },
+            { name: 'burst-2500', durationMs: 20000, rate: 2500 },
+            { name: 'large-payload', durationMs: 20000, rate: 500, large: true },
+            { name: 'faults-150', durationMs: 45000, rate: 150, faults: true },
+            { name: 'recovery-50', durationMs: 60000, rate: 50 },
+          ],
+        };
+  if (name === 'connections')
+    config.phases = [
+      { name: 'warmup', durationMs: 5000, rate: 50 },
+      { name: 'ramp-1000', durationMs: 10000, rate: 1000 },
+      { name: 'burst-2500', durationMs: 10000, rate: 2500 },
+      { name: 'large-payload', durationMs: 5000, rate: 500, large: true },
+      { name: 'faults-150', durationMs: 10000, rate: 150, faults: true },
+      { name: 'recovery-50', durationMs: 30000, rate: 50 },
+    ];
+  const override = process.env.DOU_BOT_BENCHMARK_MAX_SOCKETS;
+  if (override !== undefined) {
+    const sockets = Number(override);
+    assert.ok(
+      Number.isSafeInteger(sockets) && sockets > 0 && sockets <= config.driverMaxInFlight,
+      'DOU_BOT_BENCHMARK_MAX_SOCKETS must be an integer within the driver in-flight limit',
+    );
+    config.driverMaxSockets = sockets;
+  }
+  return config;
 }
 export interface Meta {
   id: number;
