@@ -5,6 +5,7 @@ import { FrameworkError } from './errors.js';
 import { hasControlCharacters } from './utils.js';
 import { databaseSettings } from '../database/postgres.js';
 import { outboundSettings } from './outbound.js';
+import { diagnosticsSettings } from '../diagnostics/observer.js';
 export type RequiredExecution = Required<ExecutionOptions>;
 export function resolveApplication(options: AppOptions) {
   keys(
@@ -15,6 +16,7 @@ export function resolveApplication(options: AppOptions) {
       'commands',
       'execution',
       'outbound',
+      'diagnostics',
       'context',
       'prompts',
       'webhook',
@@ -81,6 +83,7 @@ export function resolveApplication(options: AppOptions) {
     bots: Object.freeze(bots),
     shared: bots[0]!,
     outbound: outboundSettings(options.outbound),
+    diagnostics: diagnosticsSettings(options.diagnostics),
     webhook: Object.freeze({
       listen: webhook.listen ?? true,
       host: webhook.host ?? '127.0.0.1',

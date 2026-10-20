@@ -1,0 +1,2840 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "status": "completed",
+  "version": {
+    "sdk": "0.8.0",
+    "contract": "2.0 unreleased"
+  },
+  "features": [
+    "default-off bounded stage metrics",
+    "fixed histograms and active ages",
+    "root-sampled correlated spans without payloads or identifiers",
+    "bounded asynchronous exporter with cancellation and failure isolation",
+    "event, handler, lazy state, serial replies, outbound/control queues, QQ HTTP/token, prompt and routing measurements"
+  ],
+  "measuredSource": {
+    "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+    "dirty": true,
+    "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+    "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+  },
+  "finalSource": {
+    "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+    "dirty": true,
+    "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+    "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+  },
+  "changeAfterMeasurement": {
+    "files": ["src/core/application.ts", "src/diagnostics/observer.ts"],
+    "reason": "WeakRef probes reproduced retained readers keeping closed applications alive. Final code uses an independent close-state box and releases exporter closures after close. Stage definitions and workload are unchanged.",
+    "validation": "Two GC regressions passed on both local Node versions and Linux 24.21; final three-mode server smoke passed. Server cost matrix remains explicitly attributed to its original source hash."
+  },
+  "scope": {
+    "topology": "local generator; server SDK, fixture and supervisor share 1.5 CPU / 1 GiB; SSH outside group",
+    "load": "300 primary events/s for 60 seconds, 10-second 200/s warmup and 15-second 200/s recovery; execution/outbound 128/32",
+    "repetitions": "two fresh processes per mode, forward then reverse order",
+    "traceSampleRate": 0.01,
+    "maxActiveSpans": 8192,
+    "exporter": "counts batches and retains at most 80 sample records, no external monitoring I/O",
+    "exclusions": [
+      "real QQ",
+      "real PostgreSQL workload",
+      "Nginx/TLS",
+      "image rendering",
+      "multi-day stability",
+      "maximum throughput"
+    ]
+  },
+  "modes": [
+    {
+      "mode": "off",
+      "meanSdkCpuCores": 0.7699877253061485,
+      "p95Ms": [553, 552],
+      "p99Ms": [1586, 1584],
+      "peakSampledRssMiB": [182.28125, 182.84375],
+      "accepted": [18000, 18000],
+      "exportedSpans": [0, 0],
+      "relativeCpuChange": 0
+    },
+    {
+      "mode": "metrics",
+      "meanSdkCpuCores": 0.8404125607917214,
+      "p95Ms": [560, 560],
+      "p99Ms": [1595, 1597],
+      "peakSampledRssMiB": [182.96875, 186.5625],
+      "accepted": [18000, 18000],
+      "exportedSpans": [0, 0],
+      "relativeCpuChange": 0.09146228332090867
+    },
+    {
+      "mode": "sampled",
+      "meanSdkCpuCores": 0.823099431656808,
+      "p95Ms": [558, 556],
+      "p99Ms": [1589, 1593],
+      "peakSampledRssMiB": [183.49609375, 188.8046875],
+      "accepted": [18000, 18000],
+      "exportedSpans": [8710, 8336],
+      "relativeCpuChange": 0.0689773415927406
+    }
+  ],
+  "measurements": [
+    {
+      "label": "diag300-off-r1-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-off-r1-20261020-d44034.service",
+      "mode": "off",
+      "startedAt": "2026-10-20T06:33:49.484Z",
+      "finishedAt": "2026-10-20T06:35:19.845Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 202.5777186273728,
+          "maxMs": 2626.531792,
+          "p50UpperMs": 100,
+          "p95UpperMs": 553,
+          "p99UpperMs": 1586
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 191.44818175100076,
+          "maxMs": 2626.530792,
+          "p50UpperMs": 96,
+          "p95UpperMs": 536,
+          "p99UpperMs": 1583
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 152.4127492207383,
+          "maxMs": 2581.539938,
+          "p50UpperMs": 45,
+          "p95UpperMs": 488,
+          "p99UpperMs": 1543
+        },
+        "successPerSecondByCompletionTime": 278.51666666666665,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 1,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 182.28125,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.7653242497609821,
+        "peakRssMiB": 182.28125,
+        "meanOutboundActive": 7.953125
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.7439878916666647,
+          "maxMs": 9.298792,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.2836542368421073,
+          "maxMs": 6.329167,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1118.45703125,
+        "peakGroupMiB": 251.984375,
+        "throttledPeriods": 24,
+        "periods": 881,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": false,
+          "closed": true,
+          "elapsedMs": 0,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 0,
+        "exportedSpans": 0
+      }
+    },
+    {
+      "label": "diag300-metrics-r1-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-metrics-r1-20261020-9e7b20.service",
+      "mode": "metrics",
+      "startedAt": "2026-10-20T06:35:19.957Z",
+      "finishedAt": "2026-10-20T06:36:50.543Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 206.33422763587424,
+          "maxMs": 2739.120625,
+          "p50UpperMs": 104,
+          "p95UpperMs": 560,
+          "p99UpperMs": 1595
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 194.948231517611,
+          "maxMs": 2739.1145,
+          "p50UpperMs": 100,
+          "p95UpperMs": 542,
+          "p99UpperMs": 1592
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 155.4795233520921,
+          "maxMs": 2615.237621,
+          "p50UpperMs": 49,
+          "p95UpperMs": 491,
+          "p99UpperMs": 1549
+        },
+        "successPerSecondByCompletionTime": 278.1,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 182.96875,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.8359239052236878,
+        "peakRssMiB": 182.96875,
+        "meanOutboundActive": 7.546875
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.76548666144444,
+          "maxMs": 9.656292,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.2798393185779003,
+          "maxMs": 2.333125,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1121.79296875,
+        "peakGroupMiB": 244.06640625,
+        "throttledPeriods": 36,
+        "periods": 851,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 87853.132281,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 159,
+        "exportedSpans": 0
+      }
+    },
+    {
+      "label": "diag300-sampled-r1-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-sampled-r1-20261020-eff347.service",
+      "mode": "sampled",
+      "startedAt": "2026-10-20T06:36:50.678Z",
+      "finishedAt": "2026-10-20T06:38:21.302Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "sampled"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 205.46812477830298,
+          "maxMs": 2785.055,
+          "p50UpperMs": 103,
+          "p95UpperMs": 558,
+          "p99UpperMs": 1589
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 194.1888672666104,
+          "maxMs": 2785.054042,
+          "p50UpperMs": 99,
+          "p95UpperMs": 539,
+          "p99UpperMs": 1587
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 154.49337432449238,
+          "maxMs": 2661.237759,
+          "p50UpperMs": 48,
+          "p95UpperMs": 491,
+          "p99UpperMs": 1547
+        },
+        "successPerSecondByCompletionTime": 278,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 183.49609375,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.8084497442463968,
+        "peakRssMiB": 183.49609375,
+        "meanOutboundActive": 7.59375
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.7381423398888844,
+          "maxMs": 10.199417,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.28465325447891165,
+          "maxMs": 2.459042,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1111.04296875,
+        "peakGroupMiB": 246.109375,
+        "throttledPeriods": 31,
+        "periods": 870,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 87833.39770300001,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 159,
+        "exportedSpans": 8710
+      }
+    },
+    {
+      "label": "diag300-sampled-r2-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-sampled-r2-20261020-155e87.service",
+      "mode": "sampled",
+      "startedAt": "2026-10-20T06:38:21.427Z",
+      "finishedAt": "2026-10-20T06:39:51.950Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "sampled"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 206.42319319254233,
+          "maxMs": 2688.95425,
+          "p50UpperMs": 104,
+          "p95UpperMs": 556,
+          "p99UpperMs": 1593
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 195.09036073249882,
+          "maxMs": 2688.949708,
+          "p50UpperMs": 100,
+          "p95UpperMs": 541,
+          "p99UpperMs": 1590
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 155.71734873112604,
+          "maxMs": 2618.194919,
+          "p50UpperMs": 49,
+          "p95UpperMs": 492,
+          "p99UpperMs": 1549
+        },
+        "successPerSecondByCompletionTime": 277.9,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 188.8046875,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.8377491190672192,
+        "peakRssMiB": 188.8046875,
+        "meanOutboundActive": 8.203125
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.7377222777777885,
+          "maxMs": 8.283084,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.27966467040780807,
+          "maxMs": 6.5205,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1096.48046875,
+        "peakGroupMiB": 254.71484375,
+        "throttledPeriods": 32,
+        "periods": 884,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 87808.024137,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 159,
+        "exportedSpans": 8336
+      }
+    },
+    {
+      "label": "diag300-metrics-r2-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-metrics-r2-20261020-315c51.service",
+      "mode": "metrics",
+      "startedAt": "2026-10-20T06:39:52.045Z",
+      "finishedAt": "2026-10-20T06:41:22.269Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 207.41567134670447,
+          "maxMs": 2715.625875,
+          "p50UpperMs": 106,
+          "p95UpperMs": 560,
+          "p99UpperMs": 1597
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 195.93240601627673,
+          "maxMs": 2715.625292,
+          "p50UpperMs": 101,
+          "p95UpperMs": 544,
+          "p99UpperMs": 1595
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 156.48320809273773,
+          "maxMs": 2594.092981,
+          "p50UpperMs": 50,
+          "p95UpperMs": 492,
+          "p99UpperMs": 1551
+        },
+        "successPerSecondByCompletionTime": 278.1666666666667,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 186.5625,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.844901216359755,
+        "peakRssMiB": 186.5625,
+        "meanOutboundActive": 7.171875
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.737556847166662,
+          "maxMs": 11.138917,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.2834372007668168,
+          "maxMs": 6.914292,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1125.98828125,
+        "peakGroupMiB": 247.8671875,
+        "throttledPeriods": 39,
+        "periods": 857,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 87743.127491,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 159,
+        "exportedSpans": 0
+      }
+    },
+    {
+      "label": "diag300-off-r2-20261020",
+      "unit": "dou-bot-capacity-compare-diag300-off-r2-20261020-ee0063.service",
+      "mode": "off",
+      "startedAt": "2026-10-20T06:41:22.412Z",
+      "finishedAt": "2026-10-20T06:42:52.448Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-300",
+            "durationMs": 60000,
+            "rate": 300
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "steady": {
+        "name": "steady-300",
+        "rate": 300,
+        "durationMs": 60000,
+        "scheduled": 18000,
+        "accepted": 18000,
+        "completed": 18000,
+        "outcomes": {
+          "guard-denied": 757,
+          "invalid-input": 360,
+          "success": 16703,
+          "intentional-business-error": 180
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 16703,
+          "meanMs": 202.53009611572676,
+          "maxMs": 2681.202209,
+          "p50UpperMs": 100,
+          "p95UpperMs": 552,
+          "p99UpperMs": 1584
+        },
+        "terminalLatency": {
+          "count": 18000,
+          "meanMs": 191.40169454472226,
+          "maxMs": 2681.200959,
+          "p50UpperMs": 96,
+          "p95UpperMs": 533,
+          "p99UpperMs": 1581
+        },
+        "serverAdmissionLatency": {
+          "count": 16703,
+          "meanMs": 152.79413660048985,
+          "maxMs": 2588.584801,
+          "p50UpperMs": 45,
+          "p95UpperMs": 488,
+          "p99UpperMs": 1544
+        },
+        "successPerSecondByCompletionTime": 277.9,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 182.84375,
+        "capacityPassed": true
+      },
+      "sdk": {
+        "meanCpuCores": 0.7746512008513148,
+        "peakRssMiB": 182.84375,
+        "meanOutboundActive": 7.265625
+      },
+      "driver": {
+        "statuses": {
+          "200": 28690
+        },
+        "counts": {
+          "primary": 18000,
+          "connectionReusable": 28690,
+          "primaryAcknowledged": 18000,
+          "duplicate": 4166,
+          "distractor": 3262,
+          "continuationsAcknowledged": 6524,
+          "answer": 3262
+        },
+        "schedulingLag": {
+          "count": 18000,
+          "meanMs": 2.74664825972222,
+          "maxMs": 9.593126,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 28690,
+          "meanMs": 0.2843264654583485,
+          "maxMs": 5.902333,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "minimumAvailableMiB": 1116.84375,
+        "peakGroupMiB": 247.43359375,
+        "throttledPeriods": 21,
+        "periods": 885,
+        "oomKills": 0
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fd46a1242d49357a5e02e3e570eec173f3a2b63327f744a1dd1a4fa1957895d9",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": false,
+          "closed": true,
+          "elapsedMs": 0,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "seriesCount": 0,
+        "exportedSpans": 0
+      }
+    }
+  ],
+  "finalSmoke": [
+    {
+      "label": "diag-final-off-20261020",
+      "integrity": "passed",
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": false,
+          "closed": true,
+          "elapsedMs": 0,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "exportedSpans": 0,
+        "traceExamples": []
+      },
+      "exits": {
+        "fixture": 0,
+        "sdk": 0
+      }
+    },
+    {
+      "label": "diag-final-metrics-20261020",
+      "integrity": "passed",
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 15464.154903,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "exportedSpans": 0,
+        "traceExamples": []
+      },
+      "exits": {
+        "fixture": 0,
+        "sdk": 0
+      }
+    },
+    {
+      "label": "diag-final-sampled-20261020",
+      "integrity": "passed",
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "ee9a189189b2f4f1c7e80c0865384b65b0d5963fa31f7922c31eb452bafd5e61"
+      },
+      "diagnostics": {
+        "snapshot": {
+          "enabled": true,
+          "closed": true,
+          "elapsedMs": 14889.590311,
+          "bucketUpperBoundsMs": [
+            0, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 30000,
+            60000
+          ],
+          "activeSpans": 0,
+          "bufferedSpans": 0,
+          "exportingSpans": 0,
+          "droppedMeasurements": 0,
+          "droppedSpans": 0,
+          "exportFailures": 0,
+          "exportDisabled": false
+        },
+        "exportedSpans": 424,
+        "traceExamples": [
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 2,
+            "parentSpanId": 1,
+            "stage": "webhook.body",
+            "startedMs": 3344.1295729999997,
+            "durationMs": 0.09505300000000716,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 3,
+            "parentSpanId": 1,
+            "stage": "webhook.parse",
+            "startedMs": 3344.3842329999998,
+            "durationMs": 0.05414900000005218,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 4,
+            "parentSpanId": 1,
+            "stage": "webhook.verify",
+            "startedMs": 3344.461669,
+            "durationMs": 0.6702679999998509,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 5,
+            "parentSpanId": 1,
+            "stage": "webhook.verify.wait",
+            "startedMs": 3344.507439,
+            "durationMs": 0.6627279999997882,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 7,
+            "parentSpanId": 1,
+            "stage": "event.normalize",
+            "startedMs": 3345.208397,
+            "durationMs": 0.01996999999983018,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 6,
+            "parentSpanId": 1,
+            "stage": "event.admission",
+            "startedMs": 3345.2013359999996,
+            "durationMs": 0.0764670000003207,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 1,
+            "stage": "webhook.request",
+            "startedMs": 3344.0001749999997,
+            "durationMs": 1.5180070000001251,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 9,
+            "parentSpanId": 8,
+            "stage": "event.queue",
+            "startedMs": 3345.268556,
+            "durationMs": 140.2510739999998,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 11,
+            "parentSpanId": 8,
+            "stage": "route.learn",
+            "startedMs": 3485.6023659999996,
+            "durationMs": 0.01540400000021691,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "handler": "0:Commands.admin",
+            "component": 0,
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 13,
+            "parentSpanId": 12,
+            "stage": "handler.middleware",
+            "startedMs": 3485.6876429999998,
+            "durationMs": 0.04897800000026109,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "handler": "0:Commands.admin",
+            "component": 0,
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 14,
+            "parentSpanId": 12,
+            "stage": "handler.guard",
+            "startedMs": 3485.757448,
+            "durationMs": 0.03588099999979022,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "handler": "0:Commands.admin",
+            "component": 1,
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 15,
+            "parentSpanId": 12,
+            "stage": "handler.guard",
+            "startedMs": 3485.803429,
+            "durationMs": 0.011801999999988766,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "handler": "0:Commands.admin",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 12,
+            "parentSpanId": 8,
+            "stage": "handler.total",
+            "startedMs": 3485.6589559999998,
+            "durationMs": 0.1645240000002559,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 16,
+            "parentSpanId": 8,
+            "stage": "event.drain",
+            "startedMs": 3485.857322,
+            "durationMs": 0.005756999999903201,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 10,
+            "parentSpanId": 8,
+            "stage": "event.run",
+            "startedMs": 3485.5325639999996,
+            "durationMs": 0.342743000000155,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:1",
+            "spanId": 8,
+            "parentSpanId": 1,
+            "stage": "event.total",
+            "startedMs": 3345.252755,
+            "durationMs": 140.62894000000006,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 18,
+            "parentSpanId": 17,
+            "stage": "webhook.body",
+            "startedMs": 3556.1361629999997,
+            "durationMs": 0.06205900000031761,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 19,
+            "parentSpanId": 17,
+            "stage": "webhook.parse",
+            "startedMs": 3556.2139049999996,
+            "durationMs": 0.01621500000010201,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 20,
+            "parentSpanId": 17,
+            "stage": "webhook.verify",
+            "startedMs": 3556.235232,
+            "durationMs": 4.753888999999617,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 21,
+            "parentSpanId": 17,
+            "stage": "webhook.verify.wait",
+            "startedMs": 3556.275155,
+            "durationMs": 4.728689000000031,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 23,
+            "parentSpanId": 17,
+            "stage": "event.normalize",
+            "startedMs": 3561.0244589999998,
+            "durationMs": 0.011900999999852502,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 22,
+            "parentSpanId": 17,
+            "stage": "event.admission",
+            "startedMs": 3561.0200259999997,
+            "durationMs": 0.029847000000245316,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:2",
+            "spanId": 17,
+            "stage": "webhook.request",
+            "startedMs": 3556.125416,
+            "durationMs": 5.01939799999991,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 25,
+            "parentSpanId": 24,
+            "stage": "webhook.body",
+            "startedMs": 3714.824464,
+            "durationMs": 0.06163800000012998,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 26,
+            "parentSpanId": 24,
+            "stage": "webhook.parse",
+            "startedMs": 3714.895725,
+            "durationMs": 0.017062999999780004,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 27,
+            "parentSpanId": 24,
+            "stage": "webhook.verify",
+            "startedMs": 3714.918104,
+            "durationMs": 0.775572000000011,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 28,
+            "parentSpanId": 24,
+            "stage": "webhook.verify.wait",
+            "startedMs": 3714.954535,
+            "durationMs": 0.749503999999888,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 30,
+            "parentSpanId": 24,
+            "stage": "event.normalize",
+            "startedMs": 3715.719012,
+            "durationMs": 0.010959999999613501,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 29,
+            "parentSpanId": 24,
+            "stage": "event.admission",
+            "startedMs": 3715.716106,
+            "durationMs": 0.029551999999966938,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:3",
+            "spanId": 24,
+            "stage": "webhook.request",
+            "startedMs": 3714.8172459999996,
+            "durationMs": 1.0052860000000692,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 32,
+            "parentSpanId": 31,
+            "stage": "webhook.body",
+            "startedMs": 3732.2274859999998,
+            "durationMs": 0.07425899999998364,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 33,
+            "parentSpanId": 31,
+            "stage": "webhook.parse",
+            "startedMs": 3732.312077,
+            "durationMs": 0.01989999999977954,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 34,
+            "parentSpanId": 31,
+            "stage": "webhook.verify",
+            "startedMs": 3732.3370029999996,
+            "durationMs": 0.24387300000034884,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 35,
+            "parentSpanId": 31,
+            "stage": "webhook.verify.wait",
+            "startedMs": 3732.3835099999997,
+            "durationMs": 0.20601299999998446,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 37,
+            "parentSpanId": 31,
+            "stage": "event.normalize",
+            "startedMs": 3732.604137,
+            "durationMs": 0.006563999999798398,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 36,
+            "parentSpanId": 31,
+            "stage": "event.admission",
+            "startedMs": 3732.6015709999997,
+            "durationMs": 0.018403000000034808,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:4",
+            "spanId": 31,
+            "stage": "webhook.request",
+            "startedMs": 3732.219511,
+            "durationMs": 0.48143900000013673,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 39,
+            "parentSpanId": 38,
+            "stage": "webhook.body",
+            "startedMs": 3792.5922149999997,
+            "durationMs": 0.041392999999970925,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 40,
+            "parentSpanId": 38,
+            "stage": "webhook.parse",
+            "startedMs": 3792.641785,
+            "durationMs": 0.015969000000040978,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 41,
+            "parentSpanId": 38,
+            "stage": "webhook.verify",
+            "startedMs": 3792.6620479999997,
+            "durationMs": 1.583215999999993,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 42,
+            "parentSpanId": 38,
+            "stage": "webhook.verify.wait",
+            "startedMs": 3792.6879489999997,
+            "durationMs": 1.56852200000003,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 44,
+            "parentSpanId": 38,
+            "stage": "event.normalize",
+            "startedMs": 3794.270283,
+            "durationMs": 0.011156000000028143,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 43,
+            "parentSpanId": 38,
+            "stage": "event.admission",
+            "startedMs": 3794.2671659999996,
+            "durationMs": 0.029329000000416272,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:5",
+            "spanId": 38,
+            "stage": "webhook.request",
+            "startedMs": 3792.586707,
+            "durationMs": 1.778309999999692,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 46,
+            "parentSpanId": 45,
+            "stage": "webhook.body",
+            "startedMs": 4267.061017999999,
+            "durationMs": 0.04571300000043266,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 47,
+            "parentSpanId": 45,
+            "stage": "webhook.parse",
+            "startedMs": 4267.116593,
+            "durationMs": 0.016969999999673746,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 48,
+            "parentSpanId": 45,
+            "stage": "webhook.verify",
+            "startedMs": 4267.137813,
+            "durationMs": 0.8436479999991207,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 49,
+            "parentSpanId": 45,
+            "stage": "webhook.verify.wait",
+            "startedMs": 4267.153609999999,
+            "durationMs": 0.8521170000003622,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 51,
+            "parentSpanId": 45,
+            "stage": "event.normalize",
+            "startedMs": 4268.017975,
+            "durationMs": 0.011607000000367407,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 50,
+            "parentSpanId": 45,
+            "stage": "event.admission",
+            "startedMs": 4268.01494,
+            "durationMs": 0.026433999999426305,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:6",
+            "spanId": 45,
+            "stage": "webhook.request",
+            "startedMs": 4267.054751,
+            "durationMs": 1.0332280000002356,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 53,
+            "parentSpanId": 52,
+            "stage": "webhook.body",
+            "startedMs": 4286.098684,
+            "durationMs": 0.04601800000000367,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 54,
+            "parentSpanId": 52,
+            "stage": "webhook.parse",
+            "startedMs": 4286.15311,
+            "durationMs": 0.017291999999542895,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 55,
+            "parentSpanId": 52,
+            "stage": "webhook.verify",
+            "startedMs": 4286.174626999999,
+            "durationMs": 0.24452199999996083,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 56,
+            "parentSpanId": 52,
+            "stage": "webhook.verify.wait",
+            "startedMs": 4286.217385,
+            "durationMs": 0.21730699999989156,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 58,
+            "parentSpanId": 52,
+            "stage": "event.normalize",
+            "startedMs": 4286.446761,
+            "durationMs": 0.006666999999652035,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 57,
+            "parentSpanId": 52,
+            "stage": "event.admission",
+            "startedMs": 4286.443357,
+            "durationMs": 0.01890000000003056,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:7",
+            "spanId": 52,
+            "stage": "webhook.request",
+            "startedMs": 4286.094572999999,
+            "durationMs": 0.4228190000003451,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 60,
+            "parentSpanId": 59,
+            "stage": "webhook.body",
+            "startedMs": 4312.980037,
+            "durationMs": 0.054008999999496154,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 61,
+            "parentSpanId": 59,
+            "stage": "webhook.parse",
+            "startedMs": 4313.043325,
+            "durationMs": 0.014560999999957858,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 65,
+            "parentSpanId": 64,
+            "stage": "webhook.body",
+            "startedMs": 4313.382097,
+            "durationMs": 0.03342100000008941,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 66,
+            "parentSpanId": 64,
+            "stage": "webhook.parse",
+            "startedMs": 4313.4219029999995,
+            "durationMs": 0.012048999999933585,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 62,
+            "parentSpanId": 59,
+            "stage": "webhook.verify",
+            "startedMs": 4313.080675,
+            "durationMs": 1.1111279999995531,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 63,
+            "parentSpanId": 59,
+            "stage": "webhook.verify.wait",
+            "startedMs": 4313.104308,
+            "durationMs": 1.0948609999995824,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 70,
+            "parentSpanId": 59,
+            "stage": "event.normalize",
+            "startedMs": 4314.2089559999995,
+            "durationMs": 0.0074930000000676955,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 69,
+            "parentSpanId": 59,
+            "stage": "event.admission",
+            "startedMs": 4314.206312,
+            "durationMs": 0.018956999999318214,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:8",
+            "spanId": 59,
+            "stage": "webhook.request",
+            "startedMs": 4312.975038,
+            "durationMs": 1.281264000000192,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 67,
+            "parentSpanId": 64,
+            "stage": "webhook.verify",
+            "startedMs": 4313.4375709999995,
+            "durationMs": 1.002306000000317,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 68,
+            "parentSpanId": 64,
+            "stage": "webhook.verify.wait",
+            "startedMs": 4313.4517,
+            "durationMs": 0.9944329999998445,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 72,
+            "parentSpanId": 64,
+            "stage": "event.normalize",
+            "startedMs": 4314.454718,
+            "durationMs": 0.007612999999764725,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 71,
+            "parentSpanId": 64,
+            "stage": "event.admission",
+            "startedMs": 4314.452472999999,
+            "durationMs": 0.022503000000142492,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:9",
+            "spanId": 64,
+            "stage": "webhook.request",
+            "startedMs": 4313.3786199999995,
+            "durationMs": 1.1265200000007098,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 74,
+            "parentSpanId": 73,
+            "stage": "webhook.body",
+            "startedMs": 4363.278886,
+            "durationMs": 0.07667399999991176,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 75,
+            "parentSpanId": 73,
+            "stage": "webhook.parse",
+            "startedMs": 4363.438005,
+            "durationMs": 0.020736999999826367,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 76,
+            "parentSpanId": 73,
+            "stage": "webhook.verify",
+            "startedMs": 4363.47047,
+            "durationMs": 0.26863499999944906,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 77,
+            "parentSpanId": 73,
+            "stage": "webhook.verify.wait",
+            "startedMs": 4363.522449,
+            "durationMs": 0.2439039999999295,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 79,
+            "parentSpanId": 73,
+            "stage": "event.normalize",
+            "startedMs": 4363.787326,
+            "durationMs": 0.01302399999985937,
+            "outcome": "success"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 78,
+            "parentSpanId": 73,
+            "stage": "event.admission",
+            "startedMs": 4363.782749999999,
+            "durationMs": 0.03204600000026403,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:10",
+            "spanId": 73,
+            "stage": "webhook.request",
+            "startedMs": 4363.2719959999995,
+            "durationMs": 0.6016170000002603,
+            "outcome": "rejected"
+          },
+          {
+            "appId": "mixed-benchmark-app",
+            "traceId": "029fd75a-d39f-49bf-9d19-8a179d08e46e:11",
+            "spanId": 81,
+            "parentSpanId": 80,
+            "stage": "webhook.body",
+            "startedMs": 4583.023388,
+            "durationMs": 0.0339590000003227,
+            "outcome": "success"
+          }
+        ]
+      },
+      "exits": {
+        "fixture": 0,
+        "sdk": 0
+      }
+    }
+  ],
+  "micro": {
+    "sameProcessExploration": {
+      "node": "v24.21.0",
+      "description": "Sequential in-memory command/Slot/HTTP-fixture microbenchmark; not transport or server capacity; five rotating-order rounds, fresh application each case",
+      "results": [
+        {
+          "round": 0,
+          "case": "prior-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 57.304959,
+          "cpuMs": 103.921,
+          "eventsPerSecond": 34900.993472484646,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 57.69675000000001,
+          "cpuMs": 99.344,
+          "eventsPerSecond": 34663.99753885617,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-metrics",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 73.355209,
+          "cpuMs": 95.265,
+          "eventsPerSecond": 27264.594120371192,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-sampled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 77.56300000000005,
+          "cpuMs": 112.195,
+          "eventsPerSecond": 25785.490504493107,
+          "exported": 408,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "prior-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 50.96016599999996,
+          "cpuMs": 74.74,
+          "eventsPerSecond": 39246.339974638264,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-sampled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 76.66587500000003,
+          "cpuMs": 102.542,
+          "eventsPerSecond": 26087.225900702226,
+          "exported": 476,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-metrics",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 72.14649999999995,
+          "cpuMs": 97.057,
+          "eventsPerSecond": 27721.37248515176,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 60.77920900000004,
+          "cpuMs": 98.469,
+          "eventsPerSecond": 32905.98928327611,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-metrics",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 73.16137500000002,
+          "cpuMs": 95.142,
+          "eventsPerSecond": 27336.82903034558,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-sampled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 73.43995899999993,
+          "cpuMs": 103.029,
+          "eventsPerSecond": 27233.130672090952,
+          "exported": 408,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "prior-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 53.59558399999992,
+          "cpuMs": 65.666,
+          "eventsPerSecond": 37316.5072704498,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 57.57166700000016,
+          "cpuMs": 76.299,
+          "eventsPerSecond": 34739.31022355136,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 3,
+          "case": "current-metrics",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 69.49350000000004,
+          "cpuMs": 91.356,
+          "eventsPerSecond": 28779.67004108296,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 3,
+          "case": "current-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 55.46620800000005,
+          "cpuMs": 77.059,
+          "eventsPerSecond": 36057.990479536624,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 3,
+          "case": "prior-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 51.74258400000008,
+          "cpuMs": 63.444,
+          "eventsPerSecond": 38652.88212123301,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 3,
+          "case": "current-sampled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 74.45204100000001,
+          "cpuMs": 95.094,
+          "eventsPerSecond": 26862.93046016025,
+          "exported": 340,
+          "droppedSpans": 0
+        },
+        {
+          "round": 4,
+          "case": "prior-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 47.948875000000044,
+          "cpuMs": 63.781,
+          "eventsPerSecond": 41711.093325964335,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 4,
+          "case": "current-disabled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 52.66325000000006,
+          "cpuMs": 66.773,
+          "eventsPerSecond": 37977.14725164128,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 4,
+          "case": "current-metrics",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 69.064167,
+          "cpuMs": 89.219,
+          "eventsPerSecond": 28958.577028808588,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 4,
+          "case": "current-sampled",
+          "iterations": 2000,
+          "warmup": 500,
+          "elapsedMs": 74.52437499999996,
+          "cpuMs": 99.087,
+          "eventsPerSecond": 26836.85706857657,
+          "exported": 442,
+          "droppedSpans": 0
+        }
+      ],
+      "summary": [
+        {
+          "case": "prior-disabled",
+          "medianMs": 51.74258400000008,
+          "medianCpuMs": 65.666,
+          "minMs": 47.948875000000044,
+          "maxMs": 57.304959
+        },
+        {
+          "case": "current-disabled",
+          "medianMs": 57.57166700000016,
+          "medianCpuMs": 77.059,
+          "minMs": 52.66325000000006,
+          "maxMs": 60.77920900000004
+        },
+        {
+          "case": "current-metrics",
+          "medianMs": 72.14649999999995,
+          "medianCpuMs": 95.142,
+          "minMs": 69.064167,
+          "maxMs": 73.355209
+        },
+        {
+          "case": "current-sampled",
+          "medianMs": 74.52437499999996,
+          "medianCpuMs": 102.542,
+          "minMs": 73.43995899999993,
+          "maxMs": 77.56300000000005
+        }
+      ]
+    },
+    "isolatedBeforeLifetimeFix": {
+      "node": "v24.21.0",
+      "description": "Independent process per case, three alternating-order rounds; 5000 warmup and 10000 measured sequential fixture commands; not protocol throughput",
+      "results": [
+        {
+          "round": 0,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 225.310041,
+          "cpuMs": 373.094,
+          "eventsPerSecond": 44383.286051596784,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 232.01500000000001,
+          "cpuMs": 387.351,
+          "eventsPerSecond": 43100.661595155485,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 327.45033399999994,
+          "cpuMs": 537.386,
+          "eventsPerSecond": 30538.9824400057,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 327.07200000000006,
+          "cpuMs": 534.934,
+          "eventsPerSecond": 30574.307797671456,
+          "exported": 2048,
+          "droppedSpans": 349
+        },
+        {
+          "round": 1,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 223.82366700000003,
+          "cpuMs": 370.464,
+          "eventsPerSecond": 44678.02772617428,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 330.28904199999994,
+          "cpuMs": 538.608,
+          "eventsPerSecond": 30276.5115652853,
+          "exported": 2048,
+          "droppedSpans": 672
+        },
+        {
+          "round": 1,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 329.32041699999996,
+          "cpuMs": 538.557,
+          "eventsPerSecond": 30365.563395967645,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 224.58695799999998,
+          "cpuMs": 377.232,
+          "eventsPerSecond": 44526.18303864288,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 323.317417,
+          "cpuMs": 530.606,
+          "eventsPerSecond": 30929.35757308738,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 331.634875,
+          "cpuMs": 547.284,
+          "eventsPerSecond": 30153.644124430517,
+          "exported": 2048,
+          "droppedSpans": 655
+        },
+        {
+          "round": 2,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 224.213167,
+          "cpuMs": 372.19,
+          "eventsPerSecond": 44600.413676864926,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 225.05320799999998,
+          "cpuMs": 378.133,
+          "eventsPerSecond": 44433.936707091954,
+          "exported": 0,
+          "droppedSpans": 0
+        }
+      ],
+      "summary": [
+        {
+          "case": "prior-disabled",
+          "medianMs": 224.213167,
+          "medianCpuMs": 372.19,
+          "minMs": 223.82366700000003,
+          "maxMs": 225.310041
+        },
+        {
+          "case": "current-disabled",
+          "medianMs": 225.05320799999998,
+          "medianCpuMs": 378.133,
+          "minMs": 224.58695799999998,
+          "maxMs": 232.01500000000001
+        },
+        {
+          "case": "current-metrics",
+          "medianMs": 327.45033399999994,
+          "medianCpuMs": 537.386,
+          "minMs": 323.317417,
+          "maxMs": 329.32041699999996
+        },
+        {
+          "case": "current-sampled",
+          "medianMs": 330.28904199999994,
+          "medianCpuMs": 538.608,
+          "minMs": 327.07200000000006,
+          "maxMs": 331.634875
+        }
+      ]
+    },
+    "isolatedFinal": {
+      "node": "v24.21.0",
+      "description": "Independent process per case, three alternating-order rounds; 5000 warmup and 10000 measured sequential fixture commands; not protocol throughput",
+      "results": [
+        {
+          "round": 0,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 222.02387499999998,
+          "cpuMs": 374.983,
+          "eventsPerSecond": 45040.20119457874,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 230.65229200000002,
+          "cpuMs": 390.67,
+          "eventsPerSecond": 43355.30296833122,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 323.886167,
+          "cpuMs": 534.537,
+          "eventsPerSecond": 30875.04505865482,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 0,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 334.308792,
+          "cpuMs": 550.945,
+          "eventsPerSecond": 29912.46488067236,
+          "exported": 2048,
+          "droppedSpans": 723
+        },
+        {
+          "round": 1,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 223.07049999999998,
+          "cpuMs": 369.031,
+          "eventsPerSecond": 44828.876969388606,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 334.357792,
+          "cpuMs": 547.082,
+          "eventsPerSecond": 29908.08122096942,
+          "exported": 2048,
+          "droppedSpans": 332
+        },
+        {
+          "round": 1,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 324.931958,
+          "cpuMs": 530.94,
+          "eventsPerSecond": 30775.67396433194,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 1,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 223.59425,
+          "cpuMs": 380.87,
+          "eventsPerSecond": 44723.8692408235,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-metrics",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 328.001292,
+          "cpuMs": 535.306,
+          "eventsPerSecond": 30487.684786314807,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-sampled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 327.747375,
+          "cpuMs": 543.605,
+          "eventsPerSecond": 30511.304629060724,
+          "exported": 2048,
+          "droppedSpans": 604
+        },
+        {
+          "round": 2,
+          "case": "prior-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 224.90975,
+          "cpuMs": 375.469,
+          "eventsPerSecond": 44462.27875847979,
+          "exported": 0,
+          "droppedSpans": 0
+        },
+        {
+          "round": 2,
+          "case": "current-disabled",
+          "iterations": 10000,
+          "warmup": 5000,
+          "elapsedMs": 225.06162499999996,
+          "cpuMs": 377.696,
+          "eventsPerSecond": 44432.27493803087,
+          "exported": 0,
+          "droppedSpans": 0
+        }
+      ],
+      "summary": [
+        {
+          "case": "prior-disabled",
+          "medianMs": 223.07049999999998,
+          "medianCpuMs": 374.983,
+          "minMs": 222.02387499999998,
+          "maxMs": 224.90975
+        },
+        {
+          "case": "current-disabled",
+          "medianMs": 225.06162499999996,
+          "medianCpuMs": 380.87,
+          "minMs": 223.59425,
+          "maxMs": 230.65229200000002
+        },
+        {
+          "case": "current-metrics",
+          "medianMs": 324.931958,
+          "medianCpuMs": 534.537,
+          "minMs": 323.886167,
+          "maxMs": 328.001292
+        },
+        {
+          "case": "current-sampled",
+          "medianMs": 334.308792,
+          "medianCpuMs": 547.082,
+          "minMs": 327.747375,
+          "maxMs": 334.357792
+        }
+      ]
+    },
+    "scope": "Sequential in-memory Slot plus fake HTTP reply commands, no protocol verification; not transport throughput. Final comparison uses independent processes, three rotating-order rounds, 5000 warmup + 10000 measured commands."
+  },
+  "lifetime": {
+    "meaning": "whileReaderRetained=true means the application was collected while the reader remained reachable",
+    "before": {
+      "disabled": {
+        "enabled": false,
+        "whileReaderRetained": false,
+        "readableAfterClose": true,
+        "afterReaderReleased": true
+      },
+      "enabled": {
+        "enabled": true,
+        "whileReaderRetained": false,
+        "readableAfterClose": true,
+        "afterReaderReleased": true
+      }
+    },
+    "after": {
+      "disabled": {
+        "enabled": false,
+        "whileReaderRetained": true,
+        "readableAfterClose": true,
+        "afterReaderReleased": true
+      },
+      "enabled": {
+        "enabled": true,
+        "whileReaderRetained": true,
+        "readableAfterClose": true,
+        "afterReaderReleased": true
+      }
+    }
+  },
+  "checks": {
+    "node": ["24.0.0", "24.21.0"],
+    "testsPerVersion": 384,
+    "passed": 382,
+    "skippedDatabase": 2,
+    "rootExports": 178,
+    "typeContracts": 136,
+    "tarballFiles": 182,
+    "coverage": {
+      "lines": {
+        "total": 11105,
+        "covered": 10616,
+        "skipped": 0,
+        "pct": 95.59
+      },
+      "statements": {
+        "total": 11105,
+        "covered": 10616,
+        "skipped": 0,
+        "pct": 95.59
+      },
+      "functions": {
+        "total": 626,
+        "covered": 584,
+        "skipped": 0,
+        "pct": 93.29
+      },
+      "branches": {
+        "total": 4048,
+        "covered": 3639,
+        "skipped": 0,
+        "pct": 89.89
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "observerCoverage": {
+      "lines": {
+        "total": 445,
+        "covered": 440,
+        "skipped": 0,
+        "pct": 98.87
+      },
+      "functions": {
+        "total": 29,
+        "covered": 29,
+        "skipped": 0,
+        "pct": 100
+      },
+      "statements": {
+        "total": 445,
+        "covered": 440,
+        "skipped": 0,
+        "pct": 98.87
+      },
+      "branches": {
+        "total": 140,
+        "covered": 130,
+        "skipped": 0,
+        "pct": 92.85
+      }
+    },
+    "rootRepositoryCheck": true
+  },
+  "cleanup": {
+    "at": "2026-10-20T06:54:17.583158+00:00",
+    "testUnits": [],
+    "observer": "Result=success\nLoadState=not-found\nActiveState=inactive\nSubState=dead",
+    "nginx": {
+      "MainPID": "989",
+      "ActiveState": "active"
+    },
+    "postgres": {
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false
+    },
+    "postgresReady": "/var/run/postgresql:5432 - accepting connections",
+    "listeners": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\nLISTEN 0      128          0.0.0.0:22        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:80        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:443       0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:5432      0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:9000      0.0.0.0:*          \nLISTEN 0      128             [::]:22           [::]:*          \nLISTEN 0      4096            [::]:5432         [::]:*          \nLISTEN 0      511                *:9090            *:*",
+    "directoriesPreserved": true,
+    "localSshForwarders": [],
+    "remoteFilesVerified": 34
+  },
+  "evidence": {
+    "archive": "work/diagnostics-2026-10-20/diagnostics-evidence-2026-10-20.tar.gz",
+    "bytes": 3549098,
+    "sha256": "746a1f1811109b596c3d37554cc5449670baf00e490236570e0bde08e717344b",
+    "filesVerified": 158,
+    "remoteArchive": "/opt/dou-bot-capacity/diagnostics-2026-10-20-f8dde93/diagnostics-evidence-2026-10-20.tar.gz",
+    "remoteSha256Verified": true
+  }
+}

@@ -7,6 +7,52 @@ type ContractShape = Omit<typeof Contract, 'LOGGER'> & { LOGGER: symbol };
 const publicApi: ContractShape = runtime;
 void publicApi;
 
+const diagnosticOptions: runtime.DiagnosticsOptions = {
+  enabled: true,
+  traceSampleRate: 0.01,
+  async onSpans(spans, signal) {
+    signal.throwIfAborted();
+    await Promise.resolve();
+    // @ts-expect-error Export batches are readonly.
+    spans[0] = spans[0]!;
+    if (spans[0]) {
+      // @ts-expect-error Spans do not expose message bodies or URLs.
+      void spans[0].url;
+      // @ts-expect-error Trace identifiers cannot be mutated.
+      spans[0].traceId = 'modified';
+    }
+  },
+};
+void diagnosticOptions;
+// @ts-expect-error Stage names are a fixed framework vocabulary.
+const customStage: runtime.DiagnosticsStage = 'business.any-user-value';
+void customStage;
+function readDiagnostics(app: runtime.Application): number {
+  const snapshot = app.diagnostics.snapshot();
+  // @ts-expect-error Snapshot metrics are readonly.
+  snapshot.metrics[0] = snapshot.metrics[0]!;
+  const value: number | null | undefined = snapshot.metrics[0]?.p95UpperMs;
+  void value;
+  return snapshot.activeSpans;
+}
+void readDiagnostics;
+
+const verificationOptions: runtime.WebhookTransportOptions = {
+  type: 'webhook',
+  verifyTimeoutMs: 1000,
+  maxConcurrentRequests: 64,
+};
+void verificationOptions;
+// @ts-expect-error Webhook verification deadlines are not WS options.
+const wsVerificationOptions: runtime.WsTransportOptions = { type: 'ws', verifyTimeoutMs: 1000 };
+void wsVerificationOptions;
+const invalidVerificationOptions: runtime.WebhookTransportOptions = {
+  type: 'webhook',
+  // @ts-expect-error Verification deadlines must be numeric.
+  verifyTimeoutMs: '1000',
+};
+void invalidVerificationOptions;
+
 export function readCapacity(snapshot: runtime.BotSnapshot): number {
   const used: number = snapshot.capacity.replyScopes.size;
   const rejected: number = snapshot.rejections.queueFull;

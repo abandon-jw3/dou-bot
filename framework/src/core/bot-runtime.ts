@@ -27,6 +27,7 @@ import { WebhookTransport } from '../transport/webhook.js';
 import { WsTransport } from '../transport/ws.js';
 import type { SocketFactory } from '../transport/ws.js';
 import type { Transport } from '../transport/types.js';
+import type { Diagnostics } from '../diagnostics/observer.js';
 
 export interface AccountPorts {
   fetch?: FetchPort;
@@ -58,6 +59,7 @@ export class BotRuntime {
     ports: AccountPorts,
     sensitive: () => readonly string[],
     applicationAccepting: () => boolean,
+    observer?: Diagnostics,
   ) {
     this.reporter = new ErrorReporter(
       () => [...sensitive(), ...(this.tokens?.sensitive() ?? [])],
@@ -66,8 +68,8 @@ export class BotRuntime {
       config.logger,
       clock,
     );
-    this.http = new HttpRuntime(config, ports.fetch, clock);
-    this.tokens = new TokenManager(config, this.http, this.reporter, clock);
+    this.http = new HttpRuntime(config, ports.fetch, clock, observer);
+    this.tokens = new TokenManager(config, this.http, this.reporter, clock, observer);
     const api = new HttpQQApi(config, this.http, this.tokens, clock);
     this.rawClient = new DefaultQQClient(api, config, clock);
     this.client = new ManagedQQClient(
@@ -95,6 +97,7 @@ export class BotRuntime {
       (signal) => this.execution.managedSignals.has(signal),
       (error) => this.reporter.report(error, { phase: 'send', appId: config.appId }),
       clock,
+      observer,
     );
     this.execution = new Execution(
       config,
@@ -109,14 +112,25 @@ export class BotRuntime {
           routes.hasLearned(config.appId, task.event.target.groupId)
         )
           return dispatcher.dispatch(task);
+        const learning = observer?.start(
+          'route.learn',
+          task.diagnosticContext,
+          task.controller.signal,
+        );
         return bounded(
           routes.observe(config.appId, task.event.target.groupId),
           Infinity,
           task.controller.signal,
           clock,
         )
-          .catch((error: unknown) => task.report(error, 'routing'))
-          .then(() => (task.controller.signal.aborted ? undefined : dispatcher.dispatch(task)));
+          .catch((error: unknown) => {
+            learning?.fail(error, task.controller.signal);
+            task.report(error, 'routing');
+          })
+          .then(() => {
+            learning?.end();
+            return task.controller.signal.aborted ? undefined : dispatcher.dispatch(task);
+          });
       },
       (event) =>
         dispatcher.handles(event) ||
@@ -127,6 +141,7 @@ export class BotRuntime {
           : false),
       clock,
       incoming,
+      observer,
     );
     this.http.managed = (signal) =>
       signal !== undefined &&

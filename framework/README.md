@@ -17,6 +17,7 @@
 | 上下文数据   | 异步准备、懒加载和类型化读取；[指南](docs/context-middleware.md)                  |
 | 数据库       | PostgreSQL、共享连接池、持久化群地址；[指南](docs/database.md)                    |
 | 运行监测     | 有界队列、取消、排空和容量快照；[指南](docs/capacity.md)                          |
+| 阶段性能     | 可选耗时指标、采样执行链和有界导出；[指南](docs/diagnostics.md)                   |
 
 ## 新建项目
 

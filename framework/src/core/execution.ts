@@ -13,6 +13,7 @@ import type { Clock } from './clock.js';
 import { PromptManager } from './prompts.js';
 import { EventTask } from './event-task.js';
 import type { HandlerLocation, MessageBinding, ReplyScope } from './event-task.js';
+import type { Diagnostics, Observation, ObservationContext } from '../diagnostics/observer.js';
 
 export type Admission =
   | { status: 'accepted' | 'duplicate'; done: Promise<void> }
@@ -36,11 +37,15 @@ interface QueuedTask {
   processingMs: number;
   children: Set<QueuedTask>;
   finished: boolean;
+  diagnosticTotal?: Observation;
+  diagnosticRun?: Observation | undefined;
+  diagnosticPrompt?: Observation | undefined;
 }
 interface QueueItem {
   queued: QueuedTask;
   enqueuedAt: number;
   resume?: () => void;
+  observation?: Observation | undefined;
 }
 
 export class Execution {
@@ -86,6 +91,7 @@ export class Execution {
     private readonly handles: (event: NormalizedEvent) => boolean | 'observe' = () => true,
     private readonly clock: Clock = systemClock,
     private readonly pool?: ExecutionPool,
+    readonly observer?: Diagnostics,
   ) {
     this.unregister = pool?.register({ pending: () => this.pending, step: () => this.pumpOne() });
     this.prompts = new PromptManager(options.prompts, clock, {
@@ -93,10 +99,25 @@ export class Execution {
         if (owner.finished || !owner.running)
           throw new FrameworkError('INVALID_STATE', 'Prompt owner is not executing');
         this.stopRunning(owner);
+        owner.diagnosticPrompt = this.observer?.start(
+          'prompt.wait',
+          owner.task.diagnosticContext,
+          owner.task.controller.signal,
+        );
         this.notify();
         this.pump();
       },
-      resume: (owner, continuation) => {
+      resume: (owner, continuation, outcome) => {
+        owner.diagnosticPrompt?.end(
+          outcome === 'timeout'
+            ? 'timeout'
+            : outcome === 'cancelled'
+              ? 'cancelled'
+              : outcome === 'failed'
+                ? 'error'
+                : 'success',
+        );
+        owner.diagnosticPrompt = undefined;
         if (owner.finished || this.terminated) {
           continuation();
           return;
@@ -106,6 +127,15 @@ export class Execution {
           queued: owner,
           enqueuedAt: this.clock.monotonic(),
           resume: continuation,
+          ...(this.observer
+            ? {
+                observation: this.observer.start(
+                  'event.queue',
+                  owner.diagnosticTotal?.context,
+                  owner.task.controller.signal,
+                ),
+              }
+            : {}),
         });
         this.pump();
       },
@@ -161,6 +191,8 @@ export class Execution {
   private stopRunning(queued: QueuedTask): void {
     if (!queued.running) return;
     queued.processingMs += this.clock.monotonic() - queued.runningSince;
+    queued.diagnosticRun?.end();
+    queued.diagnosticRun = undefined;
     queued.running = false;
     this.active--;
     this.pool?.leave();
@@ -205,11 +237,46 @@ export class Execution {
     // Captured input has already reserved bytes, a dedup entry and a reply scope.
     // Requeue that same task, rather than re-admit it as a duplicate or lose the input.
     this.pool?.enqueued();
-    this.waiting.push({ queued: input, enqueuedAt: this.clock.monotonic() });
+    this.waiting.push({
+      queued: input,
+      enqueuedAt: this.clock.monotonic(),
+      ...(this.observer
+        ? {
+            observation: this.observer.start(
+              'event.queue',
+              input.diagnosticTotal?.context,
+              input.task.controller.signal,
+            ),
+          }
+        : {}),
+    });
     this.pump();
   }
 
-  accept(payload: unknown, bytes: number): Admission {
+  accept(payload: unknown, bytes: number, context?: ObservationContext): Admission {
+    if (!this.observer) return this.admit(payload, bytes);
+    const current = context ?? this.observer.root(this.options.appId);
+    const span = this.observer.start('event.admission', current);
+    try {
+      const result = this.admit(payload, bytes, current);
+      span?.end(
+        result.status === 'accepted'
+          ? 'success'
+          : result.status === 'failed'
+            ? 'error'
+            : result.status === 'overloaded'
+              ? 'rejected'
+              : result.status === 'stopping'
+                ? 'cancelled'
+                : result.status,
+      );
+      return result;
+    } catch (error) {
+      span?.fail(error);
+      throw error;
+    }
+  }
+  private admit(payload: unknown, bytes: number, context?: ObservationContext): Admission {
     if (!this.accepting || this.terminated) return { status: 'stopping' };
     const config = this.options.execution;
     if (
@@ -222,7 +289,15 @@ export class Execution {
       return { status: 'ignored' };
     }
     try {
-      const parsed = normalize(payload, this.clock.wallTime());
+      const normalization = this.observer?.start('event.normalize', context);
+      let parsed: ReturnType<typeof normalize>;
+      try {
+        parsed = normalize(payload, this.clock.wallTime());
+        normalization?.end(parsed.status === 'invalid' ? 'rejected' : 'success');
+      } catch (error) {
+        normalization?.fail(error);
+        throw error;
+      }
       if (parsed.status === 'invalid') {
         this.reject('invalidEvent');
         this.reporter.report(new FrameworkError('PROTOCOL', parsed.reason), {
@@ -311,6 +386,7 @@ export class Execution {
         complete = resolve;
       });
       const entry: DedupEntry = { active: true, expiresAt: Infinity, done };
+      const diagnosticTotal = this.observer?.start('event.total', context);
       const task = new EventTask(
         event,
         this.options,
@@ -333,6 +409,8 @@ export class Execution {
         },
         undefined,
         this.clock,
+        this.observer,
+        diagnosticTotal?.context ?? context,
       );
       const queued: QueuedTask = {
         task,
@@ -346,6 +424,7 @@ export class Execution {
         processingMs: 0,
         children: new Set(),
         finished: false,
+        ...(diagnosticTotal ? { diagnosticTotal } : {}),
       };
       if (key !== undefined) this.dedup.set(key, entry);
       if (!observationOnly) this.events.accepted++;
@@ -359,7 +438,19 @@ export class Execution {
         return { status: 'accepted', done };
       }
       this.pool?.enqueued();
-      this.waiting.push({ queued, enqueuedAt: now });
+      this.waiting.push({
+        queued,
+        enqueuedAt: now,
+        ...(this.observer
+          ? {
+              observation: this.observer.start(
+                'event.queue',
+                diagnosticTotal?.context,
+                task.controller.signal,
+              ),
+            }
+          : {}),
+      });
       if (autoAck) {
         this.controls++;
         task.ack().then(
@@ -382,6 +473,7 @@ export class Execution {
   }
   private prune(now: number): void {
     if (now < this.nextExpiry) return;
+    const observation = this.observer?.start('cache.prune', { appId: this.options.appId });
     let nextExpiry = Infinity;
     for (const [key, entry] of this.idleDedup) {
       if (entry.expiresAt > now) {
@@ -400,6 +492,7 @@ export class Execution {
       this.scopes.delete(key);
     }
     this.nextExpiry = nextExpiry;
+    observation?.end();
   }
   private pump(): void {
     if (this.pool) {
@@ -424,9 +517,15 @@ export class Execution {
       dispatched = single;
       didRun = true;
       const task = item.queued;
+      item.observation?.end();
       this.active++;
       task.running = true;
       task.runningSince = this.clock.monotonic();
+      task.diagnosticRun = this.observer?.start(
+        'event.run',
+        task.diagnosticTotal?.context,
+        task.task.controller.signal,
+      );
       this.observe('queueWait', task.runningSince - item.enqueuedAt);
       if (item.resume) {
         item.resume();
@@ -444,7 +543,22 @@ export class Execution {
               'Message handler ended without awaiting its prompt',
             ),
           );
-          return task.task.ledger.sealAndDrain();
+          const drain = this.observer?.start(
+            'event.drain',
+            task.diagnosticTotal?.context,
+            task.task.controller.signal,
+          );
+          const pending = task.task.ledger.sealAndDrain();
+          if (!drain) return pending;
+          return pending.then(
+            () => {
+              drain.end();
+            },
+            (error: unknown) => {
+              drain.fail(error);
+              throw error;
+            },
+          );
         })
         .then(
           () => this.finish(task),
@@ -468,6 +582,13 @@ export class Execution {
       new FrameworkError('INVALID_STATE', 'Event context has finished'),
     );
     this.stopRunning(queued);
+    queued.diagnosticTotal?.end(
+      queued.task.controller.signal.aborted
+        ? 'cancelled'
+        : queued.task.failed
+          ? 'error'
+          : 'success',
+    );
     if (queued.started) this.observe('processing', queued.processingMs);
     for (const child of queued.children) this.finish(child);
     queued.children.clear();
@@ -490,6 +611,7 @@ export class Execution {
     }
     queued.task.controller.abort(new FrameworkError('INVALID_STATE', 'Event context has finished'));
     this.managedSignals.delete(queued.task.controller.signal);
+    this.observer?.unbind(queued.task.controller.signal);
     this.tasks.delete(queued);
     queued.resolve();
     this.notify();

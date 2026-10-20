@@ -184,15 +184,27 @@ export class HttpQQApi extends QQApi {
     const serialized = options.body === undefined ? undefined : JSON.stringify(options.body);
     const deadline = this.http.deadline(options.timeoutMs);
     let token: string;
+    const waiting = this.http.observer?.start(
+      'qq.token.wait',
+      {
+        ...(this.http.observer.context(options.signal) ??
+          this.http.observer.root(this.config.appId)),
+        appId: this.config.appId,
+      },
+      options.signal,
+    );
     try {
       token = await bounded(this.tokens.getToken(), deadline, options.signal, this.clock);
     } catch (error) {
+      waiting?.fail(error, options.signal);
       if (error instanceof FrameworkError && error.code === 'SHUTDOWN_TIMEOUT')
         throw new FrameworkError(
           'TRANSPORT',
           'QQ HTTP request timed out while waiting for a token',
         );
       throw error;
+    } finally {
+      waiting?.end();
     }
     this.http.assertAllowed(options.signal);
     const { response, text } = await this.http.request(

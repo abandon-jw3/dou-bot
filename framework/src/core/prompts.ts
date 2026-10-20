@@ -74,7 +74,7 @@ export interface PromptTicket<Owner, Input> {
 
 interface Hooks<Owner, Input> {
   suspend(owner: Owner): void;
-  resume(owner: Owner, continuation: () => void): void;
+  resume(owner: Owner, continuation: () => void, outcome: Outcome['status'] | undefined): void;
   abort(owner: Owner, reason: Error): void;
   fallback(input: Input): void;
 }
@@ -207,7 +207,7 @@ export class PromptManager<Owner, Input> {
     }
     if (ticket.scheduled) return;
     ticket.scheduled = true;
-    this.hooks.resume(ticket.owner, () => this.publish(ticket));
+    this.hooks.resume(ticket.owner, () => this.publish(ticket), ticket.outcome?.status);
   }
   private publish(ticket: PromptTicket<Owner, Input>): void {
     if (ticket.done || !ticket.outcome) return;

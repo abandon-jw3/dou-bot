@@ -18,6 +18,7 @@ import {
   send,
 } from './common.js';
 import type { Meta, Profile } from './common.js';
+import type { DiagnosticsSpan } from '../../src/index.js';
 import { workload } from './workload.js';
 
 interface Entry {
@@ -46,12 +47,19 @@ const bits: Record<string, number> = {
   failure: 256,
   hold: 512,
 };
-export async function runSdk(config: Profile, fixture: string, reportPath: string): Promise<void> {
+export async function runSdk(
+  config: Profile,
+  fixture: string,
+  reportPath: string,
+  distributed = false,
+): Promise<void> {
   const entries = new Map<number, Entry>();
   const seen = new Uint16Array(2_000_000);
   const groups = new Set<string>();
   const globalCounts: Record<string, number> = {};
   const unexpected: { message: string; code?: string; id?: number }[] = [];
+  let exportedSpans = 0;
+  const traceExamples: DiagnosticsSpan[] = [];
   const totals = Array.from({ length: config.phases.length + 1 }, () => ({
     admissions: {},
     outcomes: {},
@@ -145,6 +153,16 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
         replyScopeMaxEntries: 200000,
         shutdownTimeoutMs: config.shutdownTimeoutMs,
       },
+      outbound: { concurrency: config.outboundConcurrency },
+      diagnostics: {
+        enabled: config.diagnostics === 'metrics' || config.diagnostics === 'sampled',
+        traceSampleRate: config.diagnostics === 'sampled' ? 0.01 : 0,
+        maxActiveSpans: 8192,
+        onSpans(spans) {
+          exportedSpans += spans.length;
+          for (const span of spans) if (traceExamples.length < 80) traceExamples.push(span);
+        },
+      },
       prompts: { maxPending: 512, timeoutMs: config.promptTimeoutMs, maxTimeoutMs: 20000 },
       context: { loadTimeoutMs: config.loadTimeoutMs, prepareTimeoutMs: 2000 },
       api: { requestTimeoutMs: config.requestTimeoutMs },
@@ -189,9 +207,9 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
     },
   );
   const originalAccept = app.execution.accept.bind(app.execution);
-  app.execution.accept = (payload, bytes) => {
+  app.execution.accept = (payload, bytes, observation) => {
     const meta = metadata(payload);
-    if (!meta) return originalAccept(payload, bytes);
+    if (!meta) return originalAccept(payload, bytes, observation);
     assert.ok(meta.phase >= 0 && meta.phase < totals.length);
     const hadEntry = entries.has(meta.id);
     const entry: Entry = entries.get(meta.id) ?? {
@@ -207,7 +225,7 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
     };
     if (!hadEntry) entries.set(meta.id, entry);
     maximumEntries = Math.max(maximumEntries, entries.size);
-    const result = originalAccept(payload, bytes);
+    const result = originalAccept(payload, bytes, observation);
     count(totals[meta.phase]!.admissions, result.status);
     if (result.status !== 'accepted') {
       if (!hadEntry) entries.delete(meta.id);
@@ -252,13 +270,15 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
             outcome = 'unexpected';
           } else {
             outcome = 'success';
-            phase.successLatency.add(elapsedMs(meta.dueNs));
+            phase.successLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
             totals[phaseOf()]!.successfulCompletionsByWallTime++;
           }
         }
         count(phase.outcomes, outcome);
         if (!['answer', 'distractor'].includes(meta.kind))
-          phase.terminalLatency.add(elapsedMs(meta.dueNs));
+          phase.terminalLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
+        if (distributed && !['answer', 'distractor'].includes(meta.kind))
+          send({ type: 'completion', id: meta.id, phase: meta.phase, outcome });
         entries.delete(meta.id);
         if (['prompt', 'shutdown-prompt'].includes(meta.kind))
           send({ type: 'root-done', id: meta.id });
@@ -383,6 +403,11 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
           final: inspectResources(app, clock),
           snapshot: app.snapshot(),
           outbound: app.application.outgoing.snapshot(),
+          diagnostics: {
+            snapshot: app.diagnostics.snapshot(),
+            exportedSpans,
+            traceExamples,
+          },
           afterCloseMemory: process.memoryUsage(),
           resourceUsage: process.resourceUsage(),
           globalCounts,
@@ -391,6 +416,7 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
           unexpected,
           maximumEntries,
           groups: groups.size,
+          latencyOrigin: distributed ? 'server-admission' : 'scheduled-arrival',
           samples,
           phases: totals.map((p, index) => ({
             name: config.phases[index]?.name ?? 'shutdown',
@@ -443,5 +469,7 @@ export async function runSdk(config: Profile, fixture: string, reportPath: strin
     origin: `http://127.0.0.1:${address.port}`,
     node: process.version,
     pid: process.pid,
+    concurrency: app.snapshot().capacity.concurrency,
+    outboundConcurrency: app.application.outgoing.snapshot().concurrency,
   });
 }

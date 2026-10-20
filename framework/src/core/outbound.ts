@@ -3,6 +3,7 @@ import { errorOf, FrameworkError } from './errors.js';
 import { bounded } from './utils.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
+import type { Diagnostics, Observation } from '../diagnostics/observer.js';
 import { integer, keys } from './config-validation.js';
 
 export function outboundSettings(input: OutboundOptions = {}): Required<OutboundOptions> {
@@ -47,6 +48,8 @@ export class OutboundQueue {
   constructor(
     readonly settings: Required<OutboundOptions>,
     private readonly clock: Clock = systemClock,
+    private readonly observer?: Diagnostics,
+    private readonly channel: 'outbound' | 'control' = 'outbound',
   ) {}
   run<T>(
     account: string | symbol,
@@ -55,6 +58,17 @@ export class OutboundQueue {
     signal?: AbortSignal,
   ): Promise<T> {
     let result: Promise<T>;
+    const context = this.observer
+      ? {
+          ...(this.observer.context(signal) ?? this.observer.root()),
+        }
+      : undefined;
+    if (context) {
+      if (typeof account === 'string') context.appId = account;
+      else delete context.appId;
+    }
+    const waiting = this.observer?.start(`${this.channel}.queue`, context, signal);
+    let running: Observation | undefined;
     try {
       signal?.throwIfAborted();
       const reason = this.closed
@@ -65,6 +79,7 @@ export class OutboundQueue {
             ? 'bytesFull'
             : undefined;
       if (reason) {
+        waiting?.end(reason === 'stopping' ? 'cancelled' : 'rejected');
         this.counts.rejected++;
         this.rejections[reason]++;
         throw new FrameworkError(
@@ -77,6 +92,7 @@ export class OutboundQueue {
         );
       }
       const controller = new AbortController();
+      this.observer?.bind(controller.signal, waiting?.context ?? context);
       const cancel = () => controller.abort(signal?.reason);
       signal?.addEventListener('abort', cancel, { once: true });
       let resolve!: (value: T) => void;
@@ -88,6 +104,14 @@ export class OutboundQueue {
       const finish = (ok: boolean, value: unknown) => {
         if (job.finished) return;
         job.finished = true;
+        if (ok) {
+          waiting?.end();
+          running?.end();
+        } else {
+          waiting?.fail(value, controller.signal);
+          running?.fail(value, controller.signal);
+        }
+        this.observer?.unbind(controller.signal);
         signal?.removeEventListener('abort', cancel);
         controller.signal.removeEventListener('abort', aborted);
         if (job.running) this.active--;
@@ -125,6 +149,9 @@ export class OutboundQueue {
         cancel: () =>
           controller.abort(new FrameworkError('INVALID_STATE', 'Sending account stopped')),
         start: () => {
+          waiting?.end();
+          running = this.observer?.start(`${this.channel}.run`, context, controller.signal);
+          this.observer?.bind(controller.signal, running?.context ?? context);
           job.running = true;
           this.active++;
           this.pending--;
@@ -161,6 +188,8 @@ export class OutboundQueue {
       if (signal?.aborted) cancel();
       this.pump();
     } catch (error) {
+      waiting?.fail(error, signal);
+      running?.fail(error, signal);
       result = Promise.reject(errorOf(error));
     }
     // Background callers may intentionally fire and forget; resource tracking still owns completion.

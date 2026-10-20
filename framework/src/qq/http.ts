@@ -4,6 +4,21 @@ import { FrameworkError } from '../core/errors.js';
 import { bounded } from '../core/utils.js';
 import { systemClock } from '../core/clock.js';
 import type { Clock } from '../core/clock.js';
+import type { Diagnostics } from '../diagnostics/observer.js';
+import type { DiagnosticsOperation } from '../diagnostics/contracts.js';
+
+function operation(url: string): DiagnosticsOperation {
+  try {
+    const path = new URL(url).pathname;
+    if (/\/messages(?:\/[^/]+)?$/u.test(path)) return 'message';
+    if (path.endsWith('/files')) return 'upload';
+    if (path.includes('/interactions/')) return 'interaction';
+    if (path === '/gateway') return 'gateway';
+  } catch {
+    /* Diagnostics must not change the fetcher's URL handling. */
+  }
+  return 'other';
+}
 
 export type FetchPort = typeof globalThis.fetch;
 export class HttpRuntime {
@@ -15,6 +30,7 @@ export class HttpRuntime {
     private readonly options: ResolvedOptions,
     private readonly fetcher: FetchPort = fetch,
     private readonly clock: Clock = systemClock,
+    readonly observer?: Diagnostics,
   ) {}
   assertAllowed(signal?: AbortSignal, internal = false): void {
     signal?.throwIfAborted();
@@ -41,6 +57,17 @@ export class HttpRuntime {
     const controller = new AbortController();
     const signals = [controller.signal, ...(options.signal ? [options.signal] : [])];
     const signal = AbortSignal.any(signals);
+    const inherited = this.observer?.context(options.signal);
+    const context = this.observer
+      ? {
+          ...(inherited ?? this.observer.root(this.options.appId)),
+          appId: this.options.appId,
+          operation: inherited?.operation ?? operation(url),
+        }
+      : undefined;
+    const total = this.observer?.start('qq.http', context, signal);
+    const headers = this.observer?.start('qq.http.headers', total?.context ?? context, signal);
+    let body: ReturnType<Diagnostics['start']>;
     this.requests.add(controller);
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     try {
@@ -50,6 +77,8 @@ export class HttpRuntime {
         signal,
         this.clock,
       );
+      headers?.end(response.ok ? 'success' : 'rejected');
+      body = this.observer?.start('qq.http.body', total?.context ?? context, signal);
       reader = response.body?.getReader();
       const length = Number(response.headers.get('content-length'));
       if (Number.isFinite(length) && length > this.options.api.maxResponseBytes)
@@ -67,14 +96,23 @@ export class HttpRuntime {
         }
       }
       const content = Buffer.concat(chunks, bytes);
-      return { response, text: new TextDecoder('utf-8', { fatal: true }).decode(content) };
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(content);
+      body?.end();
+      total?.end(response.ok ? 'success' : 'rejected');
+      return { response, text };
     } catch (error) {
+      headers?.fail(error, signal);
+      body?.fail(error, signal);
+      total?.fail(error, signal);
       controller.abort(error);
       if (reader) reader.cancel(error).catch(() => {});
       if (error instanceof FrameworkError && error.code === 'SHUTDOWN_TIMEOUT')
         throw new FrameworkError('TRANSPORT', 'QQ HTTP request timed out');
       throw error;
     } finally {
+      headers?.end();
+      body?.end();
+      total?.end();
       reader?.releaseLock();
       this.requests.delete(controller);
       for (const waiter of [...this.waiters]) waiter();

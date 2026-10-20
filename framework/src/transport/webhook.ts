@@ -4,11 +4,13 @@ import type { ResolvedOptions } from '../core/config.js';
 import type { Execution } from '../core/execution.js';
 import type { ErrorReporter } from '../core/logging.js';
 import { FrameworkError } from '../core/errors.js';
-import { hasControlCharacters, isRecord, own } from '../core/utils.js';
+import { bounded, hasControlCharacters, isRecord, own } from '../core/utils.js';
 import { isDispatch } from '../qq/normalize.js';
 import type { Transport } from './types.js';
 import { systemClock } from '../core/clock.js';
 import type { Clock } from '../core/clock.js';
+import type { Observation } from '../diagnostics/observer.js';
+import type { DiagnosticsOutcome } from '../diagnostics/contracts.js';
 
 export class WebhookVerifier {
   private readonly privateKey;
@@ -37,15 +39,20 @@ export class WebhookVerifier {
       Math.abs(this.now() - Number(value) * 1000) <= this.maximumAge
     );
   }
-  verify(timestamp: string, rawBody: Uint8Array, signature: string): boolean {
+  verify(timestamp: string, rawBody: Uint8Array, signature: string): Promise<boolean> {
     if (!this.fresh(timestamp) || signature.length !== 128 || !/^[a-f0-9]{128}$/iu.test(signature))
-      return false;
-    return verify(
-      null,
-      Buffer.concat([Buffer.from(timestamp), rawBody]),
-      this.publicKey,
-      Buffer.from(signature, 'hex'),
-    );
+      return Promise.resolve(false);
+    // The callback form runs Ed25519 verification in Node's shared worker pool.
+    // The transport retains its request permit until this native operation settles.
+    return new Promise((resolve, reject) => {
+      verify(
+        null,
+        Buffer.concat([Buffer.from(timestamp), rawBody]),
+        this.publicKey,
+        Buffer.from(signature, 'hex'),
+        (error, valid) => (error ? reject(error) : resolve(valid)),
+      );
+    });
   }
   signChallenge(eventTs: string, token: string): string {
     if (
@@ -113,9 +120,11 @@ export class WebhookTransport implements Transport {
   readonly handler: RequestListener;
   private readonly settings: Extract<ResolvedOptions['transport'], { type: 'webhook' }>;
   private readonly verifier: WebhookVerifier;
-  private readonly requests = new Set<IncomingMessage>();
+  private readonly requests = new Map<IncomingMessage, AbortController>();
   private running = false;
   private closing = false;
+  private stopped?: Promise<void>;
+  private drained?: () => void;
   constructor(
     private readonly config: ResolvedOptions,
     private readonly execution: Execution,
@@ -170,11 +179,23 @@ export class WebhookTransport implements Transport {
       this.reply(response, 405);
       return;
     }
+    const observer = this.execution.observer;
+    const context = observer?.root(this.config.appId);
+    const total = observer?.start('webhook.request', context);
+    let measured: Observation | undefined;
+    let native: Observation | undefined;
+    let outcome: DiagnosticsOutcome = 'success';
     if (!this.running || this.requests.size >= this.settings.maxConcurrentRequests) {
+      total?.end(this.running ? 'rejected' : 'cancelled');
       this.reply(response, 503);
       return;
     }
-    this.requests.add(request);
+    const controller = new AbortController();
+    const disconnected = () => controller.abort(new HttpFailure(400));
+    this.requests.set(request, controller);
+    response.once('close', disconnected);
+    let verification: Promise<boolean> | undefined;
+    let verificationTimedOut = false;
     try {
       if (
         request.headers['content-encoding'] !== undefined &&
@@ -183,13 +204,18 @@ export class WebhookTransport implements Transport {
         throw new HttpFailure(415);
       if (this.header(request, 'x-bot-appid', true) !== this.config.appId)
         throw new HttpFailure(403);
+      measured = observer?.start('webhook.body', total?.context ?? context, controller.signal);
       const raw = await readBody(
         request,
         this.settings.maxBodyBytes,
         this.settings.readTimeoutMs,
         this.clock,
       );
+      measured?.end();
+      controller.signal.throwIfAborted();
+      if (!this.running) throw new HttpFailure(503);
       let payload: unknown;
+      measured = observer?.start('webhook.parse', total?.context ?? context);
       try {
         payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(raw));
       } catch {
@@ -197,15 +223,41 @@ export class WebhookTransport implements Transport {
       }
       if (!isRecord(payload) || !own(payload, 'op') || !own(payload, 'd'))
         throw new HttpFailure(400);
+      measured?.end();
       const signature = this.header(request, 'x-signature-ed25519', false);
       const timestamp = this.header(request, 'x-signature-timestamp', false);
       if ((signature === undefined) !== (timestamp === undefined)) throw new HttpFailure(403);
-      if (
-        signature !== undefined &&
-        timestamp !== undefined &&
-        !this.verifier.verify(timestamp, raw, signature)
-      )
-        throw new HttpFailure(403);
+      if (signature !== undefined && timestamp !== undefined) {
+        native = observer?.start('webhook.verify', total?.context ?? context);
+        verification = this.verifier.verify(timestamp, raw, signature);
+        if (native) {
+          const current = native;
+          void verification.then(
+            (valid) => current.end(valid ? 'success' : 'rejected'),
+            (error: unknown) => current.fail(error),
+          );
+        }
+        measured = observer?.start(
+          'webhook.verify.wait',
+          total?.context ?? context,
+          controller.signal,
+        );
+        const valid = await bounded(
+          verification,
+          this.clock.monotonic() + this.settings.verifyTimeoutMs,
+          controller.signal,
+          this.clock,
+          () => {
+            verificationTimedOut = true;
+            return new HttpFailure(503);
+          },
+        );
+        measured?.end(valid && this.verifier.fresh(timestamp) ? 'success' : 'rejected');
+        if (!valid || !this.verifier.fresh(timestamp)) throw new HttpFailure(403);
+      }
+      // A close can race the crypto callback. A late result must never admit work.
+      controller.signal.throwIfAborted();
+      if (!this.running) throw new HttpFailure(503);
       if (payload.op === 13) {
         if (
           !isRecord(payload.d) ||
@@ -224,9 +276,10 @@ export class WebhookTransport implements Transport {
         if (!isDispatch(payload) || raw.length > this.config.execution.maxEventBytes)
           throw new HttpFailure(400);
         if (signature === undefined || timestamp === undefined) throw new HttpFailure(403);
-        const result = this.execution.accept(payload, raw.length);
+        const result = this.execution.accept(payload, raw.length, total?.context ?? context);
         if (result.status === 'failed') throw new HttpFailure(500);
         if (result.status === 'overloaded') {
+          outcome = 'rejected';
           // This authenticated request is fully consumed. Keeping its connection
           // reusable avoids connection churn when callers retry during overload.
           this.reply(response, 503, {}, true);
@@ -237,13 +290,37 @@ export class WebhookTransport implements Transport {
       }
     } catch (error) {
       if (error instanceof HttpFailure) {
+        outcome = controller.signal.aborted
+          ? 'cancelled'
+          : error.status === 408 || verificationTimedOut
+            ? 'timeout'
+            : error.status === 503 && !this.running
+              ? 'cancelled'
+              : error.status >= 500
+                ? 'error'
+                : 'rejected';
+        measured?.end(outcome);
         response.once('finish', () => {
           if (!request.complete) request.destroy();
         });
         this.reply(response, error.status);
-      } else throw error;
+      } else {
+        measured?.fail(error, controller.signal);
+        total?.fail(error, controller.signal);
+        native?.fail(error);
+        throw error;
+      }
     } finally {
+      measured?.end();
+      total?.end(outcome);
+      response.off('close', disconnected);
+      // Native crypto jobs cannot be cancelled. Timeout/disconnect ends HTTP waiting,
+      // but must not free a permit and allow unbounded queued jobs in the worker pool.
+      // Observe late rejection without reporting the same failed request twice.
+      if (verification) await verification.catch(() => {});
+      else native?.end('error');
       this.requests.delete(request);
+      if (this.closing && this.requests.size === 0) this.drained?.();
     }
   }
   start(): Promise<void> {
@@ -252,11 +329,20 @@ export class WebhookTransport implements Transport {
     this.running = true;
     return Promise.resolve();
   }
-  stop(): Promise<void> {
+  stop(deadline: number): Promise<void> {
+    if (this.stopped) return this.stopped;
     // Application owns the shared HTTP listener; an account owns only its in-flight requests.
     this.closing = true;
     this.running = false;
-    for (const request of this.requests) request.destroy();
-    return Promise.resolve();
+    const drained = new Promise<void>((resolve) => {
+      this.drained = resolve;
+      if (this.requests.size === 0) resolve();
+    });
+    this.stopped = bounded(drained, deadline, undefined, this.clock);
+    for (const [request, controller] of this.requests) {
+      controller.abort(new HttpFailure(503));
+      request.destroy();
+    }
+    return this.stopped;
   }
 }

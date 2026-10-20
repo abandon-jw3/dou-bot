@@ -28,6 +28,8 @@ import { ExecutionPool } from './execution-pool.js';
 import { OutboundQueue } from './outbound.js';
 import { BotRuntime } from './bot-runtime.js';
 import type { AccountPorts } from './bot-runtime.js';
+import { Diagnostics, disabledDiagnostics } from '../diagnostics/observer.js';
+import type { DiagnosticsReader } from '../diagnostics/contracts.js';
 
 /** Private ports are used by local protocol tests, never part of the public declaration graph. */
 export interface RuntimePorts extends AccountPorts {
@@ -36,6 +38,9 @@ export interface RuntimePorts extends AccountPorts {
   persistence?: Persistence;
 }
 export class Application implements ApplicationContract {
+  readonly diagnostics: DiagnosticsReader;
+  private readonly observer: Diagnostics | undefined;
+  private readonly diagnosticsState = { closed: false };
   private state: ApplicationStatus = 'created';
   readonly bots: BotManager;
   readonly container: Container;
@@ -59,6 +64,15 @@ export class Application implements ApplicationContract {
   private constructor(root: Type, options: AppOptions, ports: RuntimePorts) {
     this.clock = ports.clock ?? systemClock;
     this.config = resolveApplication(options);
+    this.observer = this.config.diagnostics.enabled
+      ? new Diagnostics(
+          this.config.diagnostics,
+          this.clock,
+          undefined,
+          new Set(this.config.bots.map((bot) => bot.appId)),
+        )
+      : undefined;
+    this.diagnostics = this.observer?.reader ?? disabledDiagnostics(this.diagnosticsState);
     const shared = this.config.shared;
     const sensitive = () =>
       [
@@ -88,7 +102,7 @@ export class Application implements ApplicationContract {
       () => this.databaseReady && this.state !== 'stopped' && this.state !== 'failed',
     );
     this.incoming = new ExecutionPool(shared.execution);
-    this.outgoing = new OutboundQueue(this.config.outbound, this.clock);
+    this.outgoing = new OutboundQueue(this.config.outbound, this.clock, this.observer);
     this.bots = new Manager(this.handles);
     const sender = new Sender(
       this.routes,
@@ -108,6 +122,7 @@ export class Application implements ApplicationContract {
               handle.runtime.execution.managedSignals.has(signal),
             )?.appId,
       Math.max(...this.config.bots.map((bot) => bot.api.maxUploadBytes)),
+      this.observer,
     );
     const catalog = new CommandCatalog(shared.prefix);
     this.container = new Container(
@@ -144,6 +159,7 @@ export class Application implements ApplicationContract {
               ports.accounts?.(config.appId) ?? ports,
               sensitive,
               () => this.state === 'running' || this.state === 'degraded',
+              this.observer,
             ),
           () => this.resumeBot(config.appId),
           () => this.deadline(),
@@ -407,6 +423,8 @@ export class Application implements ApplicationContract {
     this.routes.clear();
     this.databaseReady = false;
     await this.store.close(deadline).catch((error: unknown) => errors.push(error));
+    if (this.observer) await this.observer.close(deadline);
+    this.diagnosticsState.closed = true;
     timer.cancel();
     this.reporter.close();
     this.state = failed ? 'failed' : 'stopped';

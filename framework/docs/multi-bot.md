@@ -37,6 +37,15 @@ await app.start();
 - Webhook 默认路径为 `/qq/<AppID>`。共用一个 HTTP 监听入口，逐账号校验请求头与签名。
 - 自己管理 HTTP 服务时设置 `webhook.listen: false`，使用 `app.webhookHandler()`。
 
+### Webhook 请求限制
+
+- 在账号的 `transport` 中配置；以下为默认值。
+- `maxConcurrentRequests: 64`：读取正文和验签共享请求名额；满时返回 503。
+- `readTimeoutMs: 10000`：读取正文的最长等待时间，超时返回 408。
+- `verifyTimeoutMs: 10000`：异步验签的最长等待时间，超时返回 503，不执行消息。
+- `maxBodyBytes: 1048576`：单个正文最多 1 MiB，超限返回 413。
+- 验签失败或时间戳过期返回 403。超时或断线后，仍在运行的底层验签继续占用名额，直到完成；关闭应用受统一关闭期限约束。
+
 ## 回复与主动发送
 
 - 命令中返回消息或使用 `ctx.reply()`，自动由来源机器人回复。

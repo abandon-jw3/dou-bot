@@ -1,92 +1,15 @@
 import assert from 'node:assert/strict';
-import { fork, execFileSync } from 'node:child_process';
-import type { ChildProcess } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import { resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { fileURLToPath } from 'node:url';
 import { elapsedMs, now, profile, record } from './mixed-benchmark/common.js';
+import { Worker } from './mixed-benchmark/worker.js';
 
 const role = process.argv[2];
 
-class Worker {
-  readonly child: ChildProcess;
-  readonly queued: Record<string, unknown>[] = [];
-  readonly waiters = new Set<{
-    predicate: (message: Record<string, unknown>) => boolean;
-    resolve: (message: Record<string, unknown>) => void;
-    reject: (error: Error) => void;
-  }>();
-  readonly exited: Promise<void>;
-  dead = false;
-  onMessage?: (message: Record<string, unknown>) => boolean;
-  constructor(args: string[]) {
-    this.child = fork(fileURLToPath(import.meta.url), args, {
-      stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
-      execArgv: ['--expose-gc'],
-    });
-    this.exited = new Promise((resolve) =>
-      this.child.once('close', () => {
-        this.dead = true;
-        resolve();
-      }),
-    );
-    this.child.on('message', (message: unknown) => {
-      if (!record(message) || this.onMessage?.(message)) return;
-      for (const waiter of this.waiters)
-        if (waiter.predicate(message)) {
-          this.waiters.delete(waiter);
-          waiter.resolve(message);
-          return;
-        }
-      this.queued.push(message);
-    });
-    this.child.once('close', (code, signal) => {
-      for (const waiter of this.waiters)
-        waiter.reject(new Error(`Worker ${args[0]} exited ${code ?? signal}`));
-      this.waiters.clear();
-    });
-  }
-  send(message: Record<string, unknown>): void {
-    if (this.child.connected) this.child.send(message);
-  }
-  wait(type: string, timeoutMs = 20000, nonce?: string): Promise<Record<string, unknown>> {
-    const predicate = (message: Record<string, unknown>) =>
-      message.type === type && (nonce === undefined || message.nonce === nonce);
-    const index = this.queued.findIndex(predicate);
-    if (index >= 0) return Promise.resolve(this.queued.splice(index, 1)[0]!);
-    if (this.dead) return Promise.reject(new Error(`Worker exited before ${type}`));
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.waiters.delete(waiter);
-        reject(new Error(`Timed out waiting for ${type}`));
-      }, timeoutMs);
-      const waiter = {
-        predicate,
-        resolve: (message: Record<string, unknown>) => {
-          clearTimeout(timer);
-          resolve(message);
-        },
-        reject: (error: Error) => {
-          clearTimeout(timer);
-          reject(error);
-        },
-      };
-      this.waiters.add(waiter);
-    });
-  }
-  async stop(): Promise<void> {
-    if (this.dead) return;
-    if (this.child.connected) this.child.disconnect();
-    const force = setTimeout(() => {
-      this.child.kill('SIGKILL');
-    }, 12000);
-    await this.exited;
-    clearTimeout(force);
-  }
-}
 function object(value: unknown): Record<string, unknown> {
   assert.ok(record(value));
   return value;

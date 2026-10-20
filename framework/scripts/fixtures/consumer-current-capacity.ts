@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { Command, Controller, Module } from 'dou-bot';
-import type { ApplicationSnapshot, BotSnapshot } from 'dou-bot';
+import { AppFactory, Command, Controller, Module } from 'dou-bot';
+import type { ApplicationSnapshot, BotSnapshot, WebhookTransportOptions } from 'dou-bot';
 import { createMultiTestApplication } from 'dou-bot/testing';
 
 @Controller()
@@ -11,6 +11,14 @@ class Commands {
 }
 @Module({ controllers: [Commands] })
 class Root {}
+const webhook = { type: 'webhook', verifyTimeoutMs: 250 } satisfies WebhookTransportOptions;
+// Validate the installed declaration and runtime configuration without opening a database or QQ connection.
+const unstarted = await AppFactory.create(Root, {
+  database: { host: '127.0.0.1', user: 'offline', password: '', database: 'offline' },
+  bots: [{ appId: 'webhook-config', secret: 'offline-secret', transport: webhook }],
+  webhook: { listen: false },
+});
+await unstarted.close();
 const h = await createMultiTestApplication(Root, {
   bots: [{ appId: 'capacity' }],
   execution: {

@@ -175,11 +175,16 @@ export class WsTransport implements Transport {
             ? data
             : Buffer.from(data);
         let payload: unknown;
+        const context = this.execution.observer?.root(this.config.appId);
+        const parsed = this.execution.observer?.start('ws.parse', context);
         try {
           payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
         } catch {
+          parsed?.end('rejected');
           // Native JSON errors can quote the incoming body. Keep protocol logs body-free.
           throw new FrameworkError('PROTOCOL', 'Gateway frame is not valid UTF-8 JSON');
+        } finally {
+          parsed?.end();
         }
         if (!isRecord(payload)) throw new FrameworkError('PROTOCOL', 'Invalid gateway payload');
         if (payload.op === 10) {
@@ -264,7 +269,7 @@ export class WsTransport implements Transport {
             startup.cancel();
             this.status('running');
           }
-          const result = this.execution.accept(payload, bytes.length);
+          const result = this.execution.accept(payload, bytes.length, context);
           if (result.status === 'overloaded') {
             this.pressured = true;
             shutdown();

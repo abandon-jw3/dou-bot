@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { Agent, createServer, request } from 'node:http';
-import type { ServerResponse } from 'node:http';
+import { Agent, request } from 'node:http';
 import type { Socket } from 'node:net';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import {
@@ -8,27 +7,37 @@ import {
   elapsedMs,
   finishReport,
   event,
-  eventId,
   hash,
   makeMeta,
+  continuationMeta,
   now,
-  parseId,
   record,
   send,
   signedHeaders,
 } from './common.js';
 import type { Meta, Profile } from './common.js';
+import { startFixture } from './fixture.js';
 
 /** An independent open-loop sender and downstream service fixture. No external connections. */
-export async function runDriver(config: Profile, reportPath: string): Promise<void> {
+export async function runDriver(
+  config: Profile,
+  reportPath: string,
+  externalFixture = false,
+): Promise<void> {
   const agent = new Agent({ keepAlive: true, maxSockets: config.driverMaxSockets });
   const plans = new Map<number, Meta>();
   const actors = new Set<number>();
-  const sequences = new Set<string>();
-  const acknowledgements = new Set<string>();
   const acceptedIds = new Set<number>();
+  const completedIds = new Set<number>();
+  const completed = externalFixture
+    ? Array.from({ length: config.phases.length + 1 }, () => ({
+        outcomes: {},
+        successLatency: new Histogram(),
+        terminalLatency: new Histogram(),
+        successfulCompletionsByWallTime: 0,
+      }))
+    : undefined;
   const timers = new Set<NodeJS.Timeout>();
-  const responseTimers = new Set<NodeJS.Timeout>();
   const counts: Record<string, number> = {};
   const errors: string[] = [];
   const transportErrors: Record<string, unknown>[] = [];
@@ -50,15 +59,8 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
   let sdkOrigin = '';
   let startNs: bigint | undefined;
   let nextId = 1;
-  let nextContinuationId = 1_000_000;
   let outstanding = 0;
   let maximumOutstanding = 0;
-  let fixtureActive = 0;
-  let maximumFixtureActive = 0;
-  let tokenActive = 0;
-  let maximumTokenActive = 0;
-  let tokenCount = 0;
-  let faultTokenInjected = false;
   let stopped = false;
   const phaseOf = () => {
     if (!startNs) return 0;
@@ -204,15 +206,7 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
       return;
     }
     if (root.promptMode === 'timeout' || root.promptMode === 'shutdown') return;
-    const wrong: Meta = {
-      ...root,
-      id: nextContinuationId++,
-      kind: 'distractor',
-      root: rootId,
-      step,
-      userId: `wrong-${rootId}`,
-      dueNs: now().toString(),
-    };
+    const wrong = continuationMeta(root, step, false, now());
     submit(wrong, 'distractor');
     later(
       () => {
@@ -220,192 +214,20 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
           count(counts, 'lateAnswersSkipped');
           return;
         }
-        const right: Meta = {
-          ...root,
-          id: nextContinuationId++,
-          kind: 'answer',
-          root: rootId,
-          step,
-          dueNs: now().toString(),
-        };
+        const right = continuationMeta(root, step, true, now());
         submit(right, 'answer', true);
       },
       config.name === 'smoke' ? 15 : 60,
     );
   }
-  function respond(
-    res: ServerResponse,
-    status: number,
-    payload: unknown,
-    delayMs: number,
-    after?: () => void,
-  ): void {
-    const timer = setTimeout(() => {
-      responseTimers.delete(timer);
-      if (res.destroyed) return;
-      res.writeHead(status, { 'content-type': 'application/json' });
-      res.end(status === 204 ? undefined : JSON.stringify(payload), after);
-    }, delayMs);
-    responseTimers.add(timer);
-    res.once('close', () => {
-      clearTimeout(timer);
-      responseTimers.delete(timer);
-    });
-  }
-  const fixture = createServer((req, res) => {
-    fixtureActive++;
-    maximumFixtureActive = Math.max(maximumFixtureActive, fixtureActive);
-    res.once('close', () => {
-      fixtureActive--;
-      if (!res.writableEnded) count(counts, 'abortedFixtureRequests');
-    });
-    const handle = async () => {
-      const url = new URL(req.url ?? '/', 'http://127.0.0.1');
-      const chunks: Buffer[] = [];
-      let bytes = 0;
-      for await (const chunk of req) {
-        const buffer = Buffer.from(chunk as Uint8Array);
-        bytes += buffer.length;
-        assert.ok(bytes <= 2 * 1024 * 1024, 'Fixture request too large');
-        chunks.push(buffer);
-      }
-      const body: unknown = bytes ? JSON.parse(Buffer.concat(chunks).toString()) : {};
-      assert.ok(record(body));
-      counts.fixtureBytes = (counts.fixtureBytes ?? 0) + bytes;
-      if (url.pathname === '/app/getAppAccessToken') {
-        tokenCount++;
-        tokenActive++;
-        maximumTokenActive = Math.max(maximumTokenActive, tokenActive);
-        res.once('close', () => {
-          tokenActive--;
-        });
-        const fault = config.phases[phaseOf()]?.faults && !faultTokenInjected;
-        if (fault) {
-          faultTokenInjected = true;
-          count(counts, 'tokenFailuresInjected');
-        }
-        respond(
-          res,
-          fault ? 503 : 200,
-          fault
-            ? { code: 990003, message: 'fixture token failure' }
-            : { access_token: `fixture-token-${tokenCount}`, expires_in: config.tokenSeconds },
-          config.baseApiMs,
-        );
-        return;
-      }
-      if (url.pathname === '/data') {
-        const id = Number(url.searchParams.get('id'));
-        const phase = Number(url.searchParams.get('phase'));
-        const kind = url.searchParams.get('kind');
-        count(counts, 'dataRequests');
-        let delay = hash(id, 37) % 100 < 5 ? config.slowDataMs : config.baseDataMs;
-        if (hash(id, 43) % 1000 < 5) delay = Math.floor(config.loadTimeoutMs * 0.7);
-        if (kind === 'large') delay = config.name === 'smoke' ? 50 : 120;
-        if (kind === 'hold') delay = 15000;
-        if (config.phases[phase]?.faults && id % 11 === 0) {
-          delay = config.loadTimeoutMs * 2;
-          count(counts, 'dataTimeoutsInjected');
-        }
-        const userId =
-          process.env.DOU_BOT_BENCHMARK_CORRUPT_DATA === '1'
-            ? 'incorrect-user'
-            : url.searchParams.get('user');
-        respond(res, 200, { userId, id }, delay);
-        return;
-      }
-      assert.ok(
-        /^\/v2\/(groups|users)\/[^/]+\/(messages|files)$/u.test(url.pathname) ||
-          /^\/interactions\/[^/]+$/u.test(url.pathname),
-        `Unexpected fixture route ${url.pathname}`,
-      );
-      const interaction = url.pathname.startsWith('/interactions/');
-      let reference = parseId(
-        interaction
-          ? decodeURIComponent(url.pathname.split('/')[2]!)
-          : (body.msg_id ?? body.event_id),
-      );
-      if (url.pathname.endsWith('/files')) {
-        assert.equal(typeof body.file_data, 'string');
-        const image = Buffer.from(body.file_data as string, 'base64');
-        assert.equal(image.length, 65536);
-        reference = {
-          phase: image.readUInt32BE(image.length - 8),
-          id: image.readUInt32BE(image.length - 4),
-        };
-        count(counts, 'uploads');
-      }
-      if (!reference && typeof body.content === 'string') {
-        const match = /^result:(\d+):button$/u.exec(body.content);
-        const plan = match ? plans.get(Number(match[1])) : undefined;
-        if (plan) reference = { phase: plan.phase, id: plan.id };
-      }
-      assert.ok(reference, 'Outgoing request has no accounted origin');
-      const meta = plans.get(reference.id);
-      assert.ok(meta, 'Outgoing origin is unknown');
-      if (interaction) {
-        const key = eventId(meta);
-        assert.ok(!acknowledgements.has(key), 'Button acknowledged twice');
-        acknowledgements.add(key);
-        count(counts, 'buttonAcks');
-      } else {
-        const target =
-          meta.scene === 'group' ? `/groups/${meta.groupId}/` : `/users/${meta.userId}/`;
-        assert.ok(url.pathname.includes(target), 'Reply crossed a user or group boundary');
-        if (body.msg_id !== undefined) {
-          assert.equal(typeof body.msg_id, 'string');
-          assert.equal(typeof body.msg_seq, 'number');
-          const key = `${body.msg_id as string}:${body.msg_seq as number}`;
-          assert.ok(!sequences.has(key), 'Reply sequence reused');
-          sequences.add(key);
-        }
-      }
-      const fault = config.phases[reference.phase]?.faults;
-      let delay = config.baseApiMs;
-      let status = interaction ? 204 : 200;
-      let result: unknown = url.pathname.endsWith('/files')
-        ? { file_info: `fixture-${meta.id}`, ttl: 60 }
-        : { id: `sent-${meta.id}`, timestamp: new Date().toISOString() };
-      if (fault && meta.id % 13 === 0) {
-        status = 429;
-        result = { code: 990001, message: 'fixture rate limit' };
-        count(counts, 'http429Injected');
-      } else if (fault && meta.id % 17 === 0) {
-        status = 503;
-        result = { code: 990002, message: 'fixture unavailable' };
-        count(counts, 'http503Injected');
-      } else if (fault && meta.id % 19 === 0) {
-        delay = config.requestTimeoutMs * 2;
-        count(counts, 'apiTimeoutsInjected');
-      }
-      count(counts, 'apiRequests');
-      const question =
-        typeof body.content === 'string'
-          ? /^question:(\d+):(\d+):(\d+):(\w+)$/u.exec(body.content)
-          : null;
-      respond(
-        res,
-        status,
-        result,
-        delay,
-        status === 200 && question
-          ? () =>
-              later(
-                () => answer(Number(question[2]), Number(question[3])),
-                config.name === 'smoke' ? 10 : 40,
-              )
-          : undefined,
-      );
-    };
-    handle().catch((error) => {
-      failure(error);
-      if (!res.headersSent) res.writeHead(500);
-      res.end();
-    });
-  });
-  await new Promise<void>((resolve) => fixture.listen(0, '127.0.0.1', resolve));
-  const address = fixture.address();
-  assert.ok(address && typeof address !== 'string');
+  const fixture = externalFixture
+    ? undefined
+    : await startFixture(config, {
+        plan: (id) => plans.get(id),
+        phaseOf,
+        question: (root, step) =>
+          later(() => answer(root, step), config.name === 'smoke' ? 10 : 40),
+      });
   let scheduler: NodeJS.Timeout | undefined;
   function begin(at: bigint): void {
     assert.equal(startNs, undefined);
@@ -462,7 +284,7 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
         (sum, queued) => sum + (queued?.length ?? 0),
         0,
       ),
-      fixtureActive,
+      fixtureActive: fixture?.activity().fixtureActive ?? 0,
       cpuCores: (cpu.user + cpu.system) / (elapsed * 1000),
       eventLoopP99Ms: loop.percentile(99) / 1e6,
     });
@@ -476,47 +298,59 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
     for (const timer of timers) clearTimeout(timer);
     timers.clear();
     agent.destroy();
-    const closed = new Promise<void>((resolve) => fixture.close(() => resolve()));
-    fixture.closeAllConnections();
-    await closed;
-    await new Promise<void>((resolve) => setImmediate(resolve));
-    assert.equal(responseTimers.size, 0);
-    assert.equal(fixtureActive, 0);
-    assert.equal(tokenActive, 0);
+    const fixtureResult = await fixture?.close();
     await finishReport(
       'driver-final',
       {
-        counts,
-        errors,
+        counts: Object.fromEntries(
+          [...new Set([...Object.keys(counts), ...Object.keys(fixtureResult?.counts ?? {})])].map(
+            (key) => [key, (counts[key] ?? 0) + (fixtureResult?.counts[key] ?? 0)],
+          ),
+        ),
+        errors: [...errors, ...(fixtureResult?.errors ?? [])].slice(0, 20),
         transportErrors,
         phases: phases.map((p, index) => ({
-          name: config.phases[index]?.name ?? 'shutdown',
+          name: config.phases[index]?.name ?? (externalFixture ? 'drain' : 'shutdown'),
           counts: p.counts,
           statuses: p.statuses,
           schedulingLag: p.schedulingLag.snapshot(),
           ackLatency: p.ackLatency.snapshot(),
           socketWait: p.socketWait.snapshot(),
+          ...(completed
+            ? {
+                outcomes: completed[index]!.outcomes,
+                successLatency: completed[index]!.successLatency.snapshot(),
+                terminalLatency: completed[index]!.terminalLatency.snapshot(),
+                successfulCompletionsByWallTime: completed[index]!.successfulCompletionsByWallTime,
+              }
+            : {}),
         })),
-        tokenCount,
-        maximumTokenActive,
+        tokenCount: fixtureResult?.tokenCount ?? 0,
+        maximumTokenActive: fixtureResult?.maximumTokenActive ?? 0,
         maximumOutstanding,
-        maximumFixtureActive,
+        maximumFixtureActive: fixtureResult?.maximumFixtureActive ?? 0,
         samples,
         cleanup: {
           outstanding,
-          fixtureActive,
-          responseTimers: responseTimers.size,
+          fixtureActive: fixture?.activity().fixtureActive ?? 0,
+          responseTimers: fixtureResult?.cleanup.responseTimers ?? 0,
           timers: timers.size,
         },
         generatorRetainedMetadata: plans.size,
+        ...(externalFixture
+          ? {
+              issuedIds: [...plans.keys()],
+              completedPrimary: completedIds.size,
+              latencyOrigin: 'driver-scheduled-to-completion-notification',
+            }
+          : {}),
       },
       reportPath,
     );
     plans.clear();
-    sequences.clear();
-    acknowledgements.clear();
     actors.clear();
     acceptedIds.clear();
+    completedIds.clear();
     process.disconnect?.();
   };
   process.on('message', (message: unknown) => {
@@ -532,14 +366,40 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
       begin(BigInt(message.startNs as string));
     }
     if (message.type === 'root-done') actors.delete(Number(message.id));
+    if (message.type === 'question')
+      later(
+        () => answer(Number(message.root), Number(message.step)),
+        config.name === 'smoke' ? 10 : 40,
+      );
+    if (message.type === 'completion') {
+      assert.ok(completed);
+      const id = Number(message.id);
+      const plan = plans.get(id);
+      assert.ok(
+        plan && !['answer', 'distractor'].includes(plan.kind),
+        'Completion has no offered primary',
+      );
+      assert.equal(message.phase, plan.phase);
+      assert.equal(completedIds.has(id), false, 'Primary completed twice');
+      assert.equal(typeof message.outcome, 'string');
+      completedIds.add(id);
+      const data = completed[plan.phase]!;
+      count(data.outcomes, message.outcome as string);
+      data.terminalLatency.add(elapsedMs(plan.dueNs));
+      if (message.outcome === 'success') {
+        data.successLatency.add(elapsedMs(plan.dueNs));
+        completed[phaseOf()]!.successfulCompletionsByWallTime++;
+      }
+    }
     if (message.type === 'snapshot')
       send({
         type: 'driver-snapshot',
         nonce: message.nonce,
         outstanding,
         timers: timers.size,
-        fixtureActive,
+        fixtureActive: fixture?.activity().fixtureActive ?? 0,
         actors: actors.size,
+        completedPrimary: completedIds.size,
       });
     if (message.type === 'shutdown-prompts')
       for (let i = 0; i < Math.min(8, config.concurrency); i++)
@@ -564,7 +424,7 @@ export async function runDriver(config: Profile, reportPath: string): Promise<vo
   });
   send({
     type: 'driver-ready',
-    origin: `http://127.0.0.1:${address.port}`,
+    ...(fixture ? { origin: fixture.origin } : {}),
     node: process.version,
     pid: process.pid,
   });

@@ -8,6 +8,9 @@
 - 新版本独立设计和验收，使用方式见 [SDK README](../README.md) 与 [多机器人指南](multi-bot.md)。
 - 已发布的 npm 0.8.0、业务示例、网站与技能保留各自的发布状态，不作为新 API 的兼容要求。
 - PostgreSQL 专项使用 TEST_DATABASE_* 和随机测试 schema；普通离线检查不读取业务数据库配置。
+- 阶段观测默认关闭，通过应用级 `diagnostics` 开启；提供有界指标、采样与批量导出，见 [观测指南](diagnostics.md)。两版回归与服务器开销数据见 [观测验收](diagnostics-review-2026-10-20.md)。
+- 未发布源码已改用有界异步 Webhook 验签，新增 `transport.verifyTimeoutMs`；配置见 [多机器人指南](multi-bot.md#webhook-请求限制)。
+- 2026-10-20 同机复验：400/s × 5 分钟通过，500/s × 5 分钟仍有拒绝与积压；仅为合成 Webhook 场景。实现、两版 Node 回归与证据见 [验签优化报告](webhook-async-review-2026-10-20.md)。默认执行/出站并发未调整，WS 与真实 SQL 容量需单独测量。
 
 ## 三个工程的边界
 
@@ -63,6 +66,8 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 混合负载使用 `npm run benchmark:mixed -- smoke local-smoke` 验证测试工具，再运行 `npm run benchmark:mixed -- standard local-standard`。完整场景约 6 分钟，涵盖本机 Webhook 验签、慢 HTTP 业务、过载与恢复；结果位于 framework/work/mixed-benchmark。每次使用不同标签，报告不覆盖已有文件。详见 [混合 Benchmark](benchmark-mixed-2026-10-14.md)。
 
+`npm run example:diagnostics` 使用内存测试入口演示阶段指标。分布式对照通过 `--diagnostics off|metrics|sampled` 控制观测；采样固定 1%，导出仅计数及保留有界示例。比较模式时固定工作负载和资源预算，区分观测开销与容量结论。
+
 连接问题可用 `npm run benchmark:mixed -- connections local-connections` 做 70 秒诊断。需要限制客户端连接突发时设置 `DOU_BOT_BENCHMARK_MAX_SOCKETS`；它不改变计划事件速率，报告会记录实际值和客户端等待。实测范围见 [生产准备与连接排查](readiness-2026-10-20.md)。
 
 只有 main 的非 PR 工作流在全部检查成功后部署 Pages，产物仍为 website/docs/.vitepress/dist。线上地址为 [abandon-jw3.github.io/dou-bot/](https://abandon-jw3.github.io/dou-bot/)，base 为 /dou-bot/，页面编辑链接仍指向 website/docs/:path。原 /dou-bot-docs/ 的站点跳转保持；这与本次不保留旧仓库目录是两种不同的路径。
@@ -100,3 +105,9 @@ README 和公开指南随 SDK 发包，相对链接必须落在安装包内；�
 当前源码使用 `npm run probe:multi-bot`，配置仅取 framework/.env。先运行 `--check` 和显式 `--migrate`，再启动双 WS；完整步骤见 [验收指南](live-multi-bot.md)。旧的本机 TEST_DATABASE_* 不再使用。
 
 2026-10-20 已完成真实双 WS 收发、主动群消息、群地址持久化和单账号停止/恢复验证，见 [实测记录](live-multi-bot-2026-10-20.md)。两个验收实例已关闭。
+
+## 目标服务器容量验收
+
+2026-10-20 目标服务器的 65 分钟合成持续测试通过；完整阶梯负载因高阶段压测端漏发未通过，见 [服务器验收](server-capacity-2026-10-20.md)。数据库同机部署，但本轮使用内存数据库和下游夹具；两项结果分别记录，不混同真实 QQ、SQL 或业务渲染吞吐。验收单元已清理，证据保留。
+
+随后将发压端移出服务器，完成六档 Webhook 并发对照，操作见 [分布式基准](benchmark-distributed.md)，结果见 [并发与 CPU 报告](concurrency-review-2026-10-20.md)。发压无漏发，但尚未达到稳定 500/s；默认并发保持不变，后续按 CPU 证据继续优化。

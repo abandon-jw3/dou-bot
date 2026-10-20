@@ -1,4 +1,4 @@
-import type { BotOptions } from '../contracts.js';
+import type { AppOptions, BotOptions } from '../contracts.js';
 import type { TestApplication } from './contracts.js';
 export type { TestApplication } from './contracts.js';
 import type { BotSnapshot, BotStatus, InjectionToken, Type } from '../contracts.js';
@@ -16,7 +16,7 @@ export class SingleTestApplication implements TestApplication {
   ) {}
   static async create(
     root: Type,
-    options: SingleBotOptions,
+    options: SingleBotOptions & Pick<AppOptions, 'outbound' | 'diagnostics'>,
     ports: RuntimePorts = {},
   ): Promise<SingleTestApplication> {
     const { appId, secret, transport, api, interactions, ...shared } = options;
@@ -63,6 +63,9 @@ export class SingleTestApplication implements TestApplication {
   }
   get runtime() {
     return this.application.runtime(this.appId);
+  }
+  get diagnostics() {
+    return this.application.diagnostics;
   }
   get execution() {
     return this.runtime.execution;

@@ -10,6 +10,7 @@ import type {
 import { errorOf, FrameworkError } from './errors.js';
 import type { Clock } from './clock.js';
 import { bounded, callable, hasControlCharacters, isObject } from './utils.js';
+import type { Diagnostics, ObservationContext } from '../diagnostics/observer.js';
 
 const names = new WeakMap<object, string>();
 
@@ -44,6 +45,8 @@ interface Entry {
   promise?: Promise<unknown>;
 }
 interface StatePorts {
+  observer?: Diagnostics;
+  context?: ObservationContext | undefined;
   signal: AbortSignal;
   clock: Clock;
   managedSignals?: Set<AbortSignal>;
@@ -96,6 +99,9 @@ export class ContextState {
           'HANDLER_CONTRACT',
           `Context key is not registered: ${names.get(key)}`,
         );
+      this.ports.observer
+        ?.start('context.lookup', this.ports.context)
+        ?.end(entry.promise ? 'cache-hit' : 'success');
       if (!entry.promise) {
         const loader = entry.loader!;
         delete entry.loader;
@@ -198,12 +204,16 @@ export class ContextState {
         } else {
           this.operations.add(controller);
           this.ports.managedSignals?.add(controller.signal);
+          this.ports.observer?.bind(controller.signal, observation?.context ?? this.ports.context);
         }
       }
       return controller.signal;
     };
     const deadline = this.ports.clock.monotonic() + timeout;
     const timeoutError = () => new FrameworkError('CONTEXT_TIMEOUT', `${label} timed out`);
+    const observation = deferStart
+      ? this.ports.observer?.start('context.load', this.ports.context, this.ports.signal)
+      : undefined;
     try {
       const run = () => {
         this.ports.signal.throwIfAborted();
@@ -224,16 +234,19 @@ export class ContextState {
       }
       return await bounded(pending, deadline, signal(), this.ports.clock, timeoutError);
     } catch (error) {
+      observation?.fail(error, this.ports.signal);
       failure = { reason: error };
       finish?.();
       controller?.abort(error);
       throw error;
     } finally {
+      observation?.end();
       finish?.();
       finished = true;
       if (controller) {
         this.operations.delete(controller);
         this.ports.managedSignals?.delete(controller.signal);
+        this.ports.observer?.unbind(controller.signal);
         if (!controller.signal.aborted)
           controller.abort(new FrameworkError('INVALID_STATE', 'Context operation has finished'));
       }

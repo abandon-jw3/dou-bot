@@ -13,6 +13,7 @@ import { bounded, isRecord } from './utils.js';
 import { errorOf, FrameworkError } from './errors.js';
 import { messageBytes } from '../qq/managed-client.js';
 import { snapshotMessage } from '../message/index.js';
+import type { Diagnostics } from '../diagnostics/observer.js';
 
 export class Sender extends MessageSender {
   private readonly unresolved = Symbol('unresolved route');
@@ -24,6 +25,7 @@ export class Sender extends MessageSender {
     private readonly report: (error: unknown, appId?: string, sourceAppId?: string) => void,
     private readonly sourceAccount: (signal?: AbortSignal) => string | undefined,
     private readonly maxUpload: number,
+    private readonly observer?: Diagnostics,
   ) {
     super();
   }
@@ -63,10 +65,22 @@ export class Sender extends MessageSender {
         copied.appId ?? this.unresolved,
         messageBytes(message),
         async (signal) => {
-          const address =
-            copied.appId === undefined && copied.scene === 'group'
-              ? await bounded(this.routes.resolve(copied.groupId), Infinity, signal)
-              : copied;
+          let address = copied;
+          if (copied.appId === undefined && copied.scene === 'group') {
+            const lookup = this.observer?.start(
+              'route.lookup',
+              this.observer.context(signal),
+              signal,
+            );
+            try {
+              address = await bounded(this.routes.resolve(copied.groupId), Infinity, signal);
+            } catch (error) {
+              lookup?.fail(error, signal);
+              throw error;
+            } finally {
+              lookup?.end();
+            }
+          }
           signal.throwIfAborted();
           if (!address.appId) throw new FrameworkError('ROUTE_NOT_FOUND', 'No bot address');
           destination = address.appId;

@@ -69,6 +69,7 @@ const publicGuides = [
   'docs/database.md',
   'docs/capacity.md',
   'docs/context-middleware.md',
+  'docs/diagnostics.md',
   'docs/command-parameters.md',
   'docs/execution-controls.md',
   'docs/access-control.md',
@@ -209,6 +210,7 @@ const featureConsumers = releasedBaseline
             'consumer-slot-normalization.ts',
             'consumer-context.ts',
             registryVersion ? 'consumer-capacity.ts' : 'consumer-current-capacity.ts',
+            ...(registryVersion ? [] : ['consumer-diagnostics.ts']),
           ]),
     ];
 if (!releasedBaseline) {

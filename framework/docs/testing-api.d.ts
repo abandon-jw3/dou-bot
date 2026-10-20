@@ -12,6 +12,7 @@ import type {
   QQDispatch,
   QQMessagePayload,
   Type,
+  DiagnosticsReader,
 } from './public-api.js';
 
 export interface RecordedMessage {
@@ -49,6 +50,7 @@ export declare function createTestApplication(
 ): Promise<TestHarness>;
 
 export interface TestApplication {
+  readonly diagnostics: DiagnosticsReader;
   readonly status: BotStatus;
   readonly client: QQClient;
   start(): Promise<void>;

@@ -24,6 +24,9 @@ import type {
   MessageInput,
 } from '../contracts.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
+import type { Observation } from '../diagnostics/observer.js';
+import { diagnosticOutcome } from '../diagnostics/observer.js';
+import type { DiagnosticsOutcome } from '../diagnostics/contracts.js';
 
 interface Route {
   binding: ControllerBinding;
@@ -36,6 +39,7 @@ interface Route {
   needsContext: boolean;
   identities: readonly Extract<ParameterBinding, { kind: 'identity' }>[];
   contextValues: readonly Extract<ParameterBinding, { kind: 'context-value' }>[];
+  diagnosticName: string;
 }
 const location = (route: Route): HandlerLocation => ({
   controller: route.binding.type.name || '(anonymous)',
@@ -84,6 +88,8 @@ export class Dispatcher {
           binding,
           metadata,
           id: nextId++,
+          diagnosticName:
+            `${nextId - 1}:${binding.type.name || '(anonymous)'}.${metadata.method}`.slice(0, 256),
           needsContext: metadata.parameters.some((parameter) => parameter.kind === 'context'),
           identities: metadata.parameters.filter((parameter) => parameter.kind === 'identity'),
           contextValues: metadata.parameters.filter(
@@ -173,6 +179,17 @@ export class Dispatcher {
     let phase: ErrorPhase = 'middleware';
     let parsing = false;
     let invoked = false;
+    let outcome: DiagnosticsOutcome = 'success';
+    let observation: Observation | undefined;
+    const previousContext = task.diagnosticContext;
+    const routeContext = task.observer
+      ? { ...previousContext, handler: route.diagnosticName }
+      : undefined;
+    const total = task.observer?.start('handler.total', routeContext, task.controller.signal);
+    if (routeContext) {
+      task.diagnosticContext = total?.context ?? routeContext;
+      task.observer?.bind(task.controller.signal, task.diagnosticContext);
+    }
     try {
       const cooldown = route.metadata.cooldown;
       const info =
@@ -186,16 +203,31 @@ export class Dispatcher {
             )
           : undefined;
       if (info)
-        for (const reference of route.middlewares)
-          await task.contextData(handler).prepare(reference(), info);
+        for (let index = 0; index < route.middlewares.length; index++) {
+          observation = task.observer?.start(
+            'handler.middleware',
+            { ...task.diagnosticContext, component: index },
+            task.controller.signal,
+          );
+          await task.contextData(handler).prepare(route.middlewares[index]!(), info);
+          observation?.end();
+        }
       phase = 'guard';
       if (info)
-        for (const reference of route.guards) {
-          const result = await runGuard(reference(), info, this.clock);
+        for (let index = 0; index < route.guards.length; index++) {
+          observation = task.observer?.start(
+            'handler.guard',
+            { ...task.diagnosticContext, component: index },
+            task.controller.signal,
+          );
+          const result = await runGuard(route.guards[index]!(), info, this.clock);
           if (result !== true) {
+            observation?.end('rejected');
+            outcome = 'rejected';
             await this.hint(task, route, result === false ? undefined : result.message);
             return;
           }
+          observation?.end();
         }
       task.controller.signal.throwIfAborted();
       phase =
@@ -206,27 +238,40 @@ export class Dispatcher {
           : task.messageContext(handler)
         : undefined;
       let parameters: unknown[];
+      observation = task.observer?.start('handler.bind', task.diagnosticContext);
       if (task.event.kind === 'message') {
         parsing = true;
         if (matched !== undefined) {
           parameters = route.arguments!.bind([], context, matched, true);
         } else {
           const parsed = tokenizeCommand(task.event.content, this.prefix);
-          if (!parsed || !route.arguments) return;
+          if (!parsed || !route.arguments) {
+            outcome = 'ignored';
+            observation?.end('ignored');
+            return;
+          }
           parameters = route.arguments.bind(parsed.tokens, context, task.event.attachments);
         }
         parsing = false;
       } else parameters = route.metadata.parameters.map(() => context);
       if (route.identities.length && task.event.kind !== 'event')
         bindIdentity(route.identities, parameters, task.event.identity);
+      observation?.end();
       phase = 'context';
+      observation = route.contextValues.length
+        ? task.observer?.start('handler.context', task.diagnosticContext, task.controller.signal)
+        : undefined;
       for (const parameter of route.contextValues)
         parameters[parameter.index] = await task.contextData(handler).reader.get(parameter.key);
+      observation?.end();
       task.controller.signal.throwIfAborted();
       phase = 'cooldown';
       if (cooldown && info) {
+        observation = task.observer?.start('handler.cooldown', task.diagnosticContext);
         const remaining = this.cooldowns.reserve(route.id, info, cooldown);
+        observation?.end(remaining > 0 ? 'rejected' : 'success');
         if (remaining > 0) {
+          outcome = 'rejected';
           await this.hint(
             task,
             route,
@@ -238,7 +283,13 @@ export class Dispatcher {
       phase =
         task.event.kind === 'button' ? 'button' : matched === undefined ? 'command' : 'attachment';
       invoked = true;
+      observation = task.observer?.start(
+        'handler.invoke',
+        task.diagnosticContext,
+        task.controller.signal,
+      );
       const result = await this.invoke(route, context, parameters);
+      observation?.end();
       if (task.event.kind === 'button') {
         if (result !== undefined)
           throw new FrameworkError('HANDLER_CONTRACT', 'Button handlers must return void');
@@ -251,6 +302,8 @@ export class Dispatcher {
         await task.send(result as MessageInput, true, handler);
       }
     } catch (error) {
+      observation?.fail(error, task.controller.signal);
+      if (total) outcome = diagnosticOutcome(error, task.controller.signal);
       task.report(error, phase, handler);
       if (
         parsing &&
@@ -271,6 +324,7 @@ export class Dispatcher {
         }
       }
     } finally {
+      observation?.end();
       task.sealContextData();
       // In manual mode no handler will run to acknowledge a blocked button. ACK only receipt, not business success.
       if (
@@ -282,6 +336,9 @@ export class Dispatcher {
         !task.controller.signal.aborted
       )
         task.ack(0, handler).catch(() => {});
+      total?.end(outcome);
+      task.diagnosticContext = previousContext;
+      task.observer?.bind(task.controller.signal, previousContext);
     }
   }
 
@@ -313,11 +370,23 @@ export class Dispatcher {
 
   async dispatch(task: EventTask): Promise<void> {
     for (const route of this.events.get(task.event.raw.t) ?? []) {
+      const previous = task.diagnosticContext;
+      const context = task.observer ? { ...previous, handler: route.diagnosticName } : undefined;
+      const observation = task.observer?.start('handler.observer', context, task.controller.signal);
+      if (context) {
+        task.diagnosticContext = observation?.context ?? context;
+        task.observer?.bind(task.controller.signal, task.diagnosticContext);
+      }
       try {
         if ((await this.invoke(route, task.context())) !== undefined)
           throw new FrameworkError('HANDLER_CONTRACT', 'Event observers must return void');
       } catch (error) {
+        observation?.fail(error, task.controller.signal);
         task.report(error, 'observer', location(route));
+      } finally {
+        observation?.end();
+        task.diagnosticContext = previous;
+        task.observer?.bind(task.controller.signal, previous);
       }
     }
     if (task.controller.signal.aborted) return;

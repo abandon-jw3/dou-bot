@@ -41,6 +41,7 @@ export interface ResolvedOptions {
         path: string;
         maxBodyBytes: number;
         readTimeoutMs: number;
+        verifyTimeoutMs: number;
         maxConcurrentRequests: number;
         maxSignatureAgeMs: number;
       };
@@ -231,6 +232,7 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
         'path',
         'maxBodyBytes',
         'readTimeoutMs',
+        'verifyTimeoutMs',
         'maxConcurrentRequests',
         'maxSignatureAgeMs',
       ],
@@ -251,6 +253,7 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
       port: integer(webhook.port, 3000, 'port', 0, 65535),
       maxBodyBytes: integer(webhook.maxBodyBytes, 1048576, 'maxBodyBytes'),
       readTimeoutMs: integer(webhook.readTimeoutMs, 10000, 'readTimeoutMs'),
+      verifyTimeoutMs: integer(webhook.verifyTimeoutMs, 10000, 'verifyTimeoutMs'),
       maxConcurrentRequests: integer(webhook.maxConcurrentRequests, 64, 'maxConcurrentRequests'),
       maxSignatureAgeMs: integer(webhook.maxSignatureAgeMs, 300000, 'maxSignatureAgeMs'),
     };

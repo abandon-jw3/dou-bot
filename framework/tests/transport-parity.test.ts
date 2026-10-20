@@ -44,7 +44,7 @@ import type {
 } from '../src/index.js';
 import { qqServer, serve, until } from './helpers.js';
 
-await test('identical private/group messages and buttons produce identical behavior through real WS and Webhook HTTP', async () => {
+async function parity(diagnostics: boolean): Promise<void> {
   const contextKey = createContextKey<string>('protocol-context');
   @Injectable()
   class ContextData implements ContextMiddleware {
@@ -205,6 +205,7 @@ await test('identical private/group messages and buttons produce identical behav
         appId: 'fixture-app',
         secret,
         execution: { concurrency: 1 },
+        diagnostics: { enabled: diagnostics, traceSampleRate: 1, maxPendingSpans: 4096 },
         api: { baseUrl: backend.url, tokenEndpoint: backend.url + '/app/getAppAccessToken' },
         transport:
           index === 0 ? { type: 'ws', closeTimeoutMs: 50 } : { type: 'webhook', listen: false },
@@ -576,9 +577,32 @@ await test('identical private/group messages and buttons produce identical behav
     assert.deepEqual(snapshots[0]!.rejections, snapshots[1]!.rejections);
     assert.equal(snapshots[0]!.timing.processing.count, snapshots[1]!.timing.processing.count);
     assert.ok(snapshots.every((snapshot) => snapshot.timing.processing.count > 0));
+    if (diagnostics) {
+      await Promise.all(apps.map((app) => app.execution.idle()));
+      assert.ok(
+        ws.diagnostics.snapshot().metrics.some((m) => m.stage === 'ws.parse' && m.count > 0),
+      );
+      assert.ok(
+        webhook.diagnostics
+          .snapshot()
+          .metrics.some((m) => m.stage === 'webhook.verify' && m.count > 0),
+      );
+      for (const app of apps) {
+        const diagnostic = app.diagnostics.snapshot();
+        assert.equal(diagnostic.activeSpans, 0);
+        assert.equal(diagnostic.droppedMeasurements, 0);
+        assert.ok(diagnostic.metrics.some((m) => m.stage === 'control.run' && m.count > 0));
+        assert.ok(app.diagnostics.takeSpans().length > 0);
+      }
+    }
   } finally {
     await Promise.all(apps.map((app) => app.close()));
     await host.close();
     await Promise.all(backends.map((backend) => backend.close()));
   }
-});
+}
+
+await test('identical private/group messages and buttons produce identical behavior through real WS and Webhook HTTP', () =>
+  parity(false));
+await test('stage diagnostics preserves real WS/Webhook protocol parity, buttons and attachment invocations', () =>
+  parity(true));

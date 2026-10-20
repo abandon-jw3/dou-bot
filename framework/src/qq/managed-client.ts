@@ -20,6 +20,7 @@ import type { Clock } from '../core/clock.js';
 import { errorOf, FrameworkError } from '../core/errors.js';
 import { copyTarget, snapshotMessage } from '../message/index.js';
 import { isRecord } from '../core/utils.js';
+import type { Diagnostics } from '../diagnostics/observer.js';
 
 function optionsSnapshot(input: unknown): RequestOptions {
   if (input === undefined) return {};
@@ -49,6 +50,7 @@ export class ManagedQQClient extends QQClient {
     private readonly isContextSignal: (signal: AbortSignal) => boolean,
     private readonly report: (error: unknown) => void,
     clock: Clock,
+    observer?: Diagnostics,
   ) {
     super();
     // Protocol acknowledgments must not wait behind user messages, but still need
@@ -60,6 +62,8 @@ export class ManagedQQClient extends QQClient {
         queueMaxBytes: config.execution.queueMaxBytes,
       },
       clock,
+      observer,
+      'control',
     );
     this.api = apiFacade(
       <T>(method: ApiMethod, args: readonly unknown[], input?: ApiRequestOptions): Promise<T> =>
@@ -236,6 +240,7 @@ export function scopedClient(
   signal: AbortSignal,
   track: <T>(operation: () => Promise<T>) => Promise<T>,
   signals?: Set<AbortSignal>,
+  observer?: Diagnostics,
 ): QQClient {
   const run = <T>(
     operation: (options: SendOptions) => Promise<T>,
@@ -246,13 +251,22 @@ export function scopedClient(
       const options = optionsSnapshot(input);
       const combined = options.signal ? AbortSignal.any([signal, options.signal]) : signal;
       const registered = combined !== signal;
-      if (registered) signals?.add(combined);
+      if (registered) {
+        signals?.add(combined);
+        observer?.inherit(signal, combined);
+      }
       try {
         return operation({ ...options, signal: combined }).finally(() => {
-          if (registered) signals?.delete(combined);
+          if (registered) {
+            signals?.delete(combined);
+            observer?.unbind(combined);
+          }
         });
       } catch (error) {
-        if (registered) signals?.delete(combined);
+        if (registered) {
+          signals?.delete(combined);
+          observer?.unbind(combined);
+        }
         throw error;
       }
     });

@@ -22,6 +22,7 @@ import { snapshotMessage } from '../message/index.js';
 import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
 import { ContextState } from './context-state.js';
+import type { Diagnostics, ObservationContext } from '../diagnostics/observer.js';
 
 export type HandlerLocation = Pick<ErrorContext, 'controller' | 'method'>;
 
@@ -88,6 +89,7 @@ interface TaskLifecycle {
 }
 
 export class EventTask {
+  diagnosticContext: ObservationContext | undefined;
   readonly controller = new AbortController();
   readonly ledger: OperationLedger;
   failed = false;
@@ -108,7 +110,11 @@ export class EventTask {
     private readonly lifecycle?: TaskLifecycle,
     private readonly parent?: EventTask,
     private readonly clock: Clock = systemClock,
+    readonly observer?: Diagnostics,
+    context?: ObservationContext,
   ) {
+    this.diagnosticContext = context;
+    observer?.bind(this.controller.signal, context);
     this.ledger = new OperationLedger(
       options.execution.maxContextOperations,
       (error, phase, location) => this.report(error, phase, location),
@@ -128,11 +134,14 @@ export class EventTask {
       this.lifecycle,
       this,
       this.clock,
+      this.observer,
+      this.diagnosticContext,
     );
     this.lifecycle?.managedSignals.add(child.controller.signal);
     const abort = () => {
       child.controller.abort(this.controller.signal.reason);
       this.lifecycle?.managedSignals.delete(child.controller.signal);
+      this.observer?.unbind(child.controller.signal);
       child.ledger.sealAndDrain().catch(() => {});
     };
     this.controller.signal.addEventListener('abort', abort, { once: true });
@@ -149,6 +158,7 @@ export class EventTask {
         ...(this.lifecycle ? { managedSignals: this.lifecycle.managedSignals } : {}),
         track: (operation) => this.ledger.run('context', operation, location),
         report: (error) => this.report(error, 'context', location),
+        ...(this.observer ? { observer: this.observer, context: this.diagnosticContext } : {}),
       });
       if (this.dataSealed) this.data.seal();
     }
@@ -171,6 +181,7 @@ export class EventTask {
     } finally {
       this.controller.abort(new FrameworkError('INVALID_STATE', 'Attachment handler has finished'));
       this.lifecycle?.managedSignals.delete(this.controller.signal);
+      this.observer?.unbind(this.controller.signal);
       this.detach?.();
     }
   }
@@ -213,6 +224,7 @@ export class EventTask {
           this.controller.signal,
           (operation) => this.ledger.run('send', operation),
           this.lifecycle?.managedSignals,
+          this.observer,
         )),
     });
     return Object.freeze(value) as Readonly<T & { readonly client: QQClient }>;
@@ -322,14 +334,25 @@ export class EventTask {
         const scope = source?.scope ?? this.scope;
         if (event.kind === 'event')
           throw new FrameworkError('INVALID_STATE', 'Event has no send target');
-        const message = snapshotMessage(input, this.options.api.maxUploadBytes);
+        const preparation = this.observer?.start('message.prepare', this.diagnosticContext);
+        let message: ReturnType<typeof snapshotMessage>;
+        try {
+          message = snapshotMessage(input, this.options.api.maxUploadBytes);
+        } catch (error) {
+          preparation?.fail(error);
+          throw error;
+        } finally {
+          preparation?.end();
+        }
         const target = event.target;
         const signal = this.controller.signal;
         if (!reply) return this.client.sendPreparedMessage(target, message, { signal });
         if (event.kind !== 'message' || !scope)
           throw new FrameworkError('INVALID_STATE', 'Interaction IDs cannot be message references');
         const reference = { messageId: event.messageId, sequence: ++scope.sequence };
+        const waiting = this.observer?.start('reply.wait', this.diagnosticContext, signal);
         const result = scope.tail.then(() => {
+          waiting?.end();
           signal.throwIfAborted();
           return this.client.sendPreparedMessage(target, message, { signal, reply: reference });
         });

@@ -6,6 +6,7 @@ import type { HttpRuntime } from './http.js';
 import { systemClock } from '../core/clock.js';
 import type { Clock, Timer } from '../core/clock.js';
 import { lifetimeSeconds } from './lifetime.js';
+import type { Diagnostics } from '../diagnostics/observer.js';
 
 export class TokenManager {
   private token = '';
@@ -23,6 +24,7 @@ export class TokenManager {
     private readonly http: HttpRuntime,
     private readonly reporter: ErrorReporter,
     private readonly clock: Clock = systemClock,
+    private readonly observer?: Diagnostics,
   ) {}
   sensitive(): readonly string[] {
     return [this.config.secret, this.token, this.previous];
@@ -55,6 +57,15 @@ export class TokenManager {
   }
   private async fetchToken(generation: number, signal: AbortSignal): Promise<string> {
     const started = this.clock.monotonic();
+    const observation = this.observer?.start(
+      'qq.token.refresh',
+      {
+        ...this.observer.root(this.config.appId),
+        operation: 'token',
+      },
+      signal,
+    );
+    this.observer?.bind(signal, observation?.context);
     try {
       const { response, text } = await this.http.request(
         this.config.api.tokenEndpoint,
@@ -106,9 +117,13 @@ export class TokenManager {
       this.schedule(Math.max(1, remaining > 40000 ? remaining - 40000 : remaining / 2));
       return this.token;
     } catch (error) {
+      observation?.fail(error, signal);
       if (!this.closed && generation === this.generation && !signal.aborted)
         this.schedule(Math.min(30000, 1000 * 2 ** Math.min(this.retries++, 5)));
       throw error;
+    } finally {
+      observation?.end();
+      this.observer?.unbind(signal);
     }
   }
   private schedule(delay: number): void {

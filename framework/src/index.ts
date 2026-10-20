@@ -1,6 +1,7 @@
 import 'reflect-metadata/lite';
 
 export * from './contracts.js';
+export type * from './diagnostics/contracts.js';
 export { FrameworkError, QQApiError } from './core/errors.js';
 export {
   Module,

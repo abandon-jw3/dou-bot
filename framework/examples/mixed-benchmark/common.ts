@@ -28,9 +28,11 @@ export interface Phase {
   large?: boolean;
 }
 export interface Profile {
-  name: 'smoke' | 'standard' | 'connections';
+  diagnostics?: DiagnosticsMode;
+  name: 'smoke' | 'standard' | 'connections' | 'comparison';
   phases: Phase[];
   concurrency: number;
+  outboundConcurrency: number;
   queueCapacity: number;
   queueMaxBytes: number;
   loadTimeoutMs: number;
@@ -54,6 +56,7 @@ export function profile(name: string): Profile {
       ? {
           name,
           concurrency: 2,
+          outboundConcurrency: 8,
           queueCapacity: 12,
           queueMaxBytes: 192 * 1024,
           loadTimeoutMs: 300,
@@ -77,6 +80,7 @@ export function profile(name: string): Profile {
       : {
           name,
           concurrency: 32,
+          outboundConcurrency: 8,
           queueCapacity: 2000,
           queueMaxBytes: 32 * 1024 * 1024,
           loadTimeoutMs: 1800,
@@ -120,6 +124,103 @@ export function profile(name: string): Profile {
     config.driverMaxSockets = sockets;
   }
   return config;
+}
+
+export interface ComparisonOptions {
+  diagnostics?: DiagnosticsMode;
+  kind: 'smoke' | 'comparison';
+  concurrency: number;
+  outboundConcurrency: number;
+  rate: number;
+  durationMs: number;
+}
+export type DiagnosticsMode = 'off' | 'metrics' | 'sampled';
+/** Fixed workload and retention budgets; only the explicitly recorded comparison knobs vary. */
+export function comparisonProfile(input: unknown): Profile {
+  assert.ok(record(input));
+  assert.deepEqual(
+    Object.keys(input)
+      .filter((key) => key !== 'diagnostics')
+      .sort(),
+    ['concurrency', 'durationMs', 'kind', 'outboundConcurrency', 'rate'],
+  );
+  assert.ok(input.kind === 'smoke' || input.kind === 'comparison');
+  const diagnostics = input.diagnostics ?? 'off';
+  assert.ok(diagnostics === 'off' || diagnostics === 'metrics' || diagnostics === 'sampled');
+  const integer = (key: string, minimum: number, maximum: number): number => {
+    const value = input[key];
+    assert.ok(
+      typeof value === 'number' &&
+        Number.isSafeInteger(value) &&
+        value >= minimum &&
+        value <= maximum,
+      `Invalid comparison ${key}`,
+    );
+    return value;
+  };
+  const concurrency = integer('concurrency', 1, 256);
+  const outboundConcurrency = integer('outboundConcurrency', 1, 256);
+  const rate = integer('rate', 1, 2500);
+  const durationMs = integer('durationMs', 1000, 300000);
+  assert.ok(
+    (rate * durationMs) / 1000 + 5000 <= 200000,
+    'Comparison must fit its unchanged reply retention budget',
+  );
+  const config = profile(input.kind === 'smoke' ? 'smoke' : 'standard');
+  return {
+    ...config,
+    diagnostics,
+    name: input.kind,
+    concurrency,
+    outboundConcurrency,
+    driverMaxSockets: 128,
+    driverMaxInFlight: 2048,
+    ...(input.kind === 'comparison'
+      ? {
+          phases: [
+            { name: 'warmup-200', durationMs: 10000, rate: 200 },
+            { name: `steady-${rate}`, durationMs, rate },
+            { name: 'recovery-200', durationMs: 15000, rate: 200 },
+          ],
+        }
+      : {}),
+  };
+}
+
+/** Continuation identities encode their owner and step, so a remote fixture needs no per-message registration RPC. */
+export function continuationMeta(root: Meta, step: number, correct: boolean, dueNs: bigint): Meta {
+  assert.ok(Number.isSafeInteger(step) && step >= 1 && step <= 2);
+  assert.ok(root.id >= 1 && root.id < 250000);
+  return {
+    ...root,
+    id: 1_000_000 + root.id * 4 + (step - 1) * 2 + Number(correct),
+    kind: correct ? 'answer' : 'distractor',
+    root: root.id,
+    step,
+    userId: correct ? root.userId : `wrong-${root.id}`,
+    dueNs: dueNs.toString(),
+  };
+}
+
+/** Reconstruct only declared fixture identities. Timestamps here are never used to measure remote latency. */
+export function plannedMeta(id: number, config: Profile): Meta | undefined {
+  if (!Number.isSafeInteger(id) || id < 1 || id >= 2_000_000) return;
+  if (id >= 1_000_000) {
+    const encoded = id - 1_000_000;
+    const root = plannedMeta(Math.floor(encoded / 4), config);
+    if (!root || root.kind !== 'prompt') return;
+    return continuationMeta(root, Math.floor((encoded % 4) / 2) + 1, encoded % 2 === 1, 0n);
+  }
+  let end = 0;
+  for (let phase = 0; phase < config.phases.length; phase++) {
+    end += Math.floor((config.phases[phase]!.durationMs * config.phases[phase]!.rate) / 1000);
+    if (id <= end) return makeMeta(id, phase, 0n, config);
+  }
+  const prompts = Math.min(8, config.concurrency);
+  if (id <= end + prompts) return makeMeta(id, config.phases.length, 0n, config, 'shutdown-prompt');
+  if (id <= end + prompts + config.concurrency + 8)
+    return makeMeta(id, config.phases.length, 0n, config, 'hold');
+  return;
 }
 export interface Meta {
   id: number;

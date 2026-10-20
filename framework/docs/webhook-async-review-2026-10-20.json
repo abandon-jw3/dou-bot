@@ -1,0 +1,1291 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "status": "completed",
+  "scope": "Synthetic signed Webhook traffic only; one bot, 2000 synthetic groups, memory persistence and loopback APIs. No real QQ, PostgreSQL load, Nginx/TLS, rendering or multi-day validation.",
+  "implementation": {
+    "api": "transport.verifyTimeoutMs",
+    "defaultMs": 10000,
+    "crypto": "Node callback verify, cached Ed25519 key",
+    "limit": "maxConcurrentRequests includes native verification still running after timeout/disconnect",
+    "shutdown": "cancel HTTP waiting, keep permit until native completion, drain against the existing shutdown deadline",
+    "runtimeDependenciesAdded": 0,
+    "defaultExecutionConcurrencyChanged": false,
+    "contract": "2.0 unreleased",
+    "packageVersion": "0.8.0"
+  },
+  "resources": {
+    "server": "2 vCPU, about 1.92 GiB RAM",
+    "testGroup": "SDK, API fixture and supervisor share 1.5 CPU cores / 1 GiB, swap disabled",
+    "sshd": "outside the test cgroup",
+    "webhookMaxConcurrentRequests": 256,
+    "driverMaxSockets": 128,
+    "driverMaxInFlight": 2048,
+    "uvThreadpoolSize": "not set",
+    "retry": "synthetic 503 retries at 100/200 ms, at most two; not a QQ retry guarantee"
+  },
+  "source": {
+    "candidate": {
+      "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+      "dirty": true,
+      "sdkSha256": "6e20d7a3dd313b291bed4132176482ec469f418147beffb54b0ac0c56dd3f921",
+      "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+    },
+    "baseline": {
+      "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+      "dirty": true,
+      "sdkSha256": "79c428385329130154661aebaec429dcb2a43742c3cdc659714971f2e16233f7",
+      "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+    }
+  },
+  "ci": {
+    "id": 39294649601,
+    "headSha": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39294649601",
+    "note": "Committed baseline only; working changes are not submitted."
+  },
+  "results": [
+    {
+      "label": "sync500-i64-o16-r1-20261020",
+      "kind": "baseline",
+      "file": "work/webhook-async-2026-10-20/baseline/framework/work/distributed/sync500-i64-o16-r1-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-sync500-i64-o16-r1-20261020-4f99f0.service",
+      "startedAt": "2026-10-20T01:27:52.672Z",
+      "finishedAt": "2026-10-20T01:30:23.765Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 64,
+        "outboundConcurrency": 16,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 120000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "accepted": 43011,
+        "completed": 43011,
+        "outcomes": {
+          "guard-denied": 1815,
+          "invalid-input": 856,
+          "success": 39926,
+          "intentional-business-error": 414
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 39926,
+          "meanMs": 5709.225929246736,
+          "maxMs": 21126.512583,
+          "p50UpperMs": 5118,
+          "p95UpperMs": 14728,
+          "p99UpperMs": 17600
+        },
+        "terminalLatency": {
+          "count": 43011,
+          "meanMs": 5621.243003154432,
+          "maxMs": 21126.511542,
+          "p50UpperMs": 5095,
+          "p95UpperMs": 14493,
+          "p99UpperMs": 17244
+        },
+        "serverAdmissionLatency": {
+          "count": 39926,
+          "meanMs": 5532.928373026324,
+          "maxMs": 20710.612644,
+          "p50UpperMs": 4923,
+          "p95UpperMs": 14527,
+          "p99UpperMs": 17378
+        },
+        "successPerSecondByCompletionTime": 316.15833333333336,
+        "inboundQueuePeak": 2008,
+        "outboundQueuePeak": 33,
+        "tailQueueMedian": 1997,
+        "sdkRssPeakMiB": 229.54296875,
+        "capacityPassed": false
+      },
+      "statuses": {
+        "200": 69028,
+        "503": 75510
+      },
+      "counts": {
+        "primary": 60000,
+        "connectionReusable": 144538,
+        "primaryAcknowledged": 43011,
+        "duplicate": 10834,
+        "distractor": 7835,
+        "continuationsAcknowledged": 15670,
+        "answer": 7835,
+        "retry": 58034
+      },
+      "sdk": {
+        "cpuCores": 1.0668642601111984,
+        "peakRssMiB": 229.54296875,
+        "meanSampleEventLoopP99Ms": 57.94169651181105,
+        "peakEventLoopDelayMs": 143.261695,
+        "outboundBusyMean": 16
+      },
+      "generator": {
+        "cpuCores": 0.3123688199347259,
+        "maximumOutstanding": 345,
+        "peakAgentPending": 81,
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.747822943916675,
+          "maxMs": 14.35775,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 144538,
+          "meanMs": 6.961275909304159,
+          "maxMs": 177.437292,
+          "p50UpperMs": 1,
+          "p95UpperMs": 45,
+          "p99UpperMs": 77
+        }
+      },
+      "host": {
+        "samples": 29,
+        "minimumAvailableMiB": 1042.54296875,
+        "peakBenchmarkMiB": 303.54296875,
+        "cpuPeriods": 1471,
+        "throttledPeriods": 116,
+        "throttledUsec": 1574355,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 55.13671875
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 1524.780375,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "79c428385329130154661aebaec429dcb2a43742c3cdc659714971f2e16233f7",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    },
+    {
+      "label": "async500-i64-o16-r1-20261020",
+      "kind": "candidate",
+      "file": "work/distributed/async500-i64-o16-r1-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-async500-i64-o16-r1-20261020-30b6c6.service",
+      "startedAt": "2026-10-20T01:30:29.242Z",
+      "finishedAt": "2026-10-20T01:33:01.157Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 64,
+        "outboundConcurrency": 16,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 120000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "accepted": 49257,
+        "completed": 49257,
+        "outcomes": {
+          "invalid-input": 980,
+          "guard-denied": 2069,
+          "success": 45718,
+          "intentional-business-error": 490
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 45718,
+          "meanMs": 4945.546067203386,
+          "maxMs": 19404.587833,
+          "p50UpperMs": 4260,
+          "p95UpperMs": 12302,
+          "p99UpperMs": 15909
+        },
+        "terminalLatency": {
+          "count": 49257,
+          "meanMs": 4868.010965301764,
+          "maxMs": 19404.586666,
+          "p50UpperMs": 4239,
+          "p95UpperMs": 12212,
+          "p99UpperMs": 15603
+        },
+        "serverAdmissionLatency": {
+          "count": 45718,
+          "meanMs": 4782.160958235159,
+          "maxMs": 19192.130989,
+          "p50UpperMs": 4056,
+          "p95UpperMs": 12142,
+          "p99UpperMs": 15610
+        },
+        "successPerSecondByCompletionTime": 364.30833333333334,
+        "inboundQueuePeak": 2005,
+        "outboundQueuePeak": 35,
+        "tailQueueMedian": 1993,
+        "sdkRssPeakMiB": 228.68359375,
+        "capacityPassed": false
+      },
+      "statuses": {
+        "200": 78940,
+        "503": 53991
+      },
+      "counts": {
+        "primary": 60000,
+        "connectionReusable": 132931,
+        "primaryAcknowledged": 49257,
+        "duplicate": 11983,
+        "distractor": 8984,
+        "continuationsAcknowledged": 17968,
+        "answer": 8984,
+        "retry": 42980
+      },
+      "sdk": {
+        "cpuCores": 1.1820780843540062,
+        "peakRssMiB": 228.68359375,
+        "meanSampleEventLoopP99Ms": 47.641449834645684,
+        "peakEventLoopDelayMs": 115.539967,
+        "outboundBusyMean": 16
+      },
+      "generator": {
+        "cpuCores": 0.29597993221317015,
+        "maximumOutstanding": 351,
+        "peakAgentPending": 135,
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.81509492708332,
+          "maxMs": 17.804166,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 132931,
+          "meanMs": 8.785323978289512,
+          "maxMs": 211.670583,
+          "p50UpperMs": 1,
+          "p95UpperMs": 58,
+          "p99UpperMs": 119
+        }
+      },
+      "host": {
+        "samples": 29,
+        "minimumAvailableMiB": 1049.83203125,
+        "peakBenchmarkMiB": 300.1015625,
+        "cpuPeriods": 1453,
+        "throttledPeriods": 256,
+        "throttledUsec": 4190451,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 55.13671875
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 1531.298292,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "6e20d7a3dd313b291bed4132176482ec469f418147beffb54b0ac0c56dd3f921",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    },
+    {
+      "label": "async500-i128-o32-r1-20261020",
+      "kind": "candidate",
+      "file": "work/distributed/async500-i128-o32-r1-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-async500-i128-o32-r1-20261020-901dc7.service",
+      "startedAt": "2026-10-20T01:33:11.197Z",
+      "finishedAt": "2026-10-20T01:35:43.062Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 120000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 927.5207777770803,
+          "maxMs": 6600.92775,
+          "p50UpperMs": 725,
+          "p95UpperMs": 2427,
+          "p99UpperMs": 4410
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 898.0201945713628,
+          "maxMs": 6600.926834,
+          "p50UpperMs": 704,
+          "p95UpperMs": 2352,
+          "p99UpperMs": 4193
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 835.7653459745309,
+          "maxMs": 6517.843648,
+          "p50UpperMs": 637,
+          "p95UpperMs": 2329,
+          "p99UpperMs": 4314
+        },
+        "successPerSecondByCompletionTime": 458.59166666666664,
+        "inboundQueuePeak": 984,
+        "outboundQueuePeak": 70,
+        "tailQueueMedian": 264,
+        "sdkRssPeakMiB": 236.94140625,
+        "capacityPassed": false
+      },
+      "statuses": {
+        "200": 95783
+      },
+      "counts": {
+        "primary": 60000,
+        "connectionReusable": 95783,
+        "primaryAcknowledged": 60000,
+        "duplicate": 13927,
+        "distractor": 10928,
+        "continuationsAcknowledged": 21856,
+        "answer": 10928
+      },
+      "sdk": {
+        "cpuCores": 1.2098975644546066,
+        "peakRssMiB": 236.94140625,
+        "meanSampleEventLoopP99Ms": 73.5659794444445,
+        "peakEventLoopDelayMs": 144.572415,
+        "outboundBusyMean": 30.253968253968253
+      },
+      "generator": {
+        "cpuCores": 0.24333459119228742,
+        "maximumOutstanding": 222,
+        "peakAgentPending": 75,
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.768960765966683,
+          "maxMs": 17.78875,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 95783,
+          "meanMs": 1.424046313239289,
+          "maxMs": 110.304583,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 44
+        }
+      },
+      "host": {
+        "samples": 29,
+        "minimumAvailableMiB": 1052.26171875,
+        "peakBenchmarkMiB": 317.40625,
+        "cpuPeriods": 1476,
+        "throttledPeriods": 335,
+        "throttledUsec": 4203742,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 56.72265625
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 1474.850208,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "6e20d7a3dd313b291bed4132176482ec469f418147beffb54b0ac0c56dd3f921",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    },
+    {
+      "label": "sync500-i128-o32-r1-20261020",
+      "kind": "baseline",
+      "file": "work/webhook-async-2026-10-20/baseline/framework/work/distributed/sync500-i128-o32-r1-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-sync500-i128-o32-r1-20261020-fea0ce.service",
+      "startedAt": "2026-10-20T01:35:51.162Z",
+      "finishedAt": "2026-10-20T01:38:23.046Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 120000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "accepted": 44953,
+        "completed": 44953,
+        "outcomes": {
+          "guard-denied": 1895,
+          "invalid-input": 899,
+          "success": 41727,
+          "intentional-business-error": 432
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 41727,
+          "meanMs": 5596.613937929003,
+          "maxMs": 20515.958166,
+          "p50UpperMs": 5032,
+          "p95UpperMs": 14141,
+          "p99UpperMs": 18206
+        },
+        "terminalLatency": {
+          "count": 44953,
+          "meanMs": 5499.357886330682,
+          "maxMs": 20515.930291,
+          "p50UpperMs": 4992,
+          "p95UpperMs": 13493,
+          "p99UpperMs": 18093
+        },
+        "serverAdmissionLatency": {
+          "count": 41727,
+          "meanMs": 5346.8200395888025,
+          "maxMs": 19926.709807,
+          "p50UpperMs": 4801,
+          "p95UpperMs": 13923,
+          "p99UpperMs": 17823
+        },
+        "successPerSecondByCompletionTime": 330.4583333333333,
+        "inboundQueuePeak": 2007,
+        "outboundQueuePeak": 76,
+        "tailQueueMedian": 2000,
+        "sdkRssPeakMiB": 238.87890625,
+        "capacityPassed": false
+      },
+      "statuses": {
+        "200": 72225,
+        "503": 67950
+      },
+      "counts": {
+        "primary": 60000,
+        "connectionReusable": 140175,
+        "primaryAcknowledged": 44953,
+        "duplicate": 11234,
+        "distractor": 8235,
+        "continuationsAcknowledged": 16470,
+        "answer": 8235,
+        "retry": 52471
+      },
+      "sdk": {
+        "cpuCores": 1.1139913876265175,
+        "peakRssMiB": 238.87890625,
+        "meanSampleEventLoopP99Ms": 99.57631490399996,
+        "peakEventLoopDelayMs": 198.311935,
+        "outboundBusyMean": 31.968
+      },
+      "generator": {
+        "cpuCores": 0.30396469714041624,
+        "maximumOutstanding": 830,
+        "peakAgentPending": 558,
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.7719961959166395,
+          "maxMs": 14.14975,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 140175,
+          "meanMs": 56.70473172154756,
+          "maxMs": 538.182834,
+          "p50UpperMs": 1,
+          "p95UpperMs": 284,
+          "p99UpperMs": 409
+        }
+      },
+      "host": {
+        "samples": 29,
+        "minimumAvailableMiB": 1038.94921875,
+        "peakBenchmarkMiB": 319.93359375,
+        "cpuPeriods": 1474,
+        "throttledPeriods": 166,
+        "throttledUsec": 2507729,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 55.80859375
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 1448.700333,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "79c428385329130154661aebaec429dcb2a43742c3cdc659714971f2e16233f7",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    },
+    {
+      "label": "async500-i128-o32-r2-20261020",
+      "kind": "candidate",
+      "file": "work/distributed/async500-i128-o32-r2-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-async500-i128-o32-r2-20261020-cdf1ef.service",
+      "startedAt": "2026-10-20T01:39:54.909Z",
+      "finishedAt": "2026-10-20T01:45:29.901Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 147249,
+        "completed": 147249,
+        "outcomes": {
+          "guard-denied": 6164,
+          "invalid-input": 2941,
+          "success": 136671,
+          "intentional-business-error": 1473
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 136671,
+          "meanMs": 1605.0455312896363,
+          "maxMs": 14953.082875,
+          "p50UpperMs": 730,
+          "p95UpperMs": 4827,
+          "p99UpperMs": 10852
+        },
+        "terminalLatency": {
+          "count": 147249,
+          "meanMs": 1566.0450862741468,
+          "maxMs": 14953.082334,
+          "p50UpperMs": 705,
+          "p95UpperMs": 4772,
+          "p99UpperMs": 10388
+        },
+        "serverAdmissionLatency": {
+          "count": 136671,
+          "meanMs": 1494.8920949103967,
+          "maxMs": 14781.295395,
+          "p50UpperMs": 640,
+          "p95UpperMs": 4515,
+          "p99UpperMs": 10564
+        },
+        "successPerSecondByCompletionTime": 448.45666666666665,
+        "inboundQueuePeak": 2013,
+        "outboundQueuePeak": 68,
+        "tailQueueMedian": 1984,
+        "sdkRssPeakMiB": 306.33203125,
+        "capacityPassed": false
+      },
+      "statuses": {
+        "200": 235300,
+        "503": 16669
+      },
+      "counts": {
+        "primary": 150000,
+        "connectionReusable": 251969,
+        "primaryAcknowledged": 147249,
+        "duplicate": 34365,
+        "distractor": 26867,
+        "answer": 26867,
+        "continuationsAcknowledged": 53734,
+        "retry": 13870
+      },
+      "sdk": {
+        "cpuCores": 1.2126401858729736,
+        "peakRssMiB": 306.33203125,
+        "meanSampleEventLoopP99Ms": 79.17882739365082,
+        "peakEventLoopDelayMs": 193.986559,
+        "outboundBusyMean": 30.187301587301587
+      },
+      "generator": {
+        "cpuCores": 0.24706891044854834,
+        "maximumOutstanding": 470,
+        "peakAgentPending": 204,
+        "schedulingLag": {
+          "count": 150000,
+          "meanMs": 2.8015781107199387,
+          "maxMs": 13.382292,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 251969,
+          "meanMs": 7.502410586663508,
+          "maxMs": 285.492334,
+          "p50UpperMs": 1,
+          "p95UpperMs": 56,
+          "p99UpperMs": 136
+        }
+      },
+      "host": {
+        "samples": 64,
+        "minimumAvailableMiB": 924.78125,
+        "peakBenchmarkMiB": 419.12109375,
+        "cpuPeriods": 3288,
+        "throttledPeriods": 756,
+        "throttledUsec": 12360331,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 56.2421875
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 1667.376916,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "6e20d7a3dd313b291bed4132176482ec469f418147beffb54b0ac0c56dd3f921",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    },
+    {
+      "label": "async400-i128-o32-r1-20261020",
+      "kind": "candidate",
+      "file": "work/distributed/async400-i128-o32-r1-20261020/report.json",
+      "unit": "dou-bot-capacity-compare-async400-i128-o32-r1-20261020-6c705a.service",
+      "startedAt": "2026-10-20T01:45:35.150Z",
+      "finishedAt": "2026-10-20T01:51:10.627Z",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ]
+      },
+      "steady": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 256.8410650644931,
+          "maxMs": 2973.699708,
+          "p50UpperMs": 152,
+          "p95UpperMs": 696,
+          "p99UpperMs": 1657
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 243.12358058509136,
+          "maxMs": 2973.698708,
+          "p50UpperMs": 144,
+          "p95UpperMs": 659,
+          "p99UpperMs": 1651
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 188.80243575802268,
+          "maxMs": 2913.231099,
+          "p50UpperMs": 74,
+          "p95UpperMs": 604,
+          "p99UpperMs": 1580
+        },
+        "successPerSecondByCompletionTime": 371.1566666666667,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 41,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 263.125,
+        "capacityPassed": true
+      },
+      "statuses": {
+        "200": 191648
+      },
+      "counts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "continuationsAcknowledged": 43764,
+        "answer": 21882
+      },
+      "sdk": {
+        "cpuCores": 1.0137409169186764,
+        "peakRssMiB": 263.125,
+        "meanSampleEventLoopP99Ms": 36.51069001886795,
+        "peakEventLoopDelayMs": 117.964799,
+        "outboundBusyMean": 14.883647798742139
+      },
+      "generator": {
+        "cpuCores": 0.22045416089382536,
+        "maximumOutstanding": 171,
+        "peakAgentPending": 16,
+        "schedulingLag": {
+          "count": 120000,
+          "meanMs": 2.753041524200028,
+          "maxMs": 11.095375,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "socketWait": {
+          "count": 191648,
+          "meanMs": 0.3308576183158716,
+          "maxMs": 102.06675,
+          "p50UpperMs": 1,
+          "p95UpperMs": 1,
+          "p99UpperMs": 1
+        }
+      },
+      "host": {
+        "samples": 64,
+        "minimumAvailableMiB": 990.1796875,
+        "peakBenchmarkMiB": 371.88671875,
+        "cpuPeriods": 3290,
+        "throttledPeriods": 417,
+        "throttledUsec": 6277836,
+        "oomKills": 0,
+        "databasePeakSampledMiB": 56.03515625
+      },
+      "cleanup": {
+        "sdk": {
+          "pending": 0,
+          "active": 0,
+          "retainedBytes": 0,
+          "dedup": 0,
+          "replyScopes": 0,
+          "idleDedup": 0,
+          "idleScopes": 0,
+          "tasks": 0,
+          "signals": 0,
+          "timers": 0,
+          "prompts": 0,
+          "cooldowns": 0
+        },
+        "fixture": {
+          "fixtureActive": 0,
+          "tokenActive": 0,
+          "responseTimers": 0
+        },
+        "driver": {
+          "outstanding": 0,
+          "fixtureActive": 0,
+          "responseTimers": 0,
+          "timers": 0
+        },
+        "exits": {
+          "fixture": 0,
+          "sdk": 0
+        }
+      },
+      "drainMs": 2434.232083,
+      "source": {
+        "gitHead": "f8dde938f03aecffca6c0ccb63ff3ca83215516b",
+        "dirty": true,
+        "sdkSha256": "6e20d7a3dd313b291bed4132176482ec469f418147beffb54b0ac0c56dd3f921",
+        "harnessSha256": "b9551c9a59a1b7356809471f35f6345a76415239f1e93d12f814b731998bf5e9"
+      },
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "arch": "x64",
+        "cpu": "Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz",
+        "logicalCpus": 2,
+        "totalMemoryBytes": 2062495744
+      }
+    }
+  ],
+  "validation": {
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "testsPerVersion": 358,
+    "passedPerVersion": 356,
+    "skippedPerVersion": 2,
+    "skippedReason": "Dedicated TEST_DATABASE integration is outside this run; revoked credentials not used.",
+    "newWebhookTests": 11,
+    "exports": 170,
+    "bidirectionalTypeContracts": 128,
+    "tarballFiles": 175,
+    "logs": [
+      "check-final24.21.log",
+      "package-final24.21.log",
+      "check-final24.0.log",
+      "coverage.log"
+    ],
+    "repairedValidationAttempt": "The added tarball fixture used a broadly annotated WebhookTransportOptions where account transport excludes listener fields; changed the fixture to satisfies and reran the 24.21 package check successfully. Core checks had passed; the 24.0 full check passed with the fixed fixture.",
+    "coverage": {
+      "total": {
+        "lines": {
+          "total": 10078,
+          "covered": 9755,
+          "skipped": 0,
+          "pct": 96.79
+        },
+        "statements": {
+          "total": 10078,
+          "covered": 9755,
+          "skipped": 0,
+          "pct": 96.79
+        },
+        "functions": {
+          "total": 593,
+          "covered": 552,
+          "skipped": 0,
+          "pct": 93.08
+        },
+        "branches": {
+          "total": 3628,
+          "covered": 3288,
+          "skipped": 0,
+          "pct": 90.62
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      },
+      "webhook": {
+        "lines": {
+          "total": 298,
+          "covered": 294,
+          "skipped": 0,
+          "pct": 98.65
+        },
+        "functions": {
+          "total": 20,
+          "covered": 19,
+          "skipped": 0,
+          "pct": 95
+        },
+        "statements": {
+          "total": 298,
+          "covered": 294,
+          "skipped": 0,
+          "pct": 98.65
+        },
+        "branches": {
+          "total": 127,
+          "covered": 110,
+          "skipped": 0,
+          "pct": 86.61
+        }
+      }
+    },
+    "sshSmoke": "async-smoke-20261020: integrity passed, source hashes matched, exit and resource checks passed"
+  },
+  "interpretation": [
+    "accepted counts unique primary events obtaining HTTP 200, including synthetic retries; this does not imply every first attempt succeeded",
+    "completion totals include expected guard, input and intentional business failures; latency is only for successful outcomes",
+    "cohort completions can occur in recovery/drain; accepted/duration is not steady throughput",
+    "capacity gate requires integrity, full primary acceptance, expected outcomes and zero tail queue median; it was not relaxed",
+    "SDK CPU includes native worker CPU; moving verification off the event loop is not a reduction in total computation",
+    "each listed configuration/duration is one observation; host noise and phase variation prevent treating the relative change as a guaranteed gain",
+    "five-minute results do not establish multi-day stability; WS and SQL require independent baselines"
+  ],
+  "cleanup": {
+    "at": "2026-10-20T01:51:24.145169+00:00",
+    "comparisonUnits": [],
+    "observer": "Result=success\nLoadState=not-found\nActiveState=inactive\nSubState=dead",
+    "nginx": {
+      "MainPID": "989",
+      "ActiveState": "active"
+    },
+    "postgres": {
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false
+    },
+    "postgresReady": "/var/run/postgresql:5432 - accepting connections",
+    "listeners": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\nLISTEN 0      128          0.0.0.0:22        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:80        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:443       0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:5432      0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:9000      0.0.0.0:*          \nLISTEN 0      128             [::]:22           [::]:*          \nLISTEN 0      4096            [::]:5432         [::]:*          \nLISTEN 0      511                *:9090            *:*",
+    "testDirectoriesPreserved": true,
+    "noRealQqOrSqlWorkload": true,
+    "localComparisonSshProcesses": [],
+    "remoteEvidenceHashesVerified": 25
+  },
+  "evidence": {
+    "archive": "work/webhook-async-2026-10-20/webhook-async-evidence-2026-10-20.tar.gz",
+    "bytes": 9292577,
+    "sha256": "1bf2a297babc192827a229ffc532d46aa1840ed50827254b66f1e9a644224f10",
+    "filesVerified": 87,
+    "remoteArchive": "/opt/dou-bot-capacity/webhook-async-2026-10-20-f8dde93/webhook-async-evidence-2026-10-20.tar.gz",
+    "remoteSha256Verified": true
+  }
+}

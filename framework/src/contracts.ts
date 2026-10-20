@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Public DI constructor/factory signatures accept consumer-defined parameter lists. */
 import type { RequestListener } from 'node:http';
 import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
+import type { DiagnosticsOptions, DiagnosticsReader } from './diagnostics/contracts.js';
 
 export type Awaitable<T> = T | Promise<T>;
 
@@ -242,6 +243,7 @@ export interface WsTransportOptions {
   path?: never;
   maxBodyBytes?: never;
   readTimeoutMs?: never;
+  verifyTimeoutMs?: never;
   maxConcurrentRequests?: never;
   maxSignatureAgeMs?: never;
 }
@@ -254,6 +256,9 @@ export interface WebhookTransportOptions {
   path?: string;
   maxBodyBytes?: number;
   readTimeoutMs?: number;
+  /** Maximum wait for signature verification; defaults to 10 seconds. */
+  verifyTimeoutMs?: number;
+  /** Includes native verification jobs still running after HTTP timeout/disconnect. */
   maxConcurrentRequests?: number;
   maxSignatureAgeMs?: number;
   gatewayUrl?: never;
@@ -328,6 +333,7 @@ export interface AppOptions {
   commands?: { prefix?: string; invalidInput?: 'report' | 'reply' };
   execution?: ExecutionOptions;
   outbound?: OutboundOptions;
+  diagnostics?: DiagnosticsOptions;
   context?: ContextOptions;
   prompts?: PromptConfig;
   webhook?: { listen?: boolean; host?: string; port?: number };
@@ -416,6 +422,7 @@ export interface ApplicationSnapshot {
   readonly database: { readonly total: number; readonly idle: number; readonly waiting: number };
 }
 export interface Application {
+  readonly diagnostics: DiagnosticsReader;
   readonly status: ApplicationStatus;
   readonly bots: BotManager;
   start(): Promise<void>;
