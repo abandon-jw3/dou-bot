@@ -33,7 +33,7 @@ import type {
   MiddlewareContext,
   QQDispatch,
 } from '../../src/index.js';
-import { metadata, record } from './common.js';
+import { accountFor, metadata, record } from './common.js';
 import type { Meta, Profile } from './common.js';
 
 export interface Hooks {
@@ -103,6 +103,7 @@ export function workload(config: Profile, fixture: string, hooks: Hooks) {
     assert.equal(data.userId, ctx.userId);
     assert.equal(ctx.userId, meta.userId);
     assert.equal(ctx.scene, meta.scene);
+    assert.equal(ctx.appId, accountFor(meta, config));
     if (ctx.scene === 'group') assert.equal(ctx.target.groupId, meta.groupId);
     return meta;
   }

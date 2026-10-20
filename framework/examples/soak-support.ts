@@ -40,7 +40,10 @@ export class CountingClock implements Clock {
   }
 }
 
-export function inspectResources(app: Application, clock: CountingClock) {
+export function inspectResources(
+  app: Pick<Application, 'execution' | 'snapshot' | 'dispatcher'>,
+  clock: CountingClock,
+) {
   const size = (name: string) => {
     const value: unknown = Reflect.get(app.execution, name);
     assert.ok(value instanceof Map || value instanceof Set, `Missing internal diagnostic: ${name}`);
@@ -66,7 +69,10 @@ export function inspectResources(app: Application, clock: CountingClock) {
   };
 }
 
-export function assertReleased(app: Application, clock: CountingClock): void {
+export function assertReleased(
+  app: Pick<Application, 'execution' | 'snapshot' | 'dispatcher' | 'status'>,
+  clock: CountingClock,
+): void {
   assert.equal(app.status, 'stopped');
   for (const [resource, value] of Object.entries(inspectResources(app, clock)))
     assert.equal(value, 0, `Resource retained after close: ${resource}`);

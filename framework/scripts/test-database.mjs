@@ -7,4 +7,4 @@ for (const key of ['HOST', 'USER', 'NAME']) {
 }
 process.env.DOUBOT_REQUIRE_TEST_DATABASE = '1';
 await runNode(['scripts/compile-tests.mjs']);
-await runNode(['--test', '.test-build/tests/postgres.test.js']);
+await runNode(['--test', '.test-build/tests/postgres*.test.js']);

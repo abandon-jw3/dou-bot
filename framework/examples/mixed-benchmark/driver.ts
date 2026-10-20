@@ -14,9 +14,12 @@ import {
   record,
   send,
   signedHeaders,
+  accountIds,
+  accountFor,
 } from './common.js';
 import type { Meta, Profile } from './common.js';
 import { startFixture } from './fixture.js';
+import { startGateway } from './gateway.js';
 
 export const driverIdleSocketTimeoutMs = 2000;
 
@@ -32,6 +35,18 @@ export async function runDriver(
   externalFixture = false,
 ): Promise<void> {
   const agent = createDriverAgent(config.driverMaxSockets);
+  const gateway = config.transport === 'ws' ? await startGateway(accountIds(config)) : undefined;
+  const writtenIds = new Set<number>();
+  const byBot = Object.fromEntries(
+    accountIds(config).map((id) => [
+      id,
+      Array.from({ length: config.phases.length + 1 }, () => ({
+        counts: {},
+        outcomes: {},
+        successLatency: new Histogram(),
+      })),
+    ]),
+  );
   const plans = new Map<number, Meta>();
   const actors = new Set<number>();
   const acceptedIds = new Set<number>();
@@ -91,10 +106,42 @@ export async function runDriver(
   function transmit(meta: Meta, source: string, attempt = 0): void {
     if (stopped) return;
     const phase = phases[meta.phase]!;
+    const bot = byBot[accountFor(meta, config)]![meta.phase]!;
     count(phase.counts, source);
+    count(bot.counts, source);
     if (outstanding >= config.driverMaxInFlight) {
       count(phase.counts, 'driverDropped');
       count(phase.counts, `driverDropped:${source}`);
+      return;
+    }
+    if (gateway) {
+      outstanding++;
+      maximumOutstanding = Math.max(maximumOutstanding, outstanding);
+      const result = gateway.write(accountFor(meta, config), event(meta), (error) => {
+        outstanding--;
+        for (const target of [phase.counts, bot.counts])
+          count(target, error ? 'wsWriteErrors' : 'wsWrites');
+        if (!error && !writtenIds.has(meta.id)) {
+          writtenIds.add(meta.id);
+          for (const target of [phase.counts, bot.counts])
+            count(
+              target,
+              ['answer', 'distractor'].includes(meta.kind)
+                ? 'continuationsWritten'
+                : 'primaryWritten',
+            );
+        }
+      });
+      if (result !== 'writing') {
+        outstanding--;
+        for (const target of [phase.counts, bot.counts]) {
+          count(target, result === 'unavailable' ? 'wsUnavailable' : 'driverDropped');
+          count(
+            target,
+            `${result === 'unavailable' ? 'wsUnavailable' : 'driverDropped'}:${source}`,
+          );
+        }
+      }
       return;
     }
     const body = Buffer.from(JSON.stringify(event(meta)));
@@ -117,7 +164,7 @@ export async function runDriver(
       return true;
     };
     const req = request(
-      `${sdkOrigin}/qq`,
+      `${sdkOrigin}${config.bots === 2 ? `/qq/${accountFor(meta, config)}` : '/qq'}`,
       { method: 'POST', headers: signedHeaders(body), agent },
       (response) => {
         response.resume();
@@ -314,10 +361,19 @@ export async function runDriver(
     for (const timer of timers) clearTimeout(timer);
     timers.clear();
     agent.destroy();
+    await gateway?.close();
     const fixtureResult = await fixture?.close();
     await finishReport(
       'driver-final',
       {
+        transport: config.transport ?? 'webhook',
+        gateway: gateway?.snapshot(),
+        byBot: Object.fromEntries(
+          Object.entries(byBot).map(([id, phases]) => [
+            id,
+            phases.map((phase) => ({ ...phase, successLatency: phase.successLatency.snapshot() })),
+          ]),
+        ),
         idleSocketTimeoutMs: driverIdleSocketTimeoutMs,
         counts: Object.fromEntries(
           [...new Set([...Object.keys(counts), ...Object.keys(fixtureResult?.counts ?? {})])].map(
@@ -352,6 +408,7 @@ export async function runDriver(
           fixtureActive: fixture?.activity().fixtureActive ?? 0,
           responseTimers: fixtureResult?.cleanup.responseTimers ?? 0,
           timers: timers.size,
+          gatewayConnections: gateway?.snapshot().connections ?? 0,
         },
         generatorRetainedMetadata: plans.size,
         ...(externalFixture
@@ -401,10 +458,13 @@ export async function runDriver(
       assert.equal(typeof message.outcome, 'string');
       completedIds.add(id);
       const data = completed[plan.phase]!;
+      const bot = byBot[accountFor(plan, config)]![plan.phase]!;
       count(data.outcomes, message.outcome as string);
+      count(bot.outcomes, message.outcome as string);
       data.terminalLatency.add(elapsedMs(plan.dueNs));
       if (message.outcome === 'success') {
         data.successLatency.add(elapsedMs(plan.dueNs));
+        bot.successLatency.add(elapsedMs(plan.dueNs));
         completed[phaseOf()]!.successfulCompletionsByWallTime++;
       }
     }
@@ -417,6 +477,8 @@ export async function runDriver(
         fixtureActive: fixture?.activity().fixtureActive ?? 0,
         actors: actors.size,
         completedPrimary: completedIds.size,
+        gatewayDrained: gateway?.drained() ?? true,
+        gateway: gateway?.snapshot(),
       });
     if (message.type === 'shutdown-prompts')
       for (let i = 0; i < Math.min(8, config.concurrency); i++)
@@ -432,6 +494,11 @@ export async function runDriver(
         console.error(error);
         process.exitCode = 1;
       });
+    if (message.type === 'gateway-reconnect') {
+      assert.ok(gateway && typeof message.appId === 'string');
+      gateway.reconnect(message.appId);
+      send({ type: 'gateway-reconnected', nonce: message.nonce });
+    }
   });
   process.once('disconnect', () => {
     if (!stopped)
@@ -442,6 +509,7 @@ export async function runDriver(
   send({
     type: 'driver-ready',
     ...(fixture ? { origin: fixture.origin } : {}),
+    ...(gateway ? { gatewayOrigin: gateway.origin } : {}),
     node: process.version,
     pid: process.pid,
   });

@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { setImmediate as tick } from 'node:timers/promises';
-import { SingleTestApplication as Application } from '../../src/testing/single-bot.js';
+import WebSocket from 'ws';
+import { Application } from '../../src/core/application.js';
+import { MemoryPersistence } from '../../src/testing/memory-persistence.js';
 import { FrameworkError, QQApiError } from '../../src/index.js';
-import { CountingClock, assertReleased, inspectResources } from '../soak-support.js';
+import { CountingClock } from '../soak-support.js';
 import {
-  appId,
+  accountIds,
+  accountFor,
   secret,
   Histogram,
   elapsedMs,
@@ -18,9 +21,11 @@ import {
   send,
 } from './common.js';
 import type { Meta, Profile } from './common.js';
-import type { DiagnosticsSpan } from '../../src/index.js';
+import type { ErrorContext, DiagnosticsSpan } from '../../src/index.js';
 import { workload } from './workload.js';
 import { DiagnosticsTimeline } from './diagnostics.js';
+import { auditReports } from './error-audit.js';
+import { applicationResources, assertApplicationReleased } from './resources.js';
 
 interface Entry {
   meta: Meta;
@@ -53,9 +58,11 @@ export async function runSdk(
   fixture: string,
   reportPath: string,
   distributed = false,
+  gatewayOrigin?: string,
 ): Promise<void> {
   const entries = new Map<number, Entry>();
   const seen = new Uint16Array(2_000_000);
+  const received = new Uint8Array(2_000_000);
   const groups = new Set<string>();
   const globalCounts: Record<string, number> = {};
   const unexpected: { message: string; code?: string; id?: number }[] = [];
@@ -63,6 +70,8 @@ export async function runSdk(
   const traceExamples: DiagnosticsSpan[] = [];
   const totals = Array.from({ length: config.phases.length + 1 }, () => ({
     admissions: {},
+    primaryAdmissions: {},
+    receivedPrimary: 0,
     outcomes: {},
     kinds: {},
     routes: {},
@@ -73,6 +82,19 @@ export async function runSdk(
     successLatency: new Histogram(),
     terminalLatency: new Histogram(),
   }));
+  const byBot = Object.fromEntries(
+    accountIds(config).map((id) => [
+      id,
+      Array.from({ length: config.phases.length + 1 }, () => ({
+        admissions: {},
+        primaryAdmissions: {},
+        receivedPrimary: 0,
+        primaryOutcomes: {},
+      })),
+    ]),
+  );
+  const stoppingAccounts = new Set<string>();
+  const controls: Record<string, unknown>[] = [];
   let startNs: bigint | undefined;
   let closing = false;
   let closeTask: Promise<void> | undefined;
@@ -132,19 +154,56 @@ export async function runSdk(
     },
     isClosing: () => closing,
   });
+  const auditError = (error: Error, context: ErrorContext): void => {
+    const parsed = parseId(context.eventId) ?? parseId(context.messageId);
+    const entry = parsed ? entries.get(parsed.id) : undefined;
+    const code = error instanceof FrameworkError ? error.code : error.name;
+    count(globalCounts, `error:${code}`);
+    if (entry) {
+      entry.errors++;
+      count(totals[entry.meta.phase]!.errors, code);
+    }
+    if (error.name === 'AssertionError') failure(error.message, parsed?.id);
+    else if (entry?.intentional) count(globalCounts, 'intentionalBusinessErrors');
+    else if (closing) count(globalCounts, 'shutdownErrors');
+    else if (context.appId && stoppingAccounts.has(context.appId))
+      count(globalCounts, 'accountStopErrors');
+    else if (code === 'PARAMETER_PARSE' && entry?.meta.kind === 'badargs')
+      entry.parameterError = true;
+    else if (code === 'RESOURCE_LIMIT' && entry?.meta.kind === 'prompt') {
+      entry.promptLimit = true;
+      count(globalCounts, 'promptResourceLimits');
+    } else if (
+      error instanceof QQApiError &&
+      [990001, 990002, 990003].includes(Number(error.qqCode))
+    ) {
+      if (entry) entry.operational = true;
+      count(globalCounts, 'injectedHttpErrors');
+    } else if (code === 'TRANSPORT' || code === 'CONTEXT_TIMEOUT') {
+      if (entry) entry.operational = true;
+      count(globalCounts, 'operationalTimeouts');
+    } else failure(error.message, parsed?.id);
+  };
   const clock = new CountingClock();
   const app = await Application.create(
     root,
     {
-      appId,
-      secret,
-      transport: {
-        type: 'webhook',
-        listen: false,
-        path: '/qq',
-        maxBodyBytes: 256 * 1024,
-        maxConcurrentRequests: 256,
-      },
+      database: { host: '127.0.0.1', user: 'offline', password: '', database: 'offline' },
+      webhook: { listen: false },
+      bots: accountIds(config).map((appId) => ({
+        appId,
+        secret,
+        transport:
+          config.transport === 'ws'
+            ? { type: 'ws', gatewayUrl: gatewayOrigin! }
+            : {
+                type: 'webhook',
+                path: config.bots === 2 ? `/qq/${appId}` : '/qq',
+                maxBodyBytes: 256 * 1024,
+                maxConcurrentRequests: 256,
+              },
+        api: { requestTimeoutMs: config.requestTimeoutMs },
+      })),
       execution: {
         concurrency: config.concurrency,
         queueCapacity: config.queueCapacity,
@@ -166,39 +225,21 @@ export async function runSdk(
       },
       prompts: { maxPending: 512, timeoutMs: config.promptTimeoutMs, maxTimeoutMs: 20000 },
       context: { loadTimeoutMs: config.loadTimeoutMs, prepareTimeoutMs: 2000 },
-      api: { requestTimeoutMs: config.requestTimeoutMs },
       logger: { debug() {}, info() {}, warn() {}, error() {} },
-      onError(error, context) {
+      onError(_error, context) {
+        count(globalCounts, 'errorCallbacks');
         const parsed = parseId(context.eventId) ?? parseId(context.messageId);
-        const entry = parsed ? entries.get(parsed.id) : undefined;
-        const code = error instanceof FrameworkError ? error.code : error.name;
-        count(globalCounts, `error:${code}`);
-        if (entry) {
-          entry.errors++;
-          count(totals[entry.meta.phase]!.errors, code);
-        }
-        if (error.name === 'AssertionError') failure(error.message, parsed?.id);
-        else if (entry?.intentional) count(globalCounts, 'intentionalBusinessErrors');
-        else if (closing) count(globalCounts, 'shutdownErrors');
-        else if (code === 'PARAMETER_PARSE' && entry?.meta.kind === 'badargs')
-          entry.parameterError = true;
-        else if (code === 'RESOURCE_LIMIT' && entry?.meta.kind === 'prompt') {
-          entry.promptLimit = true;
-          count(globalCounts, 'promptResourceLimits');
-        } else if (
-          error instanceof QQApiError &&
-          [990001, 990002, 990003].includes(Number(error.qqCode))
-        ) {
-          if (entry) entry.operational = true;
-          count(globalCounts, 'injectedHttpErrors');
-        } else if (code === 'TRANSPORT' || code === 'CONTEXT_TIMEOUT') {
-          if (entry) entry.operational = true;
-          count(globalCounts, 'operationalTimeouts');
-        } else failure(error.message, parsed?.id);
+        if (parsed && !entries.has(parsed.id)) count(globalCounts, 'lateErrorCallbacks');
       },
     },
     {
       clock,
+      persistence: new MemoryPersistence(),
+      socketFactory(url, options) {
+        const id = String(options.headers?.['X-Union-Appid']);
+        instrument(id);
+        return new WebSocket(url, options);
+      },
       fetch(input, init) {
         const original = new URL(
           typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
@@ -207,91 +248,117 @@ export async function runSdk(
       },
     },
   );
-  const originalAccept = app.execution.accept.bind(app.execution);
-  app.execution.accept = (payload, bytes, observation) => {
-    const meta = metadata(payload);
-    if (!meta) return originalAccept(payload, bytes, observation);
-    assert.ok(meta.phase >= 0 && meta.phase < totals.length);
-    const hadEntry = entries.has(meta.id);
-    const entry: Entry = entries.get(meta.id) ?? {
-      meta,
-      admitted: now(),
-      routes: new Set(),
-      success: new Set(),
-      loads: 0,
-      errors: 0,
-      intentional: false,
-      parameterError: false,
-      operational: false,
-    };
-    if (!hadEntry) entries.set(meta.id, entry);
-    maximumEntries = Math.max(maximumEntries, entries.size);
-    const result = originalAccept(payload, bytes, observation);
-    count(totals[meta.phase]!.admissions, result.status);
-    if (result.status !== 'accepted') {
-      if (!hadEntry) entries.delete(meta.id);
-      return result;
-    }
-    count(totals[meta.phase]!.kinds, meta.kind);
-    if (meta.scene === 'group' && !['answer', 'distractor'].includes(meta.kind))
-      groups.add(meta.groupId);
-    result.done
-      .then(() => {
-        const phase = totals[meta.phase]!;
-        let outcome: string;
-        if (['answer', 'distractor'].includes(meta.kind)) outcome = 'continuation';
-        else if (
-          closing &&
-          (meta.kind === 'hold' || meta.kind === 'shutdown-prompt' || !entry.success.size)
-        )
-          outcome = 'shutdown-cancelled';
-        else if (entry.parameterError) outcome = 'invalid-input';
-        else if (entry.intentional) outcome = 'intentional-business-error';
-        else if (entry.promptLimit) outcome = 'prompt-resource-limit';
-        else if (entry.operational) outcome = 'operational-error';
-        else if (entry.missedPrompt) outcome = 'prompt-deadline-missed';
-        else if (
-          meta.kind === 'admin' &&
-          (meta.scene !== 'group' || meta.role === 'member') &&
-          !entry.routes.size &&
-          !entry.loads
-        )
-          outcome = 'guard-denied';
-        else {
-          const expected = meta.kind === 'file' ? 2 : 1;
-          if (
-            entry.errors ||
-            entry.success.size !== expected ||
-            entry.loads !== (meta.kind === 'failure' ? 0 : expected)
-          ) {
-            failure(
-              `Outcome mismatch: ${meta.kind}; successful handlers=${entry.success.size}; loads=${entry.loads}; errors=${entry.errors}`,
-              meta.id,
-            );
-            outcome = 'unexpected';
-          } else {
-            outcome = 'success';
-            phase.successLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
-            totals[phaseOf()]!.successfulCompletionsByWallTime++;
+  await app.initialize();
+  const instrumented = new WeakSet<object>();
+  const instrument = (appId: string) => {
+    const runtime = app.runtime(appId);
+    const execution = runtime.execution;
+    if (instrumented.has(execution)) return;
+    instrumented.add(execution);
+    auditReports(runtime.reporter, auditError);
+    const originalAccept = execution.accept.bind(execution);
+    execution.accept = (payload, bytes, observation) => {
+      const meta = metadata(payload);
+      if (!meta) return originalAccept(payload, bytes, observation);
+      assert.equal(accountFor(meta, config), appId, 'Event crossed an account boundary');
+      assert.ok(meta.phase >= 0 && meta.phase < totals.length);
+      assert.ok(meta.id >= 0 && meta.id < received.length);
+      const primary = !['answer', 'distractor'].includes(meta.kind);
+      const bot = byBot[appId]![meta.phase]!;
+      if (primary && !received[meta.id]) {
+        received[meta.id] = 1;
+        totals[meta.phase]!.receivedPrimary++;
+        bot.receivedPrimary++;
+      }
+      const hadEntry = entries.has(meta.id);
+      const entry: Entry = entries.get(meta.id) ?? {
+        meta,
+        admitted: now(),
+        routes: new Set(),
+        success: new Set(),
+        loads: 0,
+        errors: 0,
+        intentional: false,
+        parameterError: false,
+        operational: false,
+      };
+      if (!hadEntry) entries.set(meta.id, entry);
+      maximumEntries = Math.max(maximumEntries, entries.size);
+      const result = originalAccept(payload, bytes, observation);
+      count(totals[meta.phase]!.admissions, result.status);
+      count(bot.admissions, result.status);
+      if (primary) {
+        count(totals[meta.phase]!.primaryAdmissions, result.status);
+        count(bot.primaryAdmissions, result.status);
+      }
+      if (result.status !== 'accepted') {
+        if (!hadEntry) entries.delete(meta.id);
+        return result;
+      }
+      count(totals[meta.phase]!.kinds, meta.kind);
+      if (meta.scene === 'group' && !['answer', 'distractor'].includes(meta.kind))
+        groups.add(meta.groupId);
+      result.done
+        .then(() => {
+          const phase = totals[meta.phase]!;
+          let outcome: string;
+          if (['answer', 'distractor'].includes(meta.kind)) outcome = 'continuation';
+          else if (
+            closing &&
+            (meta.kind === 'hold' || meta.kind === 'shutdown-prompt' || !entry.success.size)
+          )
+            outcome = 'shutdown-cancelled';
+          else if (entry.parameterError) outcome = 'invalid-input';
+          else if (entry.intentional) outcome = 'intentional-business-error';
+          else if (stoppingAccounts.has(appId)) outcome = 'account-stopped';
+          else if (entry.promptLimit) outcome = 'prompt-resource-limit';
+          else if (entry.operational) outcome = 'operational-error';
+          else if (entry.missedPrompt) outcome = 'prompt-deadline-missed';
+          else if (
+            meta.kind === 'admin' &&
+            (meta.scene !== 'group' || meta.role === 'member') &&
+            !entry.routes.size &&
+            !entry.loads
+          )
+            outcome = 'guard-denied';
+          else {
+            const expected = meta.kind === 'file' ? 2 : 1;
+            if (
+              entry.errors ||
+              entry.success.size !== expected ||
+              entry.loads !== (meta.kind === 'failure' ? 0 : expected)
+            ) {
+              failure(
+                `Outcome mismatch: ${meta.kind}; successful handlers=${entry.success.size}; loads=${entry.loads}; errors=${entry.errors}`,
+                meta.id,
+              );
+              outcome = 'unexpected';
+            } else {
+              outcome = 'success';
+              phase.successLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
+              totals[phaseOf()]!.successfulCompletionsByWallTime++;
+            }
           }
-        }
-        count(phase.outcomes, outcome);
-        if (!['answer', 'distractor'].includes(meta.kind))
-          phase.terminalLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
-        if (distributed && !['answer', 'distractor'].includes(meta.kind))
-          send({ type: 'completion', id: meta.id, phase: meta.phase, outcome });
-        entries.delete(meta.id);
-        if (['prompt', 'shutdown-prompt'].includes(meta.kind))
-          send({ type: 'root-done', id: meta.id });
-      })
-      .catch((error) =>
-        failure(error instanceof Error ? error.message : 'Completion rejected', meta.id),
-      );
-    return result;
+          count(phase.outcomes, outcome);
+          if (primary) count(bot.primaryOutcomes, outcome);
+          if (!['answer', 'distractor'].includes(meta.kind))
+            phase.terminalLatency.add(elapsedMs(distributed ? entry.admitted : meta.dueNs));
+          if (distributed && !['answer', 'distractor'].includes(meta.kind))
+            send({ type: 'completion', id: meta.id, phase: meta.phase, outcome });
+          entries.delete(meta.id);
+          if (['prompt', 'shutdown-prompt'].includes(meta.kind))
+            send({ type: 'root-done', id: meta.id });
+        })
+        .catch((error) =>
+          failure(error instanceof Error ? error.message : 'Completion rejected', meta.id),
+        );
+      return result;
+    };
   };
+  for (const id of accountIds(config)) instrument(id);
   const httpCounts: Record<string, number> = {};
   const httpErrors: Record<string, unknown>[] = [];
-  const handler = app.webhookHandler();
+  const handler = config.transport === 'ws' ? undefined : app.webhookHandler();
   const http = createServer((request, response) => {
     count(httpCounts, 'requests');
     response.once('finish', () => {
@@ -307,6 +374,7 @@ export async function runSdk(
     response.once('close', () => {
       if (!response.writableFinished) count(httpCounts, 'unfinishedResponses');
     });
+    assert.ok(handler);
     handler(request, response);
   });
   http.on('connection', (socket) => {
@@ -348,7 +416,7 @@ export async function runSdk(
     const elapsed = Number(now() - sampledAt) / 1e6;
     sampledAt = now();
     const memory = process.memoryUsage();
-    const resources = inspectResources(app, clock);
+    const resources = applicationResources(app, clock);
     // Already-admitted prompt owners rejoin the waiting queue without a new capacity check.
     // The nominal queue capacity governs new work, not these bounded continuations.
     assert.ok(
@@ -364,7 +432,7 @@ export async function runSdk(
       memory,
       resources,
       snapshot: app.snapshot(),
-      outbound: app.application.outgoing.snapshot(),
+      outbound: app.outgoing.snapshot(),
       cpuCores: elapsed ? (cpu.user + cpu.system) / (elapsed * 1000) : 0,
       eventLoopP99Ms: eventLoop.percentile(99) / 1e6,
       eventLoopMaxMs: eventLoop.max / 1e6,
@@ -401,7 +469,7 @@ export async function runSdk(
         await closed;
       }
       await tick();
-      assertReleased(app, clock);
+      assertApplicationReleased(app, clock);
       diagnosticsTimeline.capture('closed', true);
       eventLoop.disable();
       global.gc?.();
@@ -411,9 +479,11 @@ export async function runSdk(
         {
           beforeClose: before,
           closeError,
-          final: inspectResources(app, clock),
+          final: applicationResources(app, clock),
           snapshot: app.snapshot(),
-          outbound: app.application.outgoing.snapshot(),
+          outbound: app.outgoing.snapshot(),
+          byBot,
+          controls,
           diagnostics: {
             snapshot: app.diagnostics.snapshot(),
             exportedSpans,
@@ -433,6 +503,8 @@ export async function runSdk(
           phases: totals.map((p, index) => ({
             name: config.phases[index]?.name ?? 'shutdown',
             admissions: p.admissions,
+            primaryAdmissions: p.primaryAdmissions,
+            receivedPrimary: p.receivedPrimary,
             outcomes: p.outcomes,
             kinds: p.kinds,
             routes: p.routes,
@@ -463,6 +535,45 @@ export async function runSdk(
         console.error(error);
         process.exitCode = 1;
       });
+    if (message.type === 'bot-control') {
+      const action = async () => {
+        const id = String(message.appId);
+        assert.ok(config.transport === 'ws' && accountIds(config).includes(id));
+        assert.ok(message.action === 'stop' || message.action === 'start');
+        const entry: Record<string, unknown> = {
+          appId: id,
+          action: message.action,
+          startedNs: now().toString(),
+        };
+        controls.push(entry);
+        if (message.action === 'stop') {
+          stoppingAccounts.add(id);
+          await app.bots
+            .get(id)
+            .stop()
+            .catch((error: unknown) => {
+              if (!(error instanceof FrameworkError) || error.code !== 'SHUTDOWN_TIMEOUT')
+                throw error;
+              entry.deadlineReached = true;
+            });
+          const snapshot = app.runtime(id).snapshot();
+          assert.equal(
+            snapshot.queue.active + snapshot.queue.pending + snapshot.prompts.pending,
+            0,
+          );
+        } else {
+          await app.bots.get(id).start();
+          stoppingAccounts.delete(id);
+        }
+        entry.finishedNs = now().toString();
+        entry.status = app.bots.get(id).status;
+        send({ type: 'bot-controlled', nonce: message.nonce, ...entry });
+      };
+      void action().catch((error: unknown) => {
+        failure(String(error));
+        send({ type: 'bot-controlled', nonce: message.nonce, error: String(error) });
+      });
+    }
   });
   process.once('disconnect', () => {
     if (!closing)
@@ -471,17 +582,20 @@ export async function runSdk(
       });
   });
   await app.start();
-  await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
+  if (config.transport !== 'ws')
+    await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
   const address = http.address();
-  assert.ok(address && typeof address !== 'string');
+  assert.ok(config.transport === 'ws' || (address && typeof address !== 'string'));
   global.gc?.();
   sample();
   send({
     type: 'sdk-ready',
-    origin: `http://127.0.0.1:${address.port}`,
+    ...(address && typeof address !== 'string'
+      ? { origin: `http://127.0.0.1:${address.port}` }
+      : {}),
     node: process.version,
     pid: process.pid,
-    concurrency: app.snapshot().capacity.concurrency,
-    outboundConcurrency: app.application.outgoing.snapshot().concurrency,
+    concurrency: app.snapshot().inbound.concurrency,
+    outboundConcurrency: app.outgoing.snapshot().concurrency,
   });
 }

@@ -28,6 +28,9 @@ export interface Phase {
   large?: boolean;
 }
 export interface Profile {
+  transport?: 'webhook' | 'ws';
+  bots?: 1 | 2;
+  firstBotPercent?: number;
   diagnostics?: DiagnosticsMode;
   name: 'smoke' | 'standard' | 'connections' | 'comparison';
   phases: Phase[];
@@ -127,6 +130,9 @@ export function profile(name: string): Profile {
 }
 
 export interface ComparisonOptions {
+  transport?: 'webhook' | 'ws';
+  bots?: 1 | 2;
+  firstBotPercent?: number;
   diagnostics?: DiagnosticsMode;
   kind: 'smoke' | 'comparison';
   concurrency: number;
@@ -140,13 +146,25 @@ export function comparisonProfile(input: unknown): Profile {
   assert.ok(record(input));
   assert.deepEqual(
     Object.keys(input)
-      .filter((key) => key !== 'diagnostics')
+      .filter((key) => !['diagnostics', 'transport', 'bots', 'firstBotPercent'].includes(key))
       .sort(),
     ['concurrency', 'durationMs', 'kind', 'outboundConcurrency', 'rate'],
   );
   assert.ok(input.kind === 'smoke' || input.kind === 'comparison');
   const diagnostics = input.diagnostics ?? 'off';
   assert.ok(diagnostics === 'off' || diagnostics === 'metrics' || diagnostics === 'sampled');
+  const transport = input.transport ?? 'webhook';
+  const bots = input.bots ?? 1;
+  const firstBotPercent = input.firstBotPercent ?? 50;
+  assert.ok(transport === 'webhook' || transport === 'ws');
+  assert.ok(bots === 1 || bots === 2);
+  assert.ok(
+    typeof firstBotPercent === 'number' &&
+      Number.isSafeInteger(firstBotPercent) &&
+      firstBotPercent >= 1 &&
+      firstBotPercent <= 99,
+  );
+  assert.ok(bots === 2 || firstBotPercent === 50, 'Single bot has no traffic split');
   const integer = (key: string, minimum: number, maximum: number): number => {
     const value = input[key];
     assert.ok(
@@ -169,6 +187,9 @@ export function comparisonProfile(input: unknown): Profile {
   const config = profile(input.kind === 'smoke' ? 'smoke' : 'standard');
   return {
     ...config,
+    transport,
+    bots,
+    firstBotPercent,
     diagnostics,
     name: input.kind,
     concurrency,
@@ -238,6 +259,13 @@ export interface Meta {
 export const now = () => process.hrtime.bigint();
 export const elapsedMs = (start: string | bigint) => Number(now() - BigInt(start)) / 1e6;
 export const hash = (id: number, salt = 0) => Math.imul(id ^ salt, 2654435761) >>> 0;
+export const accountIds = (config: Profile): string[] =>
+  config.bots === 2 ? [appId, `${appId}-b`] : [appId];
+export function accountFor(meta: Pick<Meta, 'root'>, config: Profile): string {
+  return config.bots === 2 && hash(meta.root, 227) % 100 >= (config.firstBotPercent ?? 50)
+    ? `${appId}-b`
+    : appId;
+}
 export const eventId = (meta: Pick<Meta, 'phase' | 'id'>) => `mixed-${meta.phase}-${meta.id}`;
 export function parseId(value: unknown): { phase: number; id: number } | undefined {
   if (typeof value !== 'string') return;
@@ -293,7 +321,7 @@ export function makeMeta(
     kind,
     dueNs: dueNs.toString(),
     scene,
-    groupId: `group-${group}`,
+    groupId: `group-${group}${config.bots === 2 ? `-${accountFor({ root: id }, config)}` : ''}`,
     userId: ['prompt', 'shutdown-prompt'].includes(kind)
       ? `prompt-user-${id}`
       : `user-${hash(id, 7) % 100}`,

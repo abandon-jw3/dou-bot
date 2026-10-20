@@ -1,0 +1,3535 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "status": "complete",
+  "scope": {
+    "server": "root@43.143.160.168",
+    "node": "24.21.0",
+    "quota": {
+      "cpuCores": 1.5,
+      "memoryMiB": 1024,
+      "swapBytes": 0
+    },
+    "transport": "WS over reverse SSH to a local simulated gateway; remote SDK/API fixture/supervisor share quota",
+    "ordinaryComparison": "500 primary events/s, 10s warmup at200/s,120s measurement,15s recovery at200/s; execution128/outbound32; off and metrics",
+    "outboundComparison": "unchanged baseline,750/s for180s, only outbound32 vs64; primary+continuation retention stays below200000",
+    "persistence": "in-memory test port",
+    "excluded": ["real QQ", "real SQL", "Nginx/TLS", "rendering", "multi-day stability"],
+    "warning": "CPU includes fixture accounting and a custom silent logger that still incurs redaction; wall-time stages cannot be summed as CPU"
+  },
+  "sources": {
+    "baseline": {
+      "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+      "dirty": true,
+      "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+      "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+    },
+    "combinedCandidate": {
+      "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+      "dirty": true,
+      "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+      "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+    },
+    "final": {
+      "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+      "dirty": true,
+      "sdkSha256": "66e1dbe3503e83d3bb01dd7db1e2ce54880067aa43f27021ad556f796e64b4a9",
+      "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+    }
+  },
+  "decision": {
+    "retained": "bounded metric-series prefix index; public API, snapshots, labels, ordering and limits unchanged",
+    "rejected": [
+      "last-series cache: regressed changing-label microbenchmarks",
+      "HTTP decoder reuse/single-chunk fast path: no reliable whole-protocol gain; restored original implementation"
+    ],
+    "defaultConcurrencyUnchanged": true,
+    "protocolThroughputIncreaseClaimed": false
+  },
+  "comparison": {
+    "baselineCpuCores": [0.9898258955107283, 1.0051322461164616],
+    "finalCpuCores": [0.9715736387967843, 0.9799986203728014],
+    "meanReductionPercent": 2.1747765806362507
+  },
+  "micro": [
+    {
+      "baseline": "base",
+      "candidate": "cache",
+      "mode": "metrics-hot",
+      "repetitions": 3,
+      "baselineWallMs": 142.635083,
+      "candidateWallMs": 72.47225,
+      "baselineCpuMs": 168.673,
+      "candidateCpuMs": 98.197
+    },
+    {
+      "baseline": "base",
+      "candidate": "cache",
+      "mode": "metrics-fresh",
+      "repetitions": 3,
+      "baselineWallMs": 149.405708,
+      "candidateWallMs": 160.73675000000003,
+      "baselineCpuMs": 176.848,
+      "candidateCpuMs": 188.361
+    },
+    {
+      "baseline": "base-b",
+      "candidate": "index",
+      "mode": "metrics-hot",
+      "repetitions": 3,
+      "baselineWallMs": 144.73125,
+      "candidateWallMs": 81.614292,
+      "baselineCpuMs": 170.726,
+      "candidateCpuMs": 107.065
+    },
+    {
+      "baseline": "base-b",
+      "candidate": "index",
+      "mode": "metrics-fresh",
+      "repetitions": 3,
+      "baselineWallMs": 150.243459,
+      "candidateWallMs": 87.34299999999999,
+      "baselineCpuMs": 177.927,
+      "candidateCpuMs": 117.406
+    },
+    {
+      "baseline": "base-c",
+      "candidate": "decode",
+      "mode": "http-single",
+      "repetitions": 3,
+      "baselineWallMs": 92.31245899999999,
+      "candidateWallMs": 90.131042,
+      "baselineCpuMs": 172.147,
+      "candidateCpuMs": 160.462
+    },
+    {
+      "baseline": "base-c",
+      "candidate": "decode",
+      "mode": "http-chunks",
+      "repetitions": 3,
+      "baselineWallMs": 276.57395899999995,
+      "candidateWallMs": 274.336917,
+      "baselineCpuMs": 360.271,
+      "candidateCpuMs": 354.358
+    }
+  ],
+  "profiles": [
+    {
+      "mode": "off",
+      "sha256": "5815f1bbcfb650034a488dc2c96fc5bcc0fb8708eb6e4aa26c93ac9506b90e05",
+      "sampleStartFromLoadSeconds": 78.406298294,
+      "sampleEndFromLoadSeconds": 98.406298294,
+      "samples": 13845,
+      "scope": "main-thread sampled wall time; inclusive stacks overlap; excluded from capacity comparison",
+      "selfTop": [
+        {
+          "function": "(idle)",
+          "url": "",
+          "line": 0,
+          "ms": 4490.938,
+          "percentOfSampledWallTime": 22.25617052297767
+        },
+        {
+          "function": "(garbage collector)",
+          "url": "",
+          "line": 0,
+          "ms": 2397.197,
+          "percentOfSampledWallTime": 11.880018207592824
+        },
+        {
+          "function": "runMicrotasks",
+          "url": "",
+          "line": 0,
+          "ms": 528.545,
+          "percentOfSampledWallTime": 2.6193609551205634
+        },
+        {
+          "function": "FrameworkError",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/errors.js",
+          "line": 4,
+          "ms": 499.698,
+          "percentOfSampledWallTime": 2.476401121100068
+        },
+        {
+          "function": "admit",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 215,
+          "ms": 425.97,
+          "percentOfSampledWallTime": 2.1110202273272973
+        },
+        {
+          "function": "(program)",
+          "url": "",
+          "line": 0,
+          "ms": 357.135,
+          "percentOfSampledWallTime": 1.7698880411449969
+        },
+        {
+          "function": "writev",
+          "url": "",
+          "line": 0,
+          "ms": 282.984,
+          "percentOfSampledWallTime": 1.4024108458576612
+        },
+        {
+          "function": "perform",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/api.js",
+          "line": 125,
+          "ms": 277.446,
+          "percentOfSampledWallTime": 1.3749656501421448
+        },
+        {
+          "function": "now",
+          "url": "",
+          "line": 0,
+          "ms": 266.528,
+          "percentOfSampledWallTime": 1.3208582744068595
+        },
+        {
+          "function": "redact",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 53,
+          "ms": 265.251,
+          "percentOfSampledWallTime": 1.3145297234988214
+        },
+        {
+          "function": "nextTick",
+          "url": "node:internal/process/task_queues",
+          "line": 113,
+          "ms": 262.248,
+          "percentOfSampledWallTime": 1.2996474694840694
+        },
+        {
+          "function": "set Navigator",
+          "url": "",
+          "line": 0,
+          "ms": 199.854,
+          "percentOfSampledWallTime": 0.9904355623923509
+        },
+        {
+          "function": "receive",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 160,
+          "ms": 198.83,
+          "percentOfSampledWallTime": 0.985360827756618
+        },
+        {
+          "function": "parse",
+          "url": "",
+          "line": 0,
+          "ms": 181.464,
+          "percentOfSampledWallTime": 0.8992984823619521
+        },
+        {
+          "function": "_Request",
+          "url": "node:internal/deps/undici/undici",
+          "line": 12090,
+          "ms": 173.77,
+          "percentOfSampledWallTime": 0.8611685914563572
+        },
+        {
+          "function": "__name",
+          "url": "node:internal/deps/undici/undici",
+          "line": 4,
+          "ms": 165.724,
+          "percentOfSampledWallTime": 0.8212942605197291
+        },
+        {
+          "function": "controlled",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/dispatcher.js",
+          "line": 131,
+          "ms": 151.173,
+          "percentOfSampledWallTime": 0.749182479577786
+        },
+        {
+          "function": "writeUtf8String",
+          "url": "",
+          "line": 0,
+          "ms": 151.148,
+          "percentOfSampledWallTime": 0.7490585846892184
+        },
+        {
+          "function": "query",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/examples/mixed-benchmark/workload.js",
+          "line": 80,
+          "ms": 141.489,
+          "percentOfSampledWallTime": 0.7011905555422024
+        },
+        {
+          "function": "createReadableStreamState",
+          "url": "node:internal/webstreams/readablestream",
+          "line": 1422,
+          "ms": 135.003,
+          "percentOfSampledWallTime": 0.6690472656521989
+        }
+      ],
+      "inclusiveSdk": [
+        {
+          "function": "request",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/http.js",
+          "line": 48,
+          "ms": 2537.545,
+          "percentOfSampledWallTime": 12.575554200420797
+        },
+        {
+          "function": "perform",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/api.js",
+          "line": 125,
+          "ms": 2461.658,
+          "percentOfSampledWallTime": 12.19947374407132
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 279,
+          "ms": 1521.344,
+          "percentOfSampledWallTime": 7.539469814125455
+        },
+        {
+          "function": "receive",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 160,
+          "ms": 1513.405,
+          "percentOfSampledWallTime": 7.500125753311897
+        },
+        {
+          "function": "run",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 154,
+          "ms": 846.671,
+          "percentOfSampledWallTime": 4.195928367940067
+        },
+        {
+          "function": "controlled",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/dispatcher.js",
+          "line": 131,
+          "ms": 833.273,
+          "percentOfSampledWallTime": 4.129530619258865
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 66,
+          "ms": 802.359,
+          "percentOfSampledWallTime": 3.976327155851593
+        },
+        {
+          "function": "accept",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 192,
+          "ms": 753.759,
+          "percentOfSampledWallTime": 3.735475492475987
+        },
+        {
+          "function": "admit",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 215,
+          "ms": 745.726,
+          "percentOfSampledWallTime": 3.6956655868814146
+        },
+        {
+          "function": "sanitize",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 60,
+          "ms": 682.788,
+          "percentOfSampledWallTime": 3.383757727014463
+        },
+        {
+          "function": "timed",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 124,
+          "ms": 596.837,
+          "percentOfSampledWallTime": 2.957802144323173
+        },
+        {
+          "function": "FrameworkError",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/errors.js",
+          "line": 4,
+          "ms": 499.698,
+          "percentOfSampledWallTime": 2.476401121100068
+        },
+        {
+          "function": "debug",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 47,
+          "ms": 470.377,
+          "percentOfSampledWallTime": 2.331092239992328
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/managed-client.js",
+          "line": 95,
+          "ms": 465.432,
+          "percentOfSampledWallTime": 2.3065858310336376
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/outbound.js",
+          "line": 147,
+          "ms": 465.387,
+          "percentOfSampledWallTime": 2.306362820234216
+        },
+        {
+          "function": "log",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 30,
+          "ms": 453.318,
+          "percentOfSampledWallTime": 2.246551323829274
+        },
+        {
+          "function": "finish",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 473,
+          "ms": 430.039,
+          "percentOfSampledWallTime": 2.131185359390576
+        },
+        {
+          "function": "sendPreparedMessage",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/client.js",
+          "line": 29,
+          "ms": 422.457,
+          "percentOfSampledWallTime": 2.0936105175857644
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/managed-client.js",
+          "line": 125,
+          "ms": 414.947,
+          "percentOfSampledWallTime": 2.0563924930600277
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 462,
+          "ms": 368.744,
+          "percentOfSampledWallTime": 1.8274198716002932
+        }
+      ]
+    },
+    {
+      "mode": "metrics",
+      "sha256": "164e5e3f019ce1438b18302830cb1662f6c249313e7706b9bad81a0dd4025f8c",
+      "sampleStartFromLoadSeconds": 78.620895266,
+      "sampleEndFromLoadSeconds": 98.620895266,
+      "samples": 13595,
+      "scope": "main-thread sampled wall time; inclusive stacks overlap; excluded from capacity comparison",
+      "selfTop": [
+        {
+          "function": "(idle)",
+          "url": "",
+          "line": 0,
+          "ms": 3383.83,
+          "percentOfSampledWallTime": 16.79256012512475
+        },
+        {
+          "function": "(garbage collector)",
+          "url": "",
+          "line": 0,
+          "ms": 2321.61,
+          "percentOfSampledWallTime": 11.521198024750321
+        },
+        {
+          "function": "start",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/diagnostics/observer.js",
+          "line": 179,
+          "ms": 684.63,
+          "percentOfSampledWallTime": 3.3975378309383633
+        },
+        {
+          "function": "runMicrotasks",
+          "url": "",
+          "line": 0,
+          "ms": 611.436,
+          "percentOfSampledWallTime": 3.0343060356654377
+        },
+        {
+          "function": "FrameworkError",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/errors.js",
+          "line": 4,
+          "ms": 597.077,
+          "percentOfSampledWallTime": 2.9630482092271517
+        },
+        {
+          "function": "redact",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 53,
+          "ms": 494.618,
+          "percentOfSampledWallTime": 2.454586224476098
+        },
+        {
+          "function": "now",
+          "url": "",
+          "line": 0,
+          "ms": 345.079,
+          "percentOfSampledWallTime": 1.7124855135801518
+        },
+        {
+          "function": "(program)",
+          "url": "",
+          "line": 0,
+          "ms": 283.051,
+          "percentOfSampledWallTime": 1.4046659956252787
+        },
+        {
+          "function": "nextTick",
+          "url": "node:internal/process/task_queues",
+          "line": 113,
+          "ms": 279.382,
+          "percentOfSampledWallTime": 1.3864582537768162
+        },
+        {
+          "function": "finish",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/diagnostics/observer.js",
+          "line": 250,
+          "ms": 269.514,
+          "percentOfSampledWallTime": 1.337487417973974
+        },
+        {
+          "function": "perform",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/api.js",
+          "line": 125,
+          "ms": 260.5,
+          "percentOfSampledWallTime": 1.2927546338305997
+        },
+        {
+          "function": "writeUtf8String",
+          "url": "",
+          "line": 0,
+          "ms": 258.878,
+          "percentOfSampledWallTime": 1.28470531323147
+        },
+        {
+          "function": "receive",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 160,
+          "ms": 236.49,
+          "percentOfSampledWallTime": 1.1736028535685163
+        },
+        {
+          "function": "writev",
+          "url": "",
+          "line": 0,
+          "ms": 215.401,
+          "percentOfSampledWallTime": 1.0689467980105374
+        },
+        {
+          "function": "parse",
+          "url": "",
+          "line": 0,
+          "ms": 207.158,
+          "percentOfSampledWallTime": 1.0280401705761204
+        },
+        {
+          "function": "admit",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 215,
+          "ms": 199.243,
+          "percentOfSampledWallTime": 0.9887612725846839
+        },
+        {
+          "function": "set Navigator",
+          "url": "",
+          "line": 0,
+          "ms": 166.828,
+          "percentOfSampledWallTime": 0.8278989253462238
+        },
+        {
+          "function": "createReadableStreamState",
+          "url": "node:internal/webstreams/readablestream",
+          "line": 1422,
+          "ms": 161.818,
+          "percentOfSampledWallTime": 0.8030363506226487
+        },
+        {
+          "function": "_Request",
+          "url": "node:internal/deps/undici/undici",
+          "line": 12090,
+          "ms": 154.618,
+          "percentOfSampledWallTime": 0.7673057043133192
+        },
+        {
+          "function": "__name",
+          "url": "node:internal/deps/undici/undici",
+          "line": 4,
+          "ms": 151.226,
+          "percentOfSampledWallTime": 0.750472599829813
+        }
+      ],
+      "inclusiveSdk": [
+        {
+          "function": "request",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/http.js",
+          "line": 48,
+          "ms": 2697.221,
+          "percentOfSampledWallTime": 13.385201329041092
+        },
+        {
+          "function": "perform",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/api.js",
+          "line": 125,
+          "ms": 2443.67,
+          "percentOfSampledWallTime": 12.126931731488758
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 279,
+          "ms": 1845.67,
+          "percentOfSampledWallTime": 9.159303051908342
+        },
+        {
+          "function": "receive",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/transport/ws.js",
+          "line": 160,
+          "ms": 1834.666,
+          "percentOfSampledWallTime": 9.10469471413225
+        },
+        {
+          "function": "controlled",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/dispatcher.js",
+          "line": 131,
+          "ms": 1272.065,
+          "percentOfSampledWallTime": 6.312736749649604
+        },
+        {
+          "function": "start",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/diagnostics/observer.js",
+          "line": 179,
+          "ms": 891.834,
+          "percentOfSampledWallTime": 4.425806280643681
+        },
+        {
+          "function": "sanitize",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 60,
+          "ms": 835.956,
+          "percentOfSampledWallTime": 4.1485066897446945
+        },
+        {
+          "function": "run",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 154,
+          "ms": 833.398,
+          "percentOfSampledWallTime": 4.135812385125352
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 66,
+          "ms": 798.309,
+          "percentOfSampledWallTime": 3.9616800728547874
+        },
+        {
+          "function": "accept",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 192,
+          "ms": 776.325,
+          "percentOfSampledWallTime": 3.852582499456968
+        },
+        {
+          "function": "admit",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 215,
+          "ms": 726.239,
+          "percentOfSampledWallTime": 3.604026228477931
+        },
+        {
+          "function": "timed",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/context-state.js",
+          "line": 124,
+          "ms": 716.765,
+          "percentOfSampledWallTime": 3.5570106530425716
+        },
+        {
+          "function": "log",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 30,
+          "ms": 689.524,
+          "percentOfSampledWallTime": 3.4218247452491766
+        },
+        {
+          "function": "debug",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 47,
+          "ms": 686.531,
+          "percentOfSampledWallTime": 3.4069717140819784
+        },
+        {
+          "function": "FrameworkError",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/errors.js",
+          "line": 4,
+          "ms": 597.077,
+          "percentOfSampledWallTime": 2.9630482092271517
+        },
+        {
+          "function": "finish",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/execution.js",
+          "line": 473,
+          "ms": 499.436,
+          "percentOfSampledWallTime": 2.4784959819647576
+        },
+        {
+          "function": "redact",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/logging.js",
+          "line": 53,
+          "ms": 494.618,
+          "percentOfSampledWallTime": 2.454586224476098
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/core/outbound.js",
+          "line": 147,
+          "ms": 478.975,
+          "percentOfSampledWallTime": 2.3769564327793145
+        },
+        {
+          "function": "(anonymous)",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/managed-client.js",
+          "line": 95,
+          "ms": 478.156,
+          "percentOfSampledWallTime": 2.372892071761629
+        },
+        {
+          "function": "sendPreparedMessage",
+          "url": "file:///opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/baseline/framework/work/distributed-build/src/qq/client.js",
+          "line": 29,
+          "ms": 455.662,
+          "percentOfSampledWallTime": 2.261263577583565
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "label": "hd-cand-sampled-500-o32-smoke-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-sampled-500-o32-smoke-20261020/report.json",
+      "version": "cand",
+      "mode": "sampled",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": true,
+      "unit": "dou-bot-capacity-compare-hd-cand-sampled-500-o32-smoke-20261020-11bf68.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "burst",
+        "rate": 300,
+        "durationMs": 2000,
+        "scheduled": 600,
+        "received": 600,
+        "notReceived": 0,
+        "accepted": 600,
+        "completed": 600,
+        "outcomes": {
+          "success": 552,
+          "guard-denied": 23,
+          "intentional-business-error": 7,
+          "invalid-input": 15,
+          "prompt-deadline-missed": 3
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 600,
+        "wsUnavailableAttempts": 3,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 600,
+          "duplicate": 29
+        },
+        "schedulingLag": {
+          "count": 600,
+          "meanMs": 2.6943382100000006,
+          "maxMs": 6.020333,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 299,
+            "received": 299,
+            "accepted": 299,
+            "completed": 299,
+            "outcomes": {
+              "success": 276,
+              "guard-denied": 18,
+              "intentional-business-error": 2,
+              "invalid-input": 2,
+              "prompt-deadline-missed": 1
+            },
+            "successLatency": {
+              "count": 276,
+              "meanMs": 132.7748312355073,
+              "maxMs": 455.875917,
+              "p50UpperMs": 120,
+              "p95UpperMs": 308,
+              "p99UpperMs": 424
+            }
+          },
+          "mixed-benchmark-app-b": {
+            "scheduled": 301,
+            "received": 301,
+            "accepted": 301,
+            "completed": 301,
+            "outcomes": {
+              "guard-denied": 5,
+              "intentional-business-error": 5,
+              "success": 276,
+              "invalid-input": 13,
+              "prompt-deadline-missed": 2
+            },
+            "successLatency": {
+              "count": 276,
+              "meanMs": 144.64485472826092,
+              "maxMs": 446.263125,
+              "p50UpperMs": 128,
+              "p95UpperMs": 344,
+              "p99UpperMs": 414
+            }
+          }
+        },
+        "successLatency": {
+          "count": 552,
+          "meanMs": 138.7090125960145,
+          "maxMs": 455.875042,
+          "p50UpperMs": 123,
+          "p95UpperMs": 319,
+          "p99UpperMs": 414
+        },
+        "terminalLatency": {
+          "count": 600,
+          "meanMs": 132.783424315,
+          "maxMs": 455.873834,
+          "p50UpperMs": 118,
+          "p95UpperMs": 319,
+          "p99UpperMs": 393
+        },
+        "serverAdmissionLatency": {
+          "count": 552,
+          "meanMs": 87.64668416123175,
+          "maxMs": 412.044258,
+          "p50UpperMs": 62,
+          "p95UpperMs": 267,
+          "p99UpperMs": 344
+        },
+        "successPerSecondByCompletionTime": 269,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 0,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 136.6875,
+        "capacityPassed": false
+      },
+      "sdkCores": 0.7574214822750388,
+      "rssPeakMiB": 136.6875,
+      "eventLoopMaxMs": 52.789247,
+      "maximumReplyScopes": 528,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 515,
+            "heartbeatSequence": 515,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 3,
+            "identifies": 1,
+            "resumes": 2,
+            "heartbeats": 9,
+            "disconnects": 3,
+            "maximumBufferedBytes": 0,
+            "lastResumeSequence": 459,
+            "bufferedBytes": 0
+          },
+          "mixed-benchmark-app-b": {
+            "ready": false,
+            "sequence": 682,
+            "heartbeatSequence": 682,
+            "session": "fixture-session-mixed-benchmark-app-b",
+            "connections": 3,
+            "identifies": 1,
+            "resumes": 2,
+            "heartbeats": 9,
+            "disconnects": 3,
+            "maximumBufferedBytes": 0,
+            "lastResumeSequence": 600,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 25,
+        "prompt:received": 50,
+        "error:Error": 7,
+        "intentionalBusinessErrors": 7,
+        "errorCallbacks": 30,
+        "error:PARAMETER_PARSE": 18,
+        "prompt:timeout": 21,
+        "error:QQ_API": 3,
+        "injectedHttpErrors": 3,
+        "error:CONTEXT_TIMEOUT": 2,
+        "operationalTimeouts": 2
+      },
+      "reportSha256": "621309fa3ca9cab3e2a8b6fd354cf4ff84a80d1fe4730ed1cebb5728e5dbb15c",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-base-off-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-off-500-o32-r1-20261020/report.json",
+      "version": "base",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-off-500-o32-r1-20261020-4a9768.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.605411753166675,
+          "maxMs": 44.815584,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 216.1079087039928,
+              "maxMs": 2769.585292,
+              "p50UpperMs": 116,
+              "p95UpperMs": 572,
+              "p99UpperMs": 1610
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 216.10734224634092,
+          "maxMs": 2769.584834,
+          "p50UpperMs": 116,
+          "p95UpperMs": 572,
+          "p99UpperMs": 1610
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 204.05390562426922,
+          "maxMs": 2769.584084,
+          "p50UpperMs": 111,
+          "p95UpperMs": 556,
+          "p99UpperMs": 1604
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 166.38153052062202,
+          "maxMs": 2674.296713,
+          "p50UpperMs": 61,
+          "p95UpperMs": 507,
+          "p99UpperMs": 1560
+        },
+        "successPerSecondByCompletionTime": 463.4583333333333,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 22,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 231.66796875,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.8595205447497601,
+      "rssPeakMiB": 231.66796875,
+      "eventLoopMaxMs": 79.888383,
+      "maximumReplyScopes": 67037,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "prompt:received": 5076,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "9ff818c2023b5819d629c6da361af66ff2410f87eff36dc454234a8b26f7f577",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-cand-off-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-off-500-o32-r1-20261020/report.json",
+      "version": "cand",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-cand-off-500-o32-r1-20261020-36aaba.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.6996754475333256,
+          "maxMs": 14.965625,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 218.845182539029,
+              "maxMs": 2701.205208,
+              "p50UpperMs": 120,
+              "p95UpperMs": 579,
+              "p99UpperMs": 1613
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 218.84467097902848,
+          "maxMs": 2701.204583,
+          "p50UpperMs": 120,
+          "p95UpperMs": 579,
+          "p99UpperMs": 1613
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 206.57755802990138,
+          "maxMs": 2701.201583,
+          "p50UpperMs": 114,
+          "p95UpperMs": 560,
+          "p99UpperMs": 1608
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 168.9974955830574,
+          "maxMs": 2647.692331,
+          "p50UpperMs": 64,
+          "p95UpperMs": 509,
+          "p99UpperMs": 1564
+        },
+        "successPerSecondByCompletionTime": 463.40833333333336,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 16,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 228.66015625,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.893262846098086,
+      "rssPeakMiB": 228.66015625,
+      "eventLoopMaxMs": 84.672511,
+      "maximumReplyScopes": 67057,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "prompt:received": 5076,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686,
+        "lateErrorCallbacks": 1
+      },
+      "reportSha256": "448b93398525da63e58f1370c5f88dcaf95ea98b9efa981992265abb70f1d4f7",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-base-metrics-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-metrics-500-o32-r1-20261020/report.json",
+      "version": "base",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-metrics-500-o32-r1-20261020-3835c8.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.601368915900026,
+          "maxMs": 19.863666,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 235.4783998293974,
+              "maxMs": 2873.851208,
+              "p50UpperMs": 138,
+              "p95UpperMs": 603,
+              "p99UpperMs": 1637
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 235.47792444009278,
+          "maxMs": 2873.850833,
+          "p50UpperMs": 138,
+          "p95UpperMs": 603,
+          "p99UpperMs": 1637
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 222.19515116096494,
+          "maxMs": 2873.849416,
+          "p50UpperMs": 131,
+          "p95UpperMs": 587,
+          "p99UpperMs": 1631
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 184.64827102754606,
+          "maxMs": 2715.835893,
+          "p50UpperMs": 79,
+          "p95UpperMs": 540,
+          "p99UpperMs": 1583
+        },
+        "successPerSecondByCompletionTime": 463.46666666666664,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 33,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 232.265625,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9898258955107283,
+      "rssPeakMiB": 232.265625,
+      "eventLoopMaxMs": 131.596287,
+      "maximumReplyScopes": 66735,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "25cf07466db3a5edf9c86505602123f9d73e1f53065135370608f67c01163b15",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-cand-metrics-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-metrics-500-o32-r1-20261020/report.json",
+      "version": "cand",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r1-20261020-a9ed46.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.62177468651668,
+          "maxMs": 19.384125,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 250.80548386529122,
+              "maxMs": 2989.452625,
+              "p50UpperMs": 148,
+              "p95UpperMs": 655,
+              "p99UpperMs": 1650
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 250.80496842202473,
+          "maxMs": 2989.452167,
+          "p50UpperMs": 148,
+          "p95UpperMs": 655,
+          "p99UpperMs": 1650
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 236.63864774501755,
+          "maxMs": 2989.451334,
+          "p50UpperMs": 140,
+          "p95UpperMs": 620,
+          "p99UpperMs": 1646
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 198.02952892469062,
+          "maxMs": 2946.694798,
+          "p50UpperMs": 85,
+          "p95UpperMs": 599,
+          "p99UpperMs": 1591
+        },
+        "successPerSecondByCompletionTime": 463.7,
+        "inboundQueuePeak": 54,
+        "outboundQueuePeak": 60,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 245.40234375,
+        "capacityPassed": true
+      },
+      "sdkCores": 1.0060566088339973,
+      "rssPeakMiB": 245.40234375,
+      "eventLoopMaxMs": 95.748095,
+      "maximumReplyScopes": 66657,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "prompt:received": 5076,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "527d28b826af6e2680df51af015ba49c42c2d02ebd820bbc0bfe007b0a55f21d",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-cand-metrics-500-o32-r2-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-metrics-500-o32-r2-20261020/report.json",
+      "version": "cand",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r2-20261020-16b820.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.7593952658666576,
+          "maxMs": 67.001125,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 464.12772942746386,
+              "maxMs": 10132.600333,
+              "p50UpperMs": 155,
+              "p95UpperMs": 2008,
+              "p99UpperMs": 4009
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 464.12724874676616,
+          "maxMs": 10132.599708,
+          "p50UpperMs": 155,
+          "p95UpperMs": 2008,
+          "p99UpperMs": 4009
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 446.13220126265173,
+          "maxMs": 10132.597542,
+          "p50UpperMs": 148,
+          "p95UpperMs": 1966,
+          "p99UpperMs": 3942
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 408.12499940886124,
+          "maxMs": 9992.592208,
+          "p50UpperMs": 90,
+          "p95UpperMs": 1909,
+          "p99UpperMs": 3921
+        },
+        "successPerSecondByCompletionTime": 449.98333333333335,
+        "inboundQueuePeak": 1568,
+        "outboundQueuePeak": 66,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 240.55078125,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9793140571596088,
+      "rssPeakMiB": 240.55078125,
+      "eventLoopMaxMs": 261.095423,
+      "maximumReplyScopes": 66454,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 146,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "9e528e9bc4e5e5f992d4e4d534ea3183511a4d73d947ac6546a5d15d2eef9898",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": {
+        "recordedAt": "2026-10-20T14:39:56.860171+00:00",
+        "label": "hd-cand-metrics-500-o32-r2-20261020",
+        "excludedFromPerformanceComparison": true,
+        "reason": "index-only server clone/dependency copy/TypeScript compilation overlapped the measurement; local compilation also ran during generator activity",
+        "action": "retain original result and repeat in an isolated run after setup completes"
+      }
+    },
+    {
+      "label": "hd-base-metrics-500-o32-r2-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-metrics-500-o32-r2-20261020/report.json",
+      "version": "base",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-metrics-500-o32-r2-20261020-37bd5a.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.6445564137499975,
+          "maxMs": 77.43,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 244.43401532617395,
+              "maxMs": 2869.294333,
+              "p50UpperMs": 143,
+              "p95UpperMs": 636,
+              "p99UpperMs": 1645
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 244.4334940750759,
+          "maxMs": 2869.29375,
+          "p50UpperMs": 143,
+          "p95UpperMs": 636,
+          "p99UpperMs": 1645
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 230.63218297908605,
+          "maxMs": 2869.289583,
+          "p50UpperMs": 136,
+          "p95UpperMs": 611,
+          "p99UpperMs": 1640
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 192.6536624971344,
+          "maxMs": 2814.870962,
+          "p50UpperMs": 82,
+          "p95UpperMs": 577,
+          "p99UpperMs": 1587
+        },
+        "successPerSecondByCompletionTime": 463.59166666666664,
+        "inboundQueuePeak": 52,
+        "outboundQueuePeak": 59,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 236.90234375,
+        "capacityPassed": true
+      },
+      "sdkCores": 1.0051322461164616,
+      "rssPeakMiB": 236.90234375,
+      "eventLoopMaxMs": 99.549183,
+      "maximumReplyScopes": 66618,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "0526f2aab4d9b5818aaab2222739b381be48bc47270a0bdb5a13e4e3f728331d",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-cand-off-500-o32-r2-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-off-500-o32-r2-20261020/report.json",
+      "version": "cand",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-cand-off-500-o32-r2-20261020-06f814.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.72206550050002,
+          "maxMs": 33.190084,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 221.2297961374914,
+              "maxMs": 2764.085292,
+              "p50UpperMs": 124,
+              "p95UpperMs": 581,
+              "p99UpperMs": 1621
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 221.22930914690207,
+          "maxMs": 2764.084334,
+          "p50UpperMs": 124,
+          "p95UpperMs": 581,
+          "p99UpperMs": 1621
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 208.86164571171545,
+          "maxMs": 2764.07725,
+          "p50UpperMs": 117,
+          "p95UpperMs": 565,
+          "p99UpperMs": 1615
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 171.57593667045032,
+          "maxMs": 2678.642901,
+          "p50UpperMs": 67,
+          "p95UpperMs": 521,
+          "p99UpperMs": 1569
+        },
+        "successPerSecondByCompletionTime": 463.5083333333333,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 38,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 228.58984375,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9130619572459189,
+      "rssPeakMiB": 228.58984375,
+      "eventLoopMaxMs": 98.303999,
+      "maximumReplyScopes": 67055,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "prompt:received": 5076,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686,
+        "lateErrorCallbacks": 3
+      },
+      "reportSha256": "5cd53568cadf06986ffc07f562193d50fef05356ad498c43c252b2fe89f8c461",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-base-off-500-o32-r2-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-off-500-o32-r2-20261020/report.json",
+      "version": "base",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-off-500-o32-r2-20261020-d3e02f.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.706890418400019,
+          "maxMs": 16.657708,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 219.26328681287916,
+              "maxMs": 2776.786792,
+              "p50UpperMs": 121,
+              "p95UpperMs": 584,
+              "p99UpperMs": 1610
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 219.26276939584497,
+          "maxMs": 2776.786333,
+          "p50UpperMs": 121,
+          "p95UpperMs": 584,
+          "p99UpperMs": 1610
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 206.99159049995265,
+          "maxMs": 2776.785917,
+          "p50UpperMs": 115,
+          "p95UpperMs": 567,
+          "p99UpperMs": 1606
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 170.31248076938658,
+          "maxMs": 2648.981466,
+          "p50UpperMs": 65,
+          "p95UpperMs": 514,
+          "p99UpperMs": 1565
+        },
+        "successPerSecondByCompletionTime": 463.5083333333333,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 27,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 229.4375,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9148225205879684,
+      "rssPeakMiB": 229.4375,
+      "eventLoopMaxMs": 81.133567,
+      "maximumReplyScopes": 66621,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686,
+        "lateErrorCallbacks": 9
+      },
+      "reportSha256": "e894215f8aeab64bcb840b4d9c44f7d2c10f3ff2e64c797cc90387dd636f4379",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-base-off-750-o32-queue-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-off-750-o32-queue-20261020/report.json",
+      "version": "base",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-off-750-o32-queue-20261020-53817e.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-750",
+        "rate": 750,
+        "durationMs": 180000,
+        "scheduled": 135000,
+        "received": 115939,
+        "notReceived": 19061,
+        "accepted": 115921,
+        "completed": 115921,
+        "outcomes": {
+          "guard-denied": 4835,
+          "invalid-input": 2320,
+          "success": 104836,
+          "intentional-business-error": 1165,
+          "prompt-deadline-missed": 2765
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 116860,
+        "wsUnavailableAttempts": 27324,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 115921,
+          "duplicate": 5798,
+          "overloaded": 18
+        },
+        "schedulingLag": {
+          "count": 135000,
+          "meanMs": 2.656140371770443,
+          "maxMs": 19.448542,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 135000,
+            "received": 115939,
+            "accepted": 115921,
+            "completed": 115921,
+            "outcomes": {
+              "guard-denied": 4835,
+              "invalid-input": 2320,
+              "success": 104836,
+              "intentional-business-error": 1165,
+              "prompt-deadline-missed": 2765
+            },
+            "successLatency": {
+              "count": 104836,
+              "meanMs": 2549.487328661237,
+              "maxMs": 8641.512208,
+              "p50UpperMs": 2292,
+              "p95UpperMs": 5928,
+              "p99UpperMs": 6924
+            }
+          }
+        },
+        "successLatency": {
+          "count": 104836,
+          "meanMs": 2549.486830462813,
+          "maxMs": 8641.511208,
+          "p50UpperMs": 2292,
+          "p95UpperMs": 5928,
+          "p99UpperMs": 6924
+        },
+        "terminalLatency": {
+          "count": 115921,
+          "meanMs": 2593.4505053879934,
+          "maxMs": 9145.699042,
+          "p50UpperMs": 2288,
+          "p95UpperMs": 6053,
+          "p99UpperMs": 7354
+        },
+        "serverAdmissionLatency": {
+          "count": 104836,
+          "meanMs": 2486.705485743622,
+          "maxMs": 8571.239823,
+          "p50UpperMs": 2225,
+          "p95UpperMs": 5866,
+          "p99UpperMs": 6868
+        },
+        "successPerSecondByCompletionTime": 571.1333333333333,
+        "inboundQueuePeak": 1995,
+        "outboundQueuePeak": 64,
+        "tailQueueMedian": 1435,
+        "sdkRssPeakMiB": 279.99609375,
+        "capacityPassed": false
+      },
+      "sdkCores": 1.1549410406432459,
+      "rssPeakMiB": 279.99609375,
+      "eventLoopMaxMs": 129.695743,
+      "maximumReplyScopes": 122900,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 182279,
+            "heartbeatSequence": 182279,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 19,
+            "identifies": 1,
+            "resumes": 18,
+            "heartbeats": 172,
+            "disconnects": 19,
+            "maximumBufferedBytes": 0,
+            "lastResumeSequence": 169663,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 2723,
+        "prompt:received": 7145,
+        "error:Error": 1217,
+        "intentionalBusinessErrors": 1217,
+        "errorCallbacks": 3639,
+        "error:PARAMETER_PARSE": 2422,
+        "prompt:timeout": 5880
+      },
+      "reportSha256": "f823f5564d0ddb801732b68d1f1ab6d08a9eef00eb3c78e0e7aa4782aaa33299",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-base-off-750-o64-queue-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/baseline/framework/work/distributed/hd-base-off-750-o64-queue-20261020/report.json",
+      "version": "base",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-base-off-750-o64-queue-20261020-5a3561.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-750",
+        "rate": 750,
+        "durationMs": 180000,
+        "scheduled": 135000,
+        "received": 114216,
+        "notReceived": 20784,
+        "accepted": 114197,
+        "completed": 114197,
+        "outcomes": {
+          "guard-denied": 4791,
+          "invalid-input": 2284,
+          "success": 102961,
+          "intentional-business-error": 1149,
+          "prompt-deadline-missed": 3012
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 115272,
+        "wsUnavailableAttempts": 29754,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 114197,
+          "duplicate": 5686,
+          "overloaded": 19
+        },
+        "schedulingLag": {
+          "count": 135000,
+          "meanMs": 2.6617536046369996,
+          "maxMs": 15.113458,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 135000,
+            "received": 114216,
+            "accepted": 114197,
+            "completed": 114197,
+            "outcomes": {
+              "guard-denied": 4791,
+              "invalid-input": 2284,
+              "success": 102961,
+              "intentional-business-error": 1149,
+              "prompt-deadline-missed": 3012
+            },
+            "successLatency": {
+              "count": 102961,
+              "meanMs": 2521.8438140274825,
+              "maxMs": 9505.76475,
+              "p50UpperMs": 2286,
+              "p95UpperMs": 5746,
+              "p99UpperMs": 6916
+            }
+          }
+        },
+        "successLatency": {
+          "count": 102961,
+          "meanMs": 2521.843338383333,
+          "maxMs": 9505.736083,
+          "p50UpperMs": 2286,
+          "p95UpperMs": 5746,
+          "p99UpperMs": 6916
+        },
+        "terminalLatency": {
+          "count": 114197,
+          "meanMs": 2576.347526024716,
+          "maxMs": 9505.735083,
+          "p50UpperMs": 2285,
+          "p95UpperMs": 5908,
+          "p99UpperMs": 7348
+        },
+        "serverAdmissionLatency": {
+          "count": 102961,
+          "meanMs": 2446.2714465415397,
+          "maxMs": 9462.486753,
+          "p50UpperMs": 2208,
+          "p95UpperMs": 5667,
+          "p99UpperMs": 6842
+        },
+        "successPerSecondByCompletionTime": 561.95,
+        "inboundQueuePeak": 1974,
+        "outboundQueuePeak": 19,
+        "tailQueueMedian": 1535,
+        "sdkRssPeakMiB": 290.9296875,
+        "capacityPassed": false
+      },
+      "sdkCores": 1.1787492737452423,
+      "rssPeakMiB": 290.9296875,
+      "eventLoopMaxMs": 209.977343,
+      "maximumReplyScopes": 120524,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 178370,
+            "heartbeatSequence": 178370,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 20,
+            "identifies": 1,
+            "resumes": 19,
+            "heartbeats": 167,
+            "disconnects": 20,
+            "maximumBufferedBytes": 0,
+            "lastResumeSequence": 163040,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 2615,
+        "error:Error": 1201,
+        "intentionalBusinessErrors": 1201,
+        "errorCallbacks": 3587,
+        "prompt:received": 6814,
+        "error:PARAMETER_PARSE": 2386,
+        "prompt:timeout": 6086
+      },
+      "reportSha256": "eafb9f68d1580fd4fb3953c7228ce705183cdfa5379412c6b708f7be530a07c9",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-cand-metrics-500-o32-r2b-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/distributed/hd-cand-metrics-500-o32-r2b-20261020/report.json",
+      "version": "cand",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "73267ab8f096c0bf13fbb7a79628483c933e89f928dd54df1bda0e262cfb955f",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r2b-20261020-c484c7.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.7151558292499876,
+          "maxMs": 19.79375,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 228.48767396022788,
+              "maxMs": 2756.214,
+              "p50UpperMs": 130,
+              "p95UpperMs": 588,
+              "p99UpperMs": 1625
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 228.4871694797559,
+          "maxMs": 2756.21325,
+          "p50UpperMs": 130,
+          "p95UpperMs": 588,
+          "p99UpperMs": 1625
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 215.7437889160843,
+          "maxMs": 2756.2125,
+          "p50UpperMs": 124,
+          "p95UpperMs": 574,
+          "p99UpperMs": 1620
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 177.11785654908294,
+          "maxMs": 2663.053617,
+          "p50UpperMs": 72,
+          "p95UpperMs": 525,
+          "p99UpperMs": 1572
+        },
+        "successPerSecondByCompletionTime": 463.625,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 23,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 240.26171875,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9571398949930092,
+      "rssPeakMiB": 240.26171875,
+      "eventLoopMaxMs": 81.068031,
+      "maximumReplyScopes": 66635,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "0d8c3dd337cde0802b8ccde37ea19aea95b4eff8f7bc843a6a52a2138335187f",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-index-metrics-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/index-only/framework/work/distributed/hd-index-metrics-500-o32-r1-20261020/report.json",
+      "version": "index",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "66e1dbe3503e83d3bb01dd7db1e2ce54880067aa43f27021ad556f796e64b4a9",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-index-metrics-500-o32-r1-20261020-37e3f9.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.7325043489166627,
+          "maxMs": 64.325666,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 236.35308079969906,
+              "maxMs": 2726.991333,
+              "p50UpperMs": 139,
+              "p95UpperMs": 606,
+              "p99UpperMs": 1636
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 236.35252182594957,
+          "maxMs": 2726.990875,
+          "p50UpperMs": 139,
+          "p95UpperMs": 606,
+          "p99UpperMs": 1636
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 223.16746788763135,
+          "maxMs": 2726.989291,
+          "p50UpperMs": 131,
+          "p95UpperMs": 589,
+          "p99UpperMs": 1632
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 182.17167201034442,
+          "maxMs": 2696.31636,
+          "p50UpperMs": 76,
+          "p95UpperMs": 541,
+          "p99UpperMs": 1579
+        },
+        "successPerSecondByCompletionTime": 463.40833333333336,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 28,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 242.35546875,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9715736387967843,
+      "rssPeakMiB": 242.35546875,
+      "eventLoopMaxMs": 88.801279,
+      "maximumReplyScopes": 66572,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "3eb17117b9a7fea083d4a9558893b0f920b9c502943eb00f9d32e96a07d6af9e",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-index-off-500-o32-r1-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/index-only/framework/work/distributed/hd-index-off-500-o32-r1-20261020/report.json",
+      "version": "index",
+      "mode": "off",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "66e1dbe3503e83d3bb01dd7db1e2ce54880067aa43f27021ad556f796e64b4a9",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-index-off-500-o32-r1-20261020-67e06b.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.674058003983348,
+          "maxMs": 10.923,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 6
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 217.4829013268401,
+              "maxMs": 2735.582333,
+              "p50UpperMs": 118,
+              "p95UpperMs": 584,
+              "p99UpperMs": 1610
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 217.48232390169068,
+          "maxMs": 2735.581875,
+          "p50UpperMs": 118,
+          "p95UpperMs": 584,
+          "p99UpperMs": 1610
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 205.38298436639832,
+          "maxMs": 2735.581042,
+          "p50UpperMs": 112,
+          "p95UpperMs": 566,
+          "p99UpperMs": 1605
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 168.4835362356236,
+          "maxMs": 2697.936219,
+          "p50UpperMs": 63,
+          "p95UpperMs": 512,
+          "p99UpperMs": 1563
+        },
+        "successPerSecondByCompletionTime": 463.55833333333334,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 31,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 239.92578125,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.8812930338696283,
+      "rssPeakMiB": 239.92578125,
+      "eventLoopMaxMs": 82.903039,
+      "maximumReplyScopes": 67030,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "prompt:received": 5076,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686,
+        "lateErrorCallbacks": 2
+      },
+      "reportSha256": "b9f392d0a78a5413a3b5830802f9b39d0abbfdeb19321937ec8e2838ff980e50",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    },
+    {
+      "label": "hd-index-metrics-500-o32-r2-20261020",
+      "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/index-only/framework/work/distributed/hd-index-metrics-500-o32-r2-20261020/report.json",
+      "version": "index",
+      "mode": "metrics",
+      "source": {
+        "gitHead": "c654be39171388f21d6754175e4e565038cc9f15",
+        "dirty": true,
+        "sdkSha256": "66e1dbe3503e83d3bb01dd7db1e2ce54880067aa43f27021ad556f796e64b4a9",
+        "harnessSha256": "5890d5d0acdb96cd9e37d97b57bc378319e4fed74397670836401f376fa6a1c3"
+      },
+      "smoke": false,
+      "unit": "dou-bot-capacity-compare-hd-index-metrics-500-o32-r2-20261020-3f03bd.service",
+      "integrity": "passed",
+      "problems": [],
+      "result": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 120000,
+        "scheduled": 60000,
+        "received": 60000,
+        "notReceived": 0,
+        "accepted": 60000,
+        "completed": 60000,
+        "outcomes": {
+          "guard-denied": 2511,
+          "invalid-input": 1199,
+          "success": 55691,
+          "intentional-business-error": 599
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "written": 60000,
+        "wsUnavailableAttempts": 0,
+        "wsWriteErrors": 0,
+        "admissionAttempts": {
+          "accepted": 60000,
+          "duplicate": 2999
+        },
+        "schedulingLag": {
+          "count": 60000,
+          "meanMs": 2.76019690493334,
+          "maxMs": 15.695458,
+          "p50UpperMs": 3,
+          "p95UpperMs": 6,
+          "p99UpperMs": 7
+        },
+        "byBot": {
+          "mixed-benchmark-app": {
+            "scheduled": 60000,
+            "received": 60000,
+            "accepted": 60000,
+            "completed": 60000,
+            "outcomes": {
+              "guard-denied": 2511,
+              "invalid-input": 1199,
+              "success": 55691,
+              "intentional-business-error": 599
+            },
+            "successLatency": {
+              "count": 55691,
+              "meanMs": 236.8889865742033,
+              "maxMs": 2950.197583,
+              "p50UpperMs": 136,
+              "p95UpperMs": 624,
+              "p99UpperMs": 1635
+            }
+          }
+        },
+        "successLatency": {
+          "count": 55691,
+          "meanMs": 236.88842691364775,
+          "maxMs": 2950.196917,
+          "p50UpperMs": 136,
+          "p95UpperMs": 624,
+          "p99UpperMs": 1635
+        },
+        "terminalLatency": {
+          "count": 60000,
+          "meanMs": 223.50289237706744,
+          "maxMs": 2950.195583,
+          "p50UpperMs": 128,
+          "p95UpperMs": 603,
+          "p99UpperMs": 1630
+        },
+        "serverAdmissionLatency": {
+          "count": 55691,
+          "meanMs": 186.67872367605352,
+          "maxMs": 2920.652012,
+          "p50UpperMs": 76,
+          "p95UpperMs": 567,
+          "p99UpperMs": 1580
+        },
+        "successPerSecondByCompletionTime": 463.4166666666667,
+        "inboundQueuePeak": 41,
+        "outboundQueuePeak": 54,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 239.55078125,
+        "capacityPassed": true
+      },
+      "sdkCores": 0.9799986203728014,
+      "rssPeakMiB": 239.55078125,
+      "eventLoopMaxMs": 88.801279,
+      "maximumReplyScopes": 66577,
+      "final": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "gateway": {
+        "replayPolicy": "none",
+        "maxBufferedBytes": 4194304,
+        "errorCount": 0,
+        "errors": [],
+        "accounts": {
+          "mixed-benchmark-app": {
+            "ready": false,
+            "sequence": 103778,
+            "heartbeatSequence": 103778,
+            "session": "fixture-session-mixed-benchmark-app",
+            "connections": 1,
+            "identifies": 1,
+            "resumes": 0,
+            "heartbeats": 147,
+            "disconnects": 1,
+            "maximumBufferedBytes": 0,
+            "bufferedBytes": 0
+          }
+        },
+        "connections": 0
+      },
+      "sdkCounts": {
+        "prompt:cancelled": 1690,
+        "prompt:received": 5076,
+        "error:Error": 651,
+        "intentionalBusinessErrors": 651,
+        "errorCallbacks": 1951,
+        "error:PARAMETER_PARSE": 1300,
+        "prompt:timeout": 1686
+      },
+      "reportSha256": "122967333e78478db44562a6e55a7399afb53290fc5aef5639f4f0683359d8a2",
+      "diagnosticLoss": {
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "droppedSamples": 0
+      },
+      "exclusion": null
+    }
+  ],
+  "exclusions": [
+    {
+      "recordedAt": "2026-10-20T14:39:56.860171+00:00",
+      "label": "hd-cand-metrics-500-o32-r2-20261020",
+      "excludedFromPerformanceComparison": true,
+      "reason": "index-only server clone/dependency copy/TypeScript compilation overlapped the measurement; local compilation also ran during generator activity",
+      "action": "retain original result and repeat in an isolated run after setup completes"
+    }
+  ],
+  "validation": {
+    "nodeVersions": ["24.0.0", "24.21.0"],
+    "testsEach": 396,
+    "passEach": 394,
+    "dedicatedDatabaseSkippedEach": 2,
+    "exports": 178,
+    "typeContracts": 136,
+    "packageFiles": 182,
+    "linuxTargetedPass": 52,
+    "coverageLinesPercent": 95.6,
+    "soak": "work/soak-c82ec513-47cc-4ec6-af69-7c67dba3950f.json"
+  },
+  "remoteEvidence": {
+    "files": 58,
+    "bytes": 8995616,
+    "sha256": "e3d417c570007c38560b78a56b24e955259d29fe917fff9ca143d96f1c1e54ad",
+    "verified": 58,
+    "matchedLocal": 34,
+    "remote": "/opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/raw-evidence.tar.gz"
+  },
+  "host": {
+    "samples": 478,
+    "memoryStops": [],
+    "host": {
+      "minimumAvailableMiB": 734.33203125,
+      "initialSwapMiB": 107.0,
+      "finalSwapMiB": 115.75
+    },
+    "units": {
+      "dou-bot-capacity-compare-hd-cand-sampled-500-o32-smoke-20261020-11bf68.service": {
+        "sampledSeconds": 10.027869,
+        "meanCgroupCores": 0.3298151381913744,
+        "peakMiB": 214.01171875,
+        "throttledUsecDelta": 99127,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-off-500-o32-r1-20261020-4a9768.service": {
+        "sampledSeconds": 145.766503,
+        "meanCgroupCores": 0.9808532142669293,
+        "peakMiB": 312.328125,
+        "throttledUsecDelta": 2849103,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-cand-off-500-o32-r1-20261020-36aaba.service": {
+        "sampledSeconds": 146.023747,
+        "meanCgroupCores": 1.0079255259762647,
+        "peakMiB": 312.08984375,
+        "throttledUsecDelta": 3152395,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-metrics-500-o32-r1-20261020-3835c8.service": {
+        "sampledSeconds": 146.17848,
+        "meanCgroupCores": 1.0910822441169177,
+        "peakMiB": 318.3203125,
+        "throttledUsecDelta": 4117379,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r1-20261020-a9ed46.service": {
+        "sampledSeconds": 141.410346,
+        "meanCgroupCores": 1.1190386593071484,
+        "peakMiB": 326.0234375,
+        "throttledUsecDelta": 4193717,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r2-20261020-16b820.service": {
+        "sampledSeconds": 146.589748,
+        "meanCgroupCores": 1.085594560132541,
+        "peakMiB": 355.87109375,
+        "throttledUsecDelta": 3853011,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-metrics-500-o32-r2-20261020-37bd5a.service": {
+        "sampledSeconds": 146.304882,
+        "meanCgroupCores": 1.1040910104421533,
+        "peakMiB": 327.51953125,
+        "throttledUsecDelta": 4001805,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-cand-off-500-o32-r2-20261020-06f814.service": {
+        "sampledSeconds": 146.060493,
+        "meanCgroupCores": 1.027539589367263,
+        "peakMiB": 314.41796875,
+        "throttledUsecDelta": 3462975,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-off-500-o32-r2-20261020-d3e02f.service": {
+        "sampledSeconds": 140.964325,
+        "meanCgroupCores": 1.044488738551403,
+        "peakMiB": 311.83203125,
+        "throttledUsecDelta": 3329058,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-off-750-o32-queue-20261020-53817e.service": {
+        "sampledSeconds": 201.737097,
+        "meanCgroupCores": 1.311976894363658,
+        "peakMiB": 382.609375,
+        "throttledUsecDelta": 12140333,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-base-off-750-o64-queue-20261020-5a3561.service": {
+        "sampledSeconds": 202.200403,
+        "meanCgroupCores": 1.3292925138235259,
+        "peakMiB": 388.671875,
+        "throttledUsecDelta": 14135512,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-cand-metrics-500-o32-r2b-20261020-c484c7.service": {
+        "sampledSeconds": 146.165787,
+        "meanCgroupCores": 1.0666342048977577,
+        "peakMiB": 320.41796875,
+        "throttledUsecDelta": 3522987,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-index-metrics-500-o32-r1-20261020-37e3f9.service": {
+        "sampledSeconds": 145.987016,
+        "meanCgroupCores": 1.0681644866280435,
+        "peakMiB": 350.1953125,
+        "throttledUsecDelta": 3802349,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-index-off-500-o32-r1-20261020-67e06b.service": {
+        "sampledSeconds": 145.975514,
+        "meanCgroupCores": 1.0007516192064922,
+        "peakMiB": 318.171875,
+        "throttledUsecDelta": 3287291,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      },
+      "dou-bot-capacity-compare-hd-index-metrics-500-o32-r2-20261020-3f03bd.service": {
+        "sampledSeconds": 145.873972,
+        "meanCgroupCores": 1.0877781747109758,
+        "peakMiB": 322.3515625,
+        "throttledUsecDelta": 4203661,
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "budget": {
+          "MemoryMax": "1073741824",
+          "MemorySwapMax": "0",
+          "CPUQuotaPerSecUSec": "1.500000s"
+        }
+      }
+    },
+    "database": {
+      "first": {
+        "memoryBytes": 47284224,
+        "peakBytes": 111083520,
+        "cpu": {
+          "usage_usec": 387778104,
+          "user_usec": 228732612,
+          "system_usec": 159045491,
+          "nr_periods": 0,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        }
+      },
+      "last": {
+        "memoryBytes": 41836544,
+        "peakBytes": 111083520,
+        "cpu": {
+          "usage_usec": 392209596,
+          "user_usec": 231274402,
+          "system_usec": 160935194,
+          "nr_periods": 0,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "memoryEvents": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        }
+      }
+    }
+  },
+  "cleanup": {
+    "checkedAt": "2026-10-20T15:08:03.197410+00:00",
+    "ownedUnits": [],
+    "nginx": {
+      "MainPID": "989",
+      "ActiveState": "active"
+    },
+    "database": {
+      "running": true,
+      "oomKilled": false,
+      "restartCount": 0,
+      "ready": "/var/run/postgresql:5432 - accepting connections"
+    },
+    "listeners": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\nLISTEN 0      128          0.0.0.0:22        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:80        0.0.0.0:*          \nLISTEN 0      511          0.0.0.0:443       0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:5432      0.0.0.0:*          \nLISTEN 0      4096         0.0.0.0:9000      0.0.0.0:*          \nLISTEN 0      128             [::]:22           [::]:*          \nLISTEN 0      4096            [::]:5432         [::]:*          \nLISTEN 0      511                *:9090            *:*",
+    "localBenchmarkProcesses": [],
+    "passed": true
+  },
+  "evidenceArchive": {
+    "path": "/Users/fine/Documents/UGit/dou-bot/framework/work/http-diagnostics-2026-10-20/http-diagnostics-evidence-2026-10-20.tar.gz",
+    "bytes": 37093005,
+    "sha256": "5ce2850dce7719dd5b28ea139b713b33fab5d3f94f6a273265653d7d194a3f81",
+    "filesVerified": 241,
+    "remote": "/opt/dou-bot-capacity/http-diagnostics-2026-10-20-c654be3/http-diagnostics-evidence-2026-10-20.tar.gz",
+    "remoteSha256Verified": true
+  },
+  "sourceArchives": {
+    "source-overlay-baseline.tar.gz": "afd2111936d04d8a092351be4249f158da559c155de34eb2704a84c7e0a9e844",
+    "source-overlay-final.tar.gz": "0d7f12aa5775e2187cad75a93d80c874a4f414f9f6c1e292908384352ec19905",
+    "source.bundle": "187e8bd81244e08a60b4d5e1239c2b1f208007b415d7b804d71d73a6ee3120be"
+  }
+}

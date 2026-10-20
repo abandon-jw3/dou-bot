@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import type { ServerResponse } from 'node:http';
-import { eventId, hash, parseId, record } from './common.js';
+import { accountFor, eventId, hash, parseId, record } from './common.js';
 import type { Meta, Profile } from './common.js';
 
 export interface FixtureHooks {
@@ -152,6 +152,12 @@ export async function startFixture(config: Profile, hooks: FixtureHooks) {
       const meta = hooks.plan(reference.id);
       assert.ok(meta, 'Outgoing origin is unknown');
       assert.equal(reference.phase, meta.phase, 'Outgoing origin phase changed');
+      if (config.transport !== undefined)
+        assert.equal(
+          req.headers['x-union-appid'],
+          accountFor(meta, config),
+          'Reply used the wrong bot credentials',
+        );
       references.add(meta.id);
       if (interaction) {
         const key = eventId(meta);

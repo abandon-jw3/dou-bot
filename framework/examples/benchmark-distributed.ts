@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { comparisonProfile, elapsedMs, now, record } from './mixed-benchmark/common.js';
+import { accountIds, comparisonProfile, elapsedMs, now, record } from './mixed-benchmark/common.js';
 import type { ComparisonOptions } from './mixed-benchmark/common.js';
 import { fingerprint } from './mixed-benchmark/fingerprint.js';
 import { RemoteSession } from './mixed-benchmark/remote-session.js';
@@ -25,6 +25,10 @@ const { values } = parseArgs({
     rate: { type: 'string', default: '500' },
     'duration-ms': { type: 'string', default: '120000' },
     diagnostics: { type: 'string', default: 'off' },
+    transport: { type: 'string', default: 'webhook' },
+    bots: { type: 'string', default: '1' },
+    'first-bot-percent': { type: 'string', default: '50' },
+    isolation: { type: 'boolean' },
   },
 });
 assert.equal(Boolean(values.local), !values.host, 'Choose --local or --host');
@@ -35,7 +39,12 @@ assert.ok(
     values.diagnostics === 'metrics' ||
     values.diagnostics === 'sampled',
 );
+assert.ok(values.transport === 'webhook' || values.transport === 'ws');
+assert.ok(values.bots === '1' || values.bots === '2');
 const options: ComparisonOptions = {
+  transport: values.transport,
+  bots: values.bots === '2' ? 2 : 1,
+  firstBotPercent: Number(values['first-bot-percent']),
   kind: values.smoke ? 'smoke' : 'comparison',
   concurrency: Number(values.concurrency ?? (values.smoke ? 2 : 32)),
   outboundConcurrency: Number(values['outbound-concurrency']),
@@ -44,6 +53,10 @@ const options: ComparisonOptions = {
   diagnostics: values.diagnostics,
 };
 const config = comparisonProfile(options);
+if (values.isolation)
+  assert.ok(
+    config.transport === 'ws' && config.bots === 2 && !values.smoke && options.durationMs >= 20000,
+  );
 const token = Buffer.from(JSON.stringify(options)).toString('base64url');
 const duration = config.phases.reduce((sum, phase) => sum + phase.durationMs, 0);
 const output = resolve('work/distributed', values.label);
@@ -58,7 +71,7 @@ const rows = (value: unknown): Message[] => {
   return value.map(object);
 };
 const report: Message = {
-  schema: 1,
+  schema: 2,
   startedAt: new Date().toISOString(),
   configuration: config,
   generator: {
@@ -72,7 +85,12 @@ const report: Message = {
   measurement: {
     topology: values.local
       ? 'local framed-protocol self-test, separate processes'
-      : 'local generator; remote SDK and loopback HTTP fixtures; SSH input and control channels',
+      : 'local generator and WS gateway; remote SDK and loopback HTTP fixtures; SSH input and control channels',
+    wsDelivery: 'no replay on RESUME; socket write is not SDK receipt or admission',
+    capacityEligible: !values.isolation,
+    isolation: values.isolation
+      ? 'first bot gateway reconnect at 20%, stop at 45%, start at 65% of measurement; second bot receives continuous load'
+      : undefined,
     latency:
       'driver scheduled arrival to observed completion, including tunnel and control return time; same local monotonic clock',
     serverLatency:
@@ -90,8 +108,10 @@ let driver: Worker | undefined;
 let remote: RemoteSession | undefined;
 let progress: NodeJS.Timeout | undefined;
 let nonce = 0;
+const lifetime = new AbortController();
 const entry = fileURLToPath(new URL('./mixed-benchmark/remote-host.js', import.meta.url));
 const interrupt = () => {
+  lifetime.abort();
   if (driver)
     void driver.stop().catch((error: unknown) => {
       console.error(error);
@@ -107,7 +127,7 @@ process.once('SIGINT', interrupt);
 process.once('SIGTERM', interrupt);
 try {
   driver = new Worker(['--driver', token, resolve(output, 'driver.json')], entry);
-  await driver.wait('driver-ready');
+  const driverReady = await driver.wait('driver-ready');
   remote = await RemoteSession.create({
     ...(values.host ? { host: values.host } : {}),
     directory: values.directory ?? process.cwd(),
@@ -116,6 +136,7 @@ try {
     label: values.label,
     token,
     runtimeSeconds: Math.ceil(duration / 1000) + 120,
+    ...(config.transport === 'ws' ? { gatewayOrigin: String(driverReady.gatewayOrigin) } : {}),
   });
   const activeDriver = driver,
     activeRemote = remote;
@@ -156,8 +177,10 @@ try {
   );
   report.server = ready;
   report.unit = activeRemote.unit;
-  const ingress = await activeRemote.forward(String(sdkReady.origin));
-  activeDriver.send({ type: 'configure', origin: ingress });
+  if (config.transport !== 'ws') {
+    const ingress = await activeRemote.forward(String(sdkReady.origin));
+    activeDriver.send({ type: 'configure', origin: ingress });
+  }
   const clock = async () => {
     const id = String(++nonce),
       before = now();
@@ -185,6 +208,33 @@ try {
   activeDriver.send({ type: 'begin', startNs: start.toString() });
   report.startNs = start.toString();
   report.serverStartNs = serverStart.toString();
+  let isolationError: unknown;
+  const isolation = (async () => {
+    if (!values.isolation) return;
+    const actions: Message[] = [];
+    report.isolationActions = actions;
+    const appId = accountIds(config)[0]!;
+    for (const [fraction, action] of [
+      [0.2, 'reconnect'],
+      [0.45, 'stop'],
+      [0.65, 'start'],
+    ] as const) {
+      const dueMs = config.phases[0]!.durationMs + options.durationMs * fraction;
+      await sleep(Math.max(0, dueMs - elapsedMs(start)), undefined, { signal: lifetime.signal });
+      const id = String(++nonce);
+      if (action === 'reconnect') {
+        activeDriver.send({ type: 'gateway-reconnect', appId, nonce: id });
+        actions.push({ action, ...(await activeDriver.wait('gateway-reconnected', 5000, id)) });
+      } else {
+        activeRemote.send('sdk', { type: 'bot-control', action, appId, nonce: id });
+        const result = await activeRemote.sdk.wait('bot-controlled', 15000, id);
+        assert.equal(result.error, undefined, String(result.error));
+        actions.push(result);
+      }
+    }
+  })().catch((error: unknown) => {
+    isolationError = error;
+  });
   const snapshot = async () => {
     let id = String(++nonce);
     activeRemote.send('fixture', { type: 'snapshot', nonce: id });
@@ -225,6 +275,8 @@ try {
     `distributed benchmark: ${values.label}, ${duration / 1000} s, concurrency ${config.concurrency}/${config.outboundConcurrency}`,
   );
   await activeDriver.wait('load-finished', duration + 30000);
+  await isolation;
+  if (isolationError) throw new Error('Isolation control failed', { cause: isolationError });
   clearInterval(progress);
   while (sampling) await sleep(20);
   const drainStarted = now();
@@ -237,6 +289,7 @@ try {
       resources.prompts === 0 &&
       state.driver.outstanding === 0 &&
       state.driver.timers === 0 &&
+      state.driver.gatewayDrained === true &&
       state.fixture.fixtureActive === 0
     ) {
       report.afterLoad = state;
@@ -287,7 +340,13 @@ try {
   );
   if (dropped) problems.push(`Generator dropped ${dropped} attempts`);
   const accepted = driverPhases.reduce(
-    (sum, phase) => sum + Number(object(phase.counts).primaryAcknowledged ?? 0),
+    (sum, phase, index) =>
+      sum +
+      Number(
+        config.transport === 'ws'
+          ? (object(sdkPhases[index]!.primaryAdmissions).accepted ?? 0)
+          : (object(phase.counts).primaryAcknowledged ?? 0),
+      ),
     0,
   );
   if (accepted !== driverReport.completedPrimary)
@@ -305,6 +364,45 @@ try {
   if (Object.values(object(driverReport.cleanup)).some((value) => value !== 0))
     problems.push('Driver resources were not released');
   if (progressErrors.length) problems.push(...progressErrors);
+  if (record(driverReport.gateway) && driverReport.gateway.errorCount !== 0)
+    problems.push(`Gateway errors: ${String(driverReport.gateway.errorCount)}`);
+  const diagnostics = object(sdk.diagnostics);
+  const diagnosticSnapshot = object(diagnostics.snapshot);
+  for (const key of ['droppedMeasurements', 'droppedSpans', 'exportFailures'])
+    if (Number(diagnosticSnapshot[key]) !== 0)
+      problems.push(`Diagnostics ${key}: ${String(diagnosticSnapshot[key])}`);
+  if (Number(object(diagnostics.timeline).droppedSamples) !== 0)
+    problems.push('Diagnostics timeline lost snapshots');
+  if (values.isolation) {
+    const [first, second] = accountIds(config);
+    const gateway = object(driverReport.gateway);
+    const connections = object(gateway.accounts);
+    const firstAccount = object(connections[first!]);
+    const secondAccount = object(connections[second!]);
+    const secondPhases = rows(object(driverReport.byBot)[second!]);
+    const lostSecond = secondPhases.some(
+      (phase) =>
+        Number(object(phase.counts).primary ?? 0) !==
+        Object.values(object(phase.outcomes)).reduce<number>((n, value) => n + Number(value), 0),
+    );
+    const secondOutcomes = secondPhases.flatMap((phase) => Object.entries(object(phase.outcomes)));
+    const secondFailure = secondOutcomes.some(
+      ([outcome, count]) =>
+        Number(count) > 0 &&
+        !['success', 'guard-denied', 'invalid-input', 'intentional-business-error'].includes(
+          outcome,
+        ),
+    );
+    const passed =
+      !lostSecond &&
+      !secondFailure &&
+      Number(firstAccount.resumes) >= 1 &&
+      Number(firstAccount.identifies) === 2 &&
+      Number(secondAccount.connections) === 1 &&
+      rows(sdk.controls).at(-1)?.status === 'running';
+    report.isolation = { passed, lostSecond, secondFailure, firstAccount, secondAccount };
+    if (!passed) problems.push('Dual-bot isolation verification failed');
+  }
   report.integrityProblems = problems;
   report.integrity = problems.length ? 'failed' : 'passed';
   report.results = config.phases.map((phase, index) => {
@@ -315,7 +413,12 @@ try {
     const tail = samples.slice(-Math.min(30, samples.length));
     const peak = (values: number[]) => Math.max(0, ...values);
     const scheduled = Number(counts.primary ?? 0),
-      accepted = Number(counts.primaryAcknowledged ?? 0);
+      accepted = Number(
+        config.transport === 'ws'
+          ? (object(sdkPhases[index]!.primaryAdmissions).accepted ?? 0)
+          : (counts.primaryAcknowledged ?? 0),
+      );
+    const received = Number(sdkPhases[index]!.receivedPrimary);
     const nonExpected = Object.entries(outcomes)
       .filter(
         ([key]) =>
@@ -331,11 +434,38 @@ try {
       rate: phase.rate,
       durationMs: phase.durationMs,
       scheduled,
+      received,
+      notReceived: scheduled - received,
       accepted,
       completed: Object.values(outcomes).reduce<number>((sum, count) => sum + Number(count), 0),
       outcomes,
       primaryDrops: counts['driverDropped:primary'] ?? 0,
       allAttemptDrops: counts.driverDropped ?? 0,
+      written: config.transport === 'ws' ? (counts.primaryWritten ?? 0) : undefined,
+      wsUnavailableAttempts: counts.wsUnavailable ?? 0,
+      wsWriteErrors: counts.wsWriteErrors ?? 0,
+      admissionAttempts: sdkPhases[index]!.primaryAdmissions,
+      schedulingLag: client.schedulingLag,
+      byBot: Object.fromEntries(
+        Object.entries(object(driverReport.byBot)).map(([id, phases]) => {
+          const driver = rows(phases)[index]!;
+          const server = rows(object(sdk.byBot)[id])[index]!;
+          return [
+            id,
+            {
+              scheduled: object(driver.counts).primary ?? 0,
+              received: server.receivedPrimary,
+              accepted: object(server.primaryAdmissions).accepted ?? 0,
+              completed: Object.values(object(driver.outcomes)).reduce<number>(
+                (n, value) => n + Number(value),
+                0,
+              ),
+              outcomes: driver.outcomes,
+              successLatency: driver.successLatency,
+            },
+          ];
+        }),
+      ),
       successLatency: client.successLatency,
       terminalLatency: client.terminalLatency,
       serverAdmissionLatency: sdkPhases[index]!.successLatency,
@@ -346,6 +476,7 @@ try {
       tailQueueMedian,
       sdkRssPeakMiB: peak(samples.map((sample) => Number(object(sample.memory).rss) / 1048576)),
       capacityPassed:
+        !values.isolation &&
         problems.length === 0 &&
         accepted === scheduled &&
         nonExpected === 0 &&
@@ -363,6 +494,7 @@ try {
     flag: 'wx',
   });
 } finally {
+  lifetime.abort();
   if (progress) clearInterval(progress);
   const cleanup = await Promise.allSettled([driver?.stop(), remote?.close()]);
   const cleanupErrors = cleanup.flatMap((result) =>

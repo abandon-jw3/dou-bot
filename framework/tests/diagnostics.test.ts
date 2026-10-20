@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Diagnostics, diagnosticsSettings } from '../src/diagnostics/observer.js';
+import type { ObservationContext } from '../src/diagnostics/observer.js';
 import type { DiagnosticsOptions, DiagnosticsSpan } from '../src/index.js';
 import { Module } from '../src/index.js';
 import { SingleTestApplication } from '../src/testing/single-bot.js';
@@ -206,6 +207,61 @@ await test('metric series, live observations and sampled records each have indep
   assert.equal(snapshot.bufferedSpans, 1);
   assert.equal(snapshot.droppedMeasurements, 2);
   assert.equal(snapshot.droppedSpans, 3);
+  await r.close(Infinity);
+});
+
+await test('series indexing preserves every label dimension, mutable contexts and snapshot order', async () => {
+  const { recorder: r } = recorder();
+  const contexts: ObservationContext[] = [
+    {},
+    { appId: 'undefined' },
+    { appId: 'a', handler: 'Commands.read', component: 0, operation: 'message' },
+    { appId: 'b', handler: 'Commands.read', component: 0, operation: 'message' },
+    { appId: 'a', handler: 'Commands.write', component: 0, operation: 'message' },
+    { appId: 'a', handler: 'Commands.read', component: 1, operation: 'message' },
+    { appId: 'a', handler: 'Commands.read', component: 0, operation: 'upload' },
+    { appId: 'a|b', handler: 'c' },
+    { appId: 'a', handler: 'b|c' },
+  ];
+  for (const context of contexts) {
+    r.start('handler.invoke', context)!.end();
+    r.start('handler.invoke', { ...context })!.end('error');
+  }
+  const changing = { appId: 'first' };
+  const pending = r.start('handler.invoke', changing)!;
+  changing.appId = 'second';
+  r.start('handler.invoke', changing)!.end();
+  pending.end();
+  const metrics = r.reader.snapshot().metrics;
+  assert.equal(metrics.length, contexts.length + 2);
+  contexts.forEach((context, index) => {
+    const metric = metrics[index]!;
+    for (const key of ['appId', 'handler', 'component', 'operation'] as const)
+      assert.equal(metric[key], context[key]);
+    assert.equal(metric.count, 2);
+    assert.equal(metric.outcomes.success, 1);
+    assert.equal(metric.outcomes.error, 1);
+  });
+  assert.deepEqual(
+    metrics.slice(-2).map((metric) => metric.appId),
+    ['first', 'second'],
+  );
+  await r.close(Infinity);
+});
+
+await test('rejected series cannot consume label budget or alias truncated handler names', async () => {
+  const { recorder: r } = recorder({ maxSeries: 3 });
+  const prefix = 'x'.repeat(256);
+  for (const handler of [prefix, prefix + 'a', prefix + 'b'])
+    r.start('handler.invoke', { handler })!.end();
+  for (let index = 0; index < 1000; index++)
+    assert.equal(r.start('event.queue', { appId: `rejected-${index}` }), undefined);
+  for (const handler of [prefix + 'b', prefix, prefix + 'a'])
+    r.start('handler.invoke', { handler })!.end();
+  const snapshot = r.reader.snapshot();
+  assert.equal(snapshot.metrics.length, 3);
+  assert.ok(snapshot.metrics.every((metric) => metric.handler === prefix && metric.count === 2));
+  assert.equal(snapshot.droppedMeasurements, 1000);
   await r.close(Infinity);
 });
 

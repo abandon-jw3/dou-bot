@@ -81,6 +81,10 @@ interface Series {
   buckets: number[];
   active: Set<Observation>;
 }
+type Operations = Map<ObservationContext['operation'], Series>;
+type Components = Map<ObservationContext['component'], Operations>;
+type Handlers = Map<ObservationContext['handler'], Components>;
+type Accounts = Map<ObservationContext['appId'], Handlers>;
 interface SignalWatch {
   spans: Set<Observation>;
   abort: () => void;
@@ -153,7 +157,9 @@ export function disabledDiagnostics(state: Readonly<{ closed: boolean }>): Diagn
 export class Diagnostics {
   readonly reader: DiagnosticsReader;
   private exporter: DiagnosticsOptions['onSpans'];
-  private readonly series = new Map<string, Series>();
+  private readonly series: Series[] = [];
+  // Prefix maps are created only for admitted series: bounded by maxSeries, never by events.
+  private readonly seriesIndex = new Map<DiagnosticsStage, Accounts>();
   private readonly active = new Set<Observation>();
   private readonly contexts = new WeakMap<AbortSignal, ObservationContext>();
   private readonly watches = new WeakMap<AbortSignal, SignalWatch>();
@@ -230,16 +236,13 @@ export class Diagnostics {
       if (context.traceId) this.droppedSpans++;
       return;
     }
-    const key = JSON.stringify([
-      stage,
-      context.appId,
-      context.handler,
-      context.component,
-      context.operation,
-    ]);
-    let series = this.series.get(key);
+    let accounts = this.seriesIndex.get(stage);
+    let handlers = accounts?.get(context.appId);
+    let components = handlers?.get(context.handler);
+    let operations = components?.get(context.component);
+    let series = operations?.get(context.operation);
     if (!series) {
-      if (this.series.size >= this.settings.maxSeries) {
+      if (this.series.length >= this.settings.maxSeries) {
         this.droppedMeasurements++;
         if (context.traceId) this.droppedSpans++;
         return;
@@ -259,7 +262,25 @@ export class Diagnostics {
         buckets: Array<number>(upperBounds.length + 1).fill(0),
         active: new Set(),
       };
-      this.series.set(key, series);
+      this.series.push(series);
+      if (!accounts)
+        this.seriesIndex.set(stage, (accounts = new Map<ObservationContext['appId'], Handlers>()));
+      if (!handlers)
+        accounts.set(
+          context.appId,
+          (handlers = new Map<ObservationContext['handler'], Components>()),
+        );
+      if (!components)
+        handlers.set(
+          context.handler,
+          (components = new Map<ObservationContext['component'], Operations>()),
+        );
+      if (!operations)
+        components.set(
+          context.component,
+          (operations = new Map<ObservationContext['operation'], Series>()),
+        );
+      operations.set(context.operation, series);
     }
     const span = new Observation(this, series, context, signal);
     this.active.add(span);
@@ -325,7 +346,7 @@ export class Diagnostics {
   }
   private snapshot(): DiagnosticsSnapshot {
     const now = this.closedAt ?? this.clock.monotonic();
-    const metrics = [...this.series.values()].map((series): DiagnosticsMetric => {
+    const metrics = this.series.map((series): DiagnosticsMetric => {
       const percentile = (fraction: number): number | null => {
         if (!series.count) return null;
         const target = Math.ceil(series.count * fraction);

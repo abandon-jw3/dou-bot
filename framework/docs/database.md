@@ -43,6 +43,7 @@ export class Profiles {
 
 - 使用参数化 SQL，业务表由业务自己的迁移管理。
 - 多条 SQL 的事务使用 `db.transaction(async client => { ... })`；同一事务使用同一个 client。
+- 事务失败通过 Promise 返回，框架不会自动重试回调。外部接口请求尽量放在事务之外，减少连接占用。
 - 可以把 `db.pool` 交给支持 node-postgres 的 ORM，例如 Drizzle。框架不绑定 ORM。
 - 手动 `pool.connect()` 后必须归还连接；不要调用 `pool.end()`，最终关闭由框架负责。
 - 默认连接池上限按应用计，不按机器人数量倍增。

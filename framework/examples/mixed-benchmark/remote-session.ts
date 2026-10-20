@@ -22,6 +22,7 @@ export interface RemoteSettings {
   label: string;
   token: string;
   runtimeSeconds: number;
+  gatewayOrigin?: string;
 }
 
 /** One SSH master carries control and a loopback-only input tunnel. Downstream fixtures stay beside the SDK. */
@@ -97,6 +98,7 @@ export class RemoteSession {
   private async start(): Promise<void> {
     let executable = process.execPath;
     let args = ['--expose-gc', this.settings.entry, '--host', this.settings.token, this.output];
+    let gatewayOrigin = this.settings.gatewayOrigin;
     if (this.settings.host) {
       assert.match(this.settings.host, /^[a-zA-Z0-9_.@-]+$/u);
       assert.ok(posix.isAbsolute(this.settings.directory));
@@ -113,6 +115,22 @@ export class RemoteSession {
         '-o',
         'ServerAliveCountMax=3',
       ]);
+      if (gatewayOrigin) {
+        const url = new URL(gatewayOrigin);
+        assert.equal(url.protocol, 'ws:');
+        assert.equal(url.hostname, '127.0.0.1');
+        const forwarded = await this.ssh([
+          '-O',
+          'forward',
+          '-o',
+          'ExitOnForwardFailure=yes',
+          '-R',
+          `127.0.0.1:0:127.0.0.1:${url.port}`,
+        ]);
+        const port = Number(forwarded.stdout.trim());
+        assert.ok(Number.isSafeInteger(port) && port > 0 && port < 65536);
+        gatewayOrigin = `ws://127.0.0.1:${port}`;
+      }
       const command = [
         'systemd-run',
         '--quiet',
@@ -139,6 +157,7 @@ export class RemoteSession {
         '--host',
         this.settings.token,
         this.output,
+        ...(gatewayOrigin ? [gatewayOrigin] : []),
       ];
       executable = 'ssh';
       args = [
@@ -150,7 +169,7 @@ export class RemoteSession {
         this.settings.host,
         command.map(quote).join(' '),
       ];
-    }
+    } else if (gatewayOrigin) args.push(gatewayOrigin);
     this.child = spawn(executable, args, { stdio: ['pipe', 'pipe', 'inherit'] });
     const fail = (error: Error) => {
       this.sdk.fail(error);

@@ -21,7 +21,7 @@ import { Worker } from './worker.js';
 import { fingerprint } from './fingerprint.js';
 import type { Message } from './worker.js';
 
-const [role, token, destination, origin] = process.argv.slice(2);
+const [role, token, destination, origin, gatewayOrigin] = process.argv.slice(2);
 assert.ok(token && /^[A-Za-z0-9_-]{1,2048}$/u.test(token));
 const config = comparisonProfile(
   JSON.parse(Buffer.from(token, 'base64url').toString('utf8')) as unknown,
@@ -150,6 +150,7 @@ async function host(output: string): Promise<void> {
       token!,
       resolve(output, 'sdk.json'),
       fixtureReady.origin as string,
+      ...(config.transport === 'ws' ? [origin!] : []),
     ]);
     const sdkReady = await sdk.wait('sdk-ready');
     sendFrame(process.stdout, {
@@ -193,7 +194,9 @@ try {
   if (role === '--fixture') await fixtureWorker(config, destination);
   else if (role === '--sdk') {
     assert.ok(origin && /^http:\/\/127\.0\.0\.1:\d+$/u.test(origin));
-    await runSdk(config, origin, destination, true);
+    if (config.transport === 'ws')
+      assert.ok(gatewayOrigin && /^ws:\/\/127\.0\.0\.1:\d+$/u.test(gatewayOrigin));
+    await runSdk(config, origin, destination, true, gatewayOrigin);
   } else if (role === '--driver') await runDriver(config, destination, true);
   else {
     assert.equal(role, '--host');

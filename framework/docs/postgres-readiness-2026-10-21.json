@@ -1,0 +1,414 @@
+{
+  "schema": 1,
+  "date": "2026-10-21",
+  "status": "functional-and-bounded-pipeline-passed",
+  "source": {
+    "capturedAt": "2026-10-20T17:01:56.816776+00:00",
+    "commit": "c654be39171388f21d6754175e4e565038cc9f15",
+    "dirty": true,
+    "sdkSourceSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+    "algorithm": "sha256 of sorted src/**/*.ts relative path + contents, matching examples/mixed-benchmark/fingerprint.ts",
+    "packageVersion": "0.8.0",
+    "dependenciesChanged": false,
+    "delimitedSdkSourceSha256": "0aa6bebd67612090dfb3906ef91c6b14379abc9d3f218682ee7e9f8ee1f8f538"
+  },
+  "scope": {
+    "server": "43.143.160.168",
+    "database": "disposable PostgreSQL 17.6",
+    "existingDatabaseUsed": false,
+    "realQQ": false,
+    "ingress": "direct execution admission, no WS/Webhook",
+    "businessHTTP": "real loopback HTTP, 2ms / 80ms delays",
+    "qqAPI": "in-process fixture with 2ms delay",
+    "databaseCpuCores": 0.5,
+    "databaseMemoryBytes": 268435456,
+    "sdkCpuQuota": null,
+    "loadModel": "closed-loop, 24 workers; not fixed-arrival-rate capacity"
+  },
+  "fixes": [
+    "uncaught transaction connection errors while callback awaits business work",
+    "uncaught connection errors during migration",
+    "double release during forced shutdown; also reclaim previously disconnected clients"
+  ],
+  "iterations": [
+    {
+      "name": "initial",
+      "results": {
+        "tests": 5,
+        "pass": 3,
+        "fail": 2,
+        "skipped": 0
+      },
+      "runtimeSha256": "66e1dbe3503e83d3bb01dd7db1e2ce54880067aa43f27021ad556f796e64b4a9"
+    },
+    {
+      "name": "fixed",
+      "results": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0
+      },
+      "runtimeSha256": "007e458a4c95b7d1b7388cea4ec12ab29023e2bf9bdbd68e2453d4237a64e86b"
+    },
+    {
+      "name": "pipeline",
+      "results": {
+        "tests": 15,
+        "pass": 14,
+        "fail": 1,
+        "skipped": 0
+      },
+      "runtimeSha256": "007e458a4c95b7d1b7388cea4ec12ab29023e2bf9bdbd68e2453d4237a64e86b"
+    },
+    {
+      "name": "final",
+      "results": {
+        "tests": 16,
+        "pass": 16,
+        "fail": 0,
+        "skipped": 0
+      },
+      "runtimeSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7"
+    }
+  ],
+  "sdkChecks": {
+    "24.0.0": {
+      "tests": 407,
+      "pass": 394,
+      "fail": 0,
+      "skipped": 13,
+      "artifact": "work/package-check/990bf9c8-f157-4129-85a3-122692db37ab/dou-bot-0.8.0.tgz",
+      "artifactSha256": "920a28847ac83a5ca5318747664a306afa746dcc408963e5961774d74b49e124"
+    },
+    "24.21.0": {
+      "tests": 407,
+      "pass": 394,
+      "fail": 0,
+      "skipped": 13,
+      "artifact": "work/package-check/a4ef2ee8-6612-49c8-938a-0bc7dfec80bd/dou-bot-0.8.0.tgz",
+      "artifactSha256": "a054b0a66cc5da334dfaa033531cbda70f34368e57981c79071ca4d01712a21a"
+    }
+  },
+  "publicContracts": {
+    "exports": 178,
+    "bidirectionalChecks": 136
+  },
+  "databaseChecks": {
+    "24.0.0": {
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "skipped": 0
+    },
+    "24.21.0": {
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "pipeline": {
+    "groupsPerBot": 2000,
+    "bots": 2,
+    "inboundConcurrency": 16,
+    "outboundConcurrency": 8,
+    "databasePoolLimit": 4,
+    "24.0.0": [
+      {
+        "round": "cold",
+        "events": 4000,
+        "elapsedMs": 9225
+      },
+      {
+        "round": "warm",
+        "events": 4000,
+        "elapsedMs": 7755
+      },
+      {
+        "completed": 8000,
+        "duplicates": 80,
+        "loads": 8000,
+        "slowCalls": 400,
+        "maxima": {
+          "databaseTotal": 4,
+          "databaseWaiting": 12,
+          "inbound": 16,
+          "outbound": 7
+        },
+        "after": {
+          "total": 0,
+          "idle": 0,
+          "waiting": 0
+        }
+      }
+    ],
+    "24.21.0": [
+      {
+        "round": "cold",
+        "events": 4000,
+        "elapsedMs": 9535
+      },
+      {
+        "round": "warm",
+        "events": 4000,
+        "elapsedMs": 6698
+      },
+      {
+        "completed": 8000,
+        "duplicates": 80,
+        "loads": 8000,
+        "slowCalls": 400,
+        "maxima": {
+          "databaseTotal": 4,
+          "databaseWaiting": 12,
+          "inbound": 16,
+          "outbound": 7
+        },
+        "after": {
+          "total": 0,
+          "idle": 0,
+          "waiting": 0
+        }
+      }
+    ]
+  },
+  "coverage": {
+    "offline": {
+      "lines": {
+        "total": 11165,
+        "covered": 10648,
+        "skipped": 0,
+        "pct": 95.36
+      },
+      "statements": {
+        "total": 11165,
+        "covered": 10648,
+        "skipped": 0,
+        "pct": 95.36
+      },
+      "functions": {
+        "total": 627,
+        "covered": 584,
+        "skipped": 0,
+        "pct": 93.14
+      },
+      "branches": {
+        "total": 4068,
+        "covered": 3659,
+        "skipped": 0,
+        "pct": 89.94
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "databaseWithPostgres": {
+      "lines": {
+        "total": 328,
+        "covered": 322,
+        "skipped": 0,
+        "pct": 98.17
+      },
+      "statements": {
+        "total": 328,
+        "covered": 322,
+        "skipped": 0,
+        "pct": 98.17
+      },
+      "functions": {
+        "total": 22,
+        "covered": 21,
+        "skipped": 0,
+        "pct": 95.45
+      },
+      "branches": {
+        "total": 84,
+        "covered": 77,
+        "skipped": 0,
+        "pct": 91.66
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": "Unknown"
+      }
+    }
+  },
+  "cleanup": {
+    "at": "2026-10-20T17:05:12.095141+00:00",
+    "isolatedDatabase": {
+      "imageId": "sha256:ef046db6da010a417de3c22b018415fffeee4febe93f19c3653aa56705bab41c",
+      "image": "postgres:17.6-alpine",
+      "nanoCpus": 500000000,
+      "memoryBytes": 268435456,
+      "memorySwapBytes": 268435456,
+      "tmpfs": {
+        "/var/lib/postgresql/data": "rw,size=134217728,mode=0700"
+      },
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32768"
+          }
+        ]
+      },
+      "oomKilled": false,
+      "restartCount": 0,
+      "serverVersionSchemasConnections": "17.6|2|0"
+    },
+    "testContainerRemoved": true,
+    "existingDatabase": {
+      "Running": true,
+      "OOMKilled": false,
+      "StartedAt": "2026-10-18T05:44:37.870283977Z",
+      "restartCount": 0,
+      "health": "healthy"
+    },
+    "nginx": "MainPID=989\nActiveState=active",
+    "testPortClosed": true,
+    "initialRemovalCheck": false,
+    "removalConfirmedAt": "2026-10-20T17:07:50.490864+00:00"
+  },
+  "limitations": [
+    "No fixed-arrival-rate SQL capacity or transport capacity measurement",
+    "No whole database restart or blackholed network recovery",
+    "No QQ platform delivery evidence or multi-day observation",
+    "Current changes are uncommitted and have not run remote CI"
+  ],
+  "evidence": [
+    {
+      "path": "work/postgres-readiness-2026-10-21/archive-inputs.json",
+      "bytes": 2667,
+      "sha256": "8c9a6ec4fca777e0f666257d6195a3078c835bbf948c7060541059da1f0b4d6d"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/check-node-24.0.0.log",
+      "bytes": 43097,
+      "sha256": "d19309c6f9ec1104949d99550df449b455e2bbc4c99c998d31f3ac169d507c5a"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/check-node-24.21.0.log",
+      "bytes": 43094,
+      "sha256": "e2e5ebb50af4e6ff85aaf576169118f4bd5c104dd8669be9b0677dfdadecaf47"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/cleanup-final.json",
+      "bytes": 978,
+      "sha256": "4fa36185a23ba30e9eabb4427d26e447e23b6a80c62e6a7433751265fa6e2457"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/cleanup.json",
+      "bytes": 887,
+      "sha256": "e329a45176baa961dca0f8bc63601b96073dda0edbf8215987cadf496e334728"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/coverage-summary.json",
+      "bytes": 17834,
+      "sha256": "f25882be074506342d97f4ec4e9c6442cfbd94065dea334c845657db7302cfa1"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/coverage.log",
+      "bytes": 49367,
+      "sha256": "0fefeae196edbc306dd4e9f7ff53ad15f09898a42254b4cb1bcbed2be478758e"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/database-coverage-summary.json",
+      "bytes": 666,
+      "sha256": "8ee58cba9d6f1d28e191dc1b61b0810e8b0fff65ba64ebf3f62f3a31798c513e"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/database-coverage.log",
+      "bytes": 4067,
+      "sha256": "1fd13d01996c208bdf7cc5bd2489ab4fc62d63fb81fe1595eef3484f16b45a8b"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/final-node-24.0.0-results.tap",
+      "bytes": 4155,
+      "sha256": "19d2b552da8141296fe5cd0466a5682dda45fb69399c16eb229f923c04d42f1f"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/final-results.tap",
+      "bytes": 4155,
+      "sha256": "715374b44928e4bbeee4b1ad0abed563f32c060fbd475278bd9af858582365ef"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/final-source.tar.gz",
+      "bytes": 271679,
+      "sha256": "597f33ffd455f52f8c53e514bbebf096da402c064cdc4e4d3dd11e935ec17ba5"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/final-tests.tar.gz",
+      "bytes": 913550,
+      "sha256": "aea8d03c84eb48876b2094bdde2c6d631457a6a6d1dcc61be6a59337f0f72474"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/fixed-results.tap",
+      "bytes": 2947,
+      "sha256": "c8c3a2d6179bcd9fed1d171649ca3de5c743d51a8a23c8c2be06cce5a0614eba"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/fixed-tests.tar.gz",
+      "bytes": 903913,
+      "sha256": "dfe31915ce76bc215551d1b721b98f3a983f58b0bccd4ff7369cbc14aeecf4f8"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/initial-results.tap",
+      "bytes": 3606,
+      "sha256": "ec21c82199000952396fcb5f1b53313649009254e4104dbe094cd9dc91a3c61e"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/initial-tests.tar.gz",
+      "bytes": 947112,
+      "sha256": "b5087c0f177b0743fa36712f62fb8bc505443109c5d3836147812c8a9d8ad963"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/package-final.log",
+      "bytes": 811,
+      "sha256": "6e3bed8879e81bef2db3e297806908ae51429ad41cca8ef6db49d3757a4a316f"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/pipeline-results.tap",
+      "bytes": 5058,
+      "sha256": "fcb63dac1e1ddaa748f29df1e5a686b554b452af5ee790476df95f6d427970f5"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/pipeline-tests.tar.gz",
+      "bytes": 913214,
+      "sha256": "dc9e9e8397b54e48d7e18bd5ca18630c87aa0b126f3a0760679d02a5680903e0"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/postgres.log",
+      "bytes": 7863,
+      "sha256": "2a0a5349014f9ff136c7271405b1db481779b021e008cf22d6d7be9c8b234c91"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/remote-manifest.json",
+      "bytes": 2267,
+      "sha256": "c153ddb362c8fd44f7ee191b0388bb6bc62a50cfc44f2e0ce169364ea54b14d9"
+    },
+    {
+      "path": "work/postgres-readiness-2026-10-21/source.json",
+      "bytes": 498,
+      "sha256": "e6ba4914b6b85fd3b9e19aad96db2df9c4748d13d4b577079a69255154c86ad0"
+    }
+  ],
+  "finalPackageAfterGuideUpdate": {
+    "artifact": "work/package-check/2f52257f-4065-42fd-ae26-6c9858e3a3b4/dou-bot-0.8.0.tgz",
+    "sha256": "9701ff1e11a9bb168f222df66b957804d53a763aabf3e0220261841a9f98b1ac"
+  },
+  "archive": {
+    "path": "work/postgres-readiness-2026-10-21/postgres-readiness-evidence.tar.gz",
+    "remotePath": "/opt/dou-bot-capacity/postgres-readiness-2026-10-21/postgres-readiness-evidence.tar.gz",
+    "bytes": 4323836,
+    "sha256": "5f6b6067089c4ede55c59c15a7372f9782e4f3165dd76cb533871accf0de5acd",
+    "verifiedFiles": 27,
+    "remoteVerified": true,
+    "reportSnapshot": "Reports inside archive predate the archive self-metadata; final companion reports include its checksum."
+  }
+}

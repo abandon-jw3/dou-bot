@@ -140,10 +140,19 @@ export class PostgresDatabase extends Database implements Persistence {
     this.assertReady();
     const client = await this.pool.connect();
     let broken = false;
+    let connectionError: Error | undefined;
+    const onError = (error: Error): void => {
+      connectionError ??= error;
+      broken = true;
+    };
+    // A borrowed client can fail between queries while the callback awaits other work.
+    // Retain that failure until the callback settles; never replay business code.
+    client.on('error', onError);
     try {
       this.assertReady();
       await client.query('BEGIN');
       const result = await run(client);
+      if (connectionError) throw connectionError;
       await client.query('COMMIT');
       return result;
     } catch (error) {
@@ -155,6 +164,7 @@ export class PostgresDatabase extends Database implements Persistence {
       throw error;
     } finally {
       if (this.borrowed.has(client)) client.release(broken);
+      client.off('error', onError);
     }
   }
   private assertReady(): void {
@@ -243,7 +253,19 @@ export class PostgresDatabase extends Database implements Persistence {
     try {
       await bounded(ending, deadline, undefined, this.clock);
     } catch (error) {
-      for (const client of [...this.borrowed]) client.release(true);
+      for (const client of this.borrowed) {
+        // pg's pool.query owns its release callback. Disconnect first so that callback
+        // can settle, then reclaim clients still held by business/ORM code.
+        const ignoreDisconnect = (): void => {};
+        client.on('error', ignoreDisconnect);
+        // end(callback) also completes for a connection that failed before close began.
+        client.end(() => {
+          setImmediate(() => {
+            if (this.borrowed.has(client)) client.release(true);
+            client.off('error', ignoreDisconnect);
+          });
+        });
+      }
       for (const socket of this.sockets) socket.destroy();
       ending.catch(() => {});
       throw error;
@@ -257,8 +279,13 @@ export async function migrateDatabase(options: DatabaseOptions): Promise<void> {
   const pool = new Pool(poolConfig(settings));
   pool.on('error', () => {});
   let client: PoolClient | undefined;
+  let broken = false;
+  const onError = (): void => {
+    broken = true;
+  };
   try {
     client = await pool.connect();
+    client.on('error', onError);
     await client.query('BEGIN');
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
       `dou-bot:${settings.schema}`,
@@ -294,7 +321,8 @@ export async function migrateDatabase(options: DatabaseOptions): Promise<void> {
     if (error instanceof FrameworkError) throw error;
     throw new FrameworkError('DATABASE', 'Framework database migration failed', { cause: error });
   } finally {
-    client?.release();
+    client?.release(broken);
+    client?.off('error', onError);
     await pool.end();
   }
 }
