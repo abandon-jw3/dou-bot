@@ -4,7 +4,7 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { setImmediate as tick } from 'node:timers/promises';
 import WebSocket from 'ws';
 import { Application } from '../../src/core/application.js';
-import { MemoryPersistence } from '../../src/testing/memory-persistence.js';
+import { createBenchmarkDatabase } from './database.js';
 import { FrameworkError, QQApiError } from '../../src/index.js';
 import { CountingClock } from '../soak-support.js';
 import {
@@ -120,7 +120,12 @@ export async function runSdk(
     assert.ok(entry, 'Execution was not accounted at admission');
     return entry;
   };
+  const clock = new CountingClock();
+  const database = await createBenchmarkDatabase(config, clock, () =>
+    failure('Database idle connection failed'),
+  );
   const root = workload(config, fixture, {
+    ...(database.readUser ? { readUser: database.readUser } : {}),
     start(meta) {
       const entry = current(meta);
       if (entry.started === undefined) {
@@ -179,16 +184,22 @@ export async function runSdk(
     ) {
       if (entry) entry.operational = true;
       count(globalCounts, 'injectedHttpErrors');
+    } else if (code === 'DATABASE') {
+      if (entry) entry.operational = true;
+      count(globalCounts, 'databaseErrors');
     } else if (code === 'TRANSPORT' || code === 'CONTEXT_TIMEOUT') {
       if (entry) entry.operational = true;
       count(globalCounts, 'operationalTimeouts');
     } else failure(error.message, parsed?.id);
   };
-  const clock = new CountingClock();
+  const setupFailed = async (error: unknown): Promise<never> => {
+    await database.finish().catch(() => {});
+    throw error;
+  };
   const app = await Application.create(
     root,
     {
-      database: { host: '127.0.0.1', user: 'offline', password: '', database: 'offline' },
+      database: database.options,
       webhook: { listen: false },
       bots: accountIds(config).map((appId) => ({
         appId,
@@ -234,7 +245,7 @@ export async function runSdk(
     },
     {
       clock,
-      persistence: new MemoryPersistence(),
+      persistence: database.persistence,
       socketFactory(url, options) {
         const id = String(options.headers?.['X-Union-Appid']);
         instrument(id);
@@ -247,8 +258,8 @@ export async function runSdk(
         return fetch(new URL(original.pathname + original.search, fixture), init);
       },
     },
-  );
-  await app.initialize();
+  ).catch(setupFailed);
+  await app.initialize().catch(setupFailed);
   const instrumented = new WeakSet<object>();
   const instrument = (appId: string) => {
     const runtime = app.runtime(appId);
@@ -469,6 +480,7 @@ export async function runSdk(
         await closed;
       }
       await tick();
+      const databaseReport = await database.finish();
       assertApplicationReleased(app, clock);
       diagnosticsTimeline.capture('closed', true);
       eventLoop.disable();
@@ -481,6 +493,7 @@ export async function runSdk(
           closeError,
           final: applicationResources(app, clock),
           snapshot: app.snapshot(),
+          database: databaseReport,
           outbound: app.outgoing.snapshot(),
           byBot,
           controls,
@@ -581,7 +594,7 @@ export async function runSdk(
         process.exitCode = 1;
       });
   });
-  await app.start();
+  await app.start().catch(setupFailed);
   if (config.transport !== 'ws')
     await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
   const address = http.address();

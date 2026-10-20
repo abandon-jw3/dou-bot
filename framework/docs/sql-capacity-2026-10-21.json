@@ -1,0 +1,1781 @@
+{
+  "schema": 1,
+  "date": "2026-10-21",
+  "status": "measurement-complete-with-explicit-capacity-failures",
+  "ciBeforeMeasurement": {
+    "commit": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+    "runId": 39465520824,
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39465520824",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 118775772945,
+        "name": "PostgreSQL integration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773204,
+        "name": "SDK (ubuntu-latest, minimum)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773252,
+        "name": "Docs (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773349,
+        "name": "SDK (ubuntu-latest, development)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773365,
+        "name": "Docs (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773525,
+        "name": "SDK (windows-latest, minimum)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773553,
+        "name": "Example (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773557,
+        "name": "Example (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118775773751,
+        "name": "SDK (windows-latest, development)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118778189622,
+        "name": "Deploy documentation",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "source": {
+    "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+    "dirty": true,
+    "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+    "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+  },
+  "configuration": {
+    "bots": 2,
+    "splitPercent": [50, 50],
+    "groupSlots": 2000,
+    "inboundConcurrency": 128,
+    "outboundConcurrency": 32,
+    "sqlPoolLimit": 25,
+    "diagnostics": "metrics",
+    "sdkFixtureSupervisorQuota": {
+      "cpuCores": 1.5,
+      "memoryMiB": 1024,
+      "swap": 0
+    },
+    "postgresQuota": {
+      "cpuCores": 0.5,
+      "memoryMiB": 256,
+      "additionalSwap": 0
+    },
+    "databaseStorage": "new directory on target disk; per-run random schema",
+    "databaseWork": "first group observation writes plus one indexed 256-character JSON profile lookup per context load; profiles preloaded outside timing",
+    "load": "open-loop synthetic primary messages, duplicate attempts, prompts and 503 retries; no real QQ, TLS or rendering"
+  },
+  "qualified": {
+    "rates": {
+      "ws": 450,
+      "webhook": 350
+    },
+    "successfulLongRuns": {
+      "ws": 2,
+      "webhook": 2
+    },
+    "notes": "Two 300-second samples per listed protocol. Failed and generator-limited runs remain failures."
+  },
+  "results": [
+    {
+      "label": "sql-ws-po-200-s1-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 200,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 24000,
+      "received": 24000,
+      "accepted": 24000,
+      "completed": 24000,
+      "outcomes": {
+        "guard-denied": 1004,
+        "invalid-input": 484,
+        "success": 22273,
+        "intentional-business-error": 239
+      },
+      "p95Ms": 539,
+      "p99Ms": 1574,
+      "serverP95Ms": 483,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 0,
+      "generatorSchedulingLag": {
+        "count": 24000,
+        "meanMs": 2.76377861262502,
+        "maxMs": 6.560083,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.5278,
+      "sdkSampledRssPeakMiB": 200.72265625,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 0,
+      "sql": {
+        "attempts": 24675,
+        "completed": 24675,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 24675,
+          "meanMs": 1.8810367620263295,
+          "maxMs": 54.18711800000165,
+          "p50UpperMs": 1,
+          "p95UpperMs": 7,
+          "p99UpperMs": 14
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 3980,
+        "groupAddresses": 3997,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 0.6511,
+        "sampledSeconds": 110.135,
+        "throttledMs": 123.759,
+        "sampledMemoryPeakMiB": 263.0
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0704,
+        "sampledSeconds": 110.135,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 125.55
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-200-s1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-200-s1-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 200,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 24000,
+      "received": 24000,
+      "accepted": 24000,
+      "completed": 24000,
+      "outcomes": {
+        "guard-denied": 1004,
+        "success": 22273,
+        "invalid-input": 484,
+        "intentional-business-error": 239
+      },
+      "p95Ms": 545,
+      "p99Ms": 1579,
+      "serverP95Ms": 486,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 0,
+      "generatorSchedulingLag": {
+        "count": 24000,
+        "meanMs": 2.7390516089166623,
+        "maxMs": 8.344292,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "sdkMeanCpuCores": 0.6594,
+      "sdkSampledRssPeakMiB": 197.140625,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 0,
+      "sql": {
+        "attempts": 24675,
+        "completed": 24675,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 24675,
+          "meanMs": 2.347927368753815,
+          "maxMs": 47.47929099999601,
+          "p50UpperMs": 1,
+          "p95UpperMs": 10,
+          "p99UpperMs": 18
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 3980,
+        "groupAddresses": 3997,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 0.7851,
+        "sampledSeconds": 115.142,
+        "throttledMs": 326.04,
+        "sampledMemoryPeakMiB": 262.98
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0707,
+        "sampledSeconds": 115.142,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 135.17
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-200-s1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-ws-po-400-s1-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 400,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 48000,
+      "received": 48000,
+      "accepted": 48000,
+      "completed": 48000,
+      "outcomes": {
+        "guard-denied": 2003,
+        "invalid-input": 962,
+        "success": 44555,
+        "intentional-business-error": 480
+      },
+      "p95Ms": 593,
+      "p99Ms": 1626,
+      "serverP95Ms": 531,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 20,
+      "generatorSchedulingLag": {
+        "count": 48000,
+        "meanMs": 2.749677574500037,
+        "maxMs": 12.175167,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9251,
+      "sdkSampledRssPeakMiB": 229.80859375,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 13,
+      "sql": {
+        "attempts": 49356,
+        "completed": 49356,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 49356,
+          "meanMs": 8.407077516431613,
+          "maxMs": 124.48283699998865,
+          "p50UpperMs": 6,
+          "p95UpperMs": 28,
+          "p99UpperMs": 53
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 7096,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1034,
+        "sampledSeconds": 110.151,
+        "throttledMs": 1717.803,
+        "sampledMemoryPeakMiB": 303.46
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.1141,
+        "sampledSeconds": 110.151,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 138.31
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-400-s1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-400-s1-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 400,
+      "durationMs": 120000,
+      "capacityPassed": false,
+      "scheduled": 48000,
+      "received": 48000,
+      "accepted": 48000,
+      "completed": 48000,
+      "outcomes": {
+        "guard-denied": 2003,
+        "invalid-input": 962,
+        "success": 44555,
+        "intentional-business-error": 480
+      },
+      "p95Ms": 1945,
+      "p99Ms": 3239,
+      "serverP95Ms": 1841,
+      "tailQueueMedian": 62,
+      "inboundQueuePeak": 410,
+      "outboundQueuePeak": 63,
+      "generatorSchedulingLag": {
+        "count": 48000,
+        "meanMs": 2.767610116041679,
+        "maxMs": 7.998834,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 1.1882,
+      "sdkSampledRssPeakMiB": 242.140625,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 17,
+      "sql": {
+        "attempts": 49356,
+        "completed": 49356,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 49356,
+          "meanMs": 25.299991268599825,
+          "maxMs": 164.67924399999902,
+          "p50UpperMs": 22,
+          "p95UpperMs": 59,
+          "p99UpperMs": 95
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 7096,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.3547,
+        "sampledSeconds": 115.187,
+        "throttledMs": 2756.873,
+        "sampledMemoryPeakMiB": 320.88
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.1196,
+        "sampledSeconds": 115.187,
+        "throttledMs": 36.472,
+        "sampledMemoryPeakMiB": 137.25
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-400-s1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-ws-po-500-s1-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 500,
+      "durationMs": 120000,
+      "capacityPassed": false,
+      "scheduled": 60000,
+      "received": 59142,
+      "accepted": 59140,
+      "completed": 59140,
+      "outcomes": {
+        "guard-denied": 2474,
+        "invalid-input": 1184,
+        "success": 54743,
+        "intentional-business-error": 591,
+        "prompt-deadline-missed": 148
+      },
+      "p95Ms": 7383,
+      "p99Ms": 9504,
+      "serverP95Ms": 7298,
+      "tailQueueMedian": 1520,
+      "inboundQueuePeak": 1904,
+      "outboundQueuePeak": 54,
+      "generatorSchedulingLag": {
+        "count": 60000,
+        "meanMs": 2.7733700243166726,
+        "maxMs": 8.059708,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 1.1732,
+      "sdkSampledRssPeakMiB": 271.38671875,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 0,
+      "sql": {
+        "attempts": 60807,
+        "completed": 60807,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 60807,
+          "meanMs": 18.25452410893472,
+          "maxMs": 175.9373179999966,
+          "p50UpperMs": 15,
+          "p95UpperMs": 45,
+          "p99UpperMs": 93
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 8660,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.3666,
+        "sampledSeconds": 115.152,
+        "throttledMs": 6060.07,
+        "sampledMemoryPeakMiB": 357.97
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.142,
+        "sampledSeconds": 115.152,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 144.13
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-500-s1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 858
+    },
+    {
+      "label": "sql-we-po-500-s1-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 500,
+      "durationMs": 120000,
+      "capacityPassed": false,
+      "scheduled": 60000,
+      "received": 59647,
+      "accepted": 45680,
+      "completed": 45680,
+      "outcomes": {
+        "guard-denied": 1948,
+        "invalid-input": 907,
+        "success": 40518,
+        "intentional-business-error": 453,
+        "prompt-deadline-missed": 1854
+      },
+      "p95Ms": 13837,
+      "p99Ms": 19906,
+      "serverP95Ms": 11726,
+      "tailQueueMedian": 1983,
+      "inboundQueuePeak": 2005,
+      "outboundQueuePeak": 61,
+      "generatorSchedulingLag": {
+        "count": 60000,
+        "meanMs": 2.878037092650018,
+        "maxMs": 16.330917,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 1.2433,
+      "sdkSampledRssPeakMiB": 258.2578125,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 5,
+      "sql": {
+        "attempts": 46966,
+        "completed": 46966,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 46966,
+          "meanMs": 28.74703111814899,
+          "maxMs": 211.5170380000054,
+          "p50UpperMs": 25,
+          "p95UpperMs": 68,
+          "p99UpperMs": 119
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 8660,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.3794,
+        "sampledSeconds": 115.238,
+        "throttledMs": 4654.481,
+        "sampledMemoryPeakMiB": 333.93
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.103,
+        "sampledSeconds": 115.238,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 141.35
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-500-s1-20261021/report.json",
+      "integrity": "failed",
+      "integrityProblems": ["Generator dropped 607 attempts"],
+      "eligibleForControlledCapacityClaim": false,
+      "primaryDrops": 358,
+      "allAttemptDrops": 607,
+      "notReceived": 353
+    },
+    {
+      "label": "sql-ws-me-500-c1-20261021",
+      "protocol": "ws",
+      "backend": "memory",
+      "rate": 500,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 60000,
+      "received": 60000,
+      "accepted": 60000,
+      "completed": 60000,
+      "outcomes": {
+        "guard-denied": 2511,
+        "invalid-input": 1199,
+        "success": 55691,
+        "intentional-business-error": 599
+      },
+      "p95Ms": 610,
+      "p99Ms": 1635,
+      "serverP95Ms": 545,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 54,
+      "generatorSchedulingLag": {
+        "count": 60000,
+        "meanMs": 2.747891027183358,
+        "maxMs": 16.785625,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 6
+      },
+      "sdkMeanCpuCores": 0.9927,
+      "sdkSampledRssPeakMiB": 248.17578125,
+      "databaseTotalPeak": 0,
+      "databaseWaitingPeak": 0,
+      "sql": null,
+      "database": {
+        "kind": "memory"
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1897,
+        "sampledSeconds": 115.136,
+        "throttledMs": 3653.299,
+        "sampledMemoryPeakMiB": 323.95
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0003,
+        "sampledSeconds": 115.136,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 88.83
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-me-500-c1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-me-500-c1-20261021",
+      "protocol": "webhook",
+      "backend": "memory",
+      "rate": 500,
+      "durationMs": 120000,
+      "capacityPassed": false,
+      "scheduled": 60000,
+      "received": 60000,
+      "accepted": 50763,
+      "completed": 50763,
+      "outcomes": {
+        "guard-denied": 2110,
+        "invalid-input": 1027,
+        "success": 47122,
+        "intentional-business-error": 504
+      },
+      "p95Ms": 12790,
+      "p99Ms": 14884,
+      "serverP95Ms": 12553,
+      "tailQueueMedian": 1981,
+      "inboundQueuePeak": 2006,
+      "outboundQueuePeak": 71,
+      "generatorSchedulingLag": {
+        "count": 60000,
+        "meanMs": 2.8845695502832838,
+        "maxMs": 55.540792,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 1.2731,
+      "sdkSampledRssPeakMiB": 264.34765625,
+      "databaseTotalPeak": 0,
+      "databaseWaitingPeak": 0,
+      "sql": null,
+      "database": {
+        "kind": "memory"
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.4296,
+        "sampledSeconds": 115.205,
+        "throttledMs": 6179.3,
+        "sampledMemoryPeakMiB": 339.04
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0003,
+        "sampledSeconds": 115.205,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 88.82
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-me-500-c1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-me-400-c1-20261021",
+      "protocol": "webhook",
+      "backend": "memory",
+      "rate": 400,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 48000,
+      "received": 48000,
+      "accepted": 48000,
+      "completed": 48000,
+      "outcomes": {
+        "guard-denied": 2003,
+        "invalid-input": 962,
+        "success": 44555,
+        "intentional-business-error": 480
+      },
+      "p95Ms": 682,
+      "p99Ms": 1671,
+      "serverP95Ms": 592,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 40,
+      "generatorSchedulingLag": {
+        "count": 48000,
+        "meanMs": 2.7466398459583883,
+        "maxMs": 11.621375,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 1.0862,
+      "sdkSampledRssPeakMiB": 232.23046875,
+      "databaseTotalPeak": 0,
+      "databaseWaitingPeak": 0,
+      "sql": null,
+      "database": {
+        "kind": "memory"
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.2599,
+        "sampledSeconds": 115.152,
+        "throttledMs": 2286.795,
+        "sampledMemoryPeakMiB": 304.12
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0003,
+        "sampledSeconds": 115.152,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 81.85
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-me-400-c1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-ws-po-450-s2-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 450,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 54000,
+      "received": 54000,
+      "accepted": 54000,
+      "completed": 54000,
+      "outcomes": {
+        "guard-denied": 2260,
+        "invalid-input": 1078,
+        "success": 50124,
+        "intentional-business-error": 538
+      },
+      "p95Ms": 740,
+      "p99Ms": 1655,
+      "serverP95Ms": 664,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 158,
+      "outboundQueuePeak": 44,
+      "generatorSchedulingLag": {
+        "count": 54000,
+        "meanMs": 2.7476011751666944,
+        "maxMs": 18.739917,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9877,
+      "sdkSampledRssPeakMiB": 249.12109375,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 15,
+      "sql": {
+        "attempts": 55526,
+        "completed": 55526,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 55526,
+          "meanMs": 11.043675336166892,
+          "maxMs": 125.44806000000972,
+          "p50UpperMs": 8,
+          "p95UpperMs": 35,
+          "p99UpperMs": 58
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 7874,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.171,
+        "sampledSeconds": 115.139,
+        "throttledMs": 2314.584,
+        "sampledMemoryPeakMiB": 321.55
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.1181,
+        "sampledSeconds": 115.139,
+        "throttledMs": 45.655,
+        "sampledMemoryPeakMiB": 132.89
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-450-s2-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-300-s2-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 300,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 36000,
+      "received": 36000,
+      "accepted": 36000,
+      "completed": 36000,
+      "outcomes": {
+        "guard-denied": 1499,
+        "invalid-input": 718,
+        "success": 33423,
+        "intentional-business-error": 360
+      },
+      "p95Ms": 577,
+      "p99Ms": 1609,
+      "serverP95Ms": 505,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 0,
+      "generatorSchedulingLag": {
+        "count": 36000,
+        "meanMs": 2.745831392916655,
+        "maxMs": 13.484459,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.8679,
+      "sdkSampledRssPeakMiB": 222.0078125,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 0,
+      "sql": {
+        "attempts": 37029,
+        "completed": 37029,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 37029,
+          "meanMs": 5.009055772340622,
+          "maxMs": 72.37516999999934,
+          "p50UpperMs": 3,
+          "p95UpperMs": 19,
+          "p99UpperMs": 31
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 5542,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.018,
+        "sampledSeconds": 115.157,
+        "throttledMs": 816.116,
+        "sampledMemoryPeakMiB": 294.86
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0886,
+        "sampledSeconds": 115.157,
+        "throttledMs": 4.012,
+        "sampledMemoryPeakMiB": 128.19
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-300-s2-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-350-s2-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 350,
+      "durationMs": 120000,
+      "capacityPassed": true,
+      "scheduled": 42000,
+      "received": 42000,
+      "accepted": 42000,
+      "completed": 42000,
+      "outcomes": {
+        "guard-denied": 1753,
+        "invalid-input": 840,
+        "success": 38985,
+        "intentional-business-error": 422
+      },
+      "p95Ms": 614,
+      "p99Ms": 1643,
+      "serverP95Ms": 540,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 17,
+      "generatorSchedulingLag": {
+        "count": 42000,
+        "meanMs": 2.746914817928563,
+        "maxMs": 9.197661,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9887,
+      "sdkSampledRssPeakMiB": 236.296875,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 3,
+      "sql": {
+        "attempts": 43185,
+        "completed": 43185,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 43185,
+          "meanMs": 8.81227960074098,
+          "maxMs": 81.74021499999799,
+          "p50UpperMs": 6,
+          "p95UpperMs": 28,
+          "p99UpperMs": 45
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 6322,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1441,
+        "sampledSeconds": 115.151,
+        "throttledMs": 1051.364,
+        "sampledMemoryPeakMiB": 306.88
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0984,
+        "sampledSeconds": 115.151,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 128.68
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-350-s2-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-ws-po-450-l1-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 450,
+      "durationMs": 300000,
+      "capacityPassed": true,
+      "scheduled": 135000,
+      "received": 135000,
+      "accepted": 135000,
+      "completed": 135000,
+      "outcomes": {
+        "guard-denied": 5648,
+        "invalid-input": 2701,
+        "success": 125302,
+        "intentional-business-error": 1349
+      },
+      "p95Ms": 641,
+      "p99Ms": 1647,
+      "serverP95Ms": 576,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 17,
+      "outboundQueuePeak": 55,
+      "generatorSchedulingLag": {
+        "count": 135000,
+        "meanMs": 2.7439015252740635,
+        "maxMs": 10.171862,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9623,
+      "sdkSampledRssPeakMiB": 340.01953125,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 26,
+      "sql": {
+        "attempts": 138802,
+        "completed": 138802,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 138802,
+          "meanMs": 11.760740711834064,
+          "maxMs": 215.36975099999108,
+          "p50UpperMs": 7,
+          "p95UpperMs": 43,
+          "p99UpperMs": 86
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 18411,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1443,
+        "sampledSeconds": 290.369,
+        "throttledMs": 9071.744,
+        "sampledMemoryPeakMiB": 443.97
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.1114,
+        "sampledSeconds": 290.369,
+        "throttledMs": 27.998,
+        "sampledMemoryPeakMiB": 137.82
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-450-l1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-350-l1-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 350,
+      "durationMs": 300000,
+      "capacityPassed": true,
+      "scheduled": 105000,
+      "received": 105000,
+      "accepted": 105000,
+      "completed": 105000,
+      "outcomes": {
+        "guard-denied": 4389,
+        "invalid-input": 2097,
+        "success": 97464,
+        "intentional-business-error": 1050
+      },
+      "p95Ms": 823,
+      "p99Ms": 1671,
+      "serverP95Ms": 700,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 93,
+      "outboundQueuePeak": 48,
+      "generatorSchedulingLag": {
+        "count": 105000,
+        "meanMs": 2.7628087784189788,
+        "maxMs": 8.743471,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9968,
+      "sdkSampledRssPeakMiB": 300.65625,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 8,
+      "sql": {
+        "attempts": 107966,
+        "completed": 107966,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 107966,
+          "meanMs": 11.533822512337483,
+          "maxMs": 171.33490099999472,
+          "p50UpperMs": 7,
+          "p95UpperMs": 39,
+          "p99UpperMs": 66
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 14511,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1494,
+        "sampledSeconds": 295.403,
+        "throttledMs": 5249.097,
+        "sampledMemoryPeakMiB": 390.82
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0952,
+        "sampledSeconds": 295.403,
+        "throttledMs": 13.08,
+        "sampledMemoryPeakMiB": 124.16
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-350-l1-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-ws-po-450-l2-20261021",
+      "protocol": "ws",
+      "backend": "postgres",
+      "rate": 450,
+      "durationMs": 300000,
+      "capacityPassed": true,
+      "scheduled": 135000,
+      "received": 135000,
+      "accepted": 135000,
+      "completed": 135000,
+      "outcomes": {
+        "guard-denied": 5648,
+        "invalid-input": 2701,
+        "success": 125302,
+        "intentional-business-error": 1349
+      },
+      "p95Ms": 640,
+      "p99Ms": 1654,
+      "serverP95Ms": 576,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 39,
+      "generatorSchedulingLag": {
+        "count": 135000,
+        "meanMs": 2.744651076607348,
+        "maxMs": 12.517264,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9778,
+      "sdkSampledRssPeakMiB": 336.796875,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 46,
+      "sql": {
+        "attempts": 138802,
+        "completed": 138802,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 138802,
+          "meanMs": 12.585780977990185,
+          "maxMs": 177.5085830000171,
+          "p50UpperMs": 9,
+          "p95UpperMs": 44,
+          "p99UpperMs": 85
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 18411,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1601,
+        "sampledSeconds": 295.378,
+        "throttledMs": 9133.651,
+        "sampledMemoryPeakMiB": 433.75
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.1148,
+        "sampledSeconds": 295.378,
+        "throttledMs": 137.795,
+        "sampledMemoryPeakMiB": 133.75
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-ws-po-450-l2-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    },
+    {
+      "label": "sql-we-po-350-l2-20261021",
+      "protocol": "webhook",
+      "backend": "postgres",
+      "rate": 350,
+      "durationMs": 300000,
+      "capacityPassed": true,
+      "scheduled": 105000,
+      "received": 105000,
+      "accepted": 105000,
+      "completed": 105000,
+      "outcomes": {
+        "guard-denied": 4389,
+        "invalid-input": 2097,
+        "success": 97464,
+        "intentional-business-error": 1050
+      },
+      "p95Ms": 664,
+      "p99Ms": 1655,
+      "serverP95Ms": 574,
+      "tailQueueMedian": 0,
+      "inboundQueuePeak": 0,
+      "outboundQueuePeak": 31,
+      "generatorSchedulingLag": {
+        "count": 105000,
+        "meanMs": 2.7429200269333225,
+        "maxMs": 8.954351,
+        "p50UpperMs": 3,
+        "p95UpperMs": 6,
+        "p99UpperMs": 7
+      },
+      "sdkMeanCpuCores": 0.9856,
+      "sdkSampledRssPeakMiB": 310.30859375,
+      "databaseTotalPeak": 25,
+      "databaseWaitingPeak": 7,
+      "sql": {
+        "attempts": 107966,
+        "completed": 107966,
+        "failed": 0,
+        "cancelled": 0,
+        "latencyIncludingPoolWait": {
+          "count": 107966,
+          "meanMs": 10.614901750736358,
+          "maxMs": 158.8716269999859,
+          "p50UpperMs": 7,
+          "p95UpperMs": 37,
+          "p99UpperMs": 64
+        }
+      },
+      "database": {
+        "kind": "postgres",
+        "version": "17.6",
+        "poolLimit": 25,
+        "profiles": 14511,
+        "groupAddresses": 4000,
+        "schemaDropped": true
+      },
+      "serverGroup": {
+        "meanCpuCores": 1.1397,
+        "sampledSeconds": 295.431,
+        "throttledMs": 5530.139,
+        "sampledMemoryPeakMiB": 399.21
+      },
+      "postgresGroup": {
+        "meanCpuCores": 0.0948,
+        "sampledSeconds": 295.431,
+        "throttledMs": 0.0,
+        "sampledMemoryPeakMiB": 128.58
+      },
+      "source": {
+        "gitHead": "dd9ec6de1f72f0f2d5d0b590047064df3a1df7fd",
+        "dirty": true,
+        "sdkSha256": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+        "harnessSha256": "aca29a4132aa2fa67367a3b8f9bdbea458947446faa915ebb49eaeee29bfa21f"
+      },
+      "path": "work/distributed/sql-we-po-350-l2-20261021/report.json",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "eligibleForControlledCapacityClaim": true,
+      "primaryDrops": 0,
+      "allAttemptDrops": 0,
+      "notReceived": 0
+    }
+  ],
+  "validation": {
+    "sdk": {
+      "24.0.0": {
+        "tests": 411,
+        "pass": 398,
+        "fail": 0,
+        "skipped": 13,
+        "artifact": "work/package-check/7de86009-c783-442b-abba-7843da79bcdf/dou-bot-0.8.0.tgz",
+        "artifactSha256": "4a529246708ac0e725e4561a6fc32680a44a66b722918d48eeea8d49dbcc09a1"
+      },
+      "24.21.0": {
+        "tests": 411,
+        "pass": 398,
+        "fail": 0,
+        "skipped": 13,
+        "artifact": "work/package-check/5295d34f-21cf-4cbe-abad-d2c3311e1bfd/dou-bot-0.8.0.tgz",
+        "artifactSha256": "9701ff1e11a9bb168f222df66b957804d53a763aabf3e0220261841a9f98b1ac"
+      }
+    },
+    "toolTests": {
+      "pass": 21,
+      "fail": 0
+    },
+    "linuxFocusedToolTests": {
+      "pass": 4,
+      "fail": 0
+    },
+    "publicContracts": {
+      "exports": 178,
+      "bidirectionalChecks": 136
+    },
+    "productionSourceChangedAfterCi": false
+  },
+  "environment": {
+    "capturedAt": "2026-10-20T18:36:17.923920+00:00",
+    "platform": "Linux-6.1.0-41-amd64-x86_64-with-glibc2.36",
+    "containerId": "25abb4392dbe91b1245914d000dac82efcac2ef11c7b0fcb5a43cd23838cb709",
+    "imageId": "sha256:ef046db6da010a417de3c22b018415fffeee4febe93f19c3653aa56705bab41c",
+    "image": "postgres:17.6-alpine",
+    "state": {
+      "Running": true,
+      "OOMKilled": false,
+      "StartedAt": "2026-10-20T17:38:50.857066243Z"
+    },
+    "resources": {
+      "NanoCpus": 500000000,
+      "CpuShares": 128,
+      "Memory": 268435456,
+      "MemorySwap": 268435456,
+      "PidsLimit": 128,
+      "NetworkMode": "host"
+    },
+    "mounts": [
+      {
+        "source": "/opt/dou-bot-capacity/sql-2026-10-21-dd9ec6d/postgres-data",
+        "destination": "/var/lib/postgresql/data",
+        "type": "bind"
+      }
+    ]
+  },
+  "host": {
+    "samples": 1069,
+    "minimumAvailableMiB": 860.39453125,
+    "cpuAggregation": "weighted complete sampling intervals inside the measured phase; cross-phase intervals excluded; wall durations are not CPU time"
+  },
+  "cleanup": {
+    "at": "2026-10-20T19:09:30.461894+00:00",
+    "schemasAndApplicationConnectionsBeforeStop": "0|0",
+    "testDatabaseOOM": false,
+    "testDatabaseRestarts": 0,
+    "testContainerRemoved": true,
+    "testDataRemoved": true,
+    "testCredentialsRemoved": true,
+    "testPortClosed": true,
+    "observerStopped": true,
+    "memoryStopRequested": false,
+    "existingDatabase": {
+      "running": true,
+      "oomKilled": false,
+      "restarts": 0,
+      "startedAt": "2026-10-18T05:44:37.870283977Z",
+      "health": "healthy"
+    },
+    "nginx": "MainPID=989\nActiveState=active",
+    "existingRelayUnchanged": true
+  },
+  "failuresPreserved": [
+    {
+      "label": "sql-wh-smoke-20261021",
+      "type": "tool-header-bug",
+      "http403": 578,
+      "description": "Driver used account A header for B path; SDK rejected correctly. Fixed helper/caller, added two-account protocol regression; raw failure retained."
+    },
+    {
+      "label": "sql-we-po-500-s1-20261021",
+      "type": "generator-limited-overload",
+      "description": "607 dropped attempts, including 358 initial attempts. 353 unique primary events never reached SDK; ineligible as a complete constant-rate capacity sample."
+    },
+    {
+      "label": "setup-smoke-wrong-cwd",
+      "type": "setup-only",
+      "description": "Wrong local working directory failed before a connection; empty directories removed and log retained."
+    }
+  ],
+  "evidence": {
+    "remoteFilesVerified": 65,
+    "matchingLocalSdkFixtureReports": 38,
+    "remoteArchive": {
+      "file": "work/sql-capacity-2026-10-21/remote-evidence.tar.gz",
+      "sha256": "9f1f035c9d545df3752e552c6d5dc75e74adee0e1cf4370c1974f38cdf418986"
+    },
+    "manifest": {
+      "ci.json": {
+        "sha256": "9afb47a7c85bbcf9371bc9d1d1f7cec198f63943e11a5e3769e085057e6bd194",
+        "bytes": 1639
+      },
+      "cleanup.json": {
+        "sha256": "28e12463019a54c26ff5212d046de8b1f2544ecfc81d2d5c34b3bb0dbfe1cd0d",
+        "bytes": 585
+      },
+      "environment.json": {
+        "sha256": "e391116a5c9186060bebe9d5975182c4eb01e1a8e08cb7a4cb33a8c107a2dfd1",
+        "bytes": 788
+      },
+      "host.jsonl": {
+        "sha256": "cb02510768d945e2d5fb3960af903c7bac7698c5007a3c10933f7ed1f0b40c83",
+        "bytes": 986894
+      },
+      "owned-units.json": {
+        "sha256": "a99c393cf42a123fcd6b612dd8d938d486c8ee8f50205666b6e567826a0748e5",
+        "bytes": 1343
+      },
+      "postgres-data-owner.json": {
+        "sha256": "94b83ff270da479e13abbffff4e835614e85327f49bf8d1e19428ad8fc974ffd",
+        "bytes": 309
+      },
+      "postgres.log": {
+        "sha256": "06cab41e29368713bcc0b77d17fedb05fd35e27027adf5946828fab23411aaf2",
+        "bytes": 7859
+      },
+      "runs/sql-we-me-400-c1-20261021/fixture.json": {
+        "sha256": "53cac66149b2a7fefa8337d50e6ebe5e4d4b87ccac4c7240961ab45031f4966e",
+        "bytes": 638797
+      },
+      "runs/sql-we-me-400-c1-20261021/run.json": {
+        "sha256": "ec43d2795e19ca726d0db3dd16f8435f8ec7622543777a26d52c7dea952b2a31",
+        "bytes": 658
+      },
+      "runs/sql-we-me-400-c1-20261021/sdk.json": {
+        "sha256": "1703c89454719601d8caf69bd3d3175cc7a3628ac58556d03d1a05bd642eb523",
+        "bytes": 26584892
+      },
+      "runs/sql-we-me-500-c1-20261021/fixture.json": {
+        "sha256": "c3f6648ea125fe8dda617e9825064d5cd8c46b8b8c8ce2ea9cde5b5fba414c87",
+        "bytes": 673099
+      },
+      "runs/sql-we-me-500-c1-20261021/run.json": {
+        "sha256": "0da0976db5960144c0ebdb6e9da993eb7407b93030801920a7ef63a0b4803291",
+        "bytes": 658
+      },
+      "runs/sql-we-me-500-c1-20261021/sdk.json": {
+        "sha256": "49884b29026c11c8d298bc002eb579870cc1bbcf2b8f8e59682a534d913fe1c1",
+        "bytes": 26620542
+      },
+      "runs/sql-we-po-200-s1-20261021/fixture.json": {
+        "sha256": "e01b488c5eb9419d79da5772727d4b2a72870084e2ddd52b0d4df8b65384b282",
+        "bytes": 344844
+      },
+      "runs/sql-we-po-200-s1-20261021/run.json": {
+        "sha256": "d444070c088cc6309d0985be84ba70b8f6f9bd2dd8e5e79e92bf36c47fcb7e49",
+        "bytes": 660
+      },
+      "runs/sql-we-po-200-s1-20261021/sdk.json": {
+        "sha256": "dd6965f288c073cd8bca6f3c4169d953d98a8729d4065c006d0632443ba9a700",
+        "bytes": 25697757
+      },
+      "runs/sql-we-po-300-s2-20261021/fixture.json": {
+        "sha256": "dd911658758eab192ec1c0703690f5ec01e1f5fd9ed411aed2aaaeda58987f22",
+        "bytes": 492028
+      },
+      "runs/sql-we-po-300-s2-20261021/run.json": {
+        "sha256": "ca4be80177fe656c833d804a98ee82cd3826f441635780901289fd062f231b54",
+        "bytes": 660
+      },
+      "runs/sql-we-po-300-s2-20261021/sdk.json": {
+        "sha256": "019a4b152630fbd8578f762662b3c0948f422d55c1a7bcbdace823b6aaa9bfd3",
+        "bytes": 26569748
+      },
+      "runs/sql-we-po-350-l1-20261021/fixture.json": {
+        "sha256": "7dee7d9930be58b23fe9ba10a325ee7aa12dfe1403d5a45b284027c95d8c4401",
+        "bytes": 1346306
+      },
+      "runs/sql-we-po-350-l1-20261021/run.json": {
+        "sha256": "af96c70dba672e8046a002adba47a23e90a3fee53636baa0247a0f5bdd77dc8a",
+        "bytes": 660
+      },
+      "runs/sql-we-po-350-l1-20261021/sdk.json": {
+        "sha256": "c8e5165c255373baaee7a4e31faff39d112162f68531303d6eb9ac4205645f43",
+        "bytes": 56226483
+      },
+      "runs/sql-we-po-350-l2-20261021/fixture.json": {
+        "sha256": "ffb2ea5d7420420aeacd3e629f594583e464c780b1f0a9611a6df8897113ee01",
+        "bytes": 1346306
+      },
+      "runs/sql-we-po-350-l2-20261021/run.json": {
+        "sha256": "a386c58a630146846257e2a91fccb9bf733e5e4793334844cfdb758368cf4d9f",
+        "bytes": 660
+      },
+      "runs/sql-we-po-350-l2-20261021/sdk.json": {
+        "sha256": "3cd39142e412af2cb8471495667d2eee93765b28e96001001976c17c50934fce",
+        "bytes": 56219669
+      },
+      "runs/sql-we-po-350-s2-20261021/fixture.json": {
+        "sha256": "fe9923cb6d43e85040f790018539e60a3e30c05e9372a4e6081d1cb59148ea25",
+        "bytes": 565515
+      },
+      "runs/sql-we-po-350-s2-20261021/run.json": {
+        "sha256": "98438da9210e9c9311c81eb6597e5b6bbbd1087f18d0c90a7246d403407b36ce",
+        "bytes": 660
+      },
+      "runs/sql-we-po-350-s2-20261021/sdk.json": {
+        "sha256": "581c6d32c3c298e2ee65ed1425fa7004c29e64424b26b81b0b5ec3e49aa7ef23",
+        "bytes": 26567096
+      },
+      "runs/sql-we-po-400-s1-20261021/fixture.json": {
+        "sha256": "b160a64eaa20c75fc7a8bd0e8bac350321554e27c21dc7b3051571def46f07b8",
+        "bytes": 638797
+      },
+      "runs/sql-we-po-400-s1-20261021/run.json": {
+        "sha256": "82f59a831ac57a6258d5a4c0d0de396ea162c4eb0d720bc01c655edc872e54ac",
+        "bytes": 660
+      },
+      "runs/sql-we-po-400-s1-20261021/sdk.json": {
+        "sha256": "44885353896fa9c6e1c9e6bf9ee581e413fd50785fdf109eb0e12fb34567bd96",
+        "bytes": 26618291
+      },
+      "runs/sql-we-po-500-s1-20261021/fixture.json": {
+        "sha256": "eccb17d3ab20550d313f99b0b61afb92f63f7c5f2120653f3ac2eb30693f717e",
+        "bytes": 576953
+      },
+      "runs/sql-we-po-500-s1-20261021/run.json": {
+        "sha256": "81b92162ea342a94448c8b90fa75922119756fa0e15af5dbf64bc28cba54fc84",
+        "bytes": 660
+      },
+      "runs/sql-we-po-500-s1-20261021/sdk.json": {
+        "sha256": "0af84284a107ffbd6b5a75c161559999f004e6121dd17eec5a48a409e8a431b1",
+        "bytes": 26625277
+      },
+      "runs/sql-wh-smoke-20261021/fixture.json": {
+        "sha256": "37aba4772323dd06c1d525d9606f08a205a98c6e7cda599c13f4515eadbce73a",
+        "bytes": 4876
+      },
+      "runs/sql-wh-smoke-20261021/run.json": {
+        "sha256": "06ee0e82cd14fa6a5a4fb184b6149c8356ccd2f997b08c354f35da6d00768422",
+        "bytes": 742
+      },
+      "runs/sql-wh-smoke-20261021/sdk.json": {
+        "sha256": "4d9d462b30e976ffafa435fc341dcfbff2f78f7d9500a63f5429aed196973e97",
+        "bytes": 3405282
+      },
+      "runs/sql-wh-smoke-r2-20261021/fixture.json": {
+        "sha256": "93d7d6843a62a1e0b02c9db29eeceef781161d40e08f49b11a7638525e0bc661",
+        "bytes": 7887
+      },
+      "runs/sql-wh-smoke-r2-20261021/run.json": {
+        "sha256": "9b27326387e9ee386b06f8827ada69b8579c1a535d7e57c2a61002715c1a449d",
+        "bytes": 742
+      },
+      "runs/sql-wh-smoke-r2-20261021/sdk.json": {
+        "sha256": "32e405d098f56c6231217e0a9fd4257c47483b6b8c4fcc8615a7f9df79bd76e1",
+        "bytes": 6479079
+      },
+      "runs/sql-ws-me-500-c1-20261021/fixture.json": {
+        "sha256": "f34b944fb4381e2d40f0af007aed335e3779cea8175690eb7e51732aec3cc413",
+        "bytes": 785663
+      },
+      "runs/sql-ws-me-500-c1-20261021/run.json": {
+        "sha256": "9cda172c83e14ff90eb156d5ec02e392769b8c18e790099e8c02bf8b47febb4a",
+        "bytes": 653
+      },
+      "runs/sql-ws-me-500-c1-20261021/sdk.json": {
+        "sha256": "78e1b83efd624ec6a27be6d21f5865d0bfbba997b98783cd152324b799597372",
+        "bytes": 25960352
+      },
+      "runs/sql-ws-po-200-s1-20261021/fixture.json": {
+        "sha256": "306303cae3b0a266d24cd229a701fd8dd27712a1ed8db980eabe2d2792fae1ab",
+        "bytes": 344844
+      },
+      "runs/sql-ws-po-200-s1-20261021/run.json": {
+        "sha256": "4f5b84406908cbefbdea7e09c37fbb5c997f2987e31e27142a6a179f8957dbe4",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-200-s1-20261021/sdk.json": {
+        "sha256": "a9163ad9bc9a245853e33c18ca8c8b3b93e774054d2499ee366ed06f57e4848f",
+        "bytes": 25862526
+      },
+      "runs/sql-ws-po-400-s1-20261021/fixture.json": {
+        "sha256": "742bf5928bc0b0de77ccae25bcebde55b405ec02c8356756d1e82838b50e6ab5",
+        "bytes": 638797
+      },
+      "runs/sql-ws-po-400-s1-20261021/run.json": {
+        "sha256": "250447a24bde11df4139028033c7d3841c04b442f414ccb9f7fbe4f52576255e",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-400-s1-20261021/sdk.json": {
+        "sha256": "f46856929199f5488f17b592af6aa1734428786c1937437b3c8710d270fe6618",
+        "bytes": 25945756
+      },
+      "runs/sql-ws-po-450-l1-20261021/fixture.json": {
+        "sha256": "df68705399572f3093f2e347c6dd22cd8a4df972d923d9ab7c873999c8cf5509",
+        "bytes": 1741713
+      },
+      "runs/sql-ws-po-450-l1-20261021/run.json": {
+        "sha256": "067a479873476f63e324677c0327e32067ab3e6580d91a870a363e169d22ceae",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-450-l1-20261021/sdk.json": {
+        "sha256": "ccef6ab7aaa15c900ebd91f74322cbaf534c60faf41a7919c4eb82921a717cff",
+        "bytes": 54949851
+      },
+      "runs/sql-ws-po-450-l2-20261021/fixture.json": {
+        "sha256": "77750cc99f7b5ba2810968d70e6655eec392cc806a1370c2a3dd8f90490fea7b",
+        "bytes": 1741713
+      },
+      "runs/sql-ws-po-450-l2-20261021/run.json": {
+        "sha256": "d2ace8512564e0a73a4858be904d1b256543665f7350d33bc58a97c300b5a5bf",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-450-l2-20261021/sdk.json": {
+        "sha256": "e9666a2a6b572a3b5aaa254ff8397b6987daa1a925c0e1e1efdc1e21c280c4cc",
+        "bytes": 54933007
+      },
+      "runs/sql-ws-po-450-s2-20261021/fixture.json": {
+        "sha256": "23eac75ab6ae23be419dc06c9fffab6f13c00e3c223eb7bb95cb742d7c2fed0d",
+        "bytes": 712268
+      },
+      "runs/sql-ws-po-450-s2-20261021/run.json": {
+        "sha256": "b8cc565724c3629c5770c58dcfcb0ed130543165a2171c08d3cfb3ac3b3587d1",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-450-s2-20261021/sdk.json": {
+        "sha256": "82c47886ab1d8c708b31a72a5b8129848730b3083dbb08306170cdc2035c737d",
+        "bytes": 25964489
+      },
+      "runs/sql-ws-po-500-s1-20261021/fixture.json": {
+        "sha256": "68c71f19f198ca46ec2592b1e9da76faf85afb40fa250a040e2cc5765042e124",
+        "bytes": 772729
+      },
+      "runs/sql-ws-po-500-s1-20261021/run.json": {
+        "sha256": "dfdf650e17e578ed3c0e34f862316aebb51700f7267ad89547bd0f3b40cfd966",
+        "bytes": 655
+      },
+      "runs/sql-ws-po-500-s1-20261021/sdk.json": {
+        "sha256": "cc444b297339874d81da6434b71c205ccad765b900491a6dc31f32a0e5e52a53",
+        "bytes": 26000650
+      },
+      "runs/sql-ws-smoke-20261021/fixture.json": {
+        "sha256": "cc33f9f6e51b844a602053a1d417cb3d49b9888ab797c24c8e3ce3342f06527c",
+        "bytes": 3685
+      },
+      "runs/sql-ws-smoke-20261021/run.json": {
+        "sha256": "d1eff93475d8bbcb4ee042fdf46b0114931c3b4a7a34387e8c99e8dacf1fceb8",
+        "bytes": 737
+      },
+      "runs/sql-ws-smoke-20261021/sdk.json": {
+        "sha256": "c301d5b87abda834b561d2e8aeb8afe1b7bb2761a2e89d794474323a02d94685",
+        "bytes": 6023536
+      },
+      "tool-tests-linux.log": {
+        "sha256": "44b276ed408d0618d24415090bc4e70a453f22f62893ed5af394e93ee66ae16e",
+        "bytes": 538
+      }
+    },
+    "completeArchive": {
+      "path": "work/sql-capacity-2026-10-21/sql-capacity-evidence.tar.gz",
+      "remotePath": "/opt/dou-bot-capacity/sql-2026-10-21-dd9ec6d/sql-capacity-evidence.tar.gz",
+      "bytes": 67078916,
+      "sha256": "112ae5981cf1d6cab47fca17e56fe1ec6712be818bb7830b67ec58444b560024",
+      "verifiedFiles": 96,
+      "remoteVerified": true,
+      "reportSnapshot": "Archived report predates archive self-metadata and final delivery CI; companion report records that metadata."
+    }
+  },
+  "limitations": [
+    "Two five-minute confirmations are not multi-day production validation or exact maximum capacity.",
+    "Preloaded, simple indexed read workload; no cold-cache, large-table, complex SQL or real rendering benchmark.",
+    "PostgreSQL client latency includes pool waiting and event-loop scheduling, not just database execution.",
+    "No real QQ quotas/delivery validation, whole-database outage or process-crash task recovery.",
+    "SDK execution/outbound defaults were not changed."
+  ]
+}

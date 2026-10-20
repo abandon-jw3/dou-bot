@@ -1,7 +1,7 @@
 # 分布式并发对照
 
 - 发压端运行在本机；服务器运行 SDK 和模拟 API，API 的固定延迟保持在服务器环回网络中。
-- 输入和控制消息通过 SSH；测试端口只绑定 127.0.0.1，不修改 Nginx，也不连接 QQ 或真实数据库。
+- 输入和控制消息通过 SSH；测试端口只绑定 127.0.0.1，不修改 Nginx，也不连接 QQ。默认使用内存持久化，可显式接入独立 PostgreSQL 测试库。
 - 支持 Webhook、WS，以及一个共享应用内的双账号。默认仍为单账号 Webhook。
 - 适用于当前源码仓库。使用相同源码、Node 24 和锁定依赖，先在两端完成编译。
 
@@ -17,6 +17,7 @@ node node_modules/typescript/bin/tsc -p tsconfig.test.json --outDir work/distrib
 - SSH 账号需要启动临时 systemd 单元和端口转发的权限。
 - 传输源码时排除 .env、生成物及 macOS 的 `._*` 元数据。两端 SDK 和工具指纹不一致时会拒绝开始发压。
 - 本轮服务器测试预算固定为 1.5 核、1 GiB、禁用 swap；包括 SDK、夹具与监督进程，sshd 开销另计。
+- SQL 模式的 PostgreSQL 位于上述进程组之外，必须单独记录数据库的 CPU、内存和磁盘预算；比较结果时同时说明两部分资源。
 
 ## 运行对照
 
@@ -82,3 +83,35 @@ npm run benchmark:distributed -- \
 - 跨机时钟偏移只用于阶段对齐，报告保留校准往返与不确定范围，不用于相减计算请求耗时。
 - 每轮自动关闭自己的进程、转发和临时单元；报告保留且拒绝覆盖。网络、SQL、渲染和平台配额仍需按实际部署单独验证。
 - 大型报告在发压结束后用独立压缩 SSH 连接取回，完成后才改为正式文件名；输入连接不启用压缩。取回或分析失败会先保存 `failure.json`，再执行清理。
+
+## 真实 SQL 模式
+
+在原命令后添加：
+
+```sh
+--database postgres \
+--database-file /absolute/path/disposable-database.json \
+--database-pool 25
+```
+
+数据库文件存放在 SDK 所在机器，内容如下；使用本轮独立创建的数据库和临时密码：
+
+```json
+{
+  "purpose": "dou-bot-disposable-benchmark",
+  "host": "127.0.0.1",
+  "port": 55432,
+  "user": "dou_bot_benchmark",
+  "database": "dou_bot_benchmark",
+  "password": "本轮临时测试密码"
+}
+```
+
+- 工具只接受上述用途标记、环回地址和专用用户名/库名；密码从显式文件读取，不读取 .env 或 TEST_DATABASE_*。文件路径通过 SSH 启动环境传给 SDK，密码不会进入报告或参数令牌。
+- 每轮显式迁移一个随机 schema，并预载该轮合成用户的资料表。按 `(app_id, user_id)` 主键查询，返回含 256 字符字段的 JSON；没有请求之间的业务数据缓存。
+- 每次上下文数据加载先执行一次 SQL 读取，再访问原有慢 HTTP 接口；同一次处理器中的重复 ContextValue 仍共用加载结果。群地址首次写入由框架的 PostgreSQL 实现完成。
+- 该负载覆盖群地址学习和业务行查询，不包含后台主动发送的选路查询、整库故障或真实业务的复杂 SQL。
+- 连接池默认 25，允许 1～64；测试夹具的建连/池等待期限为 1500 ms，SQL 期限为 1000 ms。
+- `sdk.database` 记录数据库版本、资料行数、群地址数、各阶段读取次数/结果及含池等待的延迟。连接池在每秒快照的 `snapshot.database` 中；SQL 失败单独计数，不能算作容量通过。
+- 关闭时等待数据库操作收尾，删除本轮 schema 并关闭控制连接；报告检查查询次数与上下文加载次数一致，以及池和等待项归零。进程被强杀后的残留 schema 需在本轮独立环境中清理。
+- `--database memory` 是配对控制组。使用同一源码、协议、并发、速率、观测模式和资源预算；它不能配置 SQL 连接池。

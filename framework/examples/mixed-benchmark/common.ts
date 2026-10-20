@@ -28,6 +28,8 @@ export interface Phase {
   large?: boolean;
 }
 export interface Profile {
+  database?: 'memory' | 'postgres';
+  databasePool?: number;
   transport?: 'webhook' | 'ws';
   bots?: 1 | 2;
   firstBotPercent?: number;
@@ -130,6 +132,8 @@ export function profile(name: string): Profile {
 }
 
 export interface ComparisonOptions {
+  database?: 'memory' | 'postgres';
+  databasePool?: number;
   transport?: 'webhook' | 'ws';
   bots?: 1 | 2;
   firstBotPercent?: number;
@@ -146,13 +150,37 @@ export function comparisonProfile(input: unknown): Profile {
   assert.ok(record(input));
   assert.deepEqual(
     Object.keys(input)
-      .filter((key) => !['diagnostics', 'transport', 'bots', 'firstBotPercent'].includes(key))
+      .filter(
+        (key) =>
+          ![
+            'diagnostics',
+            'transport',
+            'bots',
+            'firstBotPercent',
+            'database',
+            'databasePool',
+          ].includes(key),
+      )
       .sort(),
     ['concurrency', 'durationMs', 'kind', 'outboundConcurrency', 'rate'],
   );
   assert.ok(input.kind === 'smoke' || input.kind === 'comparison');
   const diagnostics = input.diagnostics ?? 'off';
   assert.ok(diagnostics === 'off' || diagnostics === 'metrics' || diagnostics === 'sampled');
+  const database = input.database ?? 'memory';
+  const databasePool = input.databasePool ?? 25;
+  assert.ok(database === 'memory' || database === 'postgres');
+  assert.ok(
+    typeof databasePool === 'number' &&
+      Number.isSafeInteger(databasePool) &&
+      databasePool >= 1 &&
+      databasePool <= 64,
+    'Database pool must contain 1 to 64 connections',
+  );
+  assert.ok(
+    database === 'postgres' || input.databasePool === undefined,
+    'Memory mode has no SQL pool',
+  );
   const transport = input.transport ?? 'webhook';
   const bots = input.bots ?? 1;
   const firstBotPercent = input.firstBotPercent ?? 50;
@@ -187,6 +215,8 @@ export function comparisonProfile(input: unknown): Profile {
   const config = profile(input.kind === 'smoke' ? 'smoke' : 'standard');
   return {
     ...config,
+    database,
+    databasePool,
     transport,
     bots,
     firstBotPercent,
@@ -404,12 +434,12 @@ const key = createPrivateKey({
   type: 'pkcs8',
   format: 'der',
 });
-export function signedHeaders(body: Buffer): Record<string, string> {
+export function signedHeaders(body: Buffer, botAppId = appId): Record<string, string> {
   const stamp = String(Math.floor(Date.now() / 1000));
   return {
     'content-type': 'application/json',
     'content-length': String(body.length),
-    'x-bot-appid': appId,
+    'x-bot-appid': botAppId,
     'x-signature-timestamp': stamp,
     'x-signature-ed25519': sign(null, Buffer.concat([Buffer.from(stamp), body]), key).toString(
       'hex',

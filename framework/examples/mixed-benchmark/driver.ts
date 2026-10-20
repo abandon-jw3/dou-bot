@@ -165,7 +165,7 @@ export async function runDriver(
     };
     const req = request(
       `${sdkOrigin}${config.bots === 2 ? `/qq/${accountFor(meta, config)}` : '/qq'}`,
-      { method: 'POST', headers: signedHeaders(body), agent },
+      { method: 'POST', headers: signedHeaders(body, accountFor(meta, config)), agent },
       (response) => {
         response.resume();
         response.on('end', () => {

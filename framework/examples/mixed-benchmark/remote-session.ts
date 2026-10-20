@@ -23,6 +23,7 @@ export interface RemoteSettings {
   token: string;
   runtimeSeconds: number;
   gatewayOrigin?: string;
+  databaseFile?: string;
 }
 
 /** One SSH master carries control and a loopback-only input tunnel. Downstream fixtures stay beside the SDK. */
@@ -102,6 +103,7 @@ export class RemoteSession {
     if (this.settings.host) {
       assert.match(this.settings.host, /^[a-zA-Z0-9_.@-]+$/u);
       assert.ok(posix.isAbsolute(this.settings.directory));
+      if (this.settings.databaseFile) assert.ok(posix.isAbsolute(this.settings.databaseFile));
       this.directory = await mkdtemp(join(tmpdir(), 'dou-cmp-'));
       this.socket = join(this.directory, 'ssh');
       await this.ssh([
@@ -148,6 +150,9 @@ export class RemoteSession {
         `--property=RuntimeMaxSec=${this.settings.runtimeSeconds}`,
         '--property=TimeoutStopSec=20',
         `--property=WorkingDirectory=${this.settings.directory}`,
+        ...(this.settings.databaseFile
+          ? [`--setenv=DOU_BOT_BENCHMARK_DATABASE_FILE=${this.settings.databaseFile}`]
+          : []),
         this.settings.node,
         '--expose-gc',
         posix.join(
@@ -170,7 +175,13 @@ export class RemoteSession {
         command.map(quote).join(' '),
       ];
     } else if (gatewayOrigin) args.push(gatewayOrigin);
-    this.child = spawn(executable, args, { stdio: ['pipe', 'pipe', 'inherit'] });
+    this.child = spawn(executable, args, {
+      stdio: ['pipe', 'pipe', 'inherit'],
+      env: {
+        ...process.env,
+        DOU_BOT_BENCHMARK_DATABASE_FILE: this.settings.databaseFile ?? '',
+      },
+    });
     const fail = (error: Error) => {
       this.sdk.fail(error);
       this.fixture.fail(error);

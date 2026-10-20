@@ -29,6 +29,9 @@ const { values } = parseArgs({
     bots: { type: 'string', default: '1' },
     'first-bot-percent': { type: 'string', default: '50' },
     isolation: { type: 'boolean' },
+    database: { type: 'string', default: 'memory' },
+    'database-pool': { type: 'string' },
+    'database-file': { type: 'string' },
   },
 });
 assert.equal(Boolean(values.local), !values.host, 'Choose --local or --host');
@@ -41,7 +44,17 @@ assert.ok(
 );
 assert.ok(values.transport === 'webhook' || values.transport === 'ws');
 assert.ok(values.bots === '1' || values.bots === '2');
+assert.ok(values.database === 'memory' || values.database === 'postgres');
+assert.equal(
+  Boolean(values['database-file']),
+  values.database === 'postgres',
+  'PostgreSQL requires an explicit disposable database file',
+);
 const options: ComparisonOptions = {
+  database: values.database,
+  ...(values['database-pool'] === undefined
+    ? {}
+    : { databasePool: Number(values['database-pool']) }),
   transport: values.transport,
   bots: values.bots === '2' ? 2 : 1,
   firstBotPercent: Number(values['first-bot-percent']),
@@ -97,11 +110,10 @@ const report: Message = {
       'admission to completion on server clock; excludes generator and ingress waiting',
     phaseAlignment:
       'initial clock-offset estimate for wall-time phase bins only; never used to subtract cross-host latency timestamps',
-    network:
-      'loopback listeners and authenticated SSH forwarding; no QQ, real SQL, Nginx or rendering workload',
+    network: `loopback listeners and authenticated SSH forwarding; ${config.database === 'postgres' ? 'real disposable PostgreSQL' : 'memory persistence'}; no QQ, Nginx or rendering workload`,
     resourceBudget: values.local
       ? 'no server quota for local self-test'
-      : 'SDK, fixture and supervisor share 1.5 CPU cores and 1 GiB; sshd CPU is outside this cgroup',
+      : 'SDK, fixture and supervisor share 1.5 CPU cores and 1 GiB; sshd and PostgreSQL are outside this cgroup and require separate accounting',
   },
 };
 let driver: Worker | undefined;
@@ -129,6 +141,7 @@ try {
   driver = new Worker(['--driver', token, resolve(output, 'driver.json')], entry);
   const driverReady = await driver.wait('driver-ready');
   remote = await RemoteSession.create({
+    ...(values['database-file'] ? { databaseFile: values['database-file'] } : {}),
     ...(values.host ? { host: values.host } : {}),
     directory: values.directory ?? process.cwd(),
     node: values.node,
@@ -328,6 +341,25 @@ try {
   const sdkPhases = rows(sdk.phases),
     driverPhases = rows(driverReport.phases);
   const problems: string[] = [];
+  if (config.database === 'postgres') {
+    const database = object(sdk.database);
+    if (database.kind !== 'postgres' || database.schemaDropped !== true)
+      problems.push('PostgreSQL backend or schema cleanup was not verified');
+    const sql = rows(database.phases);
+    if (sql.length !== sdkPhases.length) problems.push('SQL phase accounting differs');
+    for (const [index, phase] of sql.entries()) {
+      if (
+        phase.attempts !== sdkPhases[index]?.loads ||
+        Number(phase.completed) + Number(phase.failed) + Number(phase.cancelled) !==
+          phase.attempts ||
+        object(phase.latencyIncludingPoolWait).count !== phase.attempts
+      )
+        problems.push(`SQL lookup accounting differs in phase ${index}`);
+    }
+    const finalPool = object(object(sdk.snapshot).database);
+    if (Object.values(finalPool).some((count) => count !== 0))
+      problems.push('SQL connections or waiters retained after close');
+  }
   for (const [name, count] of Object.entries({
     'SDK errors': Number(object(sdk.globalCounts).unexpected ?? 0),
     'fixture errors': Number(object(fixture.counts).unexpected ?? 0),

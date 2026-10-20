@@ -39,6 +39,7 @@ import type { Meta, Profile } from './common.js';
 export interface Hooks {
   start(meta: Meta): void;
   load(meta: Meta): void;
+  readUser?(meta: Meta, appId: string, signal: AbortSignal): Promise<void>;
   handler(meta: Meta, route: string): void;
   success(meta: Meta, route: string): void;
   prompt(meta: Meta, result: string): void;
@@ -62,6 +63,7 @@ export function workload(config: Profile, fixture: string, hooks: Hooks) {
     signal: AbortSignal,
   ): Promise<UserData> => {
     hooks.load(meta);
+    if (hooks.readUser) await hooks.readUser(meta, ctx.appId, signal);
     const url = new URL('/data', fixture);
     url.search = new URLSearchParams({
       id: String(meta.id),
