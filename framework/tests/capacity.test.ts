@@ -51,6 +51,39 @@ async function create(
   return app;
 }
 
+await test('dedup eviction preserves completion order through churn, expiry and refill', async () => {
+  const clock = new FakeClock();
+  @Controller()
+  class Commands {
+    @Command('run') run(): void {}
+  }
+  @Module({ controllers: [Commands] })
+  class Root {}
+  const app = await create(Root, clock, {
+    execution: { concurrency: 1, queueCapacity: 1, dedupMaxEntries: 3, dedupTtlMs: 100 },
+  });
+  try {
+    for (let cycle = 0; cycle < 3; cycle++) {
+      for (let index = 0; index < 40; index++) {
+        const id = `${cycle}:${index}`;
+        assert.equal(enqueue(app, id).status, 'accepted');
+        await app.execution.idle();
+        const retained = Math.min(index, 2);
+        for (let offset = 0; offset <= retained; offset++)
+          assert.equal(enqueue(app, `${cycle}:${index - offset}`).status, 'duplicate');
+        assert.equal(app.snapshot().capacity.dedup.size, retained + 1);
+      }
+      // The next admission must not use an exhausted or stale cursor after TTL cleanup.
+      await clock.advance(100);
+      assert.equal(app.snapshot().capacity.dedup.size, 0);
+    }
+    assert.equal(app.snapshot().events.accepted, 120);
+  } finally {
+    await app.close();
+  }
+  assert.equal(clock.pending, 0);
+});
+
 await test('capacity snapshots explain rejection, isolate copies and aggregate queue/processing time', async () => {
   const clock = new FakeClock();
   const gates = [deferred<void>(), deferred<void>()];

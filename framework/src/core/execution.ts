@@ -56,6 +56,7 @@ export class Execution {
   // TTLs are fixed per cache and the clock is monotonic. Completion/release order
   // is therefore expiry order. Active entries never occur in these indexes.
   private readonly idleDedup = new Map<string, DedupEntry>();
+  private idleDedupCursor: MapIterator<string> | undefined;
   private readonly idleScopes = new Map<string, ReplyScope>();
   private readonly rejections: BotSnapshot['rejections'] = {
     invalidEvent: 0,
@@ -364,13 +365,17 @@ export class Execution {
         return { status: 'overloaded' };
       }
       if (key !== undefined && this.dedup.size >= config.dedupMaxEntries) {
-        const expiredCandidate = this.idleDedup.keys().next().value;
+        // Continue in completion order instead of rescanning deleted Map slots from the start.
+        this.idleDedupCursor ??= this.idleDedup.keys();
+        const expiredCandidate = this.idleDedupCursor.next().value;
         if (expiredCandidate === undefined) {
+          this.idleDedupCursor = undefined;
           this.reject('dedupFull');
           return { status: 'overloaded' };
         }
         this.dedup.delete(expiredCandidate);
         this.idleDedup.delete(expiredCandidate);
+        if (!this.idleDedup.size) this.idleDedupCursor = undefined;
       }
       if (scopeKey !== undefined && !scope) {
         scope = { sequence: 0, tail: Promise.resolve(), references: 0, expiresAt: Infinity };
@@ -401,10 +406,11 @@ export class Execution {
             this.prompts.cancelSignal(
               queued,
               signal,
-              new FrameworkError(
-                'INVALID_STATE',
-                'Attachment handler ended without awaiting its prompt',
-              ),
+              () =>
+                new FrameworkError(
+                  'INVALID_STATE',
+                  'Attachment handler ended without awaiting its prompt',
+                ),
             ),
         },
         undefined,
@@ -473,6 +479,8 @@ export class Execution {
   }
   private prune(now: number): void {
     if (now < this.nextExpiry) return;
+    // Pruning can empty/refill the index; release the cursor's old backing table.
+    this.idleDedupCursor = undefined;
     const observation = this.observer?.start('cache.prune', { appId: this.options.appId });
     let nextExpiry = Infinity;
     for (const [key, entry] of this.idleDedup) {
@@ -538,10 +546,11 @@ export class Execution {
         .then(() => {
           this.prompts.cancelOwner(
             task,
-            new FrameworkError(
-              'INVALID_STATE',
-              'Message handler ended without awaiting its prompt',
-            ),
+            () =>
+              new FrameworkError(
+                'INVALID_STATE',
+                'Message handler ended without awaiting its prompt',
+              ),
           );
           const drain = this.observer?.start(
             'event.drain',
@@ -579,7 +588,7 @@ export class Execution {
     queued.finished = true;
     this.prompts.cancelOwner(
       queued,
-      new FrameworkError('INVALID_STATE', 'Event context has finished'),
+      () => new FrameworkError('INVALID_STATE', 'Event context has finished'),
     );
     this.stopRunning(queued);
     queued.diagnosticTotal?.end(
@@ -701,6 +710,7 @@ export class Execution {
     this.dedup.clear();
     this.scopes.clear();
     this.idleDedup.clear();
+    this.idleDedupCursor = undefined;
     this.idleScopes.clear();
     this.nextExpiry = Infinity;
     this.notify();

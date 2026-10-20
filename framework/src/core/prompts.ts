@@ -242,13 +242,14 @@ export class PromptManager<Owner, Input> {
     if (force) this.publish(ticket);
     else this.complete(ticket);
   }
-  cancelSignal(owner: Owner, signal: AbortSignal, reason: Error): void {
+  // Normal handler completion has no pending prompt; avoid capturing an unused error stack.
+  cancelSignal(owner: Owner, signal: AbortSignal, reason: () => Error): void {
     const ticket = this.owners.get(owner);
-    if (ticket?.signal === signal) this.cancel(ticket, reason, false);
+    if (ticket?.signal === signal) this.cancel(ticket, reason(), false);
   }
-  cancelOwner(owner: Owner, reason: Error): void {
+  cancelOwner(owner: Owner, reason: () => Error): void {
     const ticket = this.owners.get(owner);
-    if (ticket) this.cancel(ticket, reason, true);
+    if (ticket) this.cancel(ticket, reason(), true);
   }
   close(reason: Error, force = false): void {
     this.closed = true;

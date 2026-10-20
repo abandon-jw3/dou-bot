@@ -9,6 +9,7 @@
 - 已发布的 npm 0.8.0、业务示例、网站与技能保留各自的发布状态，不作为新 API 的兼容要求。
 - PostgreSQL 专项使用 TEST_DATABASE_* 和随机测试 schema；普通离线检查不读取业务数据库配置。
 - 阶段观测默认关闭，通过应用级 `diagnostics` 开启；提供有界指标、采样与批量导出，见 [观测指南](diagnostics.md)。两版回归与服务器开销数据见 [观测验收](diagnostics-review-2026-10-20.md)。
+- 后续高负载定位新增 5 秒窗口，并减少无用的 prompt 错误分配、优化去重缓存淘汰。400/s 基线重复通过，最终代码 500/s 仍未重复通过；增加出站并发到 64 也未解决积压。完整失败记录、源码对照和边界见 [定位报告](bottleneck-review-2026-10-20.md)，默认并发与公开 API 不变。
 - 未发布源码已改用有界异步 Webhook 验签，新增 `transport.verifyTimeoutMs`；配置见 [多机器人指南](multi-bot.md#webhook-请求限制)。
 - 2026-10-20 同机复验：400/s × 5 分钟通过，500/s × 5 分钟仍有拒绝与积压；仅为合成 Webhook 场景。实现、两版 Node 回归与证据见 [验签优化报告](webhook-async-review-2026-10-20.md)。默认执行/出站并发未调整，WS 与真实 SQL 容量需单独测量。
 
@@ -67,6 +68,8 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 混合负载使用 `npm run benchmark:mixed -- smoke local-smoke` 验证测试工具，再运行 `npm run benchmark:mixed -- standard local-standard`。完整场景约 6 分钟，涵盖本机 Webhook 验签、慢 HTTP 业务、过载与恢复；结果位于 framework/work/mixed-benchmark。每次使用不同标签，报告不覆盖已有文件。详见 [混合 Benchmark](benchmark-mixed-2026-10-14.md)。
 
 `npm run example:diagnostics` 使用内存测试入口演示阶段指标。分布式对照通过 `--diagnostics off|metrics|sampled` 控制观测；采样固定 1%，导出仅计数及保留有界示例。比较模式时固定工作负载和资源预算，区分观测开销与容量结论。
+
+开启指标时，分布式工具还保存每约 5 秒的累计快照及窗口差分。跨阶段窗口、未完成操作、观测丢弃和发压漏发分别检查；报告传输在负载结束后进行。不要将恢复期完成数换算为稳态吞吐，也不要以单轮通过代替重复验证。
 
 连接问题可用 `npm run benchmark:mixed -- connections local-connections` 做 70 秒诊断。需要限制客户端连接突发时设置 `DOU_BOT_BENCHMARK_MAX_SOCKETS`；它不改变计划事件速率，报告会记录实际值和客户端等待。实测范围见 [生产准备与连接排查](readiness-2026-10-20.md)。
 

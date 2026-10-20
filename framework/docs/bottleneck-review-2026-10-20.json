@@ -1,0 +1,3551 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "status": "measurements-complete",
+  "conclusion": {
+    "stable500Verified": false,
+    "defaultConcurrencyChanged": false,
+    "publicApiChanged": false,
+    "sdkVersion": "0.8.0",
+    "sourceContract": "2.0 unpublished",
+    "baseline400": "Both off and metrics passed two 300-second runs each",
+    "candidate500": "B at 128/32 passed once and failed once; 128/64 failed twice; metric runs also failed"
+  },
+  "scope": {
+    "target": "43.143.160.168",
+    "node": "24.21.0",
+    "cpu": "2 vCPU Xeon Platinum 8255C",
+    "groupBudget": {
+      "cores": 1.5,
+      "memoryMiB": 1024,
+      "swapMiB": 0
+    },
+    "budgetMembers": ["SDK", "loopback API fixture", "supervisor"],
+    "sshOutsideBudget": true,
+    "accounts": 1,
+    "syntheticGroups": 2000,
+    "measureMs": 300000,
+    "warmup": {
+      "rate": 200,
+      "ms": 10000
+    },
+    "recovery": {
+      "rate": 200,
+      "ms": 15000
+    },
+    "excludes": [
+      "real QQ",
+      "real SQL workload",
+      "Nginx/TLS",
+      "image rendering",
+      "multi-day stability"
+    ]
+  },
+  "counting": [
+    "Primary events are not the number of sent messages",
+    "Accepted/completed cohorts can finish during recovery; do not divide these totals by measurement duration to claim steady throughput",
+    "Expected guard/input/business failures are separate from operational outcomes",
+    "Failed integrity runs are preserved and excluded from valid fixed-load comparison"
+  ],
+  "sources": {
+    "v3": {
+      "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+      "dirty": true,
+      "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+      "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+    },
+    "a": {
+      "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+      "dirty": true,
+      "sdkSha256": "3b6b955e246b5c68be1ff5dff56f51de4257d4cf27fab7a9b6b4549c153e0398",
+      "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+    },
+    "b": {
+      "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+      "dirty": true,
+      "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+      "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+    }
+  },
+  "changes": [
+    "Five-second cumulative snapshots and histogram differences in benchmark reports",
+    "Compressed post-load transfer with atomic local files and an early failure record",
+    "Explicit 2-second idle socket retirement in the driver; active request timeout stays 10 seconds; connection errors are not retried",
+    "Construct orphan-prompt errors only when a pending prompt matches",
+    "Reuse dedup eviction iterator; release it on expiry pruning, empty index and shutdown"
+  ],
+  "experiments": [
+    {
+      "label": "bn400-metrics-v3-r1-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:03:04.969Z",
+      "finishedAt": "2026-10-20T09:08:40.265Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 321.383821793501,
+          "maxMs": 3236.2455,
+          "p50UpperMs": 204,
+          "p95UpperMs": 977,
+          "p99UpperMs": 1726
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 304.56146068786853,
+          "maxMs": 3236.240708,
+          "p50UpperMs": 192,
+          "p95UpperMs": 890,
+          "p99UpperMs": 1717
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 239.4996881326663,
+          "maxMs": 3161.960488,
+          "p50UpperMs": 113,
+          "p95UpperMs": 857,
+          "p99UpperMs": 1627
+        },
+        "successPerSecondByCompletionTime": 370.9066666666667,
+        "inboundQueuePeak": 101,
+        "outboundQueuePeak": 60,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 277.5703125,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.1222145995121282,
+      "eventLoopP99MedianMs": 43.941887,
+      "sdkHttpCounts": {
+        "connections": 1628,
+        "requests": 199699,
+        "status:200": 199699
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "continuationsAcknowledged": 43764,
+        "answer": 21882
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": true,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 69,
+        "droppedSamples": 0,
+        "collectionTotalMs": 47.627910000000014,
+        "steadyCoverageMs": 298699.1384690001
+      },
+      "stages": {
+        "webhook.verify": {
+          "count": 190859,
+          "meanMs": 11.242005500531828,
+          "peakSampledActive": 51,
+          "maxSampledOldestMs": 97.4470949999959
+        },
+        "event.admission": {
+          "count": 190859,
+          "meanMs": 0.08073713075624617,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.normalize": {
+          "count": 190859,
+          "meanMs": 0.006895395674298206,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.queue": {
+          "count": 144371,
+          "meanMs": 6.431105042868736,
+          "peakSampledActive": 49,
+          "maxSampledOldestMs": 202.97995999999694
+        },
+        "event.run": {
+          "count": 144362,
+          "meanMs": 121.04082738708857,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 2880.4225120000046
+        },
+        "handler.bind": {
+          "count": 126438,
+          "meanMs": 0.01297819762255079,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "context.load": {
+          "count": 122850,
+          "meanMs": 74.3939044227434,
+          "peakSampledActive": 69,
+          "maxSampledOldestMs": 1358.5599950000033
+        },
+        "outbound.queue": {
+          "count": 141552,
+          "meanMs": 16.461527556516366,
+          "peakSampledActive": 56,
+          "maxSampledOldestMs": 168.7424100000062
+        },
+        "outbound.run": {
+          "count": 141543,
+          "meanMs": 41.95261949055064,
+          "peakSampledActive": 32,
+          "maxSampledOldestMs": 206.17774700000882
+        },
+        "qq.http": {
+          "count": 158315,
+          "meanMs": 40.87317782457766,
+          "peakSampledActive": 38,
+          "maxSampledOldestMs": 151.11434000000008
+        },
+        "reply.wait": {
+          "count": 129603,
+          "meanMs": 0.0037973513729909346,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        }
+      },
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-metrics-v3-r1-20261020/report.json",
+      "rawReportSha256": "09f41c599b32fdc6d0c532e12c39243da217a426d8d31c2e2c34f8a5889b7645"
+    },
+    {
+      "label": "bn400-metrics-v3-r2-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:08:45.526Z",
+      "finishedAt": "2026-10-20T09:14:21.056Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 300.42520293058726,
+          "maxMs": 3036.144708,
+          "p50UpperMs": 190,
+          "p95UpperMs": 841,
+          "p99UpperMs": 1707
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 284.4636680193289,
+          "maxMs": 3036.144041,
+          "p50UpperMs": 180,
+          "p95UpperMs": 778,
+          "p99UpperMs": 1699
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 223.1470623936511,
+          "maxMs": 2948.646005,
+          "p50UpperMs": 103,
+          "p95UpperMs": 726,
+          "p99UpperMs": 1613
+        },
+        "successPerSecondByCompletionTime": 370.67333333333335,
+        "inboundQueuePeak": 114,
+        "outboundQueuePeak": 63,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 279.4609375,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.1173555824871084,
+      "eventLoopP99MedianMs": 40.861695,
+      "sdkHttpCounts": {
+        "connections": 1717,
+        "requests": 199699,
+        "status:200": 199699
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "answer": 21882,
+        "continuationsAcknowledged": 43764
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": true,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 69,
+        "droppedSamples": 0,
+        "collectionTotalMs": 49.579356000000004,
+        "steadyCoverageMs": 298092.88418799994
+      },
+      "stages": {
+        "webhook.verify": {
+          "count": 190379,
+          "meanMs": 10.290584504535707,
+          "peakSampledActive": 65,
+          "maxSampledOldestMs": 134.92072900000494
+        },
+        "event.admission": {
+          "count": 190379,
+          "meanMs": 0.07923221571182347,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.normalize": {
+          "count": 190379,
+          "meanMs": 0.0075011121814965295,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.queue": {
+          "count": 144032,
+          "meanMs": 3.2524883535949876,
+          "peakSampledActive": 59,
+          "maxSampledOldestMs": 214.2489700000151
+        },
+        "event.run": {
+          "count": 143969,
+          "meanMs": 111.66672344608145,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 2555.713103000002
+        },
+        "handler.bind": {
+          "count": 126160,
+          "meanMs": 0.012160503947375775,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "context.load": {
+          "count": 122566,
+          "meanMs": 72.16611015888589,
+          "peakSampledActive": 58,
+          "maxSampledOldestMs": 1337.4544440000027
+        },
+        "outbound.queue": {
+          "count": 141195,
+          "meanMs": 10.714596124494463,
+          "peakSampledActive": 62,
+          "maxSampledOldestMs": 236.96830000000773
+        },
+        "outbound.run": {
+          "count": 141166,
+          "meanMs": 40.09664142786515,
+          "peakSampledActive": 32,
+          "maxSampledOldestMs": 251.64340000000084
+        },
+        "qq.http": {
+          "count": 157904,
+          "meanMs": 39.03228436599449,
+          "peakSampledActive": 36,
+          "maxSampledOldestMs": 186.81187299999874
+        },
+        "reply.wait": {
+          "count": 129295,
+          "meanMs": 0.003693345720960517,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        }
+      },
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-metrics-v3-r2-20261020/report.json",
+      "rawReportSha256": "d66d209066dc4060ac1f37ae748f2ab27040e99a40e542e87266a37201f69883"
+    },
+    {
+      "label": "bn400-off-v3-r1-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T08:57:27.533Z",
+      "finishedAt": "2026-10-20T09:02:59.806Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 257.6900491464274,
+          "maxMs": 3148.833041,
+          "p50UpperMs": 153,
+          "p95UpperMs": 684,
+          "p99UpperMs": 1664
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 243.91658051024962,
+          "maxMs": 3148.832375,
+          "p50UpperMs": 145,
+          "p95UpperMs": 656,
+          "p99UpperMs": 1657
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 189.76151430074358,
+          "maxMs": 3086.27208,
+          "p50UpperMs": 76,
+          "p95UpperMs": 592,
+          "p99UpperMs": 1582
+        },
+        "successPerSecondByCompletionTime": 371.1666666666667,
+        "inboundQueuePeak": 52,
+        "outboundQueuePeak": 61,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 264.09375,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.038250103226617,
+      "eventLoopP99MedianMs": 33.718271,
+      "sdkHttpCounts": {
+        "connections": 1630,
+        "requests": 199699,
+        "status:200": 199699
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "continuationsAcknowledged": 43764,
+        "answer": 21882
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-off-v3-r1-20261020/report.json",
+      "rawReportSha256": "06871dc7e272ddb64fe0741d2a28d28b1be6918ec1eace2005d1080f202fcba2"
+    },
+    {
+      "label": "bn400-off-v3-r2-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:14:26.393Z",
+      "finishedAt": "2026-10-20T09:19:58.585Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 245.54040513071055,
+          "maxMs": 2873.185,
+          "p50UpperMs": 144,
+          "p95UpperMs": 639,
+          "p99UpperMs": 1646
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 232.4285562376071,
+          "maxMs": 2873.183667,
+          "p50UpperMs": 136,
+          "p95UpperMs": 619,
+          "p99UpperMs": 1639
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 180.43984951404408,
+          "maxMs": 2740.689311,
+          "p50UpperMs": 69,
+          "p95UpperMs": 558,
+          "p99UpperMs": 1573
+        },
+        "successPerSecondByCompletionTime": 371.1666666666667,
+        "inboundQueuePeak": 0,
+        "outboundQueuePeak": 54,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 263.38671875,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.0066781443238209,
+      "eventLoopP99MedianMs": 31.080447,
+      "sdkHttpCounts": {
+        "connections": 1480,
+        "requests": 199699,
+        "status:200": 199699
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "answer": 21882,
+        "continuationsAcknowledged": 43764
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-off-v3-r2-20261020/report.json",
+      "rawReportSha256": "f7fe5d268b82657f69d1abb4e7fb3e1ec85ffc340c8b058b1facde5140b0068f"
+    },
+    {
+      "label": "bn500-a-off-r1-20261020",
+      "role": "candidate",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b6b955e246b5c68be1ff5dff56f51de4257d4cf27fab7a9b6b4549c153e0398",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:35:11.078Z",
+      "finishedAt": "2026-10-20T09:40:42.783Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 150000,
+        "completed": 150000,
+        "outcomes": {
+          "guard-denied": 6272,
+          "invalid-input": 2996,
+          "success": 139232,
+          "intentional-business-error": 1500
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 139232,
+          "meanMs": 1143.3294333008737,
+          "maxMs": 9397.061667,
+          "p50UpperMs": 589,
+          "p95UpperMs": 2903,
+          "p99UpperMs": 6794
+        },
+        "terminalLatency": {
+          "count": 150000,
+          "meanMs": 1111.445047175911,
+          "maxMs": 9397.060959,
+          "p50UpperMs": 569,
+          "p95UpperMs": 2839,
+          "p99UpperMs": 6628
+        },
+        "serverAdmissionLatency": {
+          "count": 139232,
+          "meanMs": 1052.9252671395311,
+          "maxMs": 9320.691727,
+          "p50UpperMs": 500,
+          "p95UpperMs": 2809,
+          "p99UpperMs": 6695
+        },
+        "successPerSecondByCompletionTime": 460.0366666666667,
+        "inboundQueuePeak": 1458,
+        "outboundQueuePeak": 65,
+        "tailQueueMedian": 862,
+        "sdkRssPeakMiB": 291.16796875,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.1985456438750535,
+      "eventLoopP99MedianMs": 75.497471,
+      "sdkHttpCounts": {
+        "connections": 424,
+        "requests": 247621,
+        "status:200": 247621
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 239584,
+        "primaryAcknowledged": 150000,
+        "duplicate": 34860,
+        "distractor": 27362,
+        "answer": 27362,
+        "continuationsAcknowledged": 54724
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-a-off-r1-20261020/report.json",
+      "rawReportSha256": "cc65b073a88e01afaf6fc02de5c6ae4e7f4aa0c10cc22a1c129b360e98955422"
+    },
+    {
+      "label": "bn500-b-metrics-r1-20261020",
+      "role": "candidate",
+      "integrity": "failed",
+      "integrityProblems": ["Generator dropped 117 attempts"],
+      "validForCapacityComparison": false,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:52:01.507Z",
+      "finishedAt": "2026-10-20T09:57:36.627Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 113661,
+        "completed": 113661,
+        "outcomes": {
+          "guard-denied": 4744,
+          "invalid-input": 2254,
+          "success": 105019,
+          "intentional-business-error": 1115,
+          "prompt-deadline-missed": 526,
+          "prompt-resource-limit": 3
+        },
+        "primaryDrops": 38,
+        "allAttemptDrops": 117,
+        "successLatency": {
+          "count": 105019,
+          "meanMs": 6795.947769109899,
+          "maxMs": 21679.203083,
+          "p50UpperMs": 5890,
+          "p95UpperMs": 15764,
+          "p99UpperMs": 18383
+        },
+        "terminalLatency": {
+          "count": 113661,
+          "meanMs": 6732.730783364221,
+          "maxMs": 21679.196541,
+          "p50UpperMs": 5857,
+          "p95UpperMs": 15654,
+          "p99UpperMs": 18487
+        },
+        "serverAdmissionLatency": {
+          "count": 105019,
+          "meanMs": 5678.311960973638,
+          "maxMs": 19530.414211,
+          "p50UpperMs": 4769,
+          "p95UpperMs": 14864,
+          "p99UpperMs": 16517
+        },
+        "successPerSecondByCompletionTime": 342.24,
+        "inboundQueuePeak": 2007,
+        "outboundQueuePeak": 76,
+        "tailQueueMedian": 1985,
+        "sdkRssPeakMiB": 297.66015625,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.2766569190660682,
+      "eventLoopP99MedianMs": 113.115135,
+      "sdkHttpCounts": {
+        "connections": 211,
+        "requests": 376061,
+        "status:200": 190082,
+        "status:503": 185979
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 367764,
+        "primaryAcknowledged": 113661,
+        "duplicate": 28105,
+        "distractor": 20607,
+        "answer": 20607,
+        "continuationsAcknowledged": 41214,
+        "retry": 148562,
+        "driverDropped": 117,
+        "driverDropped:retry": 73,
+        "driverDropped:primary": 38,
+        "driverDropped:answer": 6
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": true,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 68,
+        "droppedSamples": 0,
+        "collectionTotalMs": 83.05180400000002,
+        "steadyCoverageMs": 297265.05212999997
+      },
+      "stages": {
+        "webhook.verify": {
+          "count": 361804,
+          "meanMs": 24.51694241166553,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 151.74351599998772
+        },
+        "event.admission": {
+          "count": 361804,
+          "meanMs": 0.02570533531970242,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.normalize": {
+          "count": 361804,
+          "meanMs": 0.0054660738079003015,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.queue": {
+          "count": 132981,
+          "meanMs": 4251.065340197696,
+          "peakSampledActive": 2003,
+          "maxSampledOldestMs": 5708.945002000008
+        },
+        "event.run": {
+          "count": 132913,
+          "meanMs": 285.9316313645077,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 2920.294957999984
+        },
+        "handler.bind": {
+          "count": 116961,
+          "meanMs": 0.015405891211539045,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "context.load": {
+          "count": 113684,
+          "meanMs": 102.18989713366831,
+          "peakSampledActive": 48,
+          "maxSampledOldestMs": 1331.8497440000065
+        },
+        "outbound.queue": {
+          "count": 129932,
+          "meanMs": 129.43527428358715,
+          "peakSampledActive": 76,
+          "maxSampledOldestMs": 268.80976600000577
+        },
+        "outbound.run": {
+          "count": 129927,
+          "meanMs": 73.19342431062833,
+          "peakSampledActive": 32,
+          "maxSampledOldestMs": 267.1681010000175
+        },
+        "qq.http": {
+          "count": 145548,
+          "meanMs": 71.392775486637,
+          "peakSampledActive": 41,
+          "maxSampledOldestMs": 217.03509399999166
+        },
+        "reply.wait": {
+          "count": 118939,
+          "meanMs": 0.0068820777625504355,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        }
+      },
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-b-metrics-r1-20261020/report.json",
+      "rawReportSha256": "4302344b932d81cebf9cc50195451bd96220063aeb6ba9b9e5ddf1f4a1b94478"
+    },
+    {
+      "label": "bn500-b-o64-off-r1-20261020",
+      "role": "candidate",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 64,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:57:36.932Z",
+      "finishedAt": "2026-10-20T10:03:08.486Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 149456,
+        "completed": 149456,
+        "outcomes": {
+          "guard-denied": 6257,
+          "invalid-input": 2984,
+          "success": 138723,
+          "intentional-business-error": 1492
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 138723,
+          "meanMs": 2649.480400818178,
+          "maxMs": 12773.070167,
+          "p50UpperMs": 2294,
+          "p95UpperMs": 6935,
+          "p99UpperMs": 10969
+        },
+        "terminalLatency": {
+          "count": 149456,
+          "meanMs": 2596.5671885356332,
+          "maxMs": 12773.066083,
+          "p50UpperMs": 2261,
+          "p95UpperMs": 6511,
+          "p99UpperMs": 10907
+        },
+        "serverAdmissionLatency": {
+          "count": 138723,
+          "meanMs": 2486.2293002268616,
+          "maxMs": 12690.129524,
+          "p50UpperMs": 2140,
+          "p95UpperMs": 6725,
+          "p99UpperMs": 10683
+        },
+        "successPerSecondByCompletionTime": 455.1333333333333,
+        "inboundQueuePeak": 2003,
+        "outboundQueuePeak": 21,
+        "tailQueueMedian": 1961,
+        "sdkRssPeakMiB": 309.26953125,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.234272542902035,
+      "eventLoopP99MedianMs": 125.894655,
+      "sdkHttpCounts": {
+        "connections": 205,
+        "requests": 254985,
+        "status:200": 246778,
+        "status:503": 8207
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 246913,
+        "primaryAcknowledged": 149456,
+        "duplicate": 34762,
+        "distractor": 27264,
+        "answer": 27264,
+        "continuationsAcknowledged": 54528,
+        "retry": 7623
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-b-o64-off-r1-20261020/report.json",
+      "rawReportSha256": "e28335863141a9486413512863e635eb45353c9de2748bd3ceb16bcd8015476a"
+    },
+    {
+      "label": "bn500-b-o64-off-r2-20261020",
+      "role": "candidate",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 64,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T10:03:13.692Z",
+      "finishedAt": "2026-10-20T10:08:45.318Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 145345,
+        "completed": 145345,
+        "outcomes": {
+          "guard-denied": 6083,
+          "invalid-input": 2905,
+          "success": 132670,
+          "intentional-business-error": 1446,
+          "prompt-deadline-missed": 2229,
+          "prompt-resource-limit": 12
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 132670,
+          "meanMs": 5518.329760242356,
+          "maxMs": 18947.104375,
+          "p50UpperMs": 4917,
+          "p95UpperMs": 12597,
+          "p99UpperMs": 15250
+        },
+        "terminalLatency": {
+          "count": 145345,
+          "meanMs": 5543.964511577717,
+          "maxMs": 18947.103541,
+          "p50UpperMs": 4905,
+          "p95UpperMs": 12808,
+          "p99UpperMs": 15375
+        },
+        "serverAdmissionLatency": {
+          "count": 132670,
+          "meanMs": 4240.7947088677465,
+          "maxMs": 15666.531001,
+          "p50UpperMs": 3645,
+          "p95UpperMs": 11902,
+          "p99UpperMs": 13496
+        },
+        "successPerSecondByCompletionTime": 432.9433333333333,
+        "inboundQueuePeak": 2006,
+        "outboundQueuePeak": 18,
+        "tailQueueMedian": 1965,
+        "sdkRssPeakMiB": 309,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.2414161577386351,
+      "eventLoopP99MedianMs": 134.610943,
+      "sdkHttpCounts": {
+        "connections": 170,
+        "requests": 294980,
+        "status:200": 236782,
+        "status:503": 58198
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 286913,
+        "primaryAcknowledged": 145345,
+        "duplicate": 32825,
+        "distractor": 25327,
+        "continuationsAcknowledged": 50654,
+        "answer": 25327,
+        "retry": 53434
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-b-o64-off-r2-20261020/report.json",
+      "rawReportSha256": "841f591578cc199866c470cd00b26cef87f394aa7e349c4bf43078d252aab380"
+    },
+    {
+      "label": "bn500-b-off-r1-20261020",
+      "role": "candidate",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:40:47.943Z",
+      "finishedAt": "2026-10-20T09:46:19.382Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 150000,
+        "completed": 150000,
+        "outcomes": {
+          "guard-denied": 6272,
+          "invalid-input": 2996,
+          "success": 139232,
+          "intentional-business-error": 1500
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 139232,
+          "meanMs": 392.07495597896957,
+          "maxMs": 4035.146208,
+          "p50UpperMs": 258,
+          "p95UpperMs": 1183,
+          "p99UpperMs": 1899
+        },
+        "terminalLatency": {
+          "count": 150000,
+          "meanMs": 372.8734847320006,
+          "maxMs": 4035.145708,
+          "p50UpperMs": 243,
+          "p95UpperMs": 1127,
+          "p99UpperMs": 1879
+        },
+        "serverAdmissionLatency": {
+          "count": 139232,
+          "meanMs": 309.34618671654135,
+          "maxMs": 3924.666993,
+          "p50UpperMs": 165,
+          "p95UpperMs": 1090,
+          "p99UpperMs": 1801
+        },
+        "successPerSecondByCompletionTime": 463.63,
+        "inboundQueuePeak": 333,
+        "outboundQueuePeak": 64,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 285.546875,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.1690021684606586,
+      "eventLoopP99MedianMs": 49.676287,
+      "sdkHttpCounts": {
+        "connections": 651,
+        "requests": 247621,
+        "status:200": 247621
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 239584,
+        "primaryAcknowledged": 150000,
+        "duplicate": 34860,
+        "distractor": 27362,
+        "continuationsAcknowledged": 54724,
+        "answer": 27362
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-b-off-r1-20261020/report.json",
+      "rawReportSha256": "e64e6ee6e8095268bc2ab595bafd9795680cf3fca1b1292d072437a97a5371ea"
+    },
+    {
+      "label": "bn500-b-off-r2-20261020",
+      "role": "candidate",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "3b9073215f3e80414e3d5012528df53ee29d0f88f2727e1a1c81b39f9f376472",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:46:24.574Z",
+      "finishedAt": "2026-10-20T09:51:56.342Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 149613,
+        "completed": 149613,
+        "outcomes": {
+          "guard-denied": 6254,
+          "invalid-input": 2989,
+          "success": 138872,
+          "intentional-business-error": 1498
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 138872,
+          "meanMs": 1439.5659673764112,
+          "maxMs": 12772.568875,
+          "p50UpperMs": 764,
+          "p95UpperMs": 3975,
+          "p99UpperMs": 9897
+        },
+        "terminalLatency": {
+          "count": 149613,
+          "meanMs": 1403.4901749173334,
+          "maxMs": 12772.567958,
+          "p50UpperMs": 735,
+          "p95UpperMs": 3928,
+          "p99UpperMs": 9814
+        },
+        "serverAdmissionLatency": {
+          "count": 138872,
+          "meanMs": 1343.488215602016,
+          "maxMs": 12505.551614,
+          "p50UpperMs": 667,
+          "p95UpperMs": 3803,
+          "p99UpperMs": 9800
+        },
+        "successPerSecondByCompletionTime": 456.0933333333333,
+        "inboundQueuePeak": 1996,
+        "outboundQueuePeak": 70,
+        "tailQueueMedian": 1799,
+        "sdkRssPeakMiB": 298.15234375,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.211468851538243,
+      "eventLoopP99MedianMs": 80.183295,
+      "sdkHttpCounts": {
+        "connections": 364,
+        "requests": 251191,
+        "status:200": 247037,
+        "status:503": 4154
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 243154,
+        "primaryAcknowledged": 149613,
+        "duplicate": 34796,
+        "distractor": 27298,
+        "continuationsAcknowledged": 54596,
+        "answer": 27298,
+        "retry": 3762
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-b-off-r2-20261020/report.json",
+      "rawReportSha256": "005bca67cecc6ab592d6891197ea7a091649bee4c99789d978ce7b678a9ef3d5"
+    },
+    {
+      "label": "bn500-metrics-v3-r1-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T08:46:10.477Z",
+      "finishedAt": "2026-10-20T08:51:45.558Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 116871,
+        "completed": 116871,
+        "outcomes": {
+          "guard-denied": 4907,
+          "invalid-input": 2330,
+          "success": 107982,
+          "intentional-business-error": 1170,
+          "prompt-deadline-missed": 482
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 107982,
+          "meanMs": 6319.118798132665,
+          "maxMs": 21398.5345,
+          "p50UpperMs": 5424,
+          "p95UpperMs": 14721,
+          "p99UpperMs": 17739
+        },
+        "terminalLatency": {
+          "count": 116871,
+          "meanMs": 6254.061888421628,
+          "maxMs": 21398.531291,
+          "p50UpperMs": 5388,
+          "p95UpperMs": 14649,
+          "p99UpperMs": 17772
+        },
+        "serverAdmissionLatency": {
+          "count": 107982,
+          "meanMs": 5507.718061743803,
+          "maxMs": 18334.451348,
+          "p50UpperMs": 4704,
+          "p95UpperMs": 14307,
+          "p99UpperMs": 16221
+        },
+        "successPerSecondByCompletionTime": 350.2633333333333,
+        "inboundQueuePeak": 2012,
+        "outboundQueuePeak": 73,
+        "tailQueueMedian": 1982,
+        "sdkRssPeakMiB": 303.890625,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.272537632961268,
+      "eventLoopP99MedianMs": 111.804415,
+      "sdkHttpCounts": {
+        "connections": 214,
+        "requests": 369590,
+        "status:200": 194902,
+        "status:503": 174688
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 360778,
+        "primaryAcknowledged": 116871,
+        "duplicate": 28690,
+        "distractor": 21192,
+        "answer": 21192,
+        "continuationsAcknowledged": 42384,
+        "retry": 139704
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": true,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 68,
+        "droppedSamples": 0,
+        "collectionTotalMs": 56.25127599999999,
+        "steadyCoverageMs": 295475.191352
+      },
+      "stages": {
+        "webhook.verify": {
+          "count": 350890,
+          "meanMs": 24.628458318139486,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 154.69119700003648
+        },
+        "event.admission": {
+          "count": 350890,
+          "meanMs": 0.03970469547433675,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.normalize": {
+          "count": 350890,
+          "meanMs": 0.006409841816492615,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.queue": {
+          "count": 135305,
+          "meanMs": 4123.508375728648,
+          "peakSampledActive": 2006,
+          "maxSampledOldestMs": 5144.608302000008
+        },
+        "event.run": {
+          "count": 135243,
+          "meanMs": 279.40751410204126,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 3050.3052210000023
+        },
+        "handler.bind": {
+          "count": 118987,
+          "meanMs": 0.013418544714980427,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "context.load": {
+          "count": 115618,
+          "meanMs": 100.09738886438984,
+          "peakSampledActive": 52,
+          "maxSampledOldestMs": 1323.5665710000321
+        },
+        "outbound.queue": {
+          "count": 132310,
+          "meanMs": 126.12803312381534,
+          "peakSampledActive": 71,
+          "maxSampledOldestMs": 298.88973799999803
+        },
+        "outbound.run": {
+          "count": 132302,
+          "meanMs": 71.44708191378074,
+          "peakSampledActive": 32,
+          "maxSampledOldestMs": 301.81273499998497
+        },
+        "qq.http": {
+          "count": 148175,
+          "meanMs": 69.62851843171266,
+          "peakSampledActive": 39,
+          "maxSampledOldestMs": 224.32828900002642
+        },
+        "reply.wait": {
+          "count": 121111,
+          "meanMs": 0.006209742872249474,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        }
+      },
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-metrics-v3-r1-20261020/report.json",
+      "rawReportSha256": "d939d3153ed67b0c777587b47c35da27eb07752be57ee2b4ac30b717b39a3207"
+    },
+    {
+      "label": "bn500-metrics-v3-r2-20261020",
+      "role": "baseline",
+      "integrity": "failed",
+      "integrityProblems": ["Generator dropped 240 attempts"],
+      "validForCapacityComparison": false,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "metrics"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:20:03.770Z",
+      "finishedAt": "2026-10-20T09:25:38.963Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 117793,
+        "completed": 117793,
+        "outcomes": {
+          "guard-denied": 4953,
+          "invalid-input": 2318,
+          "success": 108311,
+          "intentional-business-error": 1178,
+          "prompt-deadline-missed": 1033
+        },
+        "primaryDrops": 148,
+        "allAttemptDrops": 240,
+        "successLatency": {
+          "count": 108311,
+          "meanMs": 6318.429538503184,
+          "maxMs": 22438.51625,
+          "p50UpperMs": 5262,
+          "p95UpperMs": 14068,
+          "p99UpperMs": 17569
+        },
+        "terminalLatency": {
+          "count": 117793,
+          "meanMs": 6300.211591935317,
+          "maxMs": 22502.300958,
+          "p50UpperMs": 5236,
+          "p95UpperMs": 14085,
+          "p99UpperMs": 17769
+        },
+        "serverAdmissionLatency": {
+          "count": 108311,
+          "meanMs": 5486.123336121882,
+          "maxMs": 19304.120349,
+          "p50UpperMs": 4606,
+          "p95UpperMs": 13635,
+          "p99UpperMs": 16240
+        },
+        "successPerSecondByCompletionTime": 351.51,
+        "inboundQueuePeak": 2003,
+        "outboundQueuePeak": 76,
+        "tailQueueMedian": 1984,
+        "sdkRssPeakMiB": 300.86328125,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.2740598589235514,
+      "eventLoopP99MedianMs": 109.379583,
+      "sdkHttpCounts": {
+        "connections": 212,
+        "requests": 366510,
+        "status:200": 195637,
+        "status:503": 170873
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 357648,
+        "primaryAcknowledged": 117793,
+        "duplicate": 28611,
+        "distractor": 21113,
+        "continuationsAcknowledged": 42223,
+        "answer": 21113,
+        "retry": 137051,
+        "driverDropped": 240,
+        "driverDropped:primary": 148,
+        "driverDropped:duplicate": 27,
+        "driverDropped:retry": 58,
+        "driverDropped:answer": 4,
+        "driverDropped:distractor": 3
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": true,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 68,
+        "droppedSamples": 0,
+        "collectionTotalMs": 68.20781,
+        "steadyCoverageMs": 297051.0814150001
+      },
+      "stages": {
+        "webhook.verify": {
+          "count": 349689,
+          "meanMs": 24.275727257702872,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 157.64402100001462
+        },
+        "event.admission": {
+          "count": 349689,
+          "meanMs": 0.039350341000142126,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.normalize": {
+          "count": 349689,
+          "meanMs": 0.005203718489861943,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "event.queue": {
+          "count": 136942,
+          "meanMs": 4147.756951280851,
+          "peakSampledActive": 2000,
+          "maxSampledOldestMs": 5320.353027000005
+        },
+        "event.run": {
+          "count": 136910,
+          "meanMs": 277.6362228143519,
+          "peakSampledActive": 128,
+          "maxSampledOldestMs": 3115.2761920000194
+        },
+        "handler.bind": {
+          "count": 120687,
+          "meanMs": 0.01328133199929947,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        },
+        "context.load": {
+          "count": 117283,
+          "meanMs": 99.64047513333537,
+          "peakSampledActive": 51,
+          "maxSampledOldestMs": 1390.2671459999983
+        },
+        "outbound.queue": {
+          "count": 133435,
+          "meanMs": 125.48183361579085,
+          "peakSampledActive": 68,
+          "maxSampledOldestMs": 310.99938200000906
+        },
+        "outbound.run": {
+          "count": 133435,
+          "meanMs": 71.2335720044591,
+          "peakSampledActive": 32,
+          "maxSampledOldestMs": 315.1189360000135
+        },
+        "qq.http": {
+          "count": 149559,
+          "meanMs": 69.47752606567964,
+          "peakSampledActive": 41,
+          "maxSampledOldestMs": 250.49377100000856
+        },
+        "reply.wait": {
+          "count": 122060,
+          "meanMs": 0.00647250873342527,
+          "peakSampledActive": 0,
+          "maxSampledOldestMs": 0
+        }
+      },
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-metrics-v3-r2-20261020/report.json",
+      "rawReportSha256": "2e28cd5fb02b45a8f6ef9e75e73ea8534ce8c63bfd76042e5e80cae3b03d86bf"
+    },
+    {
+      "label": "bn500-off-v3-r1-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T08:40:33.659Z",
+      "finishedAt": "2026-10-20T08:46:05.276Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 130105,
+        "completed": 130105,
+        "outcomes": {
+          "guard-denied": 5492,
+          "invalid-input": 2603,
+          "success": 120719,
+          "intentional-business-error": 1291
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 120719,
+          "meanMs": 4859.8024627678105,
+          "maxMs": 17210.221042,
+          "p50UpperMs": 4418,
+          "p95UpperMs": 12128,
+          "p99UpperMs": 14742
+        },
+        "terminalLatency": {
+          "count": 130105,
+          "meanMs": 4775.257610551658,
+          "maxMs": 17210.216709,
+          "p50UpperMs": 4384,
+          "p95UpperMs": 11981,
+          "p99UpperMs": 14669
+        },
+        "serverAdmissionLatency": {
+          "count": 120719,
+          "meanMs": 4562.171685015247,
+          "maxMs": 15755.366045,
+          "p50UpperMs": 4137,
+          "p95UpperMs": 11914,
+          "p99UpperMs": 14275
+        },
+        "successPerSecondByCompletionTime": 395.2866666666667,
+        "inboundQueuePeak": 2007,
+        "outboundQueuePeak": 73,
+        "tailQueueMedian": 1985,
+        "sdkRssPeakMiB": 295.4453125,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.253951440986038,
+      "eventLoopP99MedianMs": 100.958207,
+      "sdkHttpCounts": {
+        "connections": 220,
+        "requests": 335271,
+        "status:200": 216537,
+        "status:503": 118734
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 327210,
+        "primaryAcknowledged": 130105,
+        "duplicate": 31273,
+        "distractor": 23775,
+        "answer": 23775,
+        "continuationsAcknowledged": 47550,
+        "retry": 98387
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-off-v3-r1-20261020/report.json",
+      "rawReportSha256": "9506905ba33a9eb428feef096e6750ced89786e7baba2e2a29745b9a6dcdc927"
+    },
+    {
+      "label": "bn500-off-v3-r2-20261020",
+      "role": "baseline",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": true,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-500",
+            "durationMs": 300000,
+            "rate": 500
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "c49bc1ca207c264c89f2fbe845b977f3cc5c0611439d79c62165874ae4aa2cf3"
+      },
+      "startedAt": "2026-10-20T09:28:23.865Z",
+      "finishedAt": "2026-10-20T09:33:55.265Z",
+      "phase": {
+        "name": "steady-500",
+        "rate": 500,
+        "durationMs": 300000,
+        "scheduled": 150000,
+        "accepted": 143403,
+        "completed": 143403,
+        "outcomes": {
+          "guard-denied": 5997,
+          "invalid-input": 2852,
+          "success": 133127,
+          "intentional-business-error": 1427
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 133127,
+          "meanMs": 2559.908152596272,
+          "maxMs": 15646.866916,
+          "p50UpperMs": 1949,
+          "p95UpperMs": 7443,
+          "p99UpperMs": 12631
+        },
+        "terminalLatency": {
+          "count": 143403,
+          "meanMs": 2508.1964163465427,
+          "maxMs": 15646.866416,
+          "p50UpperMs": 1908,
+          "p95UpperMs": 6830,
+          "p99UpperMs": 12548
+        },
+        "serverAdmissionLatency": {
+          "count": 133127,
+          "meanMs": 2419.7369415926296,
+          "maxMs": 14925.912363,
+          "p50UpperMs": 1852,
+          "p95UpperMs": 7290,
+          "p99UpperMs": 12387
+        },
+        "successPerSecondByCompletionTime": 436.64666666666665,
+        "inboundQueuePeak": 2000,
+        "outboundQueuePeak": 72,
+        "tailQueueMedian": 1984,
+        "sdkRssPeakMiB": 295.51171875,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.2188997238749009,
+      "eventLoopP99MedianMs": 79.101951,
+      "sdkHttpCounts": {
+        "connections": 373,
+        "requests": 280225,
+        "status:200": 237412,
+        "status:503": 42813
+      },
+      "driverCounts": {
+        "primary": 150000,
+        "connectionReusable": 272168,
+        "primaryAcknowledged": 143403,
+        "duplicate": 33698,
+        "distractor": 26200,
+        "continuationsAcknowledged": 52400,
+        "answer": 26200,
+        "retry": 36070
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn500-off-v3-r2-20261020/report.json",
+      "rawReportSha256": "85e87e76df8cc97fcfd32f659a0d604bd3aaf7401d8776cfe0604662359244f2"
+    }
+  ],
+  "preliminary": [
+    {
+      "label": "bn400-off-r1-20261020",
+      "role": "preliminary",
+      "integrity": "passed",
+      "integrityProblems": [],
+      "validForCapacityComparison": false,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "2a56396fbd0c3a63165cb1bce321c63ff6ffe6c930d2c02a9a785e1b384c7773"
+      },
+      "startedAt": "2026-10-20T08:11:08.475Z",
+      "finishedAt": "2026-10-20T08:16:43.729Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 120000,
+        "completed": 120000,
+        "outcomes": {
+          "guard-denied": 5014,
+          "invalid-input": 2399,
+          "success": 111390,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111390,
+          "meanMs": 253.49285797173792,
+          "maxMs": 2842.997,
+          "p50UpperMs": 151,
+          "p95UpperMs": 664,
+          "p99UpperMs": 1656
+        },
+        "terminalLatency": {
+          "count": 120000,
+          "meanMs": 239.8493608318091,
+          "maxMs": 2842.995,
+          "p50UpperMs": 143,
+          "p95UpperMs": 637,
+          "p99UpperMs": 1648
+        },
+        "serverAdmissionLatency": {
+          "count": 111390,
+          "meanMs": 187.61947918196458,
+          "maxMs": 2789.921109,
+          "p50UpperMs": 75,
+          "p95UpperMs": 576,
+          "p99UpperMs": 1580
+        },
+        "successPerSecondByCompletionTime": 371.17333333333335,
+        "inboundQueuePeak": 41,
+        "outboundQueuePeak": 57,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 264.89453125,
+        "capacityPassed": true
+      },
+      "sdkMeanCpuCores": 1.0369640617317408,
+      "eventLoopP99MedianMs": 32.096255,
+      "sdkHttpCounts": {
+        "connections": 464,
+        "requests": 199699,
+        "status:200": 199699,
+        "socketTimeouts": 418
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191648,
+        "primaryAcknowledged": 120000,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "answer": 21882,
+        "continuationsAcknowledged": 43764
+      },
+      "driverErrors": [],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-off-r1-20261020/report.json",
+      "rawReportSha256": "b8d3eaa2ba6d1f1ec10cbd64528108aac2096c5eb8f9e1cb1dd853d5f32d787f"
+    },
+    {
+      "label": "bn400-off-v2-r1-20261020",
+      "role": "preliminary",
+      "integrity": "failed",
+      "integrityProblems": ["driver errors: 5"],
+      "validForCapacityComparison": false,
+      "configuration": {
+        "name": "comparison",
+        "concurrency": 128,
+        "outboundConcurrency": 32,
+        "queueCapacity": 2000,
+        "queueMaxBytes": 33554432,
+        "loadTimeoutMs": 1800,
+        "requestTimeoutMs": 1200,
+        "promptTimeoutMs": 1500,
+        "baseDataMs": 15,
+        "slowDataMs": 450,
+        "baseApiMs": 15,
+        "tokenSeconds": 12,
+        "shutdownTimeoutMs": 800,
+        "driverMaxInFlight": 2048,
+        "driverMaxSockets": 128,
+        "phases": [
+          {
+            "name": "warmup-200",
+            "durationMs": 10000,
+            "rate": 200
+          },
+          {
+            "name": "steady-400",
+            "durationMs": 300000,
+            "rate": 400
+          },
+          {
+            "name": "recovery-200",
+            "durationMs": 15000,
+            "rate": 200
+          }
+        ],
+        "diagnostics": "off"
+      },
+      "source": {
+        "gitHead": "df32a0f824a444fba535a91f9c8d7710d89f4628",
+        "dirty": true,
+        "sdkSha256": "fa7eb0a9c22e2b429e1a1cac953ac815172331e2846ebed17526a114ab2f9460",
+        "harnessSha256": "736376f52fdaa55262ced3d17d7f51b19bb7cf0ca7cd7f7a88e8396438b1ae1c"
+      },
+      "startedAt": "2026-10-20T08:28:59.396Z",
+      "finishedAt": "2026-10-20T08:34:31.587Z",
+      "phase": {
+        "name": "steady-400",
+        "rate": 400,
+        "durationMs": 300000,
+        "scheduled": 120000,
+        "accepted": 119998,
+        "completed": 119998,
+        "outcomes": {
+          "guard-denied": 5013,
+          "invalid-input": 2399,
+          "success": 111389,
+          "intentional-business-error": 1197
+        },
+        "primaryDrops": 0,
+        "allAttemptDrops": 0,
+        "successLatency": {
+          "count": 111389,
+          "meanMs": 264.97878607038285,
+          "maxMs": 3054.529042,
+          "p50UpperMs": 157,
+          "p95UpperMs": 734,
+          "p99UpperMs": 1665
+        },
+        "terminalLatency": {
+          "count": 119998,
+          "meanMs": 250.8068340758355,
+          "maxMs": 3054.527125,
+          "p50UpperMs": 148,
+          "p95UpperMs": 685,
+          "p99UpperMs": 1658
+        },
+        "serverAdmissionLatency": {
+          "count": 111389,
+          "meanMs": 196.36185974481492,
+          "maxMs": 2970.858565,
+          "p50UpperMs": 78,
+          "p95UpperMs": 636,
+          "p99UpperMs": 1584
+        },
+        "successPerSecondByCompletionTime": 370.59,
+        "inboundQueuePeak": 77,
+        "outboundQueuePeak": 62,
+        "tailQueueMedian": 0,
+        "sdkRssPeakMiB": 269.53515625,
+        "capacityPassed": false
+      },
+      "sdkMeanCpuCores": 1.0386920208556292,
+      "eventLoopP99MedianMs": 33.882110999999995,
+      "sdkHttpCounts": {
+        "connections": 462,
+        "requests": 199694,
+        "status:200": 199694,
+        "socketTimeouts": 416
+      },
+      "driverCounts": {
+        "primary": 120000,
+        "connectionReusable": 191643,
+        "primaryAcknowledged": 119998,
+        "duplicate": 27884,
+        "distractor": 21882,
+        "continuationsAcknowledged": 43763,
+        "answer": 21882,
+        "requestErrors": 5,
+        "transportError:ECONNRESET": 5
+      },
+      "driverErrors": [
+        {
+          "source": "request",
+          "phase": "steady-400",
+          "id": 1178972,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "message": "socket hang up",
+          "elapsedMs": 2.555125,
+          "reusedSocket": true,
+          "connectionEstablished": true,
+          "requestsOnSocket": 389,
+          "localPort": 58704,
+          "socketAgeMs": 66919.102125,
+          "bodyBytes": 426,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 767
+        },
+        {
+          "source": "request",
+          "phase": "steady-400",
+          "id": 44807,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "message": "socket hang up",
+          "elapsedMs": 3.431583,
+          "reusedSocket": true,
+          "connectionEstablished": true,
+          "requestsOnSocket": 361,
+          "localPort": 58705,
+          "socketAgeMs": 66919.463083,
+          "bodyBytes": 345,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 686
+        },
+        {
+          "source": "request",
+          "phase": "steady-400",
+          "id": 106526,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "message": "socket hang up",
+          "elapsedMs": 109.485667,
+          "reusedSocket": true,
+          "connectionEstablished": true,
+          "requestsOnSocket": 30,
+          "localPort": 59510,
+          "socketAgeMs": 21562.8675,
+          "bodyBytes": 416,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 757
+        },
+        {
+          "source": "request",
+          "phase": "steady-400",
+          "id": 1425351,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "message": "socket hang up",
+          "elapsedMs": 108.72225,
+          "reusedSocket": true,
+          "connectionEstablished": true,
+          "requestsOnSocket": 98,
+          "localPort": 59436,
+          "socketAgeMs": 42522.2455,
+          "bodyBytes": 438,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 779
+        },
+        {
+          "source": "request",
+          "phase": "steady-400",
+          "id": 1425267,
+          "attempt": 0,
+          "code": "ECONNRESET",
+          "message": "socket hang up",
+          "elapsedMs": 108.481416,
+          "reusedSocket": true,
+          "connectionEstablished": true,
+          "requestsOnSocket": 172,
+          "localPort": 59391,
+          "socketAgeMs": 50939.575083,
+          "bodyBytes": 442,
+          "requestFinished": true,
+          "readBytes": 0,
+          "writtenBytes": 783
+        }
+      ],
+      "diagnostics": {
+        "enabled": false,
+        "droppedMeasurements": 0,
+        "droppedSpans": 0,
+        "exportFailures": 0,
+        "activeSpans": 0
+      },
+      "timeline": {
+        "samples": 0,
+        "droppedSamples": 0,
+        "collectionTotalMs": 0,
+        "steadyCoverageMs": 0
+      },
+      "stages": {},
+      "resourcesAfterClose": {
+        "pending": 0,
+        "active": 0,
+        "retainedBytes": 0,
+        "dedup": 0,
+        "replyScopes": 0,
+        "idleDedup": 0,
+        "idleScopes": 0,
+        "tasks": 0,
+        "signals": 0,
+        "timers": 0,
+        "prompts": 0,
+        "cooldowns": 0
+      },
+      "rawReport": "work/distributed/bn400-off-v2-r1-20261020/report.json",
+      "rawReportSha256": "aeb06e304df1af47c37dd0eeba7616e476c18cc3af5ecd0547b45d21da3cf65b"
+    }
+  ],
+  "transferIncident": {
+    "label": "bn400-metrics-r1-20261020",
+    "integrity": "failed",
+    "reason": "Report transfer left an incomplete local file; supervisor teardown exited 13; no successful final coordinator report",
+    "remoteSdkBytes": 28230071,
+    "remoteSdkSha256": "eaab8bcad75e7e2c0967f222c41aac0e1936be2ac597e025c06906474761bbc6",
+    "recoveredAt": "work/bottleneck-2026-10-20/recovered/bn400-metrics-r1-20261020",
+    "repairedTransferMs": 3623.631667
+  },
+  "profiling": {
+    "label": "bn500-profile-r1-20261020",
+    "excludedFromCapacityComparison": true,
+    "windowRelativeToServerStartSeconds": [178.775, 198.775],
+    "requestedSamplingIntervalUs": 1000,
+    "samples": 9822,
+    "sampledMs": 20175.934,
+    "selfTop20": [
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "ms": 2735.071,
+        "percentOfSampledWallTime": 13.55610600232931
+      },
+      {
+        "function": "writeUtf8String",
+        "url": "",
+        "line": 0,
+        "ms": 1501.071,
+        "percentOfSampledWallTime": 7.439908358145899
+      },
+      {
+        "function": "FrameworkError",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/errors.js",
+        "line": 4,
+        "ms": 836.925,
+        "percentOfSampledWallTime": 4.148135099966128
+      },
+      {
+        "function": "run",
+        "url": "",
+        "line": 0,
+        "ms": 690.937,
+        "percentOfSampledWallTime": 3.4245601715390226
+      },
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "ms": 649.98,
+        "percentOfSampledWallTime": 3.221560895272556
+      },
+      {
+        "function": "admit",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/execution.js",
+        "line": 214,
+        "ms": 608.069,
+        "percentOfSampledWallTime": 3.013833213371931
+      },
+      {
+        "function": "runMicrotasks",
+        "url": "",
+        "line": 0,
+        "ms": 560.266,
+        "percentOfSampledWallTime": 2.776902422460343
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "ms": 437.392,
+        "percentOfSampledWallTime": 2.1678897244608355
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "ms": 400.228,
+        "percentOfSampledWallTime": 1.9836900735301772
+      },
+      {
+        "function": "writev",
+        "url": "",
+        "line": 0,
+        "ms": 278.34,
+        "percentOfSampledWallTime": 1.3795643859659732
+      },
+      {
+        "function": "handle",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/transport/webhook.js",
+        "line": 157,
+        "ms": 259.577,
+        "percentOfSampledWallTime": 1.2865674520941632
+      },
+      {
+        "function": "perform",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/qq/api.js",
+        "line": 125,
+        "ms": 237.183,
+        "percentOfSampledWallTime": 1.1755738296923453
+      },
+      {
+        "function": "(anonymous)",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/execution.js",
+        "line": 441,
+        "ms": 202.854,
+        "percentOfSampledWallTime": 1.0054255728631942
+      },
+      {
+        "function": "now",
+        "url": "",
+        "line": 0,
+        "ms": 201.628,
+        "percentOfSampledWallTime": 0.9993490264192973
+      },
+      {
+        "function": "__name",
+        "url": "node:internal/deps/undici/undici",
+        "line": 4,
+        "ms": 191.045,
+        "percentOfSampledWallTime": 0.9468954448403727
+      },
+      {
+        "function": "set TextDecoder",
+        "url": "",
+        "line": 0,
+        "ms": 179.705,
+        "percentOfSampledWallTime": 0.8906898684343436
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "ms": 176.178,
+        "percentOfSampledWallTime": 0.8732086455080593
+      },
+      {
+        "function": "createReadableStreamState",
+        "url": "node:internal/webstreams/readablestream",
+        "line": 1422,
+        "ms": 131.652,
+        "percentOfSampledWallTime": 0.6525199775138043
+      },
+      {
+        "function": "query",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/examples/mixed-benchmark/workload.js",
+        "line": 79,
+        "ms": 131.022,
+        "percentOfSampledWallTime": 0.6493974454912472
+      },
+      {
+        "function": "_resume",
+        "url": "node:internal/deps/undici/undici",
+        "line": 9633,
+        "ms": 128.857,
+        "percentOfSampledWallTime": 0.6386668394137293
+      }
+    ],
+    "frameworkInclusive": [
+      {
+        "function": "handle",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/transport/webhook.js",
+        "line": 157,
+        "ms": 3983.868,
+        "percentOfSampledWallTime": 19.74564349784253
+      },
+      {
+        "function": "request",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/qq/http.js",
+        "line": 48,
+        "ms": 2539.232,
+        "percentOfSampledWallTime": 12.58544957571729
+      },
+      {
+        "function": "perform",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/qq/api.js",
+        "line": 125,
+        "ms": 2482.45,
+        "percentOfSampledWallTime": 12.304015268884207
+      },
+      {
+        "function": "reply",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/transport/webhook.js",
+        "line": 136,
+        "ms": 1619.669,
+        "percentOfSampledWallTime": 8.027727489592303
+      },
+      {
+        "function": "verify",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/transport/webhook.js",
+        "line": 33,
+        "ms": 986.668,
+        "percentOfSampledWallTime": 4.890321310527681
+      },
+      {
+        "function": "(anonymous)",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/transport/webhook.js",
+        "line": 38,
+        "ms": 946.589,
+        "percentOfSampledWallTime": 4.691673753492651
+      },
+      {
+        "function": "accept",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/execution.js",
+        "line": 191,
+        "ms": 861.674,
+        "percentOfSampledWallTime": 4.270801044452266
+      },
+      {
+        "function": "FrameworkError",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/errors.js",
+        "line": 4,
+        "ms": 836.925,
+        "percentOfSampledWallTime": 4.148135099966128
+      },
+      {
+        "function": "admit",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/execution.js",
+        "line": 214,
+        "ms": 829.99,
+        "percentOfSampledWallTime": 4.11376246571782
+      },
+      {
+        "function": "controlled",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/dispatcher.js",
+        "line": 131,
+        "ms": 797.762,
+        "percentOfSampledWallTime": 3.9540276053638954
+      },
+      {
+        "function": "run",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/context-state.js",
+        "line": 154,
+        "ms": 690.9,
+        "percentOfSampledWallTime": 3.4243767847376976
+      },
+      {
+        "function": "timed",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/context-state.js",
+        "line": 124,
+        "ms": 603.157,
+        "percentOfSampledWallTime": 2.9894873763960566
+      },
+      {
+        "function": "(anonymous)",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/context-state.js",
+        "line": 66,
+        "ms": 599.981,
+        "percentOfSampledWallTime": 2.97374584988234
+      },
+      {
+        "function": "dispatch",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/dispatcher.js",
+        "line": 297,
+        "ms": 474.816,
+        "percentOfSampledWallTime": 2.353378039400803
+      },
+      {
+        "function": "(anonymous)",
+        "url": "file:///opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/v3/framework/work/distributed-build/src/core/execution.js",
+        "line": 441,
+        "ms": 449.884,
+        "percentOfSampledWallTime": 2.229805073708112
+      }
+    ],
+    "threadCpuSeconds": {
+      "MainThread": 15.33,
+      "DelayedTaskSche": 0.0,
+      "V8Worker": 6.67,
+      "SignalInspector": 0.0,
+      "libuv-worker": 3.26,
+      "InspectorIo": 0.0
+    },
+    "notes": [
+      "V8 wall-time-weighted sampling is not whole-process CPU attribution",
+      "Inclusive frames overlap; do not sum them",
+      "V8 worker CPU includes background work and is not identified exclusively as GC"
+    ],
+    "samplingHasOverhead": true,
+    "queueGrowthObservedDuringSampling": true,
+    "profilerCausalEffectIsolated": false
+  },
+  "microbenchmarks": {
+    "scope": "Local Node24.21, separate processes, three alternating rounds, 20000 measured no-network commands; 5000 warmup for completion, 60000 for eviction; explicit GC before measurement",
+    "summary": [
+      {
+        "kind": "completion",
+        "mode": "baseline",
+        "medianMs": 182.017208,
+        "medianCpuMs": 256.463,
+        "minMs": 178.82041700000002,
+        "maxMs": 183.330417
+      },
+      {
+        "kind": "completion",
+        "mode": "a",
+        "medianMs": 128.583667,
+        "medianCpuMs": 203.153,
+        "minMs": 127.935292,
+        "maxMs": 134.428875
+      },
+      {
+        "kind": "completion",
+        "mode": "b",
+        "medianMs": 129.171292,
+        "medianCpuMs": 203.658,
+        "minMs": 129.02129200000002,
+        "maxMs": 131.50629200000003
+      },
+      {
+        "kind": "eviction",
+        "mode": "baseline",
+        "medianMs": 237.53433299999995,
+        "medianCpuMs": 283.127,
+        "minMs": 236.23929099999998,
+        "maxMs": 239.29779200000007
+      },
+      {
+        "kind": "eviction",
+        "mode": "a",
+        "medianMs": 183.16829199999995,
+        "medianCpuMs": 226.488,
+        "minMs": 180.21708400000006,
+        "maxMs": 185.72208300000005
+      },
+      {
+        "kind": "eviction",
+        "mode": "b",
+        "medianMs": 118.224042,
+        "medianCpuMs": 161.262,
+        "minMs": 116.87299999999999,
+        "maxMs": 122.22929099999999
+      }
+    ],
+    "notProtocolCapacity": true
+  },
+  "validation": {
+    "node24_0": {
+      "tests": 389,
+      "passed": 387,
+      "skippedDedicatedDatabase": 2,
+      "failed": 0
+    },
+    "node24_21": {
+      "tests": 389,
+      "passed": 387,
+      "skippedDedicatedDatabase": 2,
+      "failed": 0
+    },
+    "publicExports": 178,
+    "bidirectionalTypeChecks": 136,
+    "currentTarballFiles": 182,
+    "coverageLinesPercent": 95.6,
+    "linuxTargetedCandidateB": 43,
+    "soak30Seconds": "passed",
+    "virtualTwoHours": {
+      "passed": true,
+      "primaryEvents": 154800
+    },
+    "realQQStarted": false,
+    "productionDependenciesAdded": false
+  },
+  "cleanup": {
+    "status": "complete",
+    "checkedAt": "2026-10-20T18:15:59+08:00",
+    "testUnitsRemaining": [],
+    "localBenchmarkForwardPids": [],
+    "inspectorListening": false,
+    "nginx": {
+      "active": true,
+      "pid": 989,
+      "unchanged": true
+    },
+    "postgresql": {
+      "running": true,
+      "ready": true,
+      "restartCount": 0,
+      "oomKilled": false
+    },
+    "originalListenersPreserved": [22, 80, 443, 5432, 9000, 9090],
+    "databasesModified": false,
+    "realQQStarted": false
+  },
+  "hostObservation": {
+    "scope": "unit lifetime samples including startup/drain/report serialization, not exclusively the steady workload",
+    "minimumHostAvailableMiB": 953.78515625,
+    "units": [
+      {
+        "unit": "dou-bot-capacity-compare-bn-a-smoke-20261020-883c8c.service",
+        "observedFrom": "2026-10-20T09:34:35.011463+00:00",
+        "observedTo": "2026-10-20T09:34:51.005370+00:00",
+        "samples": 4,
+        "peakGroupMiB": 194.85546875,
+        "throttledPeriodsRatio": 0.0,
+        "throttledSeconds": 0.0,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn-b-smoke-20261020-22496d.service",
+        "observedFrom": "2026-10-20T09:34:56.211925+00:00",
+        "observedTo": "2026-10-20T09:35:06.807116+00:00",
+        "samples": 3,
+        "peakGroupMiB": 195.48828125,
+        "throttledPeriodsRatio": 0.009433962264150943,
+        "throttledSeconds": 0.00434,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn-ssh-smoke-20261020-8d2ff2.service",
+        "observedFrom": "2026-10-20T08:10:37.205676+00:00",
+        "observedTo": "2026-10-20T08:10:57.907568+00:00",
+        "samples": 5,
+        "peakGroupMiB": 202.046875,
+        "throttledPeriodsRatio": 0.0,
+        "throttledSeconds": 0.0,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn-v2-smoke-20261020-50aaf6.service",
+        "observedFrom": "2026-10-20T08:28:02.507517+00:00",
+        "observedTo": "2026-10-20T08:28:13.105333+00:00",
+        "samples": 3,
+        "peakGroupMiB": 195.3671875,
+        "throttledPeriodsRatio": 0.0,
+        "throttledSeconds": 0.0,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn-v3-smoke-20261020-3cd407.service",
+        "observedFrom": "2026-10-20T08:40:01.711320+00:00",
+        "observedTo": "2026-10-20T08:40:12.206139+00:00",
+        "samples": 3,
+        "peakGroupMiB": 192.32421875,
+        "throttledPeriodsRatio": 0.0,
+        "throttledSeconds": 0.0,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-metrics-r1-20261020-231b03.service",
+        "observedFrom": "2026-10-20T08:16:53.307388+00:00",
+        "observedTo": "2026-10-20T08:22:59.404950+00:00",
+        "samples": 72,
+        "peakGroupMiB": 445.96484375,
+        "throttledPeriodsRatio": 0.1711573790569504,
+        "throttledSeconds": 8.657711,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-metrics-v3-r1-20261020-61ed1a.service",
+        "observedFrom": "2026-10-20T09:03:08.908251+00:00",
+        "observedTo": "2026-10-20T09:08:36.707597+00:00",
+        "samples": 63,
+        "peakGroupMiB": 434.98828125,
+        "throttledPeriodsRatio": 0.16656460502143294,
+        "throttledSeconds": 8.683852,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-metrics-v3-r2-20261020-e34e3f.service",
+        "observedFrom": "2026-10-20T09:08:47.107463+00:00",
+        "observedTo": "2026-10-20T09:14:19.611391+00:00",
+        "samples": 64,
+        "peakGroupMiB": 439.953125,
+        "throttledPeriodsRatio": 0.1704131227217497,
+        "throttledSeconds": 8.49459,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-off-r1-20261020-05059a.service",
+        "observedFrom": "2026-10-20T08:11:13.012101+00:00",
+        "observedTo": "2026-10-20T08:16:38.107845+00:00",
+        "samples": 64,
+        "peakGroupMiB": 363.76953125,
+        "throttledPeriodsRatio": 0.13503537373115965,
+        "throttledSeconds": 6.584751,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-off-v2-r1-20261020-3f7aff.service",
+        "observedFrom": "2026-10-20T08:29:04.509098+00:00",
+        "observedTo": "2026-10-20T08:34:27.312205+00:00",
+        "samples": 62,
+        "peakGroupMiB": 370.63671875,
+        "throttledPeriodsRatio": 0.137546468401487,
+        "throttledSeconds": 6.985732,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-off-v3-r1-20261020-7a0623.service",
+        "observedFrom": "2026-10-20T08:57:30.810661+00:00",
+        "observedTo": "2026-10-20T09:02:58.510998+00:00",
+        "samples": 63,
+        "peakGroupMiB": 368.6015625,
+        "throttledPeriodsRatio": 0.1401040073416947,
+        "throttledSeconds": 6.825138,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn400-off-v3-r2-20261020-c495d6.service",
+        "observedFrom": "2026-10-20T09:14:30.006408+00:00",
+        "observedTo": "2026-10-20T09:19:57.105705+00:00",
+        "samples": 63,
+        "peakGroupMiB": 366.671875,
+        "throttledPeriodsRatio": 0.13043478260869565,
+        "throttledSeconds": 6.714919,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-a-off-r1-20261020-8281c5.service",
+        "observedFrom": "2026-10-20T09:35:12.105575+00:00",
+        "observedTo": "2026-10-20T09:40:38.711603+00:00",
+        "samples": 63,
+        "peakGroupMiB": 398.0078125,
+        "throttledPeriodsRatio": 0.2189222290263319,
+        "throttledSeconds": 11.411886,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-b-metrics-r1-20261020-e43eb5.service",
+        "observedFrom": "2026-10-20T09:52:04.205210+00:00",
+        "observedTo": "2026-10-20T09:57:31.406080+00:00",
+        "samples": 63,
+        "peakGroupMiB": 461.48046875,
+        "throttledPeriodsRatio": 0.29584352078239606,
+        "throttledSeconds": 18.780067,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-b-o64-off-r1-20261020-b1cef1.service",
+        "observedFrom": "2026-10-20T09:57:41.806503+00:00",
+        "observedTo": "2026-10-20T10:03:04.013525+00:00",
+        "samples": 62,
+        "peakGroupMiB": 423.08984375,
+        "throttledPeriodsRatio": 0.29608938547486036,
+        "throttledSeconds": 16.969552,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-b-o64-off-r2-20261020-dbff4b.service",
+        "observedFrom": "2026-10-20T10:03:19.512435+00:00",
+        "observedTo": "2026-10-20T10:08:42.308133+00:00",
+        "samples": 62,
+        "peakGroupMiB": 417.328125,
+        "throttledPeriodsRatio": 0.31753407682775714,
+        "throttledSeconds": 20.356073,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-b-off-r1-20261020-3508a1.service",
+        "observedFrom": "2026-10-20T09:40:49.305046+00:00",
+        "observedTo": "2026-10-20T09:46:16.111001+00:00",
+        "samples": 63,
+        "peakGroupMiB": 390.74609375,
+        "throttledPeriodsRatio": 0.21199143468950749,
+        "throttledSeconds": 10.354307,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-b-off-r2-20261020-c0648f.service",
+        "observedFrom": "2026-10-20T09:46:26.508547+00:00",
+        "observedTo": "2026-10-20T09:51:53.808513+00:00",
+        "samples": 63,
+        "peakGroupMiB": 403.859375,
+        "throttledPeriodsRatio": 0.2499236174763214,
+        "throttledSeconds": 13.05858,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-metrics-v3-r1-20261020-28c27d.service",
+        "observedFrom": "2026-10-20T08:46:16.105842+00:00",
+        "observedTo": "2026-10-20T08:51:43.105249+00:00",
+        "samples": 63,
+        "peakGroupMiB": 476.01953125,
+        "throttledPeriodsRatio": 0.283775447254781,
+        "throttledSeconds": 18.535681,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-metrics-v3-r2-20261020-f8701c.service",
+        "observedFrom": "2026-10-20T09:20:07.505625+00:00",
+        "observedTo": "2026-10-20T09:25:34.710916+00:00",
+        "samples": 63,
+        "peakGroupMiB": 466.265625,
+        "throttledPeriodsRatio": 0.2685469037400368,
+        "throttledSeconds": 17.915047,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-off-v3-r1-20261020-6cf2dc.service",
+        "observedFrom": "2026-10-20T08:40:38.010301+00:00",
+        "observedTo": "2026-10-20T08:46:00.411314+00:00",
+        "samples": 62,
+        "peakGroupMiB": 398.75,
+        "throttledPeriodsRatio": 0.2794665012406948,
+        "throttledSeconds": 16.536437,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-off-v3-r2-20261020-0b37b0.service",
+        "observedFrom": "2026-10-20T09:28:29.313082+00:00",
+        "observedTo": "2026-10-20T09:33:50.905199+00:00",
+        "samples": 62,
+        "peakGroupMiB": 401.73828125,
+        "throttledPeriodsRatio": 0.24191542288557213,
+        "throttledSeconds": 13.001359,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "unit": "dou-bot-capacity-compare-bn500-profile-r1-20261020-f52e8e.service",
+        "observedFrom": "2026-10-20T08:51:53.507739+00:00",
+        "observedTo": "2026-10-20T08:57:20.407611+00:00",
+        "samples": 63,
+        "peakGroupMiB": 413.87890625,
+        "throttledPeriodsRatio": 0.24388004895960833,
+        "throttledSeconds": 13.190891,
+        "memoryEvents": {
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      }
+    ]
+  },
+  "evidence": {
+    "archive": "framework/work/bottleneck-2026-10-20/bottleneck-evidence-2026-10-20-final.tar.gz",
+    "bytes": 67166103,
+    "sha256": "104ab77fcd4a756b00be8deeef00897cbaf8a92ec5eb5a49db4f1e8d13320151",
+    "filesVerified": 240,
+    "remoteFilesVerified": 90,
+    "remoteArchive": "/opt/dou-bot-capacity/bottleneck-2026-10-20-df32a0f/bottleneck-evidence-2026-10-20-final.tar.gz",
+    "remoteSha256Verified": true
+  }
+}

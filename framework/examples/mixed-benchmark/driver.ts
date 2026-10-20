@@ -18,13 +18,20 @@ import {
 import type { Meta, Profile } from './common.js';
 import { startFixture } from './fixture.js';
 
+export const driverIdleSocketTimeoutMs = 2000;
+
+/** Retire idle connections before the server's keep-alive deadline, including over SSH. */
+export function createDriverAgent(maxSockets: number): Agent {
+  return new Agent({ keepAlive: true, maxSockets, timeout: driverIdleSocketTimeoutMs });
+}
+
 /** An independent open-loop sender and downstream service fixture. No external connections. */
 export async function runDriver(
   config: Profile,
   reportPath: string,
   externalFixture = false,
 ): Promise<void> {
-  const agent = new Agent({ keepAlive: true, maxSockets: config.driverMaxSockets });
+  const agent = createDriverAgent(config.driverMaxSockets);
   const plans = new Map<number, Meta>();
   const actors = new Set<number>();
   const acceptedIds = new Set<number>();
@@ -41,7 +48,10 @@ export async function runDriver(
   const counts: Record<string, number> = {};
   const errors: string[] = [];
   const transportErrors: Record<string, unknown>[] = [];
-  const sockets = new WeakMap<Socket, { requests: number; created: bigint }>();
+  const sockets = new WeakMap<
+    Socket,
+    { requests: number; created: bigint; lastResponse?: bigint }
+  >();
   const phases = Array.from({ length: config.phases.length + 1 }, () => ({
     counts: {},
     statuses: {},
@@ -96,6 +106,7 @@ export async function runDriver(
     let connected: bigint | undefined;
     let localPort: number | undefined;
     let connectionEstablished = false;
+    let idleBeforeReuseMs: number | undefined;
     let readAtAssignment = 0;
     let writtenAtAssignment = 0;
     let finished = false;
@@ -112,6 +123,8 @@ export async function runDriver(
         response.resume();
         response.on('end', () => {
           if (!complete()) return;
+          const info = socket && sockets.get(socket);
+          if (info) info.lastResponse = now();
           const status = response.statusCode ?? 0;
           count(
             phase.counts,
@@ -157,6 +170,7 @@ export async function runDriver(
         requestsOnSocket,
         localPort,
         socketAgeMs: connected === undefined ? undefined : elapsedMs(connected),
+        idleBeforeReuseMs,
         bodyBytes: body.length,
         requestFinished: req.writableFinished,
         readBytes: socket === undefined ? undefined : socket.bytesRead - readAtAssignment,
@@ -172,6 +186,8 @@ export async function runDriver(
         count(counts, 'connections');
       }
       requestsOnSocket = ++info.requests;
+      idleBeforeReuseMs =
+        info.lastResponse === undefined ? undefined : elapsedMs(info.lastResponse);
       connected = info.created;
       readAtAssignment = assigned.bytesRead;
       writtenAtAssignment = assigned.bytesWritten;
@@ -302,6 +318,7 @@ export async function runDriver(
     await finishReport(
       'driver-final',
       {
+        idleSocketTimeoutMs: driverIdleSocketTimeoutMs,
         counts: Object.fromEntries(
           [...new Set([...Object.keys(counts), ...Object.keys(fixtureResult?.counts ?? {})])].map(
             (key) => [key, (counts[key] ?? 0) + (fixtureResult?.counts[key] ?? 0)],

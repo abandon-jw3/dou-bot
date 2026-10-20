@@ -20,6 +20,7 @@ import {
 import type { Meta, Profile } from './common.js';
 import type { DiagnosticsSpan } from '../../src/index.js';
 import { workload } from './workload.js';
+import { DiagnosticsTimeline } from './diagnostics.js';
 
 interface Entry {
   meta: Meta;
@@ -330,10 +331,18 @@ export async function runSdk(
   http.headersTimeout = 5000;
   const eventLoop = monitorEventLoopDelay({ resolution: 10 });
   eventLoop.enable();
+  const diagnosticsTimeline = new DiagnosticsTimeline(
+    app.diagnostics,
+    config.diagnostics === 'metrics' || config.diagnostics === 'sampled',
+  );
+  const diagnosticPhase = () =>
+    startNs === undefined || now() < startNs
+      ? 'setup'
+      : (config.phases[phaseOf()]?.name ?? 'drain');
   const samples: Record<string, unknown>[] = [];
   let cpuBefore = process.cpuUsage();
   let sampledAt = now();
-  const sample = () => {
+  const sample = (forceDiagnostics = false) => {
     const cpu = process.cpuUsage(cpuBefore);
     cpuBefore = process.cpuUsage();
     const elapsed = Number(now() - sampledAt) / 1e6;
@@ -364,6 +373,7 @@ export async function runSdk(
     eventLoop.reset();
     samples.push(row);
     if (samples.length > 1200) samples.shift();
+    diagnosticsTimeline.capture(diagnosticPhase(), forceDiagnostics);
     return row;
   };
   const sampler = setInterval(() => {
@@ -378,7 +388,7 @@ export async function runSdk(
     closing = true;
     closeTask = (async () => {
       if (sampler) clearInterval(sampler);
-      const before = sample();
+      const before = sample(true);
       const closed = new Promise<void>((resolve) => http.close(() => resolve()));
       let closeError: { code: string; message: string } | undefined;
       try {
@@ -392,6 +402,7 @@ export async function runSdk(
       }
       await tick();
       assertReleased(app, clock);
+      diagnosticsTimeline.capture('closed', true);
       eventLoop.disable();
       global.gc?.();
       assert.equal(entries.size, 0, 'Accounting entries retained');
@@ -407,6 +418,7 @@ export async function runSdk(
             snapshot: app.diagnostics.snapshot(),
             exportedSpans,
             traceExamples,
+            timeline: diagnosticsTimeline.report(),
           },
           afterCloseMemory: process.memoryUsage(),
           resourceUsage: process.resourceUsage(),

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
+import { Agent, createServer, request } from 'node:http';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -19,6 +20,10 @@ import { startFixture } from '../examples/mixed-benchmark/fixture.js';
 import { receiveFrames, sendFrame } from '../examples/mixed-benchmark/frames.js';
 import { Mailbox } from '../examples/mixed-benchmark/worker.js';
 import { RemoteSession } from '../examples/mixed-benchmark/remote-session.js';
+import {
+  createDriverAgent,
+  driverIdleSocketTimeoutMs,
+} from '../examples/mixed-benchmark/driver.js';
 
 await test('concurrency comparisons preserve one workload and reject unbounded or unknown options', () => {
   const options = {
@@ -234,3 +239,51 @@ await test('extracted fixture rejects cross-group replies and reused sequences, 
     await fixture.close();
   }
 });
+
+await test(
+  'driver retires idle sockets before server expiry without shortening active requests',
+  { timeout: 12000 },
+  async () => {
+    const baseline = new Agent({ keepAlive: true, maxSockets: 1 });
+    const agent = createDriverAgent(1);
+    let connections = 0;
+    const server = createServer((req, res) => {
+      if (req.url === '/slow') setTimeout(() => res.end('ok'), driverIdleSocketTimeoutMs + 200);
+      else res.end('ok');
+    });
+    server.keepAliveTimeout = 5000;
+    server.on('connection', () => connections++);
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    assert.ok(address && typeof address !== 'string');
+    const send = (pool: Agent, path: string) =>
+      new Promise<boolean>((resolve, reject) => {
+        const req = request(`http://127.0.0.1:${address.port}${path}`, { agent: pool }, (res) => {
+          res.resume();
+          res.once('end', () => resolve(req.reusedSocket));
+          res.once('error', reject);
+        });
+        req.setTimeout(10000, () => req.destroy(new Error('Active request timed out')));
+        req.once('error', reject);
+        req.end();
+      });
+    const free = (pool: Agent) =>
+      Object.values(pool.freeSockets).reduce((sum, sockets) => sum + (sockets?.length ?? 0), 0);
+    try {
+      // This response takes longer than the idle limit; only idle sockets should be retired.
+      await send(agent, '/slow');
+      await send(baseline, '/fast');
+      await sleep(driverIdleSocketTimeoutMs + 300);
+      assert.equal(free(baseline), 1);
+      assert.equal(free(agent), 0);
+      assert.equal(await send(agent, '/fast'), false);
+      assert.equal(connections, 3);
+    } finally {
+      baseline.destroy();
+      agent.destroy();
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  },
+);

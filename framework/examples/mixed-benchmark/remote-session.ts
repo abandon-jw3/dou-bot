@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import type { ChildProcess } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rename, rm } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, posix, resolve } from 'node:path';
@@ -223,19 +223,30 @@ export class RemoteSession {
       : resolve(this.output, `${name}.json`);
     assert.equal(notice.reportPath, source);
     if (this.settings.host) {
-      await execute(
-        'scp',
-        [
-          '-q',
-          '-o',
-          'BatchMode=yes',
-          '-o',
-          `ControlPath=${this.socket!}`,
-          `${this.settings.host}:${source}`,
-          target,
-        ],
-        { timeout: 30000, maxBuffer: 1048576 },
-      );
+      // A separate compressed connection only affects post-load report transfer.
+      // Reusing the uncompressed load tunnel would silently ignore scp's -C flag.
+      const partial = `${target}.partial`;
+      try {
+        await execute(
+          'scp',
+          [
+            '-C',
+            '-q',
+            '-o',
+            'BatchMode=yes',
+            '-o',
+            'ConnectTimeout=10',
+            '-o',
+            'ControlPath=none',
+            `${this.settings.host}:${source}`,
+            partial,
+          ],
+          { timeout: 30000, maxBuffer: 1048576 },
+        );
+        await rename(partial, target);
+      } finally {
+        await rm(partial, { force: true });
+      }
     } else assert.equal(resolve(source), resolve(target));
     return JSON.parse(await readFile(target, 'utf8')) as unknown;
   }

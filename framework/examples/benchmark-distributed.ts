@@ -358,6 +358,10 @@ try {
   report.failure =
     error instanceof Error ? { message: error.message, stack: error.stack } : String(error);
   process.exitCode = 1;
+  // Preserve the original failure even if a broken remote channel also blocks cleanup.
+  await writeFile(resolve(output, 'failure.json'), JSON.stringify(report, null, 2) + '\n', {
+    flag: 'wx',
+  });
 } finally {
   if (progress) clearInterval(progress);
   const cleanup = await Promise.allSettled([driver?.stop(), remote?.close()]);
