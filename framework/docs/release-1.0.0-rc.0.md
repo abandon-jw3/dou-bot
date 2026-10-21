@@ -1,8 +1,8 @@
-# 1.0.0-rc.0 候选准备
+# 1.0.0-rc.0 候选发布
 
-状态：**本地候选验证完成，尚未上传 npm。** 目标为 `dou-bot@1.0.0-rc.0`、public、`next` 标签。此次候选从新建应用出发，不提供旧 SDK 迁移层。
+状态：**已于 2026-10-21 23:50:47（Asia/Shanghai）发布到 npm。** 发布为 `dou-bot@1.0.0-rc.0`、public、`next` 标签。此次候选从新建应用出发，不提供旧 SDK 迁移层。
 
-[候选记录](npm-release-1.0.0-rc.0-candidate.json) · [正式版剩余验证](api-review-1.0.md#仍未完成的-10-门槛)
+[发布记录](npm-release-1.0.0-rc.0.json) · [准备时的候选记录](npm-release-1.0.0-rc.0-candidate.json) · [正式版剩余验证](api-review-1.0.md#仍未完成的-10-门槛)
 
 ## 交付内容
 
@@ -52,7 +52,7 @@
 - SHA-256：`632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1`。
 - 两版 Node 的重新打包压缩结果可能不同，但展开的 tar 内容相同。新增 `test:package -- --tarball=<path>`，最终两版均安装上述同一个冻结文件验证；错误产物会在安装前被拒绝。
 - SDK 运行时指纹保持 `efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7`；最后只调整随包 README 的版本表述，再复验冻结产物。
-- 当前候选尚未提交，没有自己的 CI；不能将基线 CI 当作新候选的检查结果。npm 登录为 E401，上传前需重新登录。
+- 以上为准备阶段记录。发行提交为 008b9d4，对应 CI 39627672629 已 completed/success；本人完成 npm 登录和本次发布验证后上传。
 
 ## 仍需验证的正式版门槛
 
@@ -82,3 +82,13 @@ npm publish ./work/release/1.0.0-rc.0/dou-bot-1.0.0-rc.0.tgz --dry-run --ignore-
 实际上传使用同一文件与标签，移除 --dry-run。依据 [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/) 和 [dist-tag](https://docs.npmjs.com/cli/v11/commands/npm-dist-tag/)，next 用于候选试用；latest 继续保留已发布版本。
 
 准备阶段未提交或上传。用户随后要求继续，按上述流程提交候选、核对 CI、发布到 next 并验证；真实 QQ 和多日长跑仍单独安排。
+
+## 发布后验证
+
+- next=1.0.0-rc.0，latest=0.8.0；版本标签 v1.0.0-rc.0 指向发行提交 008b9d4。
+- registry 匿名下载与候选的 SHA-256 / SHA-512 完全一致，仍为 300872 字节、182 个文件。
+- Node 24.0.0 / 24.21.0 使用空 npm 配置和全新缓存按版本名安装，独立类型检查、功能消费者及各 7 项技能测试通过。
+- 初次发布响应为 HTTP 202，匿名元数据短暂返回未找到；随后直接读取官方 registry 确认版本、标签和完整性，没有重复上传。
+- 示例、网站和 skill 同步为精确 registry 版本；移除两个已无运行用途的本地 SDK 压缩包，保留来源记录。
+- 发布包的两个独立 npm ci、示例 40 项/开发重启 7 项、文档 23 项/浏览器 24 项及 47 页构建通过；收尾部署按最新 main CI 核对。
+- 原候选 JSON 保留准备时的未发布、未提交状态，发布与收尾 CI 另行记录。

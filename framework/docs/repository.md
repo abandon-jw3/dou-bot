@@ -4,9 +4,9 @@
 
 ## 当前源码与发布版
 
-- 当前源码契约 2.0 尚未发布：AppFactory、多机器人和必选 PostgreSQL。
+- 1.0.0-rc.0 已通过 next 发布，对应契约 2.0：AppFactory、多机器人和必选 PostgreSQL。
 - 新版本独立设计和验收，使用方式见 [SDK README](../README.md) 与 [多机器人指南](multi-bot.md)。
-- npm 0.8.0 保留历史发布状态；业务示例、网站与技能已适配当前未发布 API。两个消费者独立安装固定源码 tarball，不要求旧版迁移兼容。
+- npm latest 保持 0.8.0；业务示例、网站与技能使用已发布的 1.0.0-rc.0。两个消费者独立安装精确 registry 版本，不要求旧版迁移兼容。
 - PostgreSQL 专项使用 TEST_DATABASE_* 和随机测试 schema；普通离线检查不读取业务数据库配置。
 - 2026-10-21 已完成第一轮真实 PostgreSQL 与慢接口专项，修复事务/迁移断连及强制关闭的连接回收问题；两版 Node 数据库专项各 16/16。见 [验收与边界](postgres-readiness-2026-10-21.md)。闭环测试不代替真实 SQL 的固定速率容量或多日观察。
 - 随后在 dd9ec6d 的 CI 全部成功后，完成独立 PostgreSQL 接入 WS/Webhook 的定速容量：WS 450/s、Webhook 350/s 各两轮五分钟通过；更高档位的积压与发压漏发原样保留。配置、控制组及清理见 [SQL 容量报告](sql-capacity-2026-10-21.md)；没有改动 SDK 默认值，不能外推为真实 QQ 或长期生产承诺。
@@ -22,10 +22,10 @@
 | 仓库路径   | 职责                                              | 依赖与产物                                                     |
 | ---------- | ------------------------------------------------- | -------------------------------------------------------------- |
 | framework/ | dou-bot SDK、源码示例、探针、测试、维护文档与技能 | 独立锁文件和 node_modules；dist 为 SDK 产物；唯一 npm 发行目录 |
-| example/   | 可独立复制的机器人业务示例，覆盖 30 个装饰器      | 安装 vendor/dou-bot-source.tgz；dist 为应用产物                |
-| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 安装 vendor/dou-bot-source.tgz；产物位于 docs/.vitepress/dist  |
+| example/   | 可独立复制的机器人业务示例，覆盖 30 个装饰器      | 精确安装 npm dou-bot@1.0.0-rc.0；dist 为应用产物               |
+| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 精确安装 npm dou-bot@1.0.0-rc.0；产物位于 docs/.vitepress/dist |
 
-framework/examples 使用当前 SDK 源码进行验证；example 使用固定源码 tarball 展示业务。framework/docs 保存 SDK 指南及维护记录，framework/skills/dou-bot 是配套技能，website/docs 是面向使用者的站点内容。
+framework/examples 使用当前 SDK 源码进行验证；example 使用已发布的候选包展示业务。framework/docs 保存 SDK 指南及维护记录，framework/skills/dou-bot 是配套技能，website/docs 是面向使用者的站点内容。
 
 三个工程各自安装依赖，没有 npm workspaces、跨工程 node_modules 共享或源码 file: 依赖。根 package.json 名为 dou-bot-repository，private 且没有依赖、SDK 导出或发行钩子；原 SDK 锁文件位于 framework，根目录不需要 npm install 或 npm ci。
 
@@ -83,13 +83,13 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 0.8.0 已发布，对应契约为 1.14；当前准备 1.0.0-rc.0，源码契约为 2.0。example、website 和技能已适配当前源码；包内版本为 1.0.0-rc.0，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹记录；候选尚未上传。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
+SDK 0.8.0 已发布，对应契约为 1.14；1.0.0-rc.0 已通过 next 发布，源码契约为 2.0。example、website 和技能已适配当前源码；两个消费者精确安装 registry 的 1.0.0-rc.0，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹记录。发行范围与验收见 [1.0.0-rc.0 说明](release-1.0.0-rc.0.md)，0.8.0 的记录保留为历史。
 
 正式版的当前门槛见 [六项发布待办](api-review-1.0.md#仍未完成的-10-门槛)：固定候选与 CI、真实数据库负载、当前候选 QQ 故障验收、长期观察、用户入口适配及 RC 收尾。候选提交、源码指纹和配置须随证据记录；源码契约编号不代表 npm 发行版本号。
 
 README 和公开指南随 SDK 发包，相对链接必须落在安装包内；仓库维护材料和其他工程使用完整 GitHub 链接。npm run test:package 验证 tarball、文档链接、凭证排除与独立消费者。历史验收 JSON 原文保留，不为了消除旧路径而改写原始证据。
 
-当前两个消费者已使用相同源码 tarball，skill 的模块与测试纳入当前 tarball 消费者验证。需要刷新时在 framework 执行 `node scripts/prepare-user-sdk.mjs`；再在 example 执行 `npm install --save-exact --ignore-scripts ./vendor/dou-bot-source.tgz`，在 website 执行同一命令并加 `--save-dev`，最后生成 API 索引并运行检查。保持独立安装，不添加源码依赖链接。目标 SDK 正式发布后，再同步 example/vendor/sdk.json、两个消费者的精确依赖与锁文件、网站版本/API 索引和技能，并复核发布包。新版本不要求旧 SDK 迁移兼容；正式版后的兼容与弃用约定需在候选阶段确定。站点维护细节见 [website/README.md](../../website/README.md)。
+当前两个消费者已使用相同的 registry 版本，skill 的模块与测试纳入当前 tarball 及发布包消费者验证。开发尚未发布 API、需要源码快照时在 framework 执行 `node scripts/prepare-user-sdk.mjs`；再在 example 执行 `npm install --save-exact --ignore-scripts ./vendor/dou-bot-source.tgz`，在 website 执行同一命令并加 `--save-dev`，最后生成 API 索引并运行检查。保持独立安装，不添加源码依赖链接。目标 SDK 正式发布后，再同步 example/vendor/sdk.json、两个消费者的精确依赖与锁文件、网站版本/API 索引和技能，并复核发布包。新版本不要求旧 SDK 迁移兼容；正式版后的兼容与弃用约定需在候选阶段确定。站点维护细节见 [website/README.md](../../website/README.md)。
 
 ## 历史与许可
 

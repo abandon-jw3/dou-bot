@@ -32,7 +32,7 @@
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@types/node": "24.19.0",
-    "dou-bot": "file:vendor/dou-bot-source.tgz",
+    "dou-bot": "1.0.0-rc.0",
     "prettier": "3.9.9",
     "typescript": "5.9.3",
     "vitepress": "1.6.4"

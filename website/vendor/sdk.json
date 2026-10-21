@@ -1,10 +1,15 @@
 {
   "package": "dou-bot",
-  "channel": "source",
+  "channel": "registry",
   "contract": "2.0",
   "version": "1.0.0-rc.0",
-  "dependency": "file:vendor/dou-bot-source.tgz",
+  "dependency": "1.0.0-rc.0",
   "sha256": "632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1",
   "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
-  "distSha256": "5c5af672753cf60bccdb89e946938bcb6ed0a4e3a89c3c85860834a8a2284dba"
+  "distSha256": "5c5af672753cf60bccdb89e946938bcb6ed0a4e3a89c3c85860834a8a2284dba",
+  "registry": "https://registry.npmjs.org/",
+  "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-1.0.0-rc.0.tgz",
+  "publishedAt": "2026-10-21T15:50:47.055Z",
+  "sourceCommit": "008b9d4c9396440b9d1cfa740008a7472741eae9",
+  "sourceTag": "v1.0.0-rc.0"
 }

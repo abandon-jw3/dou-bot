@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "1.0.0-rc.0",
+  "status": "published-and-registry-verified",
+  "publishedAt": "2026-10-21T15:50:47.055Z",
+  "publishedDate": "2026-10-21",
+  "timeZone": "Asia/Shanghai",
+  "publishedBy": "fine_wei",
+  "publicContract": "2.0",
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  },
+  "distTags": {
+    "next": "1.0.0-rc.0",
+    "latest": "0.8.0"
+  },
+  "source": {
+    "commit": "008b9d4c9396440b9d1cfa740008a7472741eae9",
+    "tag": "v1.0.0-rc.0",
+    "runtimeFingerprint": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7"
+  },
+  "candidateRecord": "npm-release-1.0.0-rc.0-candidate.json",
+  "ci": {
+    "runId": 39627672629,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39627672629"
+  },
+  "artifact": {
+    "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-1.0.0-rc.0.tgz",
+    "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
+    "sha256": "632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1",
+    "bytes": 300872,
+    "fileCount": 182,
+    "identicalToCandidate": true
+  },
+  "verification": {
+    "anonymousDownload": "passed",
+    "registryConsumers": [
+      {
+        "node": "24.21.0",
+        "status": "passed",
+        "installation": "anonymous registry by exact version with fresh cache",
+        "compiler": "5.9.3",
+        "localTypesOnly": true,
+        "skillTestsPassed": 7
+      },
+      {
+        "node": "24.0.0",
+        "status": "passed",
+        "installation": "anonymous registry by exact version with fresh cache",
+        "compiler": "5.9.3",
+        "localTypesOnly": true,
+        "skillTestsPassed": 7
+      }
+    ]
+  },
+  "synchronization": {
+    "status": "synced-and-validated-locally",
+    "exampleVersion": "1.0.0-rc.0",
+    "websiteVersion": "1.0.0-rc.0",
+    "skillVersion": "1.0.0-rc.0",
+    "ci": null,
+    "checks": {
+      "exampleCleanInstall": true,
+      "websiteCleanInstall": true,
+      "exampleTests": 40,
+      "developmentProcessTests": 7,
+      "websiteTests": 23,
+      "browserTests": 24,
+      "htmlPages": 47,
+      "builtLinksAndAssets": 2260
+    },
+    "ciResultSource": "GitHub Actions for the follow-up synchronization commit on main"
+  },
+  "notes": [
+    "Original candidate record retains its preparation-time state.",
+    "Initial publish returned HTTP 202; public metadata became available afterward. The artifact was not uploaded again.",
+    "Read-only npm stage list returned an empty list.",
+    "No real QQ, business database, server deployment or long-run acceptance was performed in this release step.",
+    "npm initially retained file: lock entries for the same version. SDK verification rejected them; clean registry resolution and npm ci then passed in both consumers."
+  ],
+  "evidenceDirectory": "framework/work/release/1.0.0-rc.0/publish",
+  "tagCI": {
+    "runId": 39630244494,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39630244494"
+  }
+}

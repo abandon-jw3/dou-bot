@@ -1,6 +1,15 @@
 # dou-bot 新设备开发交接
 
-更新：**2026-10-21（Asia/Shanghai）**。SQL 容量验收基于已推送的 dd9ec6d，[对应 CI](https://github.com/abandon-jw3/dou-bot/actions/runs/39465520824) 及全部 10 个任务已 completed / success，包含文档站部署。随后完成真实 SQL 接入 WS/Webhook 的容量验证；工具修正、回归和结果由本次收尾提交收录。接续时核对实际 HEAD 与其 CI，不用旧提交的 CI 替代新提交检查。
+更新：**2026-10-22（Asia/Shanghai）**。1.0.0-rc.0 已发布到 npm next，latest 保持 0.8.0；发行提交与标签均已通过 CI。用户入口已同步发布包并完成本地复验，收尾部署结果按 main 最新提交的 CI 核对。
+
+## 1.0.0-rc.0 已发布
+
+- 发布时间：2026-10-21 23:50:47（Asia/Shanghai）；npm next=1.0.0-rc.0，latest=0.8.0。发行提交/标签：008b9d4 / v1.0.0-rc.0，发行 CI 39627672629 已 completed/success。
+- 本人分别完成登录与发布验证。首次响应 202 后公开版本稍后可读，未重复上传；registry 匿名下载 SHA-256 保持 632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1。
+- 两版 Node 按 registry 精确版本匿名安装、独立编译及功能消费者通过，各 7 项技能测试通过。框架运行时和默认并发没有变化。
+- 示例、网站和 skill 已同步 registry 精确依赖及发布状态；两个独立 npm ci 通过，示例 40 项、开发重启 7 项、文档 23 项、浏览器 24 项通过。来源校验同时支持已发布包与未来源码包。
+- npm 曾保留同版本的 file: 锁定条目，已由来源检查拦截并清理；当前两个 lockfile 均指向官方 registry tarball。收尾提交与部署按最新 HEAD CI 核对。
+- 正式 1.0 的混合接入、整库故障、进程恢复、多日运行等门槛仍在；没有因此开展真实 QQ 或服务器业务部署。详情见 [发布记录](npm-release-1.0.0-rc.0.json)。
 
 ## 1.0.0-rc.0 发布继续
 

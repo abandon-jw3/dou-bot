@@ -25,7 +25,7 @@ let count = 0;
 for (let i = 0; i < entries.length; i++) {
   const file = program.getSourceFile(paths[i]);
   const symbol = file && checker.getSymbolAtLocation(file);
-  if (!symbol) throw new Error('Cannot load source declarations');
+  if (!symbol) throw new Error('Cannot load SDK declarations');
   const exports = checker
     .getExportsOfModule(symbol)
     .sort((a, b) => a.name.localeCompare(b.name, 'en'));
@@ -54,6 +54,4 @@ if (process.argv.includes('--check')) {
   if ((await readFile(target, 'utf8')) !== formatted)
     throw new Error('API reference is out of date; run npm run api:generate');
 } else await writeFile(target, formatted);
-console.log(
-  `Source API reference verified: ${count} exports from source contract ${sdk.contract}.`,
-);
+console.log(`Public API reference verified: ${count} exports from dou-bot@${sdk.version}.`);

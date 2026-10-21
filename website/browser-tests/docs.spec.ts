@@ -131,7 +131,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   );
 });
 
-test('上下文与容量指南使用当前源码 API', async ({ page }, info) => {
+test('上下文与容量指南使用当前公开 API', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('guide/context.html');
@@ -157,7 +157,7 @@ test('上下文与容量指南使用当前源码 API', async ({ page }, info) =>
 test('新版本导航、多机器人、数据库和诊断索引', async ({ page, isMobile }) => {
   await page.goto('./');
   await waitForClient(page);
-  await expect(page.locator('.vp-doc')).toContainText('尚未发布');
+  await expect(page.locator('.vp-doc')).toContainText('1.0.0-rc.0');
   await page.goto('guide/multi-bot.html');
   await waitForClient(page);
   await expect(page.locator('h1')).toHaveText('多机器人与主动发送');
@@ -172,7 +172,7 @@ test('新版本导航、多机器人、数据库和诊断索引', async ({ page,
   await expect(page.locator('.vp-doc')).toContainText('p95UpperMs');
   await page.getByRole('link', { name: '类型索引', exact: true }).click();
   await expect(page.locator('#root-DiagnosticsOptions')).toBeInViewport();
-  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('尚未发布');
+  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('1.0.0-rc.0');
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
   ).toBe(false);

@@ -102,7 +102,7 @@ for (const group of [false, true]) {
 }
 
 for (const group of [false, true]) {
-  await test(`源码文档：${group ? '群聊' : '私聊'} 的别名与默认服务器`, async (t) => {
+  await test(`文档：${group ? '群聊' : '私聊'} 的别名与默认服务器`, async (t) => {
     const bot = await setup(t, Query);
     for (const input of ['/状态 双梦', '/状态 梦江南', '/状态']) {
       await bot.dispatch(message(input, group));
@@ -110,7 +110,7 @@ for (const group of [false, true]) {
     }
     assert.equal(bot.errors.length, 0);
   });
-  await test(`源码文档：${group ? '群聊' : '私聊'} 的上下文注入与懒加载`, async (t) => {
+  await test(`文档：${group ? '群聊' : '私聊'} 的上下文注入与懒加载`, async (t) => {
     const bot = await setup(t, Context);
     await bot.dispatch(message('/上下文', group));
     assert.equal(
