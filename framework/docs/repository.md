@@ -67,7 +67,7 @@ npm run example:offline
 
 SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆盖率、30 秒持续运行及两小时虚拟容量回归。另设 Linux PostgreSQL 17 服务专项，使用 TEST_DATABASE_* 隔离配置并显式要求专项执行。报告位于 framework/work/soak-latest.json 与 framework/work/capacity-review/ci.json，按平台和 Node 档位分别保存。业务示例、文档工具保留双平台检查；文档另执行依赖审计和 Linux Chromium 浏览器测试。
 
-在 framework 内运行 npm run benchmark:framework -- 5 local 做源码性能对照，npm run soak -- 30000 做短时回归，npm run benchmark:capacity -- virtual 7200000 local 覆盖两小时虚拟时间。虚拟时间不等于真实持续运行；65 分钟真实计时命令见 [容量指南](capacity.md)，仅在具体任务授权时执行。结果写入 framework/work，历史数值按原始指纹与工作负载解释。
+在 framework 内运行 npm run benchmark:framework -- 5 local 做源码性能对照，npm run soak -- 30000 做短时回归，npm run benchmark:capacity -- virtual 7200000 local 覆盖两小时虚拟时间。虚拟时间不等于真实持续运行；65 分钟真实计时回归使用 `npm run benchmark:capacity -- realtime 3900000 <label>`，仅在具体任务授权时执行。结果写入 framework/work，历史数值按原始指纹与工作负载解释。
 
 混合负载使用 `npm run benchmark:mixed -- smoke local-smoke` 验证测试工具，再运行 `npm run benchmark:mixed -- standard local-standard`。完整场景约 6 分钟，涵盖本机 Webhook 验签、慢 HTTP 业务、过载与恢复；结果位于 framework/work/mixed-benchmark。每次使用不同标签，报告不覆盖已有文件。详见 [混合 Benchmark](benchmark-mixed-2026-10-14.md)。
 
@@ -83,7 +83,7 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 0.8.0 已发布，对应契约为 1.14；当前未发布源码契约为 2.0。example、website 和技能已适配当前源码；包内版本号仍为 0.8.0，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹区分，不等同 registry 发布包。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
+SDK 0.8.0 已发布，对应契约为 1.14；当前准备 1.0.0-rc.0，源码契约为 2.0。example、website 和技能已适配当前源码；包内版本为 1.0.0-rc.0，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹记录；候选尚未上传。发行范围及候选验收见 [0.8.0 说明](release-0.8.0.md)。
 
 正式版的当前门槛见 [六项发布待办](api-review-1.0.md#仍未完成的-10-门槛)：固定候选与 CI、真实数据库负载、当前候选 QQ 故障验收、长期观察、用户入口适配及 RC 收尾。候选提交、源码指纹和配置须随证据记录；源码契约编号不代表 npm 发行版本号。
 

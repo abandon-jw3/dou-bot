@@ -1,8 +1,9 @@
 import { mkdir, readFile, writeFile, realpath, access } from 'node:fs/promises';
 import { dirname, resolve, relative, isAbsolute, posix } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { parseEnv } from 'node:util';
+import { gunzipSync } from 'node:zlib';
 import ts from 'typescript';
 import { root, runNode } from './paths.mjs';
 
@@ -12,8 +13,14 @@ const historyVersions = ['0.6.0', '0.7.0', '0.8.0'];
 const registryVersion = arguments_[0]?.startsWith('--history=')
   ? arguments_[0].slice('--history='.length)
   : undefined;
-if (arguments_.length > 1 || (arguments_.length && !historyVersions.includes(registryVersion)))
-  throw new Error('Expected no arguments, or --history=0.6.0 / 0.7.0 / 0.8.0');
+const requestedTarball = arguments_[0]?.startsWith('--tarball=')
+  ? arguments_[0].slice('--tarball='.length)
+  : undefined;
+if (
+  arguments_.length > 1 ||
+  (arguments_.length && !historyVersions.includes(registryVersion) && !requestedTarball?.trim())
+)
+  throw new Error('Expected no arguments, --tarball=<path>, or --history=0.6.0 / 0.7.0 / 0.8.0');
 const releasedBaseline = registryVersion === '0.6.0';
 const released070 = registryVersion === '0.7.0';
 const freshRegistry = registryVersion !== undefined;
@@ -118,7 +125,21 @@ for (const file of pack.files) {
     }
   }
 }
-const tarball = resolve(output, pack.filename);
+const rebuiltTarball = resolve(output, pack.filename);
+const tarball = requestedTarball ? resolve(requestedTarball) : rebuiltTarball;
+let artifactIntegrity = pack.integrity;
+if (requestedTarball) {
+  const artifact = await readFile(tarball);
+  const rebuilt = await readFile(rebuiltTarball);
+  // Node versions may compress identical tar bytes differently. Validate the supplied
+  // artifact against the checked build, then install that exact file in the consumer.
+  const limits = { maxOutputLength: 64 * 1024 * 1024 };
+  if (!gunzipSync(artifact, limits).equals(gunzipSync(rebuilt, limits)))
+    throw new Error(
+      'Supplied tarball contents differ from the checked build; rebuild or select the matching candidate',
+    );
+  artifactIntegrity = `sha512-${createHash('sha512').update(artifact).digest('base64')}`;
+}
 await writeFile(
   resolve(consumer, 'package.json'),
   JSON.stringify(
@@ -299,7 +320,9 @@ await writeFile(
       tarball,
       consumer,
       fileCount: pack.files.length,
-      integrity: pack.integrity,
+      integrity: artifactIntegrity,
+      rebuiltIntegrity: pack.integrity,
+      artifactMode: requestedTarball ? 'frozen-tarball' : 'fresh-pack',
       featureConsumers,
       skillExamples,
     },

@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "1.0.0-rc.0",
+  "status": "candidate-validated-locally",
+  "published": false,
+  "publicContract": "2.0",
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next",
+    "latestTagAction": "leave-unchanged"
+  },
+  "source": {
+    "baseCommit": "eb79d03848fae42f77a7f612909a21bb21983c20",
+    "candidateCommit": null,
+    "dirty": true,
+    "runtimeFingerprint": "efbd2880a235c874e078728023b9b3bb7f0286d94af2c49811e1c0e7fb0c10e7",
+    "inputFingerprint": "c5be8b67b909f351d6894bb4b39987f3edf65a8d8a7198f5af69112982477f24",
+    "fingerprintAlgorithm": "SHA-256 of sorted SDK-relative path, NUL, file bytes, NUL",
+    "fingerprintedInputs": [
+      "LICENSE",
+      "NOTICE",
+      "README.md",
+      "docs/access-control.md",
+      "docs/capacity.md",
+      "docs/command-parameters.md",
+      "docs/context-middleware.md",
+      "docs/database.md",
+      "docs/diagnostics.md",
+      "docs/execution-controls.md",
+      "docs/module-guards.md",
+      "docs/multi-bot.md",
+      "docs/prompts.md",
+      "docs/public-api.d.ts",
+      "package-lock.json",
+      "package.json",
+      "scripts/build.mjs",
+      "scripts/check-api.mjs",
+      "scripts/paths.mjs",
+      "scripts/test-package.mjs",
+      "src/contracts.ts",
+      "src/core/access.ts",
+      "src/core/application.ts",
+      "src/core/arguments.ts",
+      "src/core/attachment-route.ts",
+      "src/core/attachments.ts",
+      "src/core/bot-manager.ts",
+      "src/core/bot-runtime.ts",
+      "src/core/clock.ts",
+      "src/core/config-validation.ts",
+      "src/core/config.ts",
+      "src/core/container.ts",
+      "src/core/context-state.ts",
+      "src/core/cooldown.ts",
+      "src/core/dispatcher.ts",
+      "src/core/errors.ts",
+      "src/core/event-task.ts",
+      "src/core/execution-pool.ts",
+      "src/core/execution.ts",
+      "src/core/factory.ts",
+      "src/core/group-routes.ts",
+      "src/core/guards.ts",
+      "src/core/help.ts",
+      "src/core/identity.ts",
+      "src/core/input-error.ts",
+      "src/core/logging.ts",
+      "src/core/message-sender.ts",
+      "src/core/metadata.ts",
+      "src/core/outbound.ts",
+      "src/core/parser.ts",
+      "src/core/prompts.ts",
+      "src/core/runtime-config.ts",
+      "src/core/single-options.ts",
+      "src/core/utils.ts",
+      "src/database/postgres.ts",
+      "src/diagnostics/contracts.ts",
+      "src/diagnostics/observer.ts",
+      "src/index.ts",
+      "src/message/index.ts",
+      "src/qq/api.ts",
+      "src/qq/client.ts",
+      "src/qq/facade.ts",
+      "src/qq/http.ts",
+      "src/qq/lifetime.ts",
+      "src/qq/managed-client.ts",
+      "src/qq/normalize.ts",
+      "src/qq/token.ts",
+      "src/testing/contracts.ts",
+      "src/testing/fixtures.ts",
+      "src/testing/index.ts",
+      "src/testing/memory-persistence.ts",
+      "src/testing/multi-bot.ts",
+      "src/testing/single-bot.ts",
+      "src/transport/types.ts",
+      "src/transport/webhook.ts",
+      "src/transport/ws.ts",
+      "tsconfig.build.json",
+      "tsconfig.json"
+    ],
+    "runtimeChanged": false
+  },
+  "registryAtPreparation": {
+    "latest": "0.8.0",
+    "next": "0.6.0",
+    "versions": ["0.6.0", "0.7.0", "0.8.0"]
+  },
+  "authentication": {
+    "authenticated": false,
+    "result": "E401"
+  },
+  "baselineCI": {
+    "runId": 39610414902,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/39610414902"
+  },
+  "candidateCI": {
+    "status": "not-run-uncommitted-candidate"
+  },
+  "checks": {
+    "sdk": [
+      {
+        "node": "24.0.0",
+        "status": "passed",
+        "tests": 411,
+        "passed": 398,
+        "skippedDedicatedDatabase": 13,
+        "failed": 0,
+        "publicExports": 178,
+        "bidirectionalTypeChecks": 136
+      },
+      {
+        "node": "24.21.0",
+        "status": "passed",
+        "tests": 411,
+        "passed": 398,
+        "skippedDedicatedDatabase": 13,
+        "failed": 0,
+        "publicExports": 178,
+        "bidirectionalTypeChecks": 136
+      }
+    ],
+    "frozenArtifactConsumers": {
+      "status": "passed",
+      "nodes": ["24.0.0", "24.21.0"],
+      "sameCompressedArtifact": true,
+      "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
+      "skillAssetTestsPerNode": 7,
+      "artifactContentsMatchRebuild": true,
+      "rejectOtherArtifactAndMixedModes": "passed"
+    },
+    "repositoryCheck": {
+      "status": "passed",
+      "node": "24.21.0",
+      "exampleTests": 40,
+      "developmentProcessTests": 7,
+      "websiteTests": 23,
+      "websiteHtmlPages": 47,
+      "websiteBuiltLinksAndAssets": 2260
+    },
+    "browser": {
+      "status": "passed",
+      "passed": 24,
+      "scope": "local Chromium desktop/mobile; no live QQ"
+    },
+    "coverage": {
+      "status": "passed",
+      "node": "24.21.0",
+      "statementsPct": 95.36,
+      "linesPct": 95.36,
+      "functionsPct": 93.14,
+      "branchesPct": 89.94,
+      "note": "Dedicated PostgreSQL tests skipped locally; this coverage is not a real SQL run."
+    },
+    "productionAudit": {
+      "status": "passed",
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    "sourceOfflineExample": {
+      "status": "passed",
+      "scenes": ["private", "group"]
+    },
+    "shortSoak": {
+      "status": "passed",
+      "durationMs": 30056,
+      "unexpectedErrors": 0,
+      "events": {
+        "accepted": 46982,
+        "duplicates": 11020,
+        "rejected": 1044,
+        "failed": 2127
+      },
+      "resourcesReleased": true,
+      "scope": "Native-clock local sustained run with simulated HTTP and transport, short TTLs and injected errors. Includes guards, slot/rest/option, cooldown, private/group multi-turn prompts, cancellation, timeout, question failure and shutdown. Samples force GC and retain at most 240 points. This is not QQ platform or multi-day production acceptance."
+    },
+    "virtualCapacity": {
+      "status": "passed",
+      "mode": "virtual",
+      "requestedDurationMs": 7200000,
+      "actualElapsedMs": 14154.333666,
+      "attempted": 154800,
+      "duplicates": 6192,
+      "handled": 154800,
+      "sent": 154800,
+      "injectedFailures": 155,
+      "failures": {
+        "send": 155
+      },
+      "resourcesReleased": true,
+      "note": "Two virtual hours, not a two-hour real-time run; simulated transport and in-memory persistence."
+    },
+    "publishPreview": {
+      "status": "passed",
+      "dryRun": true,
+      "uploaded": false,
+      "id": "dou-bot@1.0.0-rc.0",
+      "version": "1.0.0-rc.0",
+      "fileCount": 182,
+      "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
+      "size": 300872,
+      "unpackedSize": 1293430,
+      "targetTag": "next"
+    }
+  },
+  "remainingStableReleaseGates": [
+    "current-candidate-live-mixed-WS-Webhook-and-recovery",
+    "whole-database-outage-and-process-recovery",
+    "complex-SQL-and-real-business-workload",
+    "24-72-hour-soak-and-multi-day-trial",
+    "deployment-upgrade-rollback-and-API-compatibility-promise"
+  ],
+  "preparedAt": "2026-10-21T15:31:23.394554+00:00",
+  "preparedDate": "2026-10-21",
+  "timeZone": "Asia/Shanghai",
+  "nodeRange": ">=24.0.0 <25",
+  "typescript": "5.9.3",
+  "npm": "11.19.0",
+  "platform": {
+    "os": "Darwin",
+    "architecture": "arm64"
+  },
+  "dependencies": {
+    "@types/pg": "8.23.1",
+    "pg": "8.23.1",
+    "reflect-metadata": "0.2.2",
+    "ws": "8.22.0"
+  },
+  "registryAfterPreview": {
+    "dist-tags": {
+      "next": "0.6.0",
+      "latest": "0.8.0"
+    },
+    "versions": ["0.6.0", "0.7.0", "0.8.0"]
+  },
+  "artifact": {
+    "path": "framework/work/release/1.0.0-rc.0/dou-bot-1.0.0-rc.0.tgz",
+    "bytes": 300872,
+    "sha256": "632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1",
+    "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
+    "fileCount": 182,
+    "unpackedSize": 1293430,
+    "tarPayloadSha256": "2bb7ef27eeaadb8b13dd797c08a0e6575a1fbf1779f15928c087a1395a00a6da",
+    "identicalCopies": ["example/vendor/dou-bot-source.tgz", "website/vendor/dou-bot-source.tgz"]
+  },
+  "beforeUpload": [
+    "Commit the final candidate changes and pass CI for that commit.",
+    "Complete npm login and account verification.",
+    "Recheck registry version availability and publish the validated tarball only when requested."
+  ],
+  "notPerformed": [
+    "npm upload or dist-tag mutation",
+    "git commit, push or tag",
+    "real QQ or real database validation",
+    "24-72-hour soak or server deployment"
+  ],
+  "evidenceDirectory": "framework/work/release/1.0.0-rc.0",
+  "artifactNotes": [
+    "Independent Node rebuilds produced different gzip bytes for identical tar payloads. Final consumers explicitly installed the same frozen artifact on both Node versions.",
+    "The final README identifies the candidate without a temporary unpublished claim. Full SDK/runtime checks preceded this README-only change; final frozen artifact consumers and publish preview were repeated."
+  ]
+}

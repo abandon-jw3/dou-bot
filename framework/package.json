@@ -1,6 +1,6 @@
 {
   "name": "dou-bot",
-  "version": "0.8.0",
+  "version": "1.0.0-rc.0",
   "description": "A lightweight decorator-based framework for official QQ bots.",
   "license": "MIT",
   "repository": {
@@ -56,7 +56,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public",
-    "tag": "latest"
+    "tag": "next"
   },
   "scripts": {
     "clean": "node scripts/clean.mjs",

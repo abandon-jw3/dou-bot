@@ -2,9 +2,9 @@
   "package": "dou-bot",
   "channel": "source",
   "contract": "2.0",
-  "version": "0.8.0",
+  "version": "1.0.0-rc.0",
   "dependency": "file:vendor/dou-bot-source.tgz",
-  "sha256": "949984f6e417f188cc9eb359ebf466e02d4c7d8caa5b7981307a7ed4e31f1b6d",
-  "integrity": "sha512-EWfx5MLqBFjvkRjpfUq1YzuFMLWOjS4dnpboPcphbFLSPYoC3UxhThg8gzCbvO1HldBgd39Pu9HqvG7DxUARTQ==",
+  "sha256": "632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1",
+  "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
   "distSha256": "5c5af672753cf60bccdb89e946938bcb6ed0a4e3a89c3c85860834a8a2284dba"
 }

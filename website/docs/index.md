@@ -28,7 +28,7 @@ features:
 
 ## 创建你的第一个机器人
 
-**本手册面向尚未发布的新版本。** 请从配套示例开始使用。
+**本手册面向 1.0.0-rc.0 候选版，尚未发布。** 请从配套示例开始使用。
 
 ```sh
 git clone https://github.com/abandon-jw3/dou-bot.git

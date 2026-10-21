@@ -18,7 +18,7 @@ export default defineConfig({
       { text: 'API 参考', link: '/api/decorators' },
       { text: '示例', link: '/examples/hello' },
       { text: '更新日志', link: '/changelog' },
-      { text: '开发版 · 尚未发布', link: '/changelog' },
+      { text: '1.0.0-rc.0 · 尚未发布', link: '/changelog' },
     ],
     sidebar,
     outline: { label: '本页目录', level: [2, 3] },
@@ -35,7 +35,7 @@ export default defineConfig({
     lightModeSwitchTitle: '切换到浅色模式',
     darkModeSwitchTitle: '切换到深色模式',
     footer: {
-      message: '以 MIT 许可证发布 · 新版本文档 · 尚未发布',
+      message: '以 MIT 许可证发布 · 1.0.0-rc.0 · 尚未发布',
       copyright: '© 2026 dou-bot contributors',
     },
     search: {

@@ -1,6 +1,6 @@
 # 更新日志
 
-## 开发版 · 尚未发布
+## 1.0.0-rc.0 · 尚未发布
 
 - AppFactory 创建共享应用，支持多个 WS/Webhook 账号。
 - MessageSender / BotManager 明确发送账号，群地址按账号保存。

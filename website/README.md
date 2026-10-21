@@ -1,6 +1,6 @@
 # 文档站维护
 
-面向新建机器人项目，介绍**尚未发布的新版本**：AppFactory、多账号、PostgreSQL 与性能观测。
+面向新建机器人项目，介绍 **1.0.0-rc.0 候选版（尚未发布）**：AppFactory、多账号、PostgreSQL 与性能观测。
 
 ## 预览与检查
 
@@ -21,7 +21,7 @@ npm run test:browser
 ## SDK 来源
 
 - 使用 [vendor](vendor/README.md) 的源码 tarball，独立安装，不链接 framework 源码。
-- 包内版本暂为 0.8.0，但内容不是 npm 0.8.0；页面统一标注“开发版 · 尚未发布”。
+- 当前包版本为 1.0.0-rc.0，页面标注尚未发布；准备完成后使用 next 标签试用。
 - API 索引从实际安装的公开声明生成：`npm run api:generate`。
 - SDK 更新后，在 framework 执行 `node scripts/prepare-user-sdk.mjs`，在 example 执行 `npm install --save-exact --ignore-scripts ./vendor/dou-bot-source.tgz`，在 website 执行同一命令并加 `--save-dev`，更新索引并验证。
 - 正式发布时再固定 npm 版本与锁文件；不靠修改文案伪造发布状态。
