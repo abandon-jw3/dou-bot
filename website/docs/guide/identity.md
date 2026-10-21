@@ -23,12 +23,13 @@ who(@UserId() userId: string, @GroupId() groupId: string | undefined): string {
 
 ## 使用规则
 
-- 五个装饰器均无配置项，从 **0.7.0** 开始提供。
+- 五个装饰器均无配置项。
 - 只读取当前事件，不查询额外资料，不消费文字或附件参数。
 - UserInfo、GroupInfo 是冻结快照；用户名为空、bot 为 false 时原样保留。
 - 未知或缺失的角色为 `undefined`；私聊和按钮不提供角色。
 - 按钮以本次操作者为准，只提供用户 ID 及适用的群 ID，不沿用历史消息资料。
-- OpenID 不是 QQ 号或群号；同一人的群聊和私聊 OpenID 不能直接混用。
+- OpenID 不是 QQ 号或群号；不同账号和场景下的 ID 不能混用。
+- 保存身份时同时保存 ctx.appId 与场景；保存发送地址时直接使用完整 ctx.target。
 - `@Role()` 只读信息；限制权限用 [GroupOnly、GroupRoles 等 Guard](./access.md)。
 
 [运行身份与按钮示例](../examples/identity.md)。

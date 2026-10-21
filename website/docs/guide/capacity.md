@@ -1,57 +1,38 @@
 # 容量与运行监测
 
-用 `app.snapshot()` 观察运行状态和负载。**capacity、rejections、timing 从 0.8.0 起提供。**
+先看积压和失败，再决定是否调整并发。群数量不能直接换算成每秒处理能力。
 
-## 关注哪些数据
+## 应用与账号两层快照
 
-| 字段                   | 用途                                                   |
-| ---------------------- | ------------------------------------------------------ |
-| queue.active / pending | 正在处理和等待的事件数                                 |
-| prompts.pending        | 等待用户回答的对话数                                   |
-| capacity               | 并发、字节、去重和回复记录的用量及上限                 |
-| rejections             | 按原因分类的累计接纳拒绝                               |
-| timing.queueWait       | 排队耗时，包含 prompt 恢复调度                         |
-| timing.processing      | 已结束事件占用执行槽的时间，含 I/O，不含排队和对话挂起 |
+<<< @/../examples/monitoring.ts#health
 
-在应用的监测逻辑中读取：
+| 字段              | 含义                                             |
+| ----------------- | ------------------------------------------------ |
+| snapshot.inbound  | 整个应用正在处理和排队的入站事件                 |
+| snapshot.outbound | 整个应用的出站请求、完成、失败和拒绝计数         |
+| snapshot.database | 连接总数、空闲数、等待数                         |
+| snapshot.bots     | 逐账号连接、队列、对话、去重、回复记录和拒绝原因 |
 
-```ts
-const snapshot = app.snapshot();
-const wait = snapshot.timing.queueWait;
-console.log({
-  active: snapshot.queue.active,
-  queued: snapshot.queue.pending,
-  replyRecords: snapshot.capacity.replyScopes.size,
-  replyLimit: snapshot.capacity.replyScopes.limit,
-  meanQueueWaitMs: wait.count === 0 ? 0 : wait.totalMs / wait.count,
-  rejections: snapshot.rejections,
-});
-```
-
-- 快照为副本，修改它不会调整运行配置。
-- timing 包含 count、totalMs、maxMs，单位毫秒；尚未结束的事件不计入 processing。
-- 最近一分钟平均值用两次 count / totalMs 的差计算；累计最大值不是该分钟最大值。
-- 不提供 P95/P99，百分位需在自己的监测中采样。
-
-## 拒绝原因
-
-| 字段                | 优先检查                       |
-| ------------------- | ------------------------------ |
-| invalidEvent        | 输入结构和单事件大小           |
-| queueFull           | 处理耗时、下游等待、排队量     |
-| bytesFull           | 事件大小和保留字节预算         |
-| acknowledgmentsFull | 按钮确认的并发高峰             |
-| replyScopesFull     | 消息率、一小时回复记录保留窗口 |
-| dedupFull           | 在途任务和长对话占用           |
-
-- 每个事件只计首个适用原因，总和为 events.rejected。
-- Guard、冷却和业务失败属于接纳后的结果，需另看业务日志与 onError。
+- 入站指 QQ 事件进入业务；出站指应用调用 QQ 发送、上传等 API。
+- 两者并发分别配置；一次事件可以不发送，也可以多次发送。
+- `app.bots.get(appId).snapshot()` 单独查看一个账号。
+- accepted 表示已接纳，不等于业务成功；同时检查 errors/onError。
+- 快照中的 timing 是累计 count/totalMs/maxMs；阶段百分位见 [性能观测](./diagnostics.md)。
 
 ## 调整容量
 
-- 群数不等于吞吐，先估算调用频率、处理耗时和高峰。
-- execution 默认并发 8、排队 1000；更多并发不会加速同步 CPU 工作。
-- 去重、回复记录默认各 10000 条；回复记录默认保留一小时，可能先于队列达到上限。
-- prompt 等待时释放并发名额，但仍占会话、事件和缓存资源。
-- 不随意缩短有效回复记录保留时间，避免复用已发送的回复序号。
-- 默认值与容量关系见 [配置](./configuration.md#执行与容量)。
+- `execution` 和 `outbound` 默认并发各 8、等待各 1000、字节预算各 16 MiB。
+- 先确认 CPU、SQL 连接池、接口延迟和 QQ 配额，再逐步增加并发。
+- 队列持续增长意味着处理速率低于输入速率；只增大队列会延长等待。
+- prompt 等待释放执行名额，但仍占会话、事件和缓存资源。
+- 每个账号的去重、回复记录默认各 10000 条；不要随意缩短回复记录的一小时保留期。
+- 同时观察 `queueFull`、`bytesFull`、`replyScopesFull`、`dedupFull` 等拒绝原因。
+- 进程重启丢失未完成任务；关键写入使用业务幂等与持久化任务设计。
+
+## 按自己的业务确定容量
+
+1. 估算高峰每秒的指令、按钮和附件数量，以及一次调用会发送几条消息。
+2. 在测试环境运行真实的业务处理，观察排队、延迟、失败率、CPU、内存和数据库等待。
+3. 逐步增加负载；出现持续积压时，先定位慢阶段，再调整并发或优化业务。
+
+外部接口、SQL、图片渲染和 QQ 发送配额都可能成为限制；不要只根据群数量设置并发。

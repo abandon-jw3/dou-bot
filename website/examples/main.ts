@@ -1,16 +1,19 @@
-import { AppModule as Context } from './context/app.module.js';
-import { BotFactory } from 'dou-bot';
-import { AppModule as Client } from './client/app.module.js';
-import { AppModule as Hello } from './hello/app.module.js';
-import { AppModule as Query } from './query/app.module.js';
-import { AppModule as Guards } from './guards/app.module.js';
-import { AppModule as Access } from './access/app.module.js';
-import { AppModule as Prompt } from './prompt/app.module.js';
-import { AppModule as Buttons } from './buttons/app.module.js';
-import { AppModule as Messages } from './messages/app.module.js';
-import { AppModule as Events } from './events/app.module.js';
+import { NotificationsModule } from './multi-bot/app.module.ts';
+import { appOptions } from './config.ts';
+import { AppModule as Context } from './context/app.module.ts';
+import { AppFactory } from 'dou-bot';
+import { AppModule as Client } from './client/app.module.ts';
+import { AppModule as Hello } from './hello/app.module.ts';
+import { AppModule as Query } from './query/app.module.ts';
+import { AppModule as Guards } from './guards/app.module.ts';
+import { AppModule as Access } from './access/app.module.ts';
+import { AppModule as Prompt } from './prompt/app.module.ts';
+import { AppModule as Buttons } from './buttons/app.module.ts';
+import { AppModule as Messages } from './messages/app.module.ts';
+import { AppModule as Events } from './events/app.module.ts';
 
 const modules = {
+  'multi-bot': NotificationsModule,
   context: Context,
   client: Client,
   hello: Hello,
@@ -27,27 +30,8 @@ if (!Object.hasOwn(modules, name))
   throw new Error(
     '示例名应为 hello/query/context/guards/access/prompt/buttons/events/messages/client',
   );
-const appId = process.env.QQ_APP_ID;
-const secret = process.env.QQ_APP_SECRET;
-if (!appId || !secret) throw new Error('请配置本地 QQ_APP_ID 和 QQ_APP_SECRET');
-const transport = process.env.QQ_TRANSPORT ?? 'ws';
-if (transport !== 'ws' && transport !== 'webhook')
-  throw new Error('QQ_TRANSPORT 应为 ws 或 webhook');
-
-const app = await BotFactory.create(modules[name as keyof typeof modules], {
-  appId,
-  secret,
-  transport:
-    transport === 'ws'
-      ? { type: 'ws' }
-      : {
-          type: 'webhook',
-          host: '127.0.0.1',
-          port: Number(process.env.PORT ?? '3000'),
-          path: '/qq',
-        },
-  commands: { prefix: '/', invalidInput: 'reply' },
-});
+const options = appOptions(process.env);
+const app = await AppFactory.create(modules[name as keyof typeof modules], options);
 const close = () => {
   app.close().catch(() => {
     console.error('关闭失败');
@@ -57,4 +41,4 @@ const close = () => {
 process.once('SIGINT', close);
 process.once('SIGTERM', close);
 await app.start();
-console.log(`示例 ${name} 已启动，接入方式 ${transport}。`);
+console.log(`示例 ${name} 已启动，接入方式 ${process.env.QQ_TRANSPORT ?? 'ws'}。`);

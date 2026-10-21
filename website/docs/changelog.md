@@ -1,5 +1,13 @@
 # 更新日志
 
+## 开发版 · 尚未发布
+
+- AppFactory 创建共享应用，支持多个 WS/Webhook 账号。
+- MessageSender / BotManager 明确发送账号，群地址按账号保存。
+- 必选 PostgreSQL，共享连接池；显式迁移框架表。
+- 应用入站/出站容量、逐账号快照和可选阶段性能观测。
+- 使用方式见 [快速开始](./guide/quick-start.md)。
+
 ## 0.8.0 · 2026-10-12
 
 - Slot.normalize：把别名统一为处理器需要的字符串，默认值也可归一化。

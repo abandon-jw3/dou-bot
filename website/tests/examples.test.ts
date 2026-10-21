@@ -65,7 +65,7 @@ await Promise.all([
     assert.equal(bot.messages[3]?.payload.content, '这条消息由 ctx.reply 发送。');
     assert.equal(bot.errors.length, 0);
   }),
-  test('内置客户端：可注入 QQClient 和 QQApi', async (t) => {
+  test('内置客户端：通过 BotManager 选择来源账号', async (t) => {
     const bot = await setup(t, Client);
     await bot.dispatch(message('/bot-info'));
     assert.equal(

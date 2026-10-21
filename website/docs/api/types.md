@@ -1,6 +1,6 @@
 # 类型与接口
 
-适用于 dou-bot **0.8.0**。
+查询各个 API 的参数、返回值与类型。
 
 - 业务 API 从 `dou-bot` 导入。
 - 离线测试从 `dou-bot/testing` 导入。
@@ -44,73 +44,88 @@ export interface ApiResponse<T> {
 }
 ```
 
+### AppFactory {#root-AppFactory}
+
+```ts
+export declare const AppFactory: {
+  create: (root: Type, options: AppOptions) => Promise<Application>;
+};
+```
+
+### Application {#root-Application}
+
+```ts
+export interface Application {
+  readonly diagnostics: DiagnosticsReader;
+  readonly status: ApplicationStatus;
+  readonly bots: BotManager;
+  start(): Promise<void>;
+  close(): Promise<void>;
+  get<T>(
+    token: InjectionToken<T>,
+    options?: {
+      module?: Type;
+    },
+  ): T;
+  webhookHandler(): RequestListener;
+  snapshot(): ApplicationSnapshot;
+}
+```
+
 ### ApplicationSnapshot {#root-ApplicationSnapshot}
 
 ```ts
 export interface ApplicationSnapshot {
-  status: ApplicationStatus;
-  transport: 'ws' | 'webhook';
-  prompts: {
-    pending: number;
+  readonly status: ApplicationStatus;
+  readonly bots: readonly (BotSnapshot & {
+    readonly appId: string;
+  })[];
+  readonly inbound: {
+    readonly active: number;
+    readonly pending: number;
+    readonly retainedBytes: number;
+    readonly concurrency: number;
+    readonly queueCapacity: number;
+    readonly queueMaxBytes: number;
   };
-  queue: {
-    pending: number;
-    active: number;
-    retainedBytes: number;
+  readonly outbound: QueueSnapshot;
+  readonly database: {
+    readonly total: number;
+    readonly idle: number;
+    readonly waiting: number;
   };
-  events: {
-    accepted: number;
-    duplicates: number;
-    rejected: number;
-    failed: number;
-  };
-  /** Process-local capacity and cache occupancy; not a QQ platform quota. */
-  capacity: {
-    concurrency: number;
-    queueCapacity: number;
-    queueMaxBytes: number;
-    dedup: {
-      size: number;
-      limit: number;
-    };
-    replyScopes: {
-      size: number;
-      limit: number;
-    };
-  };
-  /** Each rejected event increments its first applicable reason exactly once. */
-  rejections: {
-    invalidEvent: number;
-    queueFull: number;
-    bytesFull: number;
-    acknowledgmentsFull: number;
-    replyScopesFull: number;
-    dedupFull: number;
-  };
-  /** Lifetime aggregates in milliseconds. No message or user data is retained. */
-  timing: {
-    /** One sample per initial scheduling or prompt resumption. */
-    queueWait: {
-      count: number;
-      totalMs: number;
-      maxMs: number;
-    };
-    /** One sample per finished started event; excludes queue and suspended prompt time. */
-    processing: {
-      count: number;
-      totalMs: number;
-      maxMs: number;
-    };
-  };
-  lastEventAt?: number;
 }
 ```
 
 ### ApplicationStatus {#root-ApplicationStatus}
 
 ```ts
-export type ApplicationStatus =
-  'created' | 'starting' | 'running' | 'reconnecting' | 'stopping' | 'stopped' | 'failed';
+export type ApplicationStatus = Exclude<BotStatus, 'reconnecting'> | 'degraded';
+```
+
+### AppOptions {#root-AppOptions}
+
+```ts
+export interface AppOptions {
+  database: DatabaseOptions;
+  bots: readonly BotOptions[];
+  commands?: {
+    prefix?: string;
+    invalidInput?: 'report' | 'reply';
+  };
+  execution?: ExecutionOptions;
+  outbound?: OutboundOptions;
+  diagnostics?: DiagnosticsOptions;
+  context?: ContextOptions;
+  prompts?: PromptConfig;
+  webhook?: {
+    listen?: boolean;
+    host?: string;
+    port?: number;
+  };
+  logger?: Logger;
+  onError?: ErrorHandler;
+}
 ```
 
 ### Arg {#root-Arg}
@@ -225,31 +240,26 @@ export type AttachmentSelectionResult =
 export type Awaitable<T> = T | Promise<T>;
 ```
 
-### BotApplication {#root-BotApplication}
+### BotHandle {#root-BotHandle}
 
 ```ts
-export interface BotApplication {
-  readonly status: ApplicationStatus;
+export interface BotHandle {
+  readonly appId: string;
+  readonly status: BotStatus;
   readonly client: QQClient;
   start(): Promise<void>;
-  close(): Promise<void>;
-  get<T>(
-    token: InjectionToken<T>,
-    options?: {
-      module?: Type;
-    },
-  ): T;
-  webhookHandler(): RequestListener;
-  snapshot(): ApplicationSnapshot;
+  stop(): Promise<void>;
+  snapshot(): BotSnapshot;
 }
 ```
 
-### BotFactory {#root-BotFactory}
+### BotManager {#root-BotManager}
 
 ```ts
-export declare const BotFactory: {
-  create: (root: Type, options: BotOptions) => Promise<BotApplication>;
-};
+export declare abstract class BotManager {
+  abstract get(appId: string): BotHandle;
+  abstract list(): readonly BotHandle[];
+}
 ```
 
 ### BotOptions {#root-BotOptions}
@@ -258,23 +268,95 @@ export declare const BotFactory: {
 export interface BotOptions {
   appId: string;
   secret: string;
-  transport?: TransportOptions;
+  transport?:
+    | WsTransportOptions
+    | (Omit<WebhookTransportOptions, 'listen' | 'host' | 'port'> & {
+        listen?: never;
+        host?: never;
+        port?: never;
+      });
   api?: QQApiOptions;
-  commands?: {
-    /** Exact, case-sensitive prefix. Defaults to '/'; '' allows bare command names. No whitespace. */
-    prefix?: string;
-    /** Report all errors; optionally reply with safe command-input diagnostics. Defaults to 'report'. */
-    invalidInput?: 'report' | 'reply';
-  };
-  execution?: ExecutionOptions;
-  context?: ContextOptions;
-  prompts?: PromptConfig;
   interactions?: {
     acknowledge?: 'auto' | 'manual';
   };
-  logger?: Logger;
-  onError?: ErrorHandler;
 }
+```
+
+### BotSnapshot {#root-BotSnapshot}
+
+```ts
+export interface BotSnapshot {
+  status: BotStatus;
+  transport: 'ws' | 'webhook';
+  prompts: {
+    pending: number;
+  };
+  queue: {
+    pending: number;
+    active: number;
+    retainedBytes: number;
+  };
+  events: {
+    accepted: number;
+    duplicates: number;
+    rejected: number;
+    failed: number;
+  };
+  /** Process-local capacity and cache occupancy; not a QQ platform quota. */
+  capacity: {
+    concurrency: number;
+    queueCapacity: number;
+    queueMaxBytes: number;
+    dedup: {
+      size: number;
+      limit: number;
+    };
+    replyScopes: {
+      size: number;
+      limit: number;
+    };
+  };
+  /** Each rejected event increments its first applicable reason exactly once. */
+  rejections: {
+    invalidEvent: number;
+    queueFull: number;
+    bytesFull: number;
+    acknowledgmentsFull: number;
+    replyScopesFull: number;
+    dedupFull: number;
+  };
+  /** Lifetime aggregates in milliseconds. No message or user data is retained. */
+  timing: {
+    /** One sample per initial scheduling or prompt resumption. */
+    queueWait: {
+      count: number;
+      totalMs: number;
+      maxMs: number;
+    };
+    /** One sample per finished started event; excludes queue and suspended prompt time. */
+    processing: {
+      count: number;
+      totalMs: number;
+      maxMs: number;
+    };
+  };
+  lastEventAt?: number;
+}
+```
+
+### BotStatus {#root-BotStatus}
+
+```ts
+export type BotStatus =
+  'created' | 'starting' | 'running' | 'reconnecting' | 'stopping' | 'stopped' | 'failed';
+```
+
+### BotTarget {#root-BotTarget}
+
+```ts
+export type BotTarget = MessageTarget & {
+  readonly appId: string;
+};
 ```
 
 ### BotUser {#root-BotUser}
@@ -500,12 +582,214 @@ export declare function createContextKey<T>(name: string): ContextKey<T>;
 export declare const Ctx: () => ParameterDecorator;
 ```
 
+### Database {#root-Database}
+
+```ts
+export declare abstract class Database {
+  /** Framework-owned; do not call pool.end(). Borrowed clients must be released. */
+  abstract readonly pool: Pool;
+  abstract readonly schema: string;
+  abstract query<R extends QueryResultRow = QueryResultRow>(
+    sql: string,
+    values?: readonly unknown[],
+  ): Promise<QueryResult<R>>;
+  abstract transaction<T>(run: (client: PoolClient) => Awaitable<T>): Promise<T>;
+}
+```
+
+### DatabaseOptions {#root-DatabaseOptions}
+
+```ts
+export interface DatabaseOptions {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port?: number;
+  ssl?:
+    | boolean
+    | {
+        ca: string;
+        rejectUnauthorized?: boolean;
+      };
+  schema?: string;
+  max?: number;
+  connectionTimeoutMs?: number;
+  statementTimeoutMs?: number;
+  idleTimeoutMs?: number;
+}
+```
+
+### DiagnosticsMetric {#root-DiagnosticsMetric}
+
+```ts
+export interface DiagnosticsMetric {
+  readonly stage: DiagnosticsStage;
+  readonly appId?: string;
+  /** Registered controller/method, never command input or a user identifier. */
+  readonly handler?: string;
+  /** Zero-based middleware/guard position in this handler's resolved declaration order. */
+  readonly component?: number;
+  /** Fixed QQ API family; URLs and identifiers are never retained. */
+  readonly operation?: DiagnosticsOperation;
+  readonly count: number;
+  readonly totalMs: number;
+  readonly maxMs: number;
+  readonly active: number;
+  readonly oldestActiveMs: number;
+  readonly outcomes: Readonly<Record<DiagnosticsOutcome, number>>;
+  /** Noncumulative bins. Last bin is overflow beyond the snapshot's finite upper bounds. */
+  readonly buckets: readonly number[];
+  /** Approximate upper bounds; null for no samples or a quantile in the overflow bin. */
+  readonly p50UpperMs: number | null;
+  readonly p95UpperMs: number | null;
+  readonly p99UpperMs: number | null;
+}
+```
+
+### DiagnosticsOperation {#root-DiagnosticsOperation}
+
+```ts
+export type DiagnosticsOperation =
+  'message' | 'upload' | 'interaction' | 'token' | 'gateway' | 'other';
+```
+
+### DiagnosticsOptions {#root-DiagnosticsOptions}
+
+```ts
+export interface DiagnosticsOptions {
+  /** Defaults to false. Existing application snapshots remain available when disabled. */
+  enabled?: boolean;
+  /** Probability of sampling an entire incoming event or background operation; default 0. */
+  traceSampleRate?: number;
+  /** Maximum distinct stage/account/handler/component combinations; default 2048. */
+  maxSeries?: number;
+  /** Maximum simultaneously tracked stage intervals; default 4096. */
+  maxActiveSpans?: number;
+  /** Maximum buffered plus currently exported sampled spans; default 2048. */
+  maxPendingSpans?: number;
+  /** Optional asynchronous batch consumer. Failures disable automatic export and are counted. */
+  onSpans?: (spans: readonly DiagnosticsSpan[], signal: AbortSignal) => Awaitable<void>;
+  /** Batch export interval; default 1000 ms. No periodic work without onSpans. */
+  exportIntervalMs?: number;
+  /** Maximum wait for a batch consumer; default 1000 ms. */
+  exportTimeoutMs?: number;
+}
+```
+
+### DiagnosticsOutcome {#root-DiagnosticsOutcome}
+
+```ts
+export type DiagnosticsOutcome =
+  | 'success'
+  | 'error'
+  | 'timeout'
+  | 'cancelled'
+  | 'rejected'
+  | 'ignored'
+  | 'duplicate'
+  | 'cache-hit';
+```
+
+### DiagnosticsReader {#root-DiagnosticsReader}
+
+```ts
+export interface DiagnosticsReader {
+  /** Cumulative metrics since application construction; does not reset counters. */
+  snapshot(): DiagnosticsSnapshot;
+  /** Consume queued sampled records. Records already in an export batch are excluded. */
+  takeSpans(): readonly DiagnosticsSpan[];
+}
+```
+
+### DiagnosticsSnapshot {#root-DiagnosticsSnapshot}
+
+```ts
+export interface DiagnosticsSnapshot {
+  readonly enabled: boolean;
+  readonly closed: boolean;
+  readonly elapsedMs: number;
+  readonly bucketUpperBoundsMs: readonly number[];
+  readonly metrics: readonly DiagnosticsMetric[];
+  readonly activeSpans: number;
+  readonly bufferedSpans: number;
+  readonly exportingSpans: number;
+  readonly droppedMeasurements: number;
+  readonly droppedSpans: number;
+  readonly exportFailures: number;
+  readonly exportDisabled: boolean;
+}
+```
+
+### DiagnosticsSpan {#root-DiagnosticsSpan}
+
+```ts
+export interface DiagnosticsSpan {
+  /** Opaque local correlation identifiers, unrelated to QQ event/user/group identifiers. */
+  readonly traceId: string;
+  readonly spanId: number;
+  readonly parentSpanId?: number;
+  readonly stage: DiagnosticsStage;
+  readonly appId?: string;
+  readonly handler?: string;
+  readonly component?: number;
+  readonly operation?: DiagnosticsOperation;
+  readonly startedMs: number;
+  readonly durationMs: number;
+  readonly outcome: DiagnosticsOutcome;
+}
+```
+
+### DiagnosticsStage {#root-DiagnosticsStage}
+
+```ts
+export type DiagnosticsStage =
+  | 'webhook.request'
+  | 'webhook.body'
+  | 'webhook.parse'
+  | 'webhook.verify'
+  | 'webhook.verify.wait'
+  | 'ws.parse'
+  | 'event.admission'
+  | 'event.normalize'
+  | 'event.queue'
+  | 'event.run'
+  | 'event.total'
+  | 'event.drain'
+  | 'handler.total'
+  | 'handler.middleware'
+  | 'handler.guard'
+  | 'handler.bind'
+  | 'handler.context'
+  | 'handler.cooldown'
+  | 'handler.invoke'
+  | 'handler.observer'
+  | 'context.load'
+  | 'context.lookup'
+  | 'reply.wait'
+  | 'message.prepare'
+  | 'outbound.queue'
+  | 'outbound.run'
+  | 'control.queue'
+  | 'control.run'
+  | 'qq.token.wait'
+  | 'qq.token.refresh'
+  | 'qq.http'
+  | 'qq.http.headers'
+  | 'qq.http.body'
+  | 'route.learn'
+  | 'route.lookup'
+  | 'prompt.wait'
+  | 'cache.prune';
+```
+
 ### ErrorContext {#root-ErrorContext}
 
 ```ts
 export interface ErrorContext {
   readonly phase: ErrorPhase;
-  readonly appId: string;
+  readonly appId?: string;
+  readonly sourceAppId?: string;
   readonly eventName?: string;
   readonly eventId?: string;
   readonly messageId?: string;
@@ -524,6 +808,8 @@ export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<vo
 
 ```ts
 export type ErrorPhase =
+  | 'database'
+  | 'routing'
   | 'middleware'
   | 'context'
   | 'prompt'
@@ -585,6 +871,11 @@ export declare class FrameworkError extends Error {
 
 ```ts
 export type FrameworkErrorCode =
+  | 'DATABASE'
+  | 'DATABASE_SCHEMA'
+  | 'ROUTE_NOT_FOUND'
+  | 'ROUTE_AMBIGUOUS'
+  | 'BOT_UNAVAILABLE'
   | 'CONTEXT_TIMEOUT'
   | 'CONFIG'
   | 'DEPENDENCY'
@@ -613,7 +904,7 @@ export declare const Group: () => ParameterDecorator;
 export interface GroupButtonContext extends ButtonContextBase {
   readonly scene: 'group';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'group';
     }
@@ -651,7 +942,7 @@ export interface GroupMessageContext extends MessageContextBase {
   readonly groupId: string;
   readonly memberRole?: GroupRole;
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'group';
     }
@@ -679,6 +970,29 @@ export declare function GroupRoles(
 ): ClassDecorator & MethodDecorator;
 ```
 
+### GroupRoutes {#root-GroupRoutes}
+
+```ts
+export declare abstract class GroupRoutes {
+  abstract list(groupId: string): Promise<readonly GroupTarget[]>;
+  abstract resolve(groupId: string): Promise<GroupTarget>;
+  abstract bind(target: GroupTarget): Promise<void>;
+  /** Remove the explicit preference, keeping learned addresses. */
+  abstract unbind(groupId: string): Promise<void>;
+}
+```
+
+### GroupTarget {#root-GroupTarget}
+
+```ts
+export type GroupTarget = Extract<
+  BotTarget,
+  {
+    scene: 'group';
+  }
+>;
+```
+
 ### GuardContext {#root-GuardContext}
 
 ```ts
@@ -696,7 +1010,7 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
         /** Present only for group messages with a recognized author role. */
         readonly memberRole?: GroupRole;
         readonly target: Extract<
-          MessageTarget,
+          BotTarget,
           {
             scene: 'group';
           }
@@ -705,7 +1019,7 @@ export type GuardContext = Omit<QQEventContext, 'client'> & {
     | {
         readonly scene: 'private';
         readonly target: Extract<
-          MessageTarget,
+          BotTarget,
           {
             scene: 'private';
           }
@@ -926,6 +1240,18 @@ export interface MessageContextBase extends QQEventContext {
 export type MessageInput = string | OutgoingMessage;
 ```
 
+### MessageSender {#root-MessageSender}
+
+```ts
+export declare abstract class MessageSender {
+  abstract sendMessage(
+    target: SendTarget,
+    message: MessageInput,
+    options?: SendOptions,
+  ): Promise<SendResult>;
+}
+```
+
 ### MessageTarget {#root-MessageTarget}
 
 ```ts
@@ -946,6 +1272,12 @@ export type MessageTarget =
 export type MiddlewareContext = GuardContext & {
   readonly state: ContextWriter;
 };
+```
+
+### migrateDatabase {#root-migrateDatabase}
+
+```ts
+export declare function migrateDatabase(options: DatabaseOptions): Promise<void>;
 ```
 
 ### Module {#root-Module}
@@ -973,6 +1305,22 @@ export interface ModuleMetadata {
 
 ```ts
 export declare const On: (eventName: string) => MethodDecorator;
+```
+
+### OnApplicationReady {#root-OnApplicationReady}
+
+```ts
+export interface OnApplicationReady {
+  onApplicationReady(signal: AbortSignal): Awaitable<void>;
+}
+```
+
+### OnApplicationStopping {#root-OnApplicationStopping}
+
+```ts
+export interface OnApplicationStopping {
+  onApplicationStopping(signal: AbortSignal): Awaitable<void>;
+}
 ```
 
 ### OnAttachment {#root-OnAttachment}
@@ -1028,6 +1376,16 @@ export type OptionOptions = ArgumentOptions & {
 };
 ```
 
+### OutboundOptions {#root-OutboundOptions}
+
+```ts
+export interface OutboundOptions {
+  concurrency?: number;
+  queueCapacity?: number;
+  queueMaxBytes?: number;
+}
+```
+
 ### OutgoingMessage {#root-OutgoingMessage}
 
 ```ts
@@ -1050,7 +1408,7 @@ export interface ParameterDescription {
 export interface PrivateButtonContext extends ButtonContextBase {
   readonly scene: 'private';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'private';
     }
@@ -1064,7 +1422,7 @@ export interface PrivateButtonContext extends ButtonContextBase {
 export interface PrivateMessageContext extends MessageContextBase {
   readonly scene: 'private';
   readonly target: Extract<
-    MessageTarget,
+    BotTarget,
     {
       scene: 'private';
     }
@@ -1391,6 +1749,33 @@ export type QQUploadImagePayload = {
 );
 ```
 
+### QueueSnapshot {#root-QueueSnapshot}
+
+```ts
+export interface QueueSnapshot {
+  readonly active: number;
+  readonly pending: number;
+  readonly retainedBytes: number;
+  readonly concurrency: number;
+  readonly queueCapacity: number;
+  readonly queueMaxBytes: number;
+  readonly accepted: number;
+  readonly completed: number;
+  readonly failed: number;
+  readonly rejected: number;
+  readonly rejections: Readonly<{
+    queueFull: number;
+    bytesFull: number;
+    stopping: number;
+  }>;
+  readonly queueWait: Readonly<{
+    count: number;
+    totalMs: number;
+    maxMs: number;
+  }>;
+}
+```
+
 ### ReplyReference {#root-ReplyReference}
 
 ```ts
@@ -1474,6 +1859,18 @@ export type SendResult =
       readonly messageId?: string;
       readonly traceId?: string;
       readonly raw: Readonly<Record<string, unknown>>;
+    };
+```
+
+### SendTarget {#root-SendTarget}
+
+```ts
+export type SendTarget =
+  | BotTarget
+  | {
+      readonly scene: 'group';
+      readonly groupId: string;
+      readonly appId?: never;
     };
 ```
 
@@ -1622,6 +2019,9 @@ export interface WebhookTransportOptions {
   path?: string;
   maxBodyBytes?: number;
   readTimeoutMs?: number;
+  /** Maximum wait for signature verification; defaults to 10 seconds. */
+  verifyTimeoutMs?: number;
+  /** Includes native verification jobs still running after HTTP timeout/disconnect. */
   maxConcurrentRequests?: number;
   maxSignatureAgeMs?: number;
   gatewayUrl?: never;
@@ -1650,6 +2050,7 @@ export interface WsTransportOptions {
   path?: never;
   maxBodyBytes?: never;
   readTimeoutMs?: never;
+  verifyTimeoutMs?: never;
   maxConcurrentRequests?: never;
   maxSignatureAgeMs?: never;
 }
@@ -1659,6 +2060,15 @@ export interface WsTransportOptions {
 
 在本地运行模块、投递模拟事件并检查处理结果的测试工具与类型。
 
+### createMultiTestApplication {#testing-createMultiTestApplication}
+
+```ts
+export declare function createMultiTestApplication(
+  root: Type,
+  options?: MultiTestOptions,
+): Promise<MultiTestHarness>;
+```
+
 ### createTestApplication {#testing-createTestApplication}
 
 ```ts
@@ -1666,6 +2076,42 @@ export declare function createTestApplication(
   root: Type,
   options?: TestOptions,
 ): Promise<TestHarness>;
+```
+
+### MultiTestHarness {#testing-MultiTestHarness}
+
+```ts
+export interface MultiTestHarness {
+  app: ApplicationContract;
+  messages: readonly RecordedBotMessage[];
+  acknowledgments: TestHarness['acknowledgments'];
+  errors: TestHarness['errors'];
+  enqueue(appId: string, payload: QQDispatch): TestAdmission;
+  dispatch(appId: string, payload: QQDispatch): Promise<TestAdmission['status']>;
+  flush(): Promise<void>;
+}
+```
+
+### MultiTestOptions {#testing-MultiTestOptions}
+
+```ts
+export interface MultiTestOptions extends Omit<AppOptions, 'database' | 'bots' | 'webhook'> {
+  bots?: readonly {
+    appId: string;
+    interactions?: {
+      acknowledge?: 'auto' | 'manual';
+    };
+  }[];
+  respond?: (request: TestRequest) => Response | Promise<Response> | undefined;
+}
+```
+
+### RecordedBotMessage {#testing-RecordedBotMessage}
+
+```ts
+export interface RecordedBotMessage extends RecordedMessage {
+  readonly appId: string;
+}
 ```
 
 ### RecordedMessage {#testing-RecordedMessage}
@@ -1690,6 +2136,26 @@ export type TestAdmission =
     };
 ```
 
+### TestApplication {#testing-TestApplication}
+
+```ts
+export interface TestApplication {
+  readonly diagnostics: DiagnosticsReader;
+  readonly status: BotStatus;
+  readonly client: import('../contracts.js').QQClient;
+  start(): Promise<void>;
+  close(): Promise<void>;
+  get<T>(
+    token: InjectionToken<T>,
+    options?: {
+      module?: Type;
+    },
+  ): T;
+  webhookHandler(): RequestListener;
+  snapshot(): BotSnapshot;
+}
+```
+
 ### TestHarness {#testing-TestHarness}
 
 提供 app、messages、acknowledgments、errors、enqueue、dispatch 和 flush。接纳结果为结构化返回值，详情见 [测试入口 API](./testing.md#testharness)。
@@ -1697,7 +2163,10 @@ export type TestAdmission =
 ### TestOptions {#testing-TestOptions}
 
 ```ts
-export interface TestOptions extends Omit<BotOptions, 'appId' | 'secret' | 'transport'> {
+export interface TestOptions
+  extends
+    Omit<AppOptions, 'database' | 'bots' | 'outbound' | 'webhook'>,
+    Pick<BotOptions, 'api' | 'interactions'> {
   appId?: string;
   respond?: (request: TestRequest) => Response | Promise<Response> | undefined;
 }

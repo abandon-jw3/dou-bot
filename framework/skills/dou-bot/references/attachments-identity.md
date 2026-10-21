@@ -1,6 +1,6 @@
 # 接收附件与读取身份信息
 
-以下示例适用 dou-bot 0.8.0，装饰器、工具函数和类型都从 dou-bot 导入。先按用户的发送方式选择入口。
+装饰器、工具函数和类型都从 dou-bot 导入。先按用户的发送方式选择入口。
 
 ## 指令和图片在同一条消息里
 
@@ -74,4 +74,4 @@ Attachments 注入本处理器匹配到的附件，Images 可继续选取其中�
 
 这些参数可用于 Command、OnButton 和 OnAttachment。UserInfo 包含 id，以及可选的 username、bot、memberRole；GroupInfo 仅包含 id。对象只读，数据来自当前事件，不会自动查询完整资料。昵称可能缺失或为空；按钮事件只保证适用的用户/群 ID，不推断昵称或角色。
 
-身份参数不替代授权。群管理操作使用 GroupManagersOnly 等规则；按钮权限见 [权限与交互](runtime.md)。保存用户配置时使用事件中的 OpenID，并明确会话或群的业务范围，不能拿日常 QQ 号或另一个场景的 ID 直接代替。
+身份参数不替代授权。群管理操作使用 GroupManagersOnly 等规则；按钮权限见 [权限与交互](runtime.md)。保存用户配置时保留 ctx.appId、场景和事件中的 OpenID，并明确会话或群的业务范围，不能拿日常 QQ 号或另一个场景的 ID 直接代替。

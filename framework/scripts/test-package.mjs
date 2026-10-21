@@ -187,15 +187,19 @@ const compilerOptions = {
   outDir: resolve(consumer, 'out'),
   skipLibCheck: false,
 };
-// Skill assets describe released packages; they do not constrain the new source API.
+// Skill assets follow the unpublished source API; historical consumers remain frozen.
 const skillExamples = registryVersion
-  ? [
+  ? []
+  : [
       'minimal-module.ts',
       'minimal-module.test.ts',
-      ...(releasedBaseline ? [] : ['attachments-module.ts', 'attachments-module.test.ts']),
-      ...(releasedBaseline || released070 ? [] : ['context-module.ts', 'context-module.test.ts']),
-    ]
-  : [];
+      'attachments-module.ts',
+      'attachments-module.test.ts',
+      'context-module.ts',
+      'context-module.test.ts',
+      'notifications-module.ts',
+      'notifications-module.test.ts',
+    ];
 const currentTypes = releasedBaseline ? [] : ['testing-types.ts'];
 const featureConsumers = releasedBaseline
   ? []

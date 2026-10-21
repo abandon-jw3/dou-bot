@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createTestApplication } from 'dou-bot/testing';
-import { AppModule } from './hello/app.module.js';
+import { AppModule } from './hello/app.module.ts';
 
 const bot = await createTestApplication(AppModule);
 await bot.app.start();

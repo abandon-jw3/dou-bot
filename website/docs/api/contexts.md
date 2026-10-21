@@ -7,6 +7,8 @@
 - QQEventContext 提供 appId、eventName、可选 eventId、receivedAt、raw、signal、client。
 - raw 是 QQDispatch，包含 op=0、事件名 t、事件数据 d，以及可选 id/s；d 默认 unknown。
 - 把 raw 和 attachments 作为只读数据使用。
+- MessageContext、ButtonContext、GuardContext 的 target 为 BotTarget，包含 appId。保存地址时保留账号和场景。
+- client 绑定来源账号与当前执行；执行结束后不能缓存复用。
 - 业务自己的外部请求应 await 并传入 signal；回复当前消息时优先使用 ctx.reply，由框架处理消息引用和回复序号。
 
 ## state

@@ -1,117 +1,67 @@
-# 创建应用与组织业务服务
-
-以下示例使用 dou-bot 0.8.0、Node.js 24.x、TypeScript 5.9.3 和 ESM。先检查用户项目的实际依赖和脚本；已有项目保留自己的目录结构与版本，新项目再补齐必要文件。
+# 项目与服务
 
 ## 安装与编译
 
-新项目安装 SDK：
+- 新项目可复制 [业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)，在应用目录运行 npm ci。
+- 复制 .env.example 为 .env，填写 QQ 与 PostgreSQL 配置；首次运行先初始化数据库。
+- Node 24.x、TypeScript 5.9.3、ESM；已有项目沿用自己的结构和运行脚本。
+- 开启 experimentalDecorators、emitDecoratorMetadata、strict。
+- 相对导入用 .ts 时开启 rewriteRelativeImportExtensions；随附 .js 导入也可由 NodeNext 解析到源码。
 
-```sh
-npm install --save-exact dou-bot@0.8.0
-npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
-```
+## 组织代码
 
-已有项目先用 `npm ls dou-bot` 确认版本。业务从 `dou-bot` 导入，测试从 `dou-bot/testing` 导入；应用不需要另外安装 SDK 内部使用的类型或检出 SDK 源码。
+- Module 注册 controllers/providers；共享服务用 exports/imports。
+- Controller 接收命令、按钮或附件；Service 查询与处理数据。
+- Provider、Guard 和中间件通常是应用单例，多账号共用；不要在实例字段保存当前用户或 ctx。
+- 注入类用值导入；接口配置用 Symbol 与 Inject。
+- 内置注入令牌：BotManager、MessageSender、GroupRoutes、Database、LOGGER。
+- QQClient/QQApi 通过选定账号或 ctx.client 获取，不直接构造注入。
 
-package.json 设置 `"type": "module"`。下面是需要合并到项目中的编译选项：
+可复制的 [命令模块](../assets/minimal-module.ts) 包含服务、配置、Guard、参数和帮助；配套 [测试](../assets/minimal-module.test.ts)。
 
-```json
-{
-  "compilerOptions": {
-    "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "verbatimModuleSyntax": true,
-    "strict": true
-  }
-}
-```
+## 启动
 
-参数装饰器和构造注入需要传统装饰器及运行时元数据。使用 tsc 编译后运行 JavaScript；若项目已有其他编译工具，确认它能保留这两项能力，不能仅凭能运行普通 TypeScript 推定 DI 可用。
-
-相对导入沿用项目约定。NodeNext 项目可以写 `./service.js`，编译器会找到对应的 TypeScript 源文件；采用 `.ts` 导入的项目，在 TypeScript 5.9.3 中启用 `rewriteRelativeImportExtensions: true`。随附示例使用 `.js`，复制时按项目配置调整。
-
-## 把一个功能放进模块
-
-Controller 接收消息并组织回复，Service 负责查询、保存或计算，Module 注册它们：
+下面的 AppModule 由用户项目提供；环境变量在应用启动前检查：
 
 ```ts
-import { Command, Controller, Inject, Injectable, Module } from 'dou-bot';
-
-const SETTINGS = Symbol('settings');
-interface Settings {
-  label: string;
-}
-
-@Injectable()
-class QueryService {
-  constructor(@Inject(SETTINGS) private readonly settings: Settings) {}
-  label(): string {
-    return this.settings.label;
-  }
-}
-
-@Controller()
-class QueryController {
-  constructor(private readonly service: QueryService) {}
-
-  @Command('名称')
-  name(): string {
-    return this.service.label();
-  }
-}
-
-@Module({
-  providers: [QueryService, { provide: SETTINGS, useValue: { label: '查询' } }],
-  controllers: [QueryController],
-})
-export class AppModule {}
-```
-
-把此模块加入应用根模块的 imports，或直接将它作为应用根模块。新增 Controller 要注册到 controllers；服务和自定义 Guard 要注册到 providers。
-
-- 注入类时使用普通值导入；`import type` 会擦掉构造注入需要的信息。接口和配置对象通过 `@Inject(token)` 绑定。
-- 共享服务由所属模块 exports，再由使用它的模块 imports；不要用 `new Service()` 绕过配置和生命周期。
-- 异步初始化可用带 inject 的 useFactory，例如创建业务 API 客户端。工厂返回的服务仍按应用生命周期使用。
-- 服务和 Guard 默认复用同一实例，不把当前用户或 ctx 放在实例字段中。
-- 模块类用于声明依赖关系；业务状态放在 Service 中。需要从入口获取服务时使用 `app.get(Service)`。
-- 发送能力、原始 QQ API 和日志分别可以注入 QQClient、QQApi、LOGGER；业务配置使用自己的令牌。
-
-一组功能共用权限时，可在 Module 的 guards 或模块类上声明规则，作用于该模块的命令、按钮和附件处理器。详细用法见 [权限与交互](runtime.md)。
-
-## 连接 QQ 与关闭应用
-
-在应用入口读取本项目的环境配置，检查凭证后创建并启动：
-
-```ts
-import { BotFactory } from 'dou-bot';
+import { AppFactory, migrateDatabase } from 'dou-bot';
 import { AppModule } from './app.module.js';
 
-const appId = process.env.QQ_APP_ID;
-const secret = process.env.QQ_APP_SECRET;
-if (!appId || !secret) throw new Error('请配置 QQ_APP_ID 和 QQ_APP_SECRET');
-
-const app = await BotFactory.create(AppModule, {
-  appId,
-  secret,
-  transport: { type: 'ws' },
-  commands: { prefix: '/', invalidInput: 'reply' },
-});
-await app.start();
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.once(signal, () => {
+const database = {
+  host: process.env.DATABASE_HOST!,
+  user: process.env.DATABASE_USER!,
+  database: process.env.DATABASE_NAME!,
+  password: process.env.DATABASE_PASSWORD!,
+};
+if (process.argv.includes('--init-database')) {
+  await migrateDatabase(database);
+} else {
+  const app = await AppFactory.create(AppModule, {
+    database,
+    bots: [{ appId: process.env.QQ_APP_ID!, secret: process.env.QQ_APP_SECRET! }],
+    commands: { invalidInput: 'reply' },
+  });
+  const close = () => {
     app.close().catch(() => {
-      console.error('机器人关闭失败，请检查应用日志。');
       process.exitCode = 1;
     });
-  });
+  };
+  process.once('SIGINT', close);
+  process.once('SIGTERM', close);
+  await app.start();
 }
 ```
 
-本片段假设上一节模块保存在 app.module.ts。create 会检查配置、模块和路由，start 才开始接收事件；close 后不能重新启动同一实例。使用项目自己的 build/start 脚本，并在启动命令中明确加载本地 `.env` 或部署环境变量。
+- create 校验配置和模块图；start 打开数据库、构造共享服务并接入 QQ。
+- 迁移显式执行，不放入自动重启的普通启动流程。
+- start 成功后使用 app.get(Service)；close 后不可重启同一应用。
+- 环境文件、凭证与运行脚本属于用户的应用。
 
-需要初始化数据库连接、缓存等资源时，让注册在 providers 中的 Service 提供 `onModuleInit(signal)` 和 `onModuleDestroy(signal)`，完成初始化与释放。用 useValue 传入的现有资源由应用自己关闭；业务请求应配合 signal 取消。
+## 生命周期与 Webhook
 
-如果用户选用 Webhook，将 transport 配置为 `{ type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }`，再按部署环境提供 HTTPS 入口。集成到现有 HTTP 服务时使用 listen=false 与 `app.webhookHandler()`，在 app.start() 完成后接入流量，保留原始 URL 和未读取的请求体，不能先经过 JSON body parser；已有 HTTP 服务仍由应用负责关闭。
+- onModuleInit：初始化服务，此时 QQ 账号尚未启动。
+- onApplicationReady：可用账号就绪，启动外部 WS 或定时器。
+- onApplicationStopping：先停止业务事件来源。
+- onModuleDestroy：排空后释放资源；useValue 资源由调用者管理。
+- Webhook 账号声明 `transport: { type: 'webhook' }`；应用声明 `webhook: { host: '127.0.0.1', port: 3000 }`。
+- 默认路径 /qq/<AppID>，自有 HTTP 服务用 webhook.listen=false 和 app.webhookHandler()；保留未读取的原始正文和 URL。

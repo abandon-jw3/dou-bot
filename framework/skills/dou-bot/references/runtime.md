@@ -1,6 +1,6 @@
 # 权限、回复与按钮交互
 
-以下用法面向 dou-bot 0.8.0。先明确谁可以触发操作、拒绝时是否提示，以及处理成功后回复什么。
+先明确谁可以触发操作、拒绝时是否提示，以及处理成功后回复什么。
 
 ## 限制谁能使用
 
@@ -23,7 +23,7 @@ UsersOnly 使用事件中的 OpenID，可以通过 scene 或 groupId 限定范�
 
 多层规则依次执行：模块配置 → 模块类 → 控制器类 → 方法。列表从左到右，叠加装饰器按代码从上到下；任意规则拒绝就停止当前入口。方法规则与类规则叠加，不会覆盖类上的限制；相同 Guard 重复声明也会重复执行。可运行的自定义权限例子见 [命令与权限模块](../assets/minimal-module.ts)。
 
-GuardContext 提供 userId、scene、target、signal 和路由信息。按 kind 区分 command、button、attachment：附件入口可读取 matchedAttachments，按钮入口可读取 data。Guard 不负责直接发送消息，也拿不到已经绑定的命令参数。
+GuardContext 提供 appId、userId、scene、target、signal 和路由信息。按 kind 区分 command、button、attachment：附件入口可读取 matchedAttachments，按钮入口可读取 data。Guard 不负责直接发送消息，也拿不到已经绑定的命令参数。
 
 ## 限制重复调用
 
@@ -43,7 +43,7 @@ GuardContext 提供 userId、scene、target、signal 和路由信息。按 kind 
 
 Guard 先执行，再绑定参数并校验附件，随后占用冷却并进入处理器。权限拒绝和参数错误不占冷却；处理器或发送失败后不自动退还。冷却从进入业务时起算，不保证上一次任务已经结束；需要禁止任务重叠时，由业务服务实现互斥。
 
-冷却是单实例内的状态，重启后清空；不能据此实现跨进程的计费或配额。默认最多保存 10,000 条记录，达到限制会报 RESOURCE_LIMIT，按实际用户数及冷却时长配置 `execution.cooldownMaxEntries`。
+冷却按账号隔离，是单进程内的状态，重启后清空；不能据此实现跨进程的计费或配额。默认最多保存 10,000 条记录，达到限制会报 RESOURCE_LIMIT，按实际用户数及冷却时长配置 `execution.cooldownMaxEntries`。
 
 ## 回复消息
 

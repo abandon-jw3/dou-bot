@@ -14,7 +14,8 @@
     "emitDecoratorMetadata": true,
     "verbatimModuleSyntax": true,
     "noEmitOnError": true,
-    "skipLibCheck": false
+    "skipLibCheck": false,
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["examples/**/*.ts", "tests/**/*.ts"]
 }

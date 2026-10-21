@@ -1,65 +1,53 @@
 # Webhook 接入
 
-- QQ 通过 HTTP 向应用投递事件。
-- 需要 QQ 可访问的 HTTPS 地址；没有公网入口时使用 [WebSocket](./ws.md)。
+QQ 向公网入口投递事件，应用负责验签和接纳。多个账号共用一个监听端口，路径按账号区分。
 
-::: warning 接入状态
-公网 QQ 回调尚未完成端到端验证；使用前先完成下方连接检查。
-:::
+## 配置
 
-## 独立监听
-
-在快速开始的 options 中替换 transport：
+在 `AppFactory.create()` 中配置：
 
 ```ts
-transport: { type: 'webhook', host: '127.0.0.1', port: 3000, path: '/qq' }
+bots: [{ appId, secret, transport: { type: 'webhook' } }],
+webhook: { host: '127.0.0.1', port: 3000 },
 ```
 
-- `await app.start()` 后监听本地 HTTP，默认只监听 127.0.0.1。
-- 用反向代理提供 HTTPS，并转发到配置的端口和路径。
-- 在 QQ 平台填写公网回调 URL。
+- 默认回调路径为 `/qq/<AppID>`，可在账号 transport.path 自定义。
+- await app.start() 后开始监听；公网 HTTPS 由 Nginx 等反向代理提供。
+- QQ 平台填写公网地址，例如 `https://bot.example.com/qq/<AppID>`。
+- 公网入口使用 HTTPS 443，反向代理转发到应用的本机端口。
 
-## 保留请求原文
+## 反向代理
 
-- 框架负责地址验证、Ed25519 验签、签名时间与请求大小检查。
-- 代理保留路径、查询参数、签名头和正文原始字节。
-- 不要提前执行 JSON body parser、重新序列化正文或改变编码。
+配置放在已启用 HTTPS 的 Nginx server 中；替换域名和证书由部署环境完成：
 
-## 挂载到自有 HTTP server
-
-设置 `transport: { type: 'webhook', listen: false }` 创建 app，然后挂载：
-
-```ts
-import { createServer } from 'node:http';
-
-await app.start();
-const callback = app.webhookHandler();
-const server = createServer((request, response) => {
-  if (request.url === '/health') {
-    response.writeHead(app.status === 'running' ? 200 : 503);
-    response.end(app.status);
-    return;
-  }
-  callback(request, response); // 请求体此前未被读取，URL 也没有重写。
-});
-server.listen(3000, '127.0.0.1');
+```nginx
+location /qq/ {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    client_max_body_size 1m;
+    proxy_read_timeout 15s;
+}
 ```
 
-- 完成 `app.start()` 后再接收流量。
-- 退出时停止接流量、`await app.close()`，再关闭自己的 server 和连接。
-- app.close 不会销毁宿主的共享 server。
+- proxy_pass 不添加尾部路径，保留原始 URL 和签名头。
+- 正文必须保留原始字节；不要先经过 JSON body parser 或重新序列化。
+- 框架逐账号核对身份与签名；验签失败/时间戳过期返回 403。
+- 正文过大返回 413，读取超时返回 408，验签超时或容量不足返回 503。
 
-## 确认与业务完成
+## 挂载自有 HTTP 服务
 
-- HTTP 接纳成功不表示业务已经完成。
-- 平台重复投递会进行进程内去重。
-- 接纳后进程崩溃可能丢失未处理任务，重要业务需持久化和幂等检查。
+设置 `webhook: { listen: false }`，完成 `app.start()` 后将未读取的请求交给 `app.webhookHandler()`。宿主负责 server 的监听和关闭；app.close() 不关闭宿主 server。
 
-## 检查连接是否可用
+## 检查是否接入成功
 
-1. 确认 HTTPS 地址能转发到指定 host、port、path。
-2. 在 QQ 平台完成地址验证；失败时检查 Secret、签名头和原始正文。
-3. 测试私聊、群聊命令和需要使用的按钮回调。
-4. 确认重复事件不会重复修改业务数据。
+1. 在平台保存回调地址并完成验证。
+2. 分别实际发送私聊、群聊指令，检查回复。
+3. 按业务需求测试按钮、图片、上传和多轮输入。
+4. 重复投递、重启与故障恢复另行验证。
 
-完整配置默认值见 [配置指南](./configuration.md)，常见连接错误见 [排错指南](./troubleshooting.md)。
+- HTTP 200 表示接纳或确认，不表示处理器和回复已完成。
+- 去重在进程内，进程崩溃可能丢失已确认任务；关键业务应幂等。
+- 完整部署步骤见 [部署与升级](./deployment.md)。

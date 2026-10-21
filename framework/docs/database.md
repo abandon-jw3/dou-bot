@@ -1,6 +1,6 @@
 # PostgreSQL
 
-> 当前源码 API，尚未发布。
+配置共享连接池，在自己的 Service 中查询数据。
 
 ## 配置与迁移
 
@@ -29,19 +29,23 @@ import { Database, Injectable } from 'dou-bot';
 
 @Injectable()
 export class Profiles {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly database: Database) {}
 
-  async read(userId: string) {
-    const result = await this.db.query<{ value: string }>(
-      'SELECT value FROM user_config WHERE user_id = $1',
-      [userId],
+  async server(
+    appId: string,
+    scene: 'group' | 'private',
+    userId: string,
+  ): Promise<string | undefined> {
+    const result = await this.database.query<{ server: string }>(
+      'SELECT server FROM bot_profiles WHERE app_id = $1 AND scene = $2 AND user_id = $3',
+      [appId, scene, userId],
     );
-    return result.rows[0]?.value;
+    return result.rows[0]?.server;
   }
 }
 ```
 
-- 使用参数化 SQL，业务表由业务自己的迁移管理。
+- 使用参数化 SQL；示例 bot_profiles 表由业务迁移创建，主键包含 app_id、scene、user_id，server 为文本字段。
 - 多条 SQL 的事务使用 `db.transaction(async client => { ... })`；同一事务使用同一个 client。
 - 事务失败通过 Promise 返回，框架不会自动重试回调。外部接口请求尽量放在事务之外，减少连接占用。
 - 可以把 `db.pool` 交给支持 node-postgres 的 ORM，例如 Drizzle。框架不绑定 ORM。

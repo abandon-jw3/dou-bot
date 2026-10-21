@@ -45,7 +45,8 @@ providers: [
 | useFactory | 根据 `inject` 中的依赖创建值，支持异步 |
 
 - Provider 默认单例，每条消息的数据放在方法局部变量中。
-- 异步工厂失败会导致应用创建失败。
+- 多个机器人共用这些单例；账号、用户和群数据放在方法参数中。
+- 异步工厂失败会导致应用启动失败。
 
 ## 注入配置
 
@@ -58,5 +59,7 @@ providers: [
 - 模块只能注入自己的 Provider，或 `imports` 引入的导出项。
 - `app.get(QueryService)` 读取根模块可见的服务。
 - `app.get(QueryService, { module: FeatureModule })` 指定所属模块。
-- `QQClient`、`QQApi`、`LOGGER` 已内置，无需重复注册。
-- 缺失、歧义或循环依赖会在创建时报告错误。
+- 内置注入令牌：`BotManager`、`MessageSender`、`GroupRoutes`、`Database`、`LOGGER`。
+- 发送时明确账号；不用共享 `QQClient` 或 `QQApi` 注入，见 [多机器人](./multi-bot.md)。
+- 配置、模块图和路由声明在 create 时检查；服务构造、Guard/中间件实例和钩子在 start 时验证。
+- app.start() 完成后再读取业务服务。

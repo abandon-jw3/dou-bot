@@ -33,10 +33,11 @@
 
 <<< @/../examples/hello/main.ts
 
-在项目根目录的 `.env` 中填写 QQ_APP_ID 和 QQ_APP_SECRET，然后执行：
+按 [环境配置](../guide/quick-start.md#环境配置) 填写 QQ 与 PostgreSQL 参数，然后执行：
 
 ```sh
 npx tsc -p tsconfig.json
+node --env-file=.env dist/main.js --init-database
 node --env-file=.env dist/main.js
 ```
 

@@ -4,14 +4,8 @@ import ts from 'typescript';
 import { format } from 'prettier';
 
 const root = process.cwd();
-const project = JSON.parse(await readFile('package.json', 'utf8'));
-const sdk = JSON.parse(await readFile('node_modules/dou-bot/package.json', 'utf8'));
-if (
-  sdk.name !== 'dou-bot' ||
-  sdk.version !== '0.8.0' ||
-  project.devDependencies['dou-bot'] !== sdk.version
-)
-  throw new Error('API documentation must use the installed, pinned dou-bot@0.8.0');
+await import('./verify-sdk.mjs');
+const sdk = JSON.parse(await readFile('vendor/sdk.json', 'utf8'));
 const entries = [
   ['dou-bot', 'dist/index.d.ts'],
   ['dou-bot/testing', 'dist/testing/index.d.ts'],
@@ -26,12 +20,12 @@ const program = ts.createProgram(paths, {
 });
 const checker = program.getTypeChecker();
 let body =
-  '# 类型与接口\n\n适用于 dou-bot **0.8.0**。\n\n- 业务 API 从 `dou-bot` 导入。\n- 离线测试从 `dou-bot/testing` 导入。\n- 用法见 [装饰器参考](./decorators.md) 和 [完整示例](../examples/hello.md)。\n\n';
+  '# 类型与接口\n\n查询各个 API 的参数、返回值与类型。\n\n- 业务 API 从 `dou-bot` 导入。\n- 离线测试从 `dou-bot/testing` 导入。\n- 用法见 [装饰器参考](./decorators.md) 和 [完整示例](../examples/hello.md)。\n\n';
 let count = 0;
 for (let i = 0; i < entries.length; i++) {
   const file = program.getSourceFile(paths[i]);
   const symbol = file && checker.getSymbolAtLocation(file);
-  if (!symbol) throw new Error('Cannot load published declarations');
+  if (!symbol) throw new Error('Cannot load source declarations');
   const exports = checker
     .getExportsOfModule(symbol)
     .sort((a, b) => a.name.localeCompare(b.name, 'en'));
@@ -60,4 +54,6 @@ if (process.argv.includes('--check')) {
   if ((await readFile(target, 'utf8')) !== formatted)
     throw new Error('API reference is out of date; run npm run api:generate');
 } else await writeFile(target, formatted);
-console.log(`Published API reference verified: ${count} exports from dou-bot@${sdk.version}.`);
+console.log(
+  `Source API reference verified: ${count} exports from source contract ${sdk.contract}.`,
+);

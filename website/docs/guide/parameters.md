@@ -64,7 +64,7 @@
 
 ## Slot：统一别名 {#slot-normalize}
 
-0.8.0 起可配置 normalize，把不同名称转换为同一个值：
+可配置 normalize，把不同名称转换为同一个值：
 
 ```ts
 @Slot('server', {

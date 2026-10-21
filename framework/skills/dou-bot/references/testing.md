@@ -2,20 +2,28 @@
 
 在用户的应用中运行构建和测试，先查看 package.json 的现有命令。测试不依赖技能所在目录，也不需要另一个 SDK 项目。
 
+## 多账号优先验证
+
+- createMultiTestApplication(root, { bots: [{ appId: 'a' }, { appId: 'b' }] }) 创建共享应用。
+- dispatch/enqueue 的第一个参数是 appId；检查 messages 中的 appId 与 target。
+- 同一事件 ID 在不同账号下独立；单账号停止不影响另一账号。
+- 可运行断言见 [通知测试](../assets/notifications-module.test.ts)。
+- createTestApplication 是单账号测试视图，snapshot 返回 BotSnapshot；它的 app.client 不是正式 Application 的成员。
+
 ## 不连接 QQ 也能测试命令
 
-使用 dou-bot/testing 的 createTestApplication 运行应用模块。它替代 QQ 接入和默认发送，把输出保存在 messages、acknowledgments 和 errors 中。
+使用 dou-bot/testing 的 createTestApplication 运行应用模块。它使用内存持久化并替代 QQ 接入和默认发送，把输出保存在 messages、acknowledgments 和 errors 中。
 
-下面假设 [项目与服务](project.md) 中的 AppModule 位于 src/app.module.ts，测试文件位于 tests/application.test.ts：
+将 [命令模块](../assets/minimal-module.ts) 复制到 src/query.module.ts，测试文件位于 tests/application.test.ts：
 
 ```ts
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AppModule } from '../src/app.module.js';
+import { createQueryModule } from '../src/query.module.js';
 import { createTestApplication } from 'dou-bot/testing';
 
-await test('名称命令返回业务配置', async (t) => {
-  const bot = await createTestApplication(AppModule);
+await test('查询命令解析参数', async (t) => {
+  const bot = await createTestApplication(createQueryModule(() => true));
   t.after(() => bot.app.close());
   await bot.app.start();
   await bot.dispatch({
@@ -24,10 +32,10 @@ await test('名称命令返回业务配置', async (t) => {
     d: {
       id: 'test-message-1',
       author: { user_openid: 'test-user' },
-      content: '/名称',
+      content: '/查询 北京 天气',
     },
   });
-  assert.equal(bot.messages[0]?.payload.content, '查询');
+  assert.equal(JSON.parse(bot.messages[0]!.payload.content!).city, '北京');
   assert.equal(bot.errors.length, 0);
 });
 ```

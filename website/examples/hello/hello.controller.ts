@@ -1,6 +1,6 @@
 import { Arg, Command, Controller } from 'dou-bot';
 // 构造注入需要运行时类，不能把这个导入改成 import type。
-import { GreetingService } from './greeting.service.js';
+import { GreetingService } from './greeting.service.ts';
 
 @Controller()
 export class HelloController {

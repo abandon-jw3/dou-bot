@@ -1,6 +1,6 @@
 import { Command, Controller, Ctx, Module, image, markdown, text } from 'dou-bot';
 import type { ImageMessage, MarkdownMessage, MessageContext, TextMessage } from 'dou-bot';
-import { fixtureImage } from './fixture-image.js';
+import { fixtureImage } from './fixture-image.ts';
 
 @Controller()
 export class MessageController {

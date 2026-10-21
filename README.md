@@ -2,10 +2,12 @@
 
 面向 QQ 官方群聊和私聊的轻量 TypeScript 机器人框架，支持 WebSocket 与 Webhook。
 
+> 本分支面向尚未发布的新版本。使用框架请从配套业务示例开始。
+
 ## 开始使用
 
 - [在线用户文档](https://abandon-jw3.github.io/dou-bot/)：安装、功能指南和 API。
-- [SDK 安装与使用](framework/README.md)：SDK 功能与安装方式；当前 npm 版本为 0.8.0。
+- [SDK 安装与使用](framework/README.md)：SDK 功能与安装方式；当前介绍尚未发布的新版本。
 - [业务示例](example/README.md)：复制后即可开发，包含命令、附件、权限和对话。
 - [dou-bot 技能](framework/skills/dou-bot/SKILL.md)：辅助编写机器人业务。
 
@@ -14,8 +16,8 @@
 | 目录                              | 用途                           |
 | --------------------------------- | ------------------------------ |
 | [framework/](framework/README.md) | SDK、源码示例、测试和配套技能  |
-| [example/](example/README.md)     | 独立业务项目，使用 npm 0.8.0   |
-| [website/](website/README.md)     | 用户文档站，示例使用 npm 0.8.0 |
+| [example/](example/README.md)     | 独立业务项目，使用固定源码 SDK |
+| [website/](website/README.md)     | 新版本用户文档与可运行教程     |
 
 - 三个工程独立安装依赖，没有 workspaces 或源码链接。
 - 根 package.json 仅提供跨工程命令，无需在根目录执行 npm install。

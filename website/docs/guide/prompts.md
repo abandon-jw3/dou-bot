@@ -29,7 +29,7 @@
 
 ## 默认配置
 
-在 `BotFactory.create()` 的 options 中配置：
+在 `AppFactory.create()` 的 options 中配置：
 
 ```ts
 prompts: {

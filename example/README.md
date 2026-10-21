@@ -1,6 +1,9 @@
 # dou-bot 业务示例
 
-- 使用 **dou-bot 0.8.0**，通过 WS 接收 QQ 官方群聊和私聊消息。
+本示例面向**尚未发布的新版本**。
+
+- 支持单/多账号和 WS/Webhook。
+- 需要 PostgreSQL；默认单账号 WS，可选配置第二个账号。
 - 可单独复制运行，包含命令、附件、身份、权限、按钮和多轮对话。
 - 环境：Node.js **24.21.0**、npm **11.19.0**、TypeScript **5.9.3**。
 
@@ -17,12 +20,17 @@ npm ci
 ```dotenv
 QQ_APP_ID=your-qq-app-id
 QQ_APP_SECRET=your-qq-app-secret
+DATABASE_HOST=127.0.0.1
+DATABASE_USER=bot
+DATABASE_NAME=bot
+DATABASE_PASSWORD=your-database-password
 ```
 
 .env 已被 Git 忽略。编译并启动：
 
 ```sh
 npm run build
+npm run database:migrate
 npm start
 ```
 
@@ -34,6 +42,15 @@ npm start
 
 - 群聊先 @机器人；普通消息是否投递取决于账号权限。
 - 按 `Ctrl+C` 关闭连接。
+
+## 多账号与主动发送
+
+- 在 .env 增加 QQ_APP_ID_B、QQ_APP_SECRET_B，两个账号共用业务模块。
+- QQ_TRANSPORT=webhook 时统一监听本机 PORT（默认 3000），默认路径为 /qq/<AppID>；公网 HTTPS 由部署环境提供。
+- `/account` 查看来源账号；`/notify-here` 演示向当前地址主动发送。
+- [Notifications](src/notifications.module.ts) 可被外部 WS、定时任务复用，传入完整 BotTarget；不同账号的 OpenID 不混用。
+- [启动配置](src/config.ts) 开启阶段指标；需要读取时使用 app.snapshot() / app.diagnostics.snapshot()。
+- 保存后重启不执行数据库迁移；首次初始化或版本需要时显式运行 database:migrate。
 
 ## 保存后自动重启
 
@@ -66,8 +83,8 @@ export class BotController {
 
 - `@Command` 注册名称，`@Arg(0)` 读取第一个参数，返回字符串自动回复。
 - 新增控制器后，在 [AppModule](src/app.module.ts) 的 controllers 注册。
-- 要直接发送 `hello`，在 [启动配置](src/main.ts) 设置 `commands.prefix: ''`。
-- 只保留最小项目时，移除 ExampleModule 的导入和 imports 项。
+- 要直接发送 `hello`，在 [启动配置](src/config.ts) 设置 `commands.prefix: ''`。
+- 只保留最小项目时，移除 ExampleModule、NotificationsModule 的导入和 imports 项。
 
 ## 选择功能示例
 
@@ -94,11 +111,13 @@ export class BotController {
 | src/example/          | 可选功能演示         |
 | tests/                | 离线业务测试         |
 | scripts/              | 编译、开发重启和检查 |
-| vendor/               | SDK 版本与来源记录   |
+| vendor/               | 运行所需的依赖文件   |
 
 - 使用 tsc 编译到 dist，再由 Node 运行。
 - 相对导入使用 `.ts`，rewriteRelativeImportExtensions 会将产物路径改成 `.js`。
 - 保留装饰器和元数据编译选项；包导入仍写 `dou-bot`。
+
+- 事件计数示例按应用合计，多个账号共享同一个 ExampleService。
 
 ## 本地检查
 
@@ -110,6 +129,6 @@ npm run format  # 统一格式
 
 - 上述命令在本目录运行。
 - 仓库根目录可用 `example:check/build/start/dev` 对应入口。
-- SDK 从 npm 安装，无需框架源码；升级方式见 [vendor 说明](vendor/README.md)。
+- 复制本项目时保留完整目录，再执行 npm ci 安装依赖。
 
 采用 [MIT](LICENSE)，上游声明见 [NOTICE](NOTICE)。

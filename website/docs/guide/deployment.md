@@ -1,44 +1,78 @@
-# Windows 部署
+# 部署与升级
 
-先按 [快速开始](./quick-start.md) 确认能正常收发。本文使用 Node.js **24.21.0**、npm **11.19.0** 和 TypeScript **5.9.3**。
+将自己的机器人应用部署到服务器，配置进程重启、日志和正常关闭。
 
-## 部署内容
-
-- 业务源码、package.json、package-lock.json、编译配置。
-- 本机 `.env`，不提交凭证。
-- 使用已构建版本时，保留 `dist/` 并安装生产依赖。
-
-从源码部署：
+## 构建与数据库
 
 ```sh
 npm ci
+npm run check
 npm run build
+npm run database:migrate
 npm start
 ```
 
-build/start 脚本见 [项目结构](./project.md#推荐脚本)。
+- 以上脚本由 [业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example) 提供；快速开始项目用 `node --env-file=.env dist/main.js --init-database` 迁移。
+- 首次部署先创建数据库，再显式迁移；普通启动不建表。
+- 将完整应用目录、锁文件和 dist 一起部署，在目标环境运行 npm ci 安装依赖。
+- .env 只保存在部署环境。生产账号按业务所需权限配置。
 
-## 运行与退出
+## Linux / systemd
 
-- 首次前台运行，确认连接和错误输出。
-- 持续运行时，明确进程的工作目录、环境文件、重启策略和退出期限。
-- 保留 SIGINT/SIGTERM 到 `app.close()` 的关闭逻辑。
-- 更新时先停旧进程，再启动新进程，避免同一机器人重复建立 WS 连接。
+以下示例假设项目位于 `/opt/qq-bot`，Node 安装在 `/usr/bin/node`，已有系统用户 `qqbot`。先确认路径，再创建 `/etc/systemd/system/qq-bot.service`：
 
-## 观测状态
+```ini
+[Unit]
+Description=QQ bot application
+After=network-online.target
+Wants=network-online.target
 
-- `app.status` / `app.snapshot()`：查看连接、队列、缓存与延迟，见 [容量监测](./capacity.md)。
-- `logger` / `onError`：记录错误码、阶段和必要业务信息。
-- 进程存在不代表 QQ 已连接；日志避免记录完整原始消息或凭证。
+[Service]
+Type=simple
+User=qqbot
+WorkingDirectory=/opt/qq-bot
+ExecStart=/usr/bin/node --env-file=/opt/qq-bot/.env /opt/qq-bot/dist/main.js
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
 
-## Webhook 部署额外要求
+[Install]
+WantedBy=multi-user.target
+```
 
-- 提供 QQ 可访问的 HTTPS 地址，转发到 SDK 的 HTTP 端口。
-- 保留请求原文和签名头，按 [Webhook 指南](./webhook.md) 检查连接。
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now qq-bot
+sudo systemctl status qq-bot
+sudo journalctl -u qq-bot -f
+```
 
-## 升级与回退
+- 关闭期限应大于 `execution.shutdownTimeoutMs`，给应用留出排空时间。
+- Webhook 使用 [Nginx 代理配置](./webhook.md#反向代理)，确认平台能完成回调验证。
+- 多个账号共用进程；同一账号不要同时由另一个 WS 实例接入。
 
-- 指定明确版本，阅读更新日志，重新编译并运行自己的测试。
-- 保留上一版锁文件和构建产物用于回退。
-- 重启会重置对话、冷却、队列和去重；持久化数据由业务管理。
-- WS、Webhook 均不提供跨进程的恰好一次保证，修改数据需幂等处理。
+## Windows
+
+- 使用同一套 npm ci、build、迁移和 start 命令。
+- 常驻服务指定工作目录、环境文件及重启策略。
+- 保留 SIGINT/SIGTERM 到 app.close() 的处理，前台测试用 Ctrl+C 关闭。
+- 开发时用 npm run dev；生产运行构建后的 JavaScript。
+
+## 日常监测
+
+- 进程存活不代表账号在线：看 app.status 和每个账号的 status。
+- 检查入站/出站积压、拒绝数、SQL 池等待、错误率、CPU 和内存。
+- 应用 degraded 时定位受影响账号；数据库共享故障影响整个应用。
+- 详细指标见 [容量监测](./capacity.md) 与 [性能观测](./diagnostics.md)。
+
+## 更新与回退
+
+1. 在测试环境更新依赖并保存锁文件，完成构建、测试和数据库备份。
+2. 停止旧进程，按版本要求迁移，然后启动新进程。
+3. 确认账号状态，并实际发送指令验证结果。
+4. 回退前核对数据库结构兼容性，再恢复上一版包、锁文件和构建产物。
+
+- 代码回退不会自动回退数据库；结构不兼容时拒绝启动。
+- 重启会清空消息队列、对话、冷却和去重，不能恢复未完成任务。
+- 重要写入应有业务幂等键；后台任务是否持久化由业务要求决定。

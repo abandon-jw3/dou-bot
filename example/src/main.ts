@@ -1,14 +1,13 @@
-import { BotFactory } from 'dou-bot';
-import type { BotApplication } from 'dou-bot';
+import { AppFactory } from 'dou-bot';
+import type { Application } from 'dou-bot';
+import { appOptions } from './config.ts';
 import { AppModule } from './app.module.ts';
 
 let stopping = false;
 
 async function main(): Promise<void> {
-  const appId = process.env.QQ_APP_ID;
-  const secret = process.env.QQ_APP_SECRET;
-  if (!appId || !secret) throw new Error('请在本地配置 QQ_APP_ID 和 QQ_APP_SECRET');
-  let app: BotApplication | undefined = undefined;
+  const options = appOptions(process.env);
+  let app: Application | undefined = undefined;
   let shutdown: Promise<void> | undefined;
   const close = () => {
     stopping = true;
@@ -38,13 +37,7 @@ async function main(): Promise<void> {
     process.channel?.unref();
   }
 
-  app = await BotFactory.create(AppModule, {
-    appId,
-    secret,
-    transport: { type: 'ws' },
-    // 参数缺失、类型错误或 Slot 歧义时，回复用法提示；前缀仍使用默认的 /。
-    commands: { invalidInput: 'reply' },
-  });
+  app = await AppFactory.create(AppModule, options);
   if (stopping) {
     close();
     await shutdown;

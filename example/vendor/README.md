@@ -1,9 +1,7 @@
-# SDK 来源与校验记录
+# SDK 快照
 
-项目通过 npm 官方 registry 安装精确版本 `dou-bot@0.8.0`，业务代码只使用 `dou-bot` 和 `dou-bot/testing` 的公开入口。克隆主仓库并进入 `example` 后，运行 `npm ci --ignore-scripts` 即可安装，无需本机框架源码或本地 tgz。
-
-[sdk.json](sdk.json) 保存发布包版本、registry 下载地址、SHA-512 integrity、来源提交及原候选包 SHA-256。原候选 tgz 已从本项目移除，其内容与 npm 上的发布包一致；来源历史仍保留在 Git 和记录中。SDK 采用 MIT，随包分发 LICENSE 与适用的上游 NOTICE。
-
-`scripts/verify-sdk.mjs` 检查精确依赖、锁文件中的官方 tarball 地址与 integrity、已安装包的名称和版本，以及业务使用的公开导入。npm ci 负责下载与完整性校验。
-
-升级时选择明确版本，更新 package.json、package-lock.json 和 sdk.json 中的来源记录，再运行 npm run check。不要仅修改版本字符串而保留旧 integrity。
+- 本项目使用尚未发布的新版本 API，通过 `npm ci` 安装本目录的独立 tarball。
+- `sdk.json` 记录来源状态、契约、SHA-256、npm integrity 和编译产物指纹。
+- 包内版本号暂为 0.8.0；它不是 npm 上发布的 0.8.0，不能用同名版本替换。
+- `npm run verify:sdk` 检查包、锁文件和实际安装内容；不使用源码链接。
+- 发布正式版本后，再固定对应 npm 版本并更新锁文件。

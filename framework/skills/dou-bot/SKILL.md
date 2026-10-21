@@ -1,46 +1,48 @@
 ---
 name: dou-bot
-description: '使用 dou-bot 在用户自己的项目中开发 QQ 官方群聊和私聊机器人。适用于创建应用、添加命令、接收图片和文件、设置权限与冷却、实现按钮和多轮对话，以及测试和排查机器人问题。'
+description: '在用户自己的项目中使用 dou-bot 开发 QQ 官方群聊和私聊机器人。用于创建多机器人应用、命令、附件处理、权限、按钮、对话、数据库服务和后台通知，以及测试与排错。'
 ---
 
-# 用 dou-bot 实现你的 QQ 机器人
+# 用 dou-bot 开发 QQ 机器人
 
-在用户的机器人应用中完成需求，把功能写入其 Controller、Service、模块和测试。沿用已有的业务结构、命令前缀、权限与接入方式；新建项目时，再补齐应用入口和编译配置。
+在用户的应用中实现需求，沿用已有业务结构、权限和命令习惯。
 
-本技能的参考和可复制示例以 **dou-bot 0.8.0** 为基础。已有项目以实际安装的版本、公开类型声明和对应版本文档为准，不为了套用示例更换依赖。用法手册见 [dou-bot 用户文档](https://abandon-jw3.github.io/dou-bot/)。
+本技能面向**尚未发布的新版本**，支持 AppFactory、多账号和 PostgreSQL。已有项目先核对实际可用 API，不擅自升级用户依赖。
 
-## 从用户的项目开始
+## 开始工作
 
-1. 定位要运行的机器人应用，读取它的 package.json、锁文件、TypeScript 配置和已有模块。技能安装目录不是业务目录；工作区有多个项目时，先根据用户需求和现有入口确定目标应用。
-2. 明确用户会发送什么，以及机器人应如何响应：命令与参数、直接上传文件、按钮点击，还是多轮问答。先检查已有路由和服务，复用可用能力。
-3. 从 `dou-bot` 导入业务 API，从 `dou-bot/testing` 导入测试工具。需要确认某个方法或配置时，先查已安装包的声明，再查版本匹配的用户手册。
-4. 使用目标应用已有的构建和测试命令验证结果。本轮任务包含实际 QQ 收发时，再沿用已有授权和该应用的本地配置进行联调。
+1. 找到用户应用的 package.json、锁文件、编译配置与模块；技能目录不是业务目录。
+2. 明确输入、回复和目标账号，优先复用已有 Controller、Service 和配置。
+3. 业务从 `dou-bot` 导入，测试从 `dou-bot/testing` 导入；只使用已安装包的公开能力。
+4. 运行应用自己的构建和测试。真实 QQ、数据库或外部服务联调按本次任务范围执行。
 
-## 按功能选择参考
+## 按需求读取
 
-| 用户要完成的事                                 | 读取内容                                         |
-| ---------------------------------------------- | ------------------------------------------------ |
-| 创建应用、组织功能模块、注入服务、启动和关闭   | [项目与服务](references/project.md)              |
-| 添加命令、处理参数、设置默认值、提供帮助       | [命令与参数](references/commands.md)             |
-| 限制谁能使用、控制调用频率、回复消息、处理按钮 | [权限与交互](references/runtime.md)              |
-| 继续向用户提问、等待下一条消息、处理取消和超时 | [多轮对话](references/prompts.md)                |
-| 接收图片和文件、自动处理上传、读取用户及群信息 | [附件与身份](references/attachments-identity.md) |
-| 编写离线测试、排查无回复、验证实际 QQ 收发     | [测试与排错](references/testing.md)              |
+| 需求                           | 参考                                             |
+| ------------------------------ | ------------------------------------------------ |
+| 新建项目、模块、DI、启动和关闭 | [项目与服务](references/project.md)              |
+| 命令、参数、normalize、帮助    | [命令与参数](references/commands.md)             |
+| 权限、冷却、回复和按钮         | [权限与交互](references/runtime.md)              |
+| 等待用户下一条输入             | [多轮对话](references/prompts.md)                |
+| 图片、文件、自动上传和身份     | [附件与身份](references/attachments-identity.md) |
+| prepare、state.set/provide/get | [上下文中间件](references/context.md)            |
+| 多账号选路、外部 WS 和定时通知 | [多机器人](references/multi-bot.md)              |
+| PostgreSQL、运行快照与性能排查 | [数据与运行](references/operations.md)           |
+| 离线验证和 QQ 收发排错         | [测试](references/testing.md)                    |
 
-按需读取对应文件。需要可运行代码时，使用 [命令与权限示例](assets/minimal-module.ts) 及其 [测试](assets/minimal-module.test.ts)，或 [附件处理示例](assets/attachments-module.ts) 及其 [测试](assets/attachments-module.test.ts)。复制到应用后调整模块注册和相对导入；示例中的词典、权限名单与返回数据由业务决定。
+按需读取；可复制模块和对应测试位于 assets，由各参考页链接。
 
-需要在 Guard 和处理器之间共享数据时，读取 [上下文中间件](references/context.md)；完整代码见 [数据准备示例](assets/context-module.ts) 及其 [测试](assets/context-module.test.ts)。
+## 实现要点
 
-## 写业务代码时注意
+- 使用 TypeScript 5.9.3、ESM 和传统装饰器元数据；注入类保留值导入。
+- Provider 在所有账号之间共享；当前 appId、用户、群和 Context 放在方法参数中。
+- 回复用 return/ctx.reply；后台发送注入 MessageSender 或 BotManager。保存完整 BotTarget，不混用不同账号、场景下的 OpenID。
+- PostgreSQL 必填，首次显式迁移；业务表和幂等由业务设计，不能把内存队列当作持久化任务。
+- 外部 WS/定时器在 onApplicationReady 启动，在 onApplicationStopping 停止；尊重取消并等待异步工作。
+- Slot.match/normalize 同步；异步查询放 Service 或 prepare/provide。
+- 同条附图用 Images，下一条附件用 prompt 后筛选，直接上传用 OnAttachment；下载和处理由业务实现。
+- 处理器结束后不复用 ctx；不要将 QQClient/QQApi 当成共享注入令牌。
 
-- 参数装饰器声明输入来源；构造注入的类保留为运行时值，接口和配置用显式注入令牌。编译器需要支持传统装饰器及其元数据。
-- 处理器、Service 和 Guard 可以异步执行；`Slot.match` 与 `Slot.normalize` 都是同步规则。异步数据准备可使用中间件；数据库查询与参数缺省策略由业务决定。
-- Provider 和 Guard 通常是单例。本次用户、群和上下文放在方法参数或局部变量中，避免并发请求互相覆盖。
-- 固定的群聊、私聊、用户或角色限制优先使用对应 Guard 装饰器；身份参数用于读取信息，授权仍单独检查。
-- 指令附图用 `Images`；下一条附件用 `prompt` 后筛选；直接上传用 `OnAttachment`。文件下载、保存和内容处理由业务服务完成。
-- 自动回复与手动回复选一种方式；调用 `ctx.reply()` 后返回 void。按钮确认表示收到点击，业务结果另行发送。
-- 明确等待异步操作，业务网络请求传入适用的 signal；上下文仅用于当前处理流程。业务预期错误可转成友好提示，内部异常交给应用日志处理。
+## 交付
 
-## 交付给用户
-
-说明已实现的行为、实际可发送的指令或操作步骤，以及应用的运行和测试命令。区分离线模拟、外部业务接口验证和真实 QQ 客户端确认；明确示例数据及尚未验证的环节。
+简要说明使用指令、运行方式和实际验证结果。区分离线模拟、真实 SQL/接口测试和 QQ 客户端确认，不用历史验收或平台文档代替当前测试。

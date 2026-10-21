@@ -24,6 +24,10 @@ new FrameworkError(code: FrameworkErrorCode, message: string, options?: ErrorOpt
 | INVALID_STATE                     | 已关闭上下文、重复等待等状态错误 |
 | SHUTDOWN_TIMEOUT / CLEANUP_FAILED | 关闭超时或资源销毁失败           |
 
+- DATABASE / DATABASE_SCHEMA：数据库连接、查询或结构问题。
+- ROUTE_NOT_FOUND / ROUTE_AMBIGUOUS：群发送归属缺失或不唯一。
+- BOT_UNAVAILABLE：指定账号不存在、停止或暂时不可用。
+
 ## QQApiError
 
 - QQApiError 继承 FrameworkError，code 为 QQ_API，name 为 QQApiError。
@@ -33,8 +37,9 @@ new FrameworkError(code: FrameworkErrorCode, message: string, options?: ErrorOpt
 
 ## ErrorContext 与 onError
 
-- ErrorContext 提供 phase、appId，以及可选的 eventName、eventId、messageId、controller、method。
-- 阶段包括 middleware、context、bootstrap、transport、protocol、queue、observer、command、button、attachment、send、interaction-ack、guard、cooldown、prompt、shutdown。
+- ErrorContext 必有 phase；appId、sourceAppId 及事件/处理器信息按错误场景提供。
+- 跨账号发送时 appId 是发送账号，sourceAppId 可记录来源账号；数据库和初始化错误可能没有账号。
+- 阶段包括 database、routing、middleware、context、bootstrap、transport、protocol、queue、observer、command、button、attachment、send、interaction-ack、guard、cooldown、prompt、shutdown。
 - onError(error, context) 可以同步或异步。
 - 默认回调期限 1000ms；超时后当前应用禁用该自定义回调，使用兜底日志。
 - 回调抛错不会递归调用自己。

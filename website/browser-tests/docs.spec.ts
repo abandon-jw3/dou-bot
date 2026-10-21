@@ -86,7 +86,7 @@ test('附件和身份指南可以进入可运行示例', async ({ page }, info) 
   await expect(page.locator('h1')).toBeInViewport();
   await expect(page.locator('.vp-doc')).toContainText('@OnAttachment');
   await page.screenshot({
-    path: join(tmpdir(), `dou-bot-080-attachments-${info.project.name}.png`),
+    path: join(tmpdir(), `dou-bot-source-attachments-${info.project.name}.png`),
     animations: 'disabled',
   });
   await page.goto('guide/identity.html');
@@ -116,7 +116,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   await code.locator('button.copy').click({ force: true });
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-    .toContain('npm install --save-exact dou-bot@0.8.0');
+    .toContain('cd dou-bot/example');
   await page.goto('guide/guards.html#模块统一配置');
   await waitForClient(page);
   await expect(page.locator('#模块统一配置')).toBeInViewport();
@@ -131,7 +131,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   );
 });
 
-test('上下文与容量指南使用 0.8.0 的公开 API', async ({ page }, info) => {
+test('上下文与容量指南使用当前源码 API', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('guide/context.html');
@@ -143,13 +143,33 @@ test('上下文与容量指南使用 0.8.0 的公开 API', async ({ page }, info
   await page.goto('guide/capacity.html');
   await waitForClient(page);
   await expect(page.locator('h1')).toHaveText('容量与运行监测');
-  await expect(page.locator('.vp-doc')).toContainText('snapshot.capacity.replyScopes.size');
+  await expect(page.locator('.vp-doc')).toContainText('snapshot.inbound');
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
   ).toBe(false);
   await page.screenshot({
-    path: join(tmpdir(), `dou-bot-080-capacity-${info.project.name}.png`),
+    path: join(tmpdir(), `dou-bot-source-capacity-${info.project.name}.png`),
     animations: 'disabled',
   });
   expect(errors).toEqual([]);
+});
+
+test('新版本导航、多机器人、数据库和诊断索引', async ({ page, isMobile }) => {
+  await page.goto('./');
+  await waitForClient(page);
+  await expect(page.locator('.vp-doc')).toContainText('尚未发布');
+  await page.goto('guide/multi-bot.html');
+  await expect(page.locator('h1')).toHaveText('多机器人与主动发送');
+  await page.getByRole('link', { name: '多机器人通知示例', exact: true }).click();
+  await expect(page.locator('.vp-doc')).toContainText('NotificationsModule');
+  await page.goto('guide/database.html');
+  await expect(page.locator('.vp-doc')).toContainText('migrateDatabase');
+  await page.goto('guide/diagnostics.html');
+  await expect(page.locator('.vp-doc')).toContainText('p95UpperMs');
+  await page.getByRole('link', { name: '类型索引', exact: true }).click();
+  await expect(page.locator('#root-DiagnosticsOptions')).toBeInViewport();
+  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('尚未发布');
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
 });

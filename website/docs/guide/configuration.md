@@ -1,22 +1,35 @@
 # 完整配置
 
-- 配置入口：`BotFactory.create(AppModule, options)`。
-- `appId`、`secret` 必填，其他字段使用下表默认值。
-- 未知字段或非法组合报 CONFIG。
+- 入口：`AppFactory.create(AppModule, options)`，类型为 AppOptions。
+- 必须提供 database 和非空 bots；未知字段、非法整数或组合报 CONFIG。
+- 应用预算由所有账号共用；凭证和协议按账号配置。
 
-## 顶层选项
+## 应用配置
 
-| 字段                     | 类型 / 默认        | 用途                                      |
-| ------------------------ | ------------------ | ----------------------------------------- |
-| appId、secret            | 非空字符串，必填   | QQ 应用身份与凭证                         |
-| transport                | 默认 WS            | 选择 WS 或 Webhook                        |
-| commands.prefix          | `/`                | 统一前缀，可为空，不能包含空白            |
-| commands.invalidInput    | report             | report 只上报；reply 同时发送解析错误提示 |
-| interactions.acknowledge | auto               | auto 自动确认；manual 在业务中确认        |
-| logger                   | 内置日志实现       | 自定义 debug/info/warn/error              |
-| onError                  | 可选同步或异步回调 | 接收 Error 和 ErrorContext                |
+| 字段                  | 默认 / 用途                                                   |
+| --------------------- | ------------------------------------------------------------- |
+| database              | 必填，见 [PostgreSQL](./database.md#连接选项)                 |
+| bots                  | 必填；每项包含 appId、secret、可选 transport/api/interactions |
+| webhook               | 统一 HTTP 监听：listen=true、host=127.0.0.1、port=3000        |
+| commands.prefix       | `/`，可为空，不能包含空白                                     |
+| commands.invalidInput | report；reply 同时回复参数错误提示                            |
+| execution / outbound  | 入站与出站预算，见下表                                        |
+| diagnostics           | 默认关闭，见 [性能观测](./diagnostics.md)                     |
+| context / prompts     | 上下文数据与对话等待，见下表                                  |
+| logger / onError      | 日志实现与同步/异步错误回调                                   |
+
+## 账号配置
+
+| bots 中的字段            | 默认 / 用途                      |
+| ------------------------ | -------------------------------- |
+| appId / secret           | 必填，AppID 不重复               |
+| transport                | 默认 WS；Webhook 需显式声明 type |
+| api                      | QQ HTTP 客户端配置               |
+| interactions.acknowledge | auto；manual 在按钮处理器中确认  |
 
 ## HTTP / QQ API
+
+以下放在每个账号的 api 中。
 
 | api 字段         | 默认值                                    | 说明                                             |
 | ---------------- | ----------------------------------------- | ------------------------------------------------ |
@@ -32,6 +45,8 @@
 
 ## WS
 
+以下放在账号 transport 中。
+
 | 字段                              | 默认值                   |
 | --------------------------------- | ------------------------ |
 | type                              | ws                       |
@@ -44,16 +59,18 @@
 
 ## Webhook
 
-| 字段                        | 默认值                        |
-| --------------------------- | ----------------------------- |
-| type                        | 必须显式指定 webhook          |
-| listen / host / port / path | true / 127.0.0.1 / 3000 / /qq |
-| maxBodyBytes                | 1048576                       |
-| readTimeoutMs               | 10000                         |
-| maxConcurrentRequests       | 64                            |
-| maxSignatureAgeMs           | 300000                        |
+监听字段放在应用 webhook 中，下面字段放在账号 transport 中：
 
-WS 配置不能混入 port/listen 等 Webhook 字段，Webhook 也不能混入 intents 或 retry。
+| 字段                            | 默认值                       |
+| ------------------------------- | ---------------------------- |
+| type                            | 显式指定 webhook             |
+| path                            | `/qq/<AppID>`                |
+| maxBodyBytes                    | 1048576                      |
+| readTimeoutMs / verifyTimeoutMs | 10000 / 10000                |
+| maxConcurrentRequests           | 64，含读取正文和未结束的验签 |
+| maxSignatureAgeMs               | 300000                       |
+
+不要把 host、port、listen 放入账号 transport，也不要混入 WS 的 intents/retry。
 
 ## 执行与容量
 
@@ -73,6 +90,17 @@ WS 配置不能混入 port/listen 等 Webhook 字段，Webhook 也不能混入 i
 - 去重、回复记录容量至少为 `concurrency + queueCapacity`。
 - queueMaxBytes 至少为 maxEventBytes。
 - 这些限制不代表整个进程的内存上限。
+
+## 出站队列
+
+| outbound 字段 | 默认值   |
+| ------------- | -------- |
+| concurrency   | 8        |
+| queueCapacity | 1000     |
+| queueMaxBytes | 16777216 |
+
+- 所有账号共用预算；发送图片的上传和发送占同一个名额。
+- Token 和协议确认走独立控制通道；增大出站并发不能绕过 QQ 频控。
 
 ## 对话等待
 

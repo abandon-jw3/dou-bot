@@ -1,7 +1,7 @@
 import { HelpModule, Module } from 'dou-bot';
-import { HelloController } from './hello.controller.js';
-import { GREETING_SETTINGS, GreetingService } from './greeting.service.js';
-import type { GreetingSettings } from './greeting.service.js';
+import { HelloController } from './hello.controller.ts';
+import { GREETING_SETTINGS, GreetingService } from './greeting.service.ts';
+import type { GreetingSettings } from './greeting.service.ts';
 
 @Module({
   imports: [HelpModule], // 显式启用 /help 和 /帮助。

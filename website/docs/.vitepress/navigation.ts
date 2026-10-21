@@ -75,6 +75,8 @@ export const sidebar: DefaultTheme.Sidebar = {
     {
       text: '接入与运行',
       items: [
+        { text: '多机器人与主动发送', link: '/guide/multi-bot' },
+        { text: 'PostgreSQL 数据库', link: '/guide/database' },
         {
           text: 'WebSocket 接入',
           link: '/guide/ws',
@@ -92,8 +94,9 @@ export const sidebar: DefaultTheme.Sidebar = {
           link: '/guide/testing',
         },
         { text: '容量与运行监测', link: '/guide/capacity' },
+        { text: '性能观测', link: '/guide/diagnostics' },
         {
-          text: 'Windows 部署',
+          text: '部署与升级',
           link: '/guide/deployment',
         },
         {
@@ -124,7 +127,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           link: '/api/messages',
         },
         {
-          text: 'QQClient 与 QQApi',
+          text: '账号、发送与 QQ API',
           link: '/api/client',
         },
         {
@@ -135,6 +138,7 @@ export const sidebar: DefaultTheme.Sidebar = {
           text: '测试入口',
           link: '/api/testing',
         },
+        { text: '数据库与观测', link: '/api/runtime' },
         { text: '类型与接口', link: '/api/types' },
       ],
     },
@@ -143,6 +147,7 @@ export const sidebar: DefaultTheme.Sidebar = {
     {
       text: '完整示例',
       items: [
+        { text: '多机器人与后台通知', link: '/examples/multi-bot' },
         {
           text: '最小 hello',
           link: '/examples/hello',

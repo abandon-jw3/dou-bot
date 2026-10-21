@@ -16,6 +16,12 @@
 | Webhook 验签失败             | Secret、原始请求体、签名头、URL、时间偏差和代理行为                              |
 | 关闭超时                     | 销毁钩子、业务外部请求和未配合 signal 的异步任务                                 |
 
+- DATABASE_SCHEMA：先显式迁移，检查 schema 和数据库结构版本。
+- DATABASE：检查连接、权限、SQL 超时与连接池等待。
+- ROUTE_NOT_FOUND / ROUTE_AMBIGUOUS：保存完整 BotTarget 或显式绑定群归属。
+- BOT_UNAVAILABLE / degraded：查看目标账号状态；不要换用另一机器人的 OpenID。
+- 持续排队：检查入站、出站、数据库及 [阶段耗时](./diagnostics.md)。
+
 ## 装饰器编译问题
 
 - 开启 `experimentalDecorators`、`emitDecoratorMetadata`。

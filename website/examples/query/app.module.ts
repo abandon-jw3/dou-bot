@@ -1,5 +1,5 @@
 import { Arg, Args, Command, Controller, HelpModule, Module, Option, Rest, Slot } from 'dou-bot';
-import { City } from './city.decorator.js';
+import { City } from './city.decorator.ts';
 
 @Controller()
 export class QueryController {

@@ -1,7 +1,17 @@
-# QQClient 与 QQApi
+# 账号、发送与 QQ API
 
-- 两者都是内置可注入令牌，直接从 dou-bot 值导入。
-- QQClient 接受高层消息对象；QQApi 提供具名协议端点和通用请求。
+- 回复当前消息：返回内容或 ctx.reply；访问当前 QQ API 用 ctx.client。
+- 后台通知：注入 MessageSender，传入带 appId 的 BotTarget。
+- 指定账号：注入 BotManager，使用 bots.get(appId).client。
+- QQClient / QQApi 不是共享 Provider；不直接构造注入它们。
+
+## MessageSender / GroupRoutes
+
+- `sender.sendMessage(target, message, options?)` 返回 `Promise<SendResult>`。
+- 私聊目标必须包含 appId；群目标可按持久化归属解析。
+- GroupRoutes 提供 list(groupId)、resolve(groupId)、bind(target)、unbind(groupId)。
+- 无归属/归属歧义分别报 ROUTE_NOT_FOUND / ROUTE_AMBIGUOUS；账号不可用报 BOT_UNAVAILABLE。
+- 同一真实群的不同账号 OpenID 不能混用，见 [多机器人](../guide/multi-bot.md)。
 
 ## QQClient
 
@@ -13,10 +23,8 @@
 | deleteMessage(target, messageId, options?) | 目标、消息 ID、RequestOptions            | Promise&lt;void&gt;          |
 | api                                        | 只读 QQApi                               | 底层客户端                   |
 
-- 在 Injectable 服务构造函数中声明 QQClient 即可获得注入实例；不需要也不应将它注册成另一个 Provider。
-- 使用前明确目标与平台权限，主动发送不是绕过平台限制的通道。
-- 以下 `/bot-info` 命令读取机器人自身的信息。
-- 可以把相同的构造注入方式用在你的 Service 中，并将 ctx.signal 传给请求，使其能随当前任务取消。
+- 使用前明确账号、目标和平台权限，主动发送仍受平台限制。
+- 以下 `/bot-info` 通过 BotManager 获取来源机器人的客户端，向请求传入 ctx.signal。
 
 <<< @/../examples/client/app.module.ts
 

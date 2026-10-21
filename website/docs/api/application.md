@@ -1,55 +1,47 @@
 # 应用与配置 API
 
-- 导入入口：dou-bot。
-- 完整的配置默认值见 [配置指南](../guide/configuration.md)，类型声明索引见 [公共声明](./types.md)。
+从 `dou-bot` 导入；配置默认值见 [配置指南](../guide/configuration.md)。
 
-## BotFactory.create
+## AppFactory.create
 
 ```ts
-BotFactory.create(root: Type, options: BotOptions): Promise<BotApplication>
+AppFactory.create(root: Type, options: AppOptions): Promise<Application>
 ```
 
-- 创建并初始化模块、依赖注入与路由。
-- root 为根模块类；options 至少包含 appId、secret，transport 默认 WS。
-- 返回已创建但尚未建立 QQ 接入的应用，之后调用 start。
-- 配置、依赖或路由校验失败会拒绝 Promise。
-- 创建失败时，根据错误码检查配置字段、Provider 注册和命令名；具体步骤见 [排错指南](../guide/troubleshooting.md)。
+- 必须提供 database 和非空 bots；业务模块由所有账号共享。
+- create 检查配置、模块图和路由声明；start 打开数据库、初始化共享服务，再连接账号。
+- 不自动建表；首次运行先调用 migrateDatabase。
 
-完整示例：
+完整入口：
 
 <<< @/../examples/hello/main.ts
 
-## BotApplication
+## Application
 
-| 成员                 | 参数 / 返回          | 用途与限制                                    |
-| -------------------- | -------------------- | --------------------------------------------- |
-| status               | ApplicationStatus    | 只读运行状态                                  |
-| client               | QQClient             | 高层客户端，可在明确目标下发送                |
-| start()              | Promise&lt;void&gt;  | 启动接入；失败通过拒绝和错误渠道报告          |
-| close()              | Promise&lt;void&gt;  | 按统一期限清理；关闭后不能重启同一实例        |
-| get(token, options?) | 对应的 T             | 读取可见依赖，options.module 可指定模块       |
-| webhookHandler()     | Node RequestListener | 仅 Webhook 接入有效；宿主负责 server 生命周期 |
-| snapshot()           | ApplicationSnapshot  | 状态、队列、缓存用量、拒绝和耗时快照          |
+| 成员                 | 用途                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| status               | created / starting / running / degraded / stopping / stopped / failed |
+| bots                 | BotManager，按 appId 读取账号                                         |
+| start() / close()    | 启动与整体关闭，返回 `Promise<void>`                                  |
+| get(token, options?) | start 成功后读取服务；options.module 指定模块                         |
+| webhookHandler()     | 挂载到自有 Node HTTP 服务                                             |
+| snapshot()           | 应用入站、出站、数据库和各账号快照                                    |
+| diagnostics          | 阶段指标与采样读取器                                                  |
 
-- ApplicationStatus 为 created、starting、running、reconnecting、stopping、stopped 或 failed。
-- 快照中的 accepted 是接纳计数，不是业务成功计数。
+- 关闭后不能重启同一个应用；单账号停止/恢复使用 BotHandle。
+- Application 不提供默认 client；发送时明确账号或使用当前 ctx.client。
 
-## ModuleMetadata 与 Provider
+## BotManager / BotHandle
 
-- ModuleMetadata 的 imports、providers、controllers、exports、guards、middlewares 都是可选数组。
-- 模块只提供自己声明的可见性，不按文件目录自动扫描。
-- guards / middlewares 按声明顺序作用于本模块控制器。
-- Provider 支持类简写，以及 ClassProvider、ValueProvider、FactoryProvider。
-- InjectionToken 可以是类、抽象类、字符串或 Symbol；工厂依赖用 inject 数组指定，工厂可以返回 Promise。
+- `bots.list()` 返回只读账号列表，`bots.get(appId)` 读取一个账号。
+- handle 提供 appId、status、client、snapshot()、start() 和 stop()。
+- client 绑定该账号，可以缓存；停止期间调用失败，恢复后可继续使用。
+- `ctx.client` 仅限当前执行，处理器结束后不可复用。
 
-参考 [模块与依赖注入](../guide/modules.md)。QQClient、QQApi、LOGGER 是保留的内置令牌。
+## Module 与 Provider
 
-## 生命周期接口
-
-- OnModuleInit 提供 onModuleInit(signal)，OnModuleDestroy 提供 onModuleDestroy(signal)，均返回 void 或 Promise&lt;void&gt;。
-- 钩子在注册的服务上实现，模块类本身不自动实例化。
-
-<<< @/../examples/lifecycle/resource.service.ts
-
-- 初始化失败会触发已创建资源的回收；外部传入 useValue 的资源由调用者负责。
-- 关闭期限不能强制终止任意不配合取消的 JavaScript。
+- ModuleMetadata 支持 imports、providers、controllers、exports、guards、middlewares。
+- 支持类、useValue、useClass、异步 useFactory；详见 [模块](../guide/modules.md)。
+- 内置令牌：BotManager、MessageSender、GroupRoutes、Database、LOGGER。
+- QQClient、QQApi 不作为共享注入令牌；通过选定账号获取。
+- 生命周期时机见 [生命周期](../guide/lifecycle.md)，完整声明见 [类型索引](./types.md)。

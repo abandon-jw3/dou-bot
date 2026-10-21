@@ -1,12 +1,10 @@
 {
   "package": "dou-bot",
+  "channel": "source",
+  "contract": "2.0",
   "version": "0.8.0",
-  "registry": "https://registry.npmjs.org/",
-  "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-0.8.0.tgz",
-  "integrity": "sha512-Kx5fax10hR1Azn6OwZkC6Rwkvks7tPAE0P3pdlcQ/er1V+/RXyM01i/RqZxP6cMXeo1V/B0Jp4aWCec+I6teCQ==",
-  "license": "MIT",
-  "publishedAt": "2026-10-11T17:33:11.635Z",
-  "repository": "https://github.com/abandon-jw3/dou-bot",
-  "sourceCommit": "c02e4acf8c41c36724fc5cde191d1d45b608dd88",
-  "candidateSha256": "e2c657a18b5efcd97f8b7d59a77fbf789c8b661a0f9ff716202a751730e489b2"
+  "dependency": "file:vendor/dou-bot-source.tgz",
+  "sha256": "949984f6e417f188cc9eb359ebf466e02d4c7d8caa5b7981307a7ed4e31f1b6d",
+  "integrity": "sha512-EWfx5MLqBFjvkRjpfUq1YzuFMLWOjS4dnpboPcphbFLSPYoC3UxhThg8gzCbvO1HldBgd39Pu9HqvG7DxUARTQ==",
+  "distSha256": "5c5af672753cf60bccdb89e946938bcb6ed0a4e3a89c3c85860834a8a2284dba"
 }

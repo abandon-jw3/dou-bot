@@ -1,6 +1,6 @@
 # 多机器人应用
 
-> 本页介绍新版本，当前尚未发布。
+在同一个应用中连接多个账号，共享业务服务并明确选择发送方。
 
 ## 创建应用
 
@@ -122,5 +122,5 @@ await h.dispatch('a', {
 await h.app.close();
 ```
 
-- 测试入口使用内存持久化夹具和模拟 QQ 网络；不能据此认定真实 PostgreSQL/QQ 验收通过。
+- 离线测试不连接 PostgreSQL 或 QQ；上线前用自己的账号检查实际收发。
 - `createTestApplication` 提供单账号测试视图，`h.app.snapshot()` 返回该账号的 `BotSnapshot`。

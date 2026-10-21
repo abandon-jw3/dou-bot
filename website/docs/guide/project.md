@@ -25,10 +25,33 @@ my-qq-bot/
 ## ESM 导入规则
 
 - package.json 设置 `"type": "module"`。
-- 本手册用 `./app.module.js`；TypeScript 会找到对应的 `.ts` 源文件。
-- 要写 `./app.module.ts`，在 tsconfig.json 启用 `"rewriteRelativeImportExtensions": true`；编译后会改成 `.js`。
+- 本手册用 `./app.module.ts`；启用 `rewriteRelativeImportExtensions: true`，编译后改成 `.js`。
 - 注入的类使用值导入；接口和纯类型使用 `import type`。
 - 业务从 `dou-bot` 导入，测试从 `dou-bot/testing` 导入。
+
+## TypeScript 配置
+
+配套示例已配置好。自己调整目录时，保留以下关键选项：
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src/**/*.ts"]
+}
+```
+
+- 装饰器和构造注入需要 experimentalDecorators 与 emitDecoratorMetadata。
+- 用 tsc 编译，再由 Node 运行生成的 JavaScript。
 
 ## 推荐脚本
 
@@ -46,6 +69,7 @@ my-qq-bot/
 - `npm run build`：编译到 `dist/`。
 - `npm start`：启动机器人。
 - 只安装生产依赖时，先在构建环境生成 `dist/`。
+- 复制示例时保留完整目录和锁文件；首次部署按 [数据库指南](./database.md) 初始化。
 
 ## 使用业务示例的开发模式
 

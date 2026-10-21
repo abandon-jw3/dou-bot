@@ -19,19 +19,20 @@
     "check:content": "node scripts/check-content.mjs",
     "format": "prettier --write docs examples tests browser-tests scripts *.json *.ts *.md",
     "format:check": "prettier --check docs examples tests browser-tests scripts *.json *.ts *.md",
-    "check": "npm run typecheck && npm run format:check && npm run api:check && npm run check:content && npm test && npm run build",
+    "check": "npm run verify:sdk && npm run typecheck && npm run format:check && npm run api:check && npm run check:content && npm test && npm run build",
     "api:generate": "node scripts/generate-api.mjs",
-    "api:check": "node scripts/generate-api.mjs --check"
+    "api:check": "node scripts/generate-api.mjs --check",
+    "verify:sdk": "node scripts/verify-sdk.mjs"
   },
   "overrides": {
     "vitepress": {
-      "vite": "6.4.3"
+      "vite": "6.4.5"
     }
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@types/node": "24.19.0",
-    "dou-bot": "0.8.0",
+    "dou-bot": "file:vendor/dou-bot-source.tgz",
     "prettier": "3.9.9",
     "typescript": "5.9.3",
     "vitepress": "1.6.4"

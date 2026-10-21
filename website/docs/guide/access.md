@@ -15,6 +15,7 @@
 - `message` 可省略（默认提示）、设置非空字符串或 `false`（静默拒绝）。
 - `GroupRoles` 只接收角色列表；自定义管理者提示用 `GroupManagersOnly`。
 - `UsersOnly` 另支持 `scene`、`groupId`；groupId 隐含群聊，不能与 private 共用。
+- 多账号共享控制器；需要按账号设置名单时，用 ctx.appId 在自定义 Guard 中区分。
 - OpenID 从当前事件取得，不是 QQ 号；动态名单使用 [自定义 Guard](./guards.md)。
 
 ```ts

@@ -154,9 +154,8 @@ context: {
 - 准备或参数注入失败不占冷却；进入处理器后读取失败不退还冷却。
 - 一个附件处理器失败后继续其他匹配处理器，按钮确认规则不变。
 
-## 示例与升级
+## 用在自己的业务中
 
-- [完整源码示例](https://github.com/abandon-jw3/dou-bot/blob/main/framework/examples/context.ts)：在 framework 目录运行 `npm run example:context`，无需 QQ 或数据库。
-- 自行构造 Context 测试对象时补充 state reader。
-- 错误类型的穷尽判断补充 middleware、context、CONTEXT_TIMEOUT。
-- 此功能只负责准备与读取数据；数据库查询、字段选择和缺省策略由业务定义。
+- 完整用法见 [上下文示例](https://abandon-jw3.github.io/dou-bot/examples/context.html)。
+- 数据库查询、字段选择和参数缺省策略由业务服务决定。
+- 用 dou-bot/testing 运行模块，检查 Guard 和处理器读取的数据是否符合预期。

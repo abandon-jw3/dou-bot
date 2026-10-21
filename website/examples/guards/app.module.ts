@@ -1,5 +1,5 @@
 import { Command, Controller, Cooldown, Module, UseGuards } from 'dou-bot';
-import { ALLOWED_USERS, AllowlistGuard, GroupSceneGuard, OwnerGuard } from './guards.js';
+import { ALLOWED_USERS, AllowlistGuard, GroupSceneGuard, OwnerGuard } from './guards.ts';
 
 @Controller()
 class InfoController {

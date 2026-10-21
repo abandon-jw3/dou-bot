@@ -1,8 +1,16 @@
 # 离线测试
 
-- `createTestApplication` 运行你的业务模块，无需 QQ 凭证。
+- `createTestApplication` 运行你的业务模块，无需 QQ 凭证或 PostgreSQL。
 - 消息发送和按钮确认写入内存记录。
 - 可测试正常输入、参数错误、权限拒绝、冷却和外部请求失败。
+
+## 多账号测试
+
+- 使用 createMultiTestApplication，配置测试 bots 列表。
+- dispatch/enqueue 的第一个参数是 appId，messages 记录包含发送账号。
+- 验证同一事件 ID 在两个账号下独立，以及停止一个账号不影响另一个。
+- 完整断言见 [多机器人通知示例](../examples/multi-bot.md)。
+- 测试入口替换框架持久化与 QQ 网络；业务 SQL/HTTP 需提供自己的替身。
 
 ## 最小测试
 
@@ -11,7 +19,7 @@
 ```ts
 import assert from 'node:assert/strict';
 import { createTestApplication } from 'dou-bot/testing';
-import { AppModule } from './app.module.js';
+import { AppModule } from './app.module.ts';
 
 const bot = await createTestApplication(AppModule);
 await bot.app.start();

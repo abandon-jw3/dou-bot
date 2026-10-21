@@ -1,6 +1,6 @@
 # 把用户输入变成命令参数
 
-先确定用户会发送的文本、前缀和期望回复。以下以 dou-bot 0.8.0 为例；默认前缀是 `/`，例如 `/查询 北京 天气`。设置 `commands.prefix: ''` 后才使用不带前缀的命令。
+先确定用户会发送的文本、前缀和期望回复。默认前缀是 `/`，例如 `/查询 北京 天气`。设置 `commands.prefix: ''` 后才使用不带前缀的命令。
 
 ## 选择合适的参数
 
@@ -34,7 +34,7 @@ export function City(): ParameterDecorator {
 
 在处理器中用 `@City() city: string`，再声明查询类型 Slot，即可同时接受 `/查询 北京 天气` 和 `/查询 天气 北京`。完整组合见 [命令示例](../assets/minimal-module.ts)。
 
-Slot 至少提供 choices 或 match；两者同时提供时，输入必须同时满足。match 同步返回 boolean，只做匹配。0.8.0 可用 normalize 同步转换别名；查实体或加载用户配置等异步操作使用业务 Service 或上下文中间件，不放进 match、normalize 或静态 default。
+Slot 至少提供 choices 或 match；两者同时提供时，输入必须同时满足。match 同步返回 boolean，只做匹配。可用 normalize 同步转换别名；查实体或加载用户配置等异步操作使用业务 Service 或上下文中间件，不放进 match、normalize 或静态 default。
 
 一个词同时命中多个 Slot、同一 Slot 收到多个候选值或缺少必填项都会提示输入错误。两个 Slot 若使用同一套城市词典，不能靠不同参数名区分“出发地”和“目的地”；这类输入改用固定位置或明确选项。
 
