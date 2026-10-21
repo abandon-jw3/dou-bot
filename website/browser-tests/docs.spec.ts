@@ -159,12 +159,16 @@ test('新版本导航、多机器人、数据库和诊断索引', async ({ page,
   await waitForClient(page);
   await expect(page.locator('.vp-doc')).toContainText('尚未发布');
   await page.goto('guide/multi-bot.html');
+  await waitForClient(page);
   await expect(page.locator('h1')).toHaveText('多机器人与主动发送');
   await page.getByRole('link', { name: '多机器人通知示例', exact: true }).click();
+  await expect(page).toHaveURL(/\/examples\/multi-bot\.html$/);
   await expect(page.locator('.vp-doc')).toContainText('NotificationsModule');
   await page.goto('guide/database.html');
+  await waitForClient(page);
   await expect(page.locator('.vp-doc')).toContainText('migrateDatabase');
   await page.goto('guide/diagnostics.html');
+  await waitForClient(page);
   await expect(page.locator('.vp-doc')).toContainText('p95UpperMs');
   await page.getByRole('link', { name: '类型索引', exact: true }).click();
   await expect(page.locator('#root-DiagnosticsOptions')).toBeInViewport();
