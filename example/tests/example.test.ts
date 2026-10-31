@@ -74,13 +74,15 @@ await test('Arg：必填位置参数、默认值、整数转换与范围校验',
   await bot.dispatch(message('/example-arg 小明 2'));
   assert.equal(bot.messages[0]?.payload.content, greeting);
   assert.equal(bot.messages[1]?.payload.content, `${greeting}\n${greeting}`);
+  await bot.dispatch(message('/example-arg 小明 2 多余参数'));
+  assert.equal(bot.messages[2]?.payload.content, `${greeting}\n${greeting}`);
+  assert.equal(bot.errors.length, 0);
 
   for (const input of [
     '/example-arg',
     '/example-arg 小明 two',
     '/example-arg 小明 0',
     '/example-arg 小明 4',
-    '/example-arg 小明 2 多余参数',
   ]) {
     await bot.dispatch(message(input));
     assert.match(bot.messages.at(-1)?.payload.content ?? '', /用法：\/example-arg/u);

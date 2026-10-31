@@ -5,7 +5,7 @@
 - 新项目可复制 [业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)，进入应用目录运行 `npm ci`。
 - 复制 `.env.example` 为 `.env`，填写 QQ 与 PostgreSQL 配置；先构建、执行数据库迁移，再启动应用。
 - 已有项目沿用自己的目录、依赖版本和脚本，只添加需要的模块。
-- 在已有 TypeScript 项目中安装本技能对应版本：`npm install --save-exact dou-bot@1.0.0-rc.0`。
+- 在已有 TypeScript 项目中安装本技能对应版本：`npm install --save-exact dou-bot@1.0.0-rc.1`。
 
 ## 编译配置
 

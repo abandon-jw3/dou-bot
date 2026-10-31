@@ -2,14 +2,14 @@
   "package": "dou-bot",
   "channel": "registry",
   "contract": "2.0",
-  "version": "1.0.0-rc.0",
-  "dependency": "1.0.0-rc.0",
-  "sha256": "632401f553f805248d1dd1efbad4ad9522d8f4b3df0d591142f0ea1ff381c1e1",
-  "integrity": "sha512-a/fuC516aFLFdjsIIihFjMuH4a0YzRbjHu+DWRP6RfpM/WxKLfFlNmsIs/tRwSffX9Jr7U2aSb6Q6/ludPVqzA==",
-  "distSha256": "5c5af672753cf60bccdb89e946938bcb6ed0a4e3a89c3c85860834a8a2284dba",
+  "version": "1.0.0-rc.1",
+  "dependency": "1.0.0-rc.1",
+  "sha256": "94e324713c7acec3241587931275d370ddbfd7c34d25b0e4df3011209c0892af",
+  "integrity": "sha512-FXjgTOu3w/N+ocpQCsJ9QTZa6O0keXYz7yGXUTPgyC6F1eOkEpRGE99EbbMS4t1tr7r7ykN4c3feuY/auorD2w==",
+  "distSha256": "a1081a59b739ef983420b461738265d69013863780d84663331a2877e1f6002a",
   "registry": "https://registry.npmjs.org/",
-  "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-1.0.0-rc.0.tgz",
-  "publishedAt": "2026-10-21T15:50:47.055Z",
-  "sourceCommit": "008b9d4c9396440b9d1cfa740008a7472741eae9",
-  "sourceTag": "v1.0.0-rc.0"
+  "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-1.0.0-rc.1.tgz",
+  "publishedAt": "2026-10-31T18:55:47.654Z",
+  "sourceCommit": "6868506f06326e3b62d36d59511542589e8e2023",
+  "sourceTag": "v1.0.0-rc.1"
 }

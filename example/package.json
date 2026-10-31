@@ -24,7 +24,7 @@
     "database:migrate": "node --env-file-if-exists=.env dist/migrate.js"
   },
   "dependencies": {
-    "dou-bot": "1.0.0-rc.0"
+    "dou-bot": "1.0.0-rc.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

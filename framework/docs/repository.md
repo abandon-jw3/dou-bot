@@ -4,10 +4,10 @@
 
 ## 当前源码与发布版
 
-- 1.0.0-rc.0 已通过 next 发布，对应契约 2.0：AppFactory、多机器人和必选 PostgreSQL。
-- 2026-11-01 未发布行为变更：未消费的普通命令参数默认忽略，仅在声明 Rest 时收集；已声明参数的校验保持。包版本及公开类型未改，源码指南和已发布 1.0.0-rc.0 的用法分别标注。
+- 1.0.0-rc.1 已通过 next 发布，对应契约 2.0：AppFactory、多机器人和必选 PostgreSQL。
+- 2026-11-01 已发布 rc.1：未消费的普通命令参数默认忽略，仅在声明 Rest 时收集；已声明参数的校验保持。公开类型与契约未改，示例、文档和技能同步新版本。
 - 新版本独立设计和验收，使用方式见 [SDK README](../README.md) 与 [多机器人指南](multi-bot.md)。
-- npm latest 保持 0.8.0；业务示例、网站与技能使用已发布的 1.0.0-rc.0。两个消费者独立安装精确 registry 版本，不要求旧版迁移兼容。
+- npm latest 保持 0.8.0；业务示例、网站与技能使用已发布的 1.0.0-rc.1。两个消费者独立安装精确 registry 版本，不要求旧版迁移兼容。
 - PostgreSQL 专项使用 TEST_DATABASE_* 和随机测试 schema；普通离线检查不读取业务数据库配置。
 - 2026-10-21 已完成第一轮真实 PostgreSQL 与慢接口专项，修复事务/迁移断连及强制关闭的连接回收问题；两版 Node 数据库专项各 16/16。见 [验收与边界](postgres-readiness-2026-10-21.md)。闭环测试不代替真实 SQL 的固定速率容量或多日观察。
 - 随后在 dd9ec6d 的 CI 全部成功后，完成独立 PostgreSQL 接入 WS/Webhook 的定速容量：WS 450/s、Webhook 350/s 各两轮五分钟通过；更高档位的积压与发压漏发原样保留。配置、控制组及清理见 [SQL 容量报告](sql-capacity-2026-10-21.md)；没有改动 SDK 默认值，不能外推为真实 QQ 或长期生产承诺。
@@ -23,8 +23,8 @@
 | 仓库路径   | 职责                                              | 依赖与产物                                                     |
 | ---------- | ------------------------------------------------- | -------------------------------------------------------------- |
 | framework/ | dou-bot SDK、源码示例、探针、测试、维护文档与技能 | 独立锁文件和 node_modules；dist 为 SDK 产物；唯一 npm 发行目录 |
-| example/   | 可独立复制的机器人业务示例，覆盖 30 个装饰器      | 精确安装 npm dou-bot@1.0.0-rc.0；dist 为应用产物               |
-| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 精确安装 npm dou-bot@1.0.0-rc.0；产物位于 docs/.vitepress/dist |
+| example/   | 可独立复制的机器人业务示例，覆盖 30 个装饰器      | 精确安装 npm dou-bot@1.0.0-rc.1；dist 为应用产物               |
+| website/   | VitePress 用户手册、可运行教程和浏览器验证        | 精确安装 npm dou-bot@1.0.0-rc.1；产物位于 docs/.vitepress/dist |
 
 framework/examples 使用当前 SDK 源码进行验证；example 使用已发布的候选包展示业务。framework/docs 保存 SDK 指南及维护记录，framework/skills/dou-bot 是配套技能，website/docs 是面向使用者的站点内容。
 
@@ -84,7 +84,7 @@ SDK 的 Windows/Linux、最低版/开发版四组矩阵执行完整检查、覆�
 
 只从 framework 目录构建、打包和发布 dou-bot。repository.directory 标记为 framework；发布入口仍为 dou-bot 和 dou-bot/testing，包内结构仍是 dist、README、许可和白名单指南，没有额外的 framework 外层目录。
 
-SDK 0.8.0 已发布，对应契约为 1.14；1.0.0-rc.0 已通过 next 发布，源码契约为 2.0。example、website 和技能已适配当前源码；两个消费者精确安装 registry 的 1.0.0-rc.0，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹记录。发行范围与验收见 [1.0.0-rc.0 说明](release-1.0.0-rc.0.md)，0.8.0 的记录保留为历史。
+SDK 0.8.0 已发布，对应契约为 1.14；1.0.0-rc.1 已通过 next 发布，源码契约为 2.0。example、website 和技能已适配当前源码；两个消费者精确安装 registry 的 1.0.0-rc.1，来源由 vendor/sdk.json 的 channel、integrity 和产物指纹记录。发行范围与验收见 [1.0.0-rc.1 说明](release-1.0.0-rc.1.md)，0.8.0 的记录保留为历史。
 
 正式版的当前门槛见 [六项发布待办](api-review-1.0.md#仍未完成的-10-门槛)：固定候选与 CI、真实数据库负载、当前候选 QQ 故障验收、长期观察、用户入口适配及 RC 收尾。候选提交、源码指纹和配置须随证据记录；源码契约编号不代表 npm 发行版本号。
 

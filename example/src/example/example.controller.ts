@@ -81,7 +81,7 @@ export class ExampleController {
   allArguments(
     // @Args 包含所有分词，包括 --flag、选项值和 --，不包含命令名本身。
     // 引号已由分词器处理，所以 "两个 单词" 是一个元素，不是原始文本切片。
-    // 它不消费参数，也不能代替严格参数模式下的 @Rest 接收多余参数。
+    // 它不消费参数；只想读取未被其他装饰器使用的文字时用 @Rest。
     @Args() args: readonly string[],
   ): string {
     return `全部参数：${JSON.stringify(args)}`;
