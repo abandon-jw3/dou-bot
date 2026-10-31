@@ -9,6 +9,8 @@ import {
   Controller,
   Command,
   Ctx,
+  Args,
+  Slot,
   Injectable,
   migrateDatabase,
 } from 'dou-bot';
@@ -27,6 +29,16 @@ class Commands {
   constructor(readonly shared: Shared) {}
   @Command('ping') ping(@Ctx() ctx: MessageContext) {
     return ctx.appId;
+  }
+  @Command('诛恶') wicked(
+    @Slot('server', {
+      choices: ['梦江南', '双梦'],
+      normalize: () => '梦江南',
+    })
+    server: string | undefined,
+    @Args() args: string[],
+  ): string {
+    return JSON.stringify({ server, args });
   }
 }
 @Module({ providers: [Shared], controllers: [Commands] })
@@ -52,6 +64,24 @@ try {
     h.messages.map((message) => message.appId),
     ['a', 'b', 'b'],
   );
+  for (const group of [false, true]) {
+    await h.dispatch('a', {
+      op: 0,
+      t: group ? 'GROUP_MESSAGE_CREATE' : 'C2C_MESSAGE_CREATE',
+      d: {
+        id: `extra-words-${group}`,
+        ...(group
+          ? { group_openid: 'group-a', author: { member_openid: 'user-a' } }
+          : { author: { user_openid: 'user-a' } }),
+        content: '/诛恶 其他 双梦 121',
+      },
+    });
+    assert.deepEqual(JSON.parse(h.messages.at(-1)!.payload.content!), {
+      server: '梦江南',
+      args: ['其他', '双梦', '121'],
+    });
+  }
+  assert.deepEqual(h.errors, []);
   const snapshot: ApplicationSnapshot = h.app.snapshot();
   assert.equal(snapshot.bots.length, 2);
   assert.equal(typeof AppFactory.create, 'function');

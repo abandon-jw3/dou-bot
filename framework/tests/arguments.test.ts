@@ -89,6 +89,84 @@ await test('Slots accept all word orders, while Rest preserves only unconsumed t
   assert.equal(harness.errors.length, 0);
 });
 
+await test('unused positional words are ignored while declared parameters and Args retain their values', async (t) => {
+  const normalized: string[] = [];
+  @Controller()
+  class Query {
+    @Command('诛恶', { aliases: ['猪饿', '诸恶'] })
+    wicked(
+      @Slot('server', {
+        name: '服务器',
+        match: (value) => ['梦江南', '双梦'].includes(value),
+        normalize: (value) => {
+          normalized.push(value);
+          return '梦江南';
+        },
+      })
+      server: string | undefined,
+      @Ctx() ctx: MessageContext,
+    ): string {
+      return JSON.stringify({ server, content: ctx.content, scene: ctx.scene });
+    }
+
+    @Command('inspect')
+    inspect(
+      @Arg(0, { required: true }) keyword: string,
+      @Option('page', { alias: 'p', type: 'integer', min: 1, default: 1 }) page: number,
+      @Slot('server', { choices: ['双梦'], normalize: () => '梦江南' }) server: string,
+      @Args() args: string[],
+    ): string {
+      return JSON.stringify({ keyword, page, server, args });
+    }
+
+    @Command('page')
+    page(@Option('page', { type: 'integer', default: 1 }) page: number): string {
+      return String(page);
+    }
+
+    @Command('count')
+    count(@Arg(0, { type: 'integer', required: true }) count: number): string {
+      return String(count);
+    }
+  }
+  @Module({ controllers: [Query] })
+  class Root {}
+  const harness = await createTestApplication(Root, {
+    commands: { prefix: '', invalidInput: 'reply' },
+  });
+  t.after(() => harness.app.close());
+  await harness.app.start();
+  for (const group of [false, true]) {
+    for (const [input, server] of [
+      ['诛恶 梦江南 121', '梦江南'],
+      ['诸恶 121 双梦 其他', '梦江南'],
+      ['猪饿 其他 121', undefined],
+      ['诛恶', undefined],
+    ] as const) {
+      await harness.dispatch(message(input, group));
+      assert.deepEqual(json(harness.messages.at(-1)!.payload.content!), {
+        ...(server === undefined ? {} : { server }),
+        content: input,
+        scene: group ? 'group' : 'private',
+      });
+    }
+    await harness.dispatch(message('inspect 固定 121 双梦 -p 2 其他 -- --unknown', group));
+    assert.deepEqual(json(harness.messages.at(-1)!.payload.content!), {
+      keyword: '固定',
+      page: 2,
+      server: '梦江南',
+      args: ['固定', '121', '双梦', '-p', '2', '其他', '--', '--unknown'],
+    });
+    await harness.dispatch(message('page 121 --page 2 其他', group));
+    assert.equal(harness.messages.at(-1)!.payload.content, '2');
+    await harness.dispatch(message('count 3 其他', group));
+    assert.equal(harness.messages.at(-1)!.payload.content, '3');
+  }
+  assert.deepEqual(normalized, ['梦江南', '双梦', '梦江南', '双梦']);
+  assert.equal(harness.messages.length, 14);
+  assert.equal(harness.errors.length, 0);
+});
+
 await test('Rest never hides missing slots, duplicate candidates or overlapping slot rules', async (t) => {
   let calls = 0;
   @Controller()
@@ -100,10 +178,6 @@ await test('Rest never hides missing slots, duplicate candidates or overlapping 
       @Slot('topic', { name: '类型', required: true, choices: ['天气', '共同'] }) _topic: string,
     ): void {
       void [_city, _rest, _topic];
-      calls++;
-    }
-    @Command('strict') strict(@Slot('city', { choices: ['北京'] }) city?: string): void {
-      void city;
       calls++;
     }
   }
@@ -118,7 +192,6 @@ await test('Rest never hides missing slots, duplicate candidates or overlapping 
     ['/query 北京 上海 天气 今天', /城市 收到了多个/u],
     ['/query 天气 北京 北京', /城市 收到了多个/u],
     ['/query 共同', /同时匹配/u],
-    ['/strict 北京 今天', /未识别/u],
     ['/query 北京 天气 --unknown', /未声明的选项/u],
   ] as const;
   for (const [input, expected] of cases) {
@@ -250,9 +323,21 @@ await test('typed arguments reject malformed, unsafe and out-of-range numbers; b
     '/bool false',
     '/options --count -3 -d',
     '/options --count=0 --detail=false',
+    '/options -c 1 --detail false',
   ])
     await harness.dispatch(message(input));
-  assert.deepEqual(calls, [[-5], [10], [0.5], [-150], [1], [3], [false], [-3, true], [0, false]]);
+  assert.deepEqual(calls, [
+    [-5],
+    [10],
+    [0.5],
+    [-150],
+    [1],
+    [3],
+    [false],
+    [-3, true],
+    [0, false],
+    [1, true],
+  ]);
   for (const input of [
     '/integer',
     '/integer 1.5',
@@ -274,13 +359,12 @@ await test('typed arguments reject malformed, unsafe and out-of-range numbers; b
     '/options -c 1 -d --detail=false',
     '/options -c 1 --detail=1',
     '/options -cd',
-    '/options -c 1 --detail false',
   ])
     await harness.dispatch(message(input));
   await tick();
-  assert.equal(calls.length, 9);
-  assert.equal(harness.messages.length, 21);
-  assert.equal(harness.errors.length, 21);
+  assert.equal(calls.length, 10);
+  assert.equal(harness.messages.length, 20);
+  assert.equal(harness.errors.length, 20);
 });
 
 await test('legacy Arg and Args preserve flags, extra arguments, undefined values and JavaScript defaults', async (t) => {
@@ -296,8 +380,8 @@ await test('legacy Arg and Args preserve flags, extra arguments, undefined value
     @Command('typed') typed(
       @Arg(0, { name: '关键词', required: true }) first: string,
       @Args() all: string[],
-    ): void {
-      void [first, all];
+    ): string {
+      return JSON.stringify({ first, all });
     }
   }
   @Module({ controllers: [Query] })
@@ -316,8 +400,12 @@ await test('legacy Arg and Args preserve flags, extra arguments, undefined value
   );
   await harness.dispatch(message('/typed key extra'));
   await tick();
-  assert.equal(harness.messages.length, 2);
-  assert.match(harness.errors[0]!.error.message, /未识别/u);
+  assert.equal(harness.messages.length, 3);
+  assert.deepEqual(json(harness.messages[2]!.payload.content!), {
+    first: 'key',
+    all: ['key', 'extra'],
+  });
+  assert.equal(harness.errors.length, 0);
 });
 
 await test('optional slots default or inject undefined, and choices plus match apply together', async (t) => {
@@ -586,7 +674,7 @@ await test('new parameter decorators obey event restrictions, inheritance, snaps
   @Controller()
   class Base {
     @Command('query') query(
-      @Slot('city', { choices }) city: string,
+      @Slot('city', { choices, required: true }) city: string,
       @Option('page', options) page: number,
     ): string {
       return `${city} ${page}`;

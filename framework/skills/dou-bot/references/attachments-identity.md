@@ -1,8 +1,16 @@
-# 接收附件与读取身份信息
+# 接收附件与读取身份
 
-装饰器、工具函数和类型都从 dou-bot 导入。先按用户的发送方式选择入口。
+## 选择接收方式
 
-## 指令和图片在同一条消息里
+| 用户怎么发送                 | 使用方式                          |
+| ---------------------------- | --------------------------------- |
+| 指令与图片同条发送           | Command + Images                  |
+| 指令后补发视频、音频或文件   | prompt 等待，再 selectAttachments |
+| 直接上传符合名称或类型的文件 | OnAttachment                      |
+
+装饰器、工具函数和类型均从 `dou-bot` 导入。以下方法放在已注册的 Controller 中。
+
+## 同条指令与图片
 
 ```ts
 @Command('收图')
@@ -11,11 +19,13 @@ receive(@Images({ minCount: 1, maxCount: 4 }) images: readonly Attachment[]): st
 }
 ```
 
-这是控制器中的方法，需导入 Command、Images 和 Attachment 类型。Images 选择本条消息中的图片，Attachments 选择全部附件；默认允许没有匹配项，得到空数组。需要必填就配置 minCount，数量上限用 maxCount。数量校验在 Guard 后、冷却前，不会替用户等待下一条消息。
+- Images 选图片，Attachments 选全部附件；只选择当前消息，不等待补发。
+- 默认允许空数组；必填用 minCount，上限用 maxCount，数量按筛选后的结果计算。
+- Guard 先执行，数量错误不占冷却；命令错误提示由 `commands.invalidInput` 控制。
 
-## 发出命令后，再单独发送文件
+## 提问后收文件
 
-在已有 MessageContext 处理器中使用：
+在 MessageContext 处理器中使用：
 
 ```ts
 const answer = await ctx.prompt('请发送 1 个文件，或发送“取消”。');
@@ -35,11 +45,12 @@ if (selected.status === 'invalid') {
 await answer.message.reply(`收到文件：${selected.attachments[0]?.filename ?? '未提供名称'}。`);
 ```
 
-selectAttachments 支持 all、image、video、audio、file。正常数量不符返回 invalid，不自动发送提示；处理器决定结束还是重新提问。非法配置才抛错。使用回答消息的 reply 回复，并返回 void。
+- kind 支持 all、image、video、audio、file；视频和音频使用对应 kind。
+- 数量不符返回 invalid，不自动回复或重问；非法配置才抛错。
+- 使用回答消息的 reply，处理器返回 void；后续校验失败不会自动退还原命令冷却。
+- 客户端是否能将文字与某类附件混发，以实际操作和机器人收件为准。
 
-这种方式也适合单独发送的视频或音频。客户端是否能组合文字与附件，以用户实际可发送、机器人实际可接收的事件为准。
-
-## 用户直接上传固定名称的文档
+## 自动处理指定文档
 
 ```ts
 @OnAttachment({ filename: /^报告_\d{8}\.docx$/iu, extension: 'docx', invalidInput: 'reply' })
@@ -48,30 +59,34 @@ receiveReport(@Attachments({ maxCount: 1 }) files: readonly Attachment[]): strin
 }
 ```
 
-方法需导入 OnAttachment、Attachments 和 Attachment 类型，并属于已注册的控制器。filename 可用精确名称或正则，extension 匹配扩展名，kind 匹配附件分类；配置多个条件时，同一个附件要全部满足。不写条件就接收所有带附件的消息，纯文字不会触发。
+- filename 支持精确名称或正则，extension 匹配扩展名，kind 匹配分类；多个条件需在同一个附件上全部满足。
+- `@OnAttachment()` 接收所有带附件的消息，纯文字不触发。
+- Attachments 获得本处理器匹配的附件，Images 可进一步筛图；`ctx.attachments` 是整条消息的附件。
+- 可用 Ctx、附件、身份和 ContextValue 参数；不支持 Arg、Slot 等文字参数。
+- prompt 回答和已识别命令优先；多个附件处理器顺序执行，各自授权，某个失败不阻止其他处理器。
+- 只允许处理一次时，使条件互斥或由业务服务协调；权限用 Guard，频率限制用 Cooldown。
+- 附件数量错误由 OnAttachment 自己的 invalidInput 控制，默认 report；reply 才自动提示。
+- 文件名匹配不代表内容有效；下载、大小限制、保存、解析交给业务 Service，并处理取消。
 
-Attachments 注入本处理器匹配到的附件，Images 可继续选取其中的图片；ctx.attachments 则是整条消息的附件。可以使用 Ctx、附件和身份参数装饰器，不能在附件处理器上绑定文字参数。
+完整起点见 [附件模块](../assets/attachments-module.ts) 和 [测试](../assets/attachments-module.test.ts)。
 
-正在等待的 prompt 和已经识别的命令优先。多个附件处理器匹配时，各自检查权限并按顺序执行；某个处理器拒绝、冷却或失败，不会自动取消其他处理器。若业务只应处理一次，让筛选条件互斥或在服务中明确协调。
+## 类型识别范围
 
-附件入口的数量错误提示由 OnAttachment 的 invalidInput 控制，默认 report，可设为 reply；它与 commands.invalidInput 分开。需要限制上传者时使用 Guard，需要防重复调用时声明 Cooldown。
+- 只看消息顶层 attachments，不递归引用消息，不从 URL 猜文件名或从文件名猜 MIME。
+- MIME 忽略大小写、空白和参数；audio 兼容 QQ voice，file 兼容 QQ file 及其他合法的非图像/视频/音频 MIME。
+- 未知类型仍可用 Attachments 读取；语音识别文本不会自动成为命令输入。
 
-上述例子只确认收到文件。下载、保存、验证内容和解析 DOCX 放在业务服务中，配合取消信号及业务大小限制；文件名匹配不能证明内容一定有效。完整起点见 [附件模块](../assets/attachments-module.ts) 和 [测试](../assets/attachments-module.test.ts)。
+## 当前用户、群和角色
 
-## 筛选时实际使用什么信息
+| 参数         | 注入值                                                     |
+| ------------ | ---------------------------------------------------------- |
+| `@User()`    | UserInfo：id，以及事件提供的可选 username、bot、memberRole |
+| `@UserId()`  | 当前发送者或按钮操作者的 OpenID                            |
+| `@Group()`   | GroupInfo，仅含 id；私聊为 undefined                       |
+| `@GroupId()` | 群 OpenID；私聊为 undefined                                |
+| `@Role()`    | member/admin/owner 或 undefined                            |
 
-选择只看当前消息的顶层 attachments，不递归引用消息，不从 URL 猜文件名，也不从文件名猜 MIME。类型匹配忽略大小写、首尾空白和 MIME 参数；audio 兼容 QQ voice，file 兼容 QQ file 及其他合法的非图像/视频/音频 MIME。未知类型仍可用 Attachments 获取；语音识别文本不会自动变成命令输入。
-
-## 获取当前用户、群和角色
-
-| 参数         | 注入值                          | 业务用途                                       |
-| ------------ | ------------------------------- | ---------------------------------------------- |
-| `@User()`    | UserInfo                        | 当前发送者或按钮操作者的 ID 及本事件提供的资料 |
-| `@UserId()`  | string                          | 关联业务记录或查询用户配置                     |
-| `@Group()`   | GroupInfo 或 undefined          | 当前群的 ID；私聊为 undefined                  |
-| `@GroupId()` | string 或 undefined             | 按群组织业务数据                               |
-| `@Role()`    | member/admin/owner 或 undefined | 展示本次群消息中的角色信息                     |
-
-这些参数可用于 Command、OnButton 和 OnAttachment。UserInfo 包含 id，以及可选的 username、bot、memberRole；GroupInfo 仅包含 id。对象只读，数据来自当前事件，不会自动查询完整资料。昵称可能缺失或为空；按钮事件只保证适用的用户/群 ID，不推断昵称或角色。
-
-身份参数不替代授权。群管理操作使用 GroupManagersOnly 等规则；按钮权限见 [权限与交互](runtime.md)。保存用户配置时保留 ctx.appId、场景和事件中的 OpenID，并明确会话或群的业务范围，不能拿日常 QQ 号或另一个场景的 ID 直接代替。
+- 可用于 Command、OnButton、OnAttachment；这些数据只来自当前事件，不会查询完整资料。
+- 对象只读，昵称可能缺失或为空；按钮不推断昵称或角色。
+- 身份信息不代替授权，权限用法见 [权限与交互](runtime.md)。
+- 保存用户配置时带上 ctx.appId、场景和 OpenID；群内独立配置还要区分群，不用日常 QQ 号代替。

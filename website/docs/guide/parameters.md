@@ -92,7 +92,7 @@ server: string
 - 每个命令最多一个 Rest，声明位置不影响收集顺序。
 - Rest 和 Args 使用普通数组参数，不写 `...rest`。
 - Args 保留完整分词，包括选项和 `--`；它不消费参数，也不能代替 Rest。
-- 使用 Option、Slot、Rest 或带配置的 Arg 后，会拒绝多余参数、未知选项等错误输入。
+- 本站对应的 1.0.0-rc.0 使用 Option、Slot 或带配置的 Arg 时，会拒绝未接收的普通参数；该版本可用 Rest 接收额外文字。未知选项等错误输入仍会报错。
 - 只用 `Arg(index)` / Args / Ctx 时，多余参数不报错，缺参为 `undefined`，可用 JS 默认参数。
 
 ## 选项语法

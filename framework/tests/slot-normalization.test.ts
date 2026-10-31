@@ -288,7 +288,6 @@ await test('every text validation completes before any Slot normalization', asyn
     ['/query 1 双梦', /缺少必填/u],
     ['/query 1 梦江南 双梦 状态', /多个匹配值/u],
     ['/query 1 共同', /同时匹配/u],
-    ['/query 1 双梦 状态 extra', /未识别/u],
     ['/query 1 双梦 状态 --unknown', /未声明/u],
     ['/query x 双梦 状态', /安全整数/u],
     ['/query 1 双梦 状态 --page x', /安全整数/u],
@@ -306,6 +305,9 @@ await test('every text validation completes before any Slot normalization', asyn
       ({ error }) => error instanceof FrameworkError && error.code === 'PARAMETER_PARSE',
     ),
   );
+  await harness.dispatch(message('/query 1 双梦 状态 extra'));
+  assert.deepEqual(calls, ['双梦', '状态', 'handler']);
+  assert.equal(harness.errors.length, cases.length);
 });
 
 await test('guards precede normalization, normalization precedes attachments, and failed bindings leave cooldown free', async (t) => {
@@ -552,10 +554,10 @@ await test('inherited Slots retain the declaration snapshot including the origin
   await harness.dispatch(message('/状态 replacement'));
   assert.deepEqual(
     harness.messages.map((entry) => entry.payload.content),
-    ['梦江南', '梦江南'],
+    ['梦江南', '梦江南', '梦江南'],
   );
   assert.equal(calls, 2);
-  assert.equal(harness.errors.length, 1);
+  assert.equal(harness.errors.length, 0);
 });
 
 await test('normalization does not expand Slot placement beyond command parameters', async () => {

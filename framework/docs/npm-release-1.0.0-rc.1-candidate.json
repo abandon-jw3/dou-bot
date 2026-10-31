@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "1.0.0-rc.1",
+  "status": "candidate-validated-locally",
+  "published": false,
+  "preparedDate": "2026-11-01",
+  "timeZone": "Asia/Shanghai",
+  "publicContract": "2.0",
+  "source": {
+    "baseCommit": "3868817e8f8154f5c43df3f2921a497dfca71e98",
+    "runtimeFingerprint": "cafb16a6ce548b94d390676694a201a023868153b530e6e451997618136bc8bd"
+  },
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next",
+    "latestTagAction": "leave-unchanged"
+  },
+  "artifact": {
+    "sha256": "94e324713c7acec3241587931275d370ddbfd7c34d25b0e4df3011209c0892af",
+    "integrity": "sha512-FXjgTOu3w/N+ocpQCsJ9QTZa6O0keXYz7yGXUTPgyC6F1eOkEpRGE99EbbMS4t1tr7r7ykN4c3feuY/auorD2w==",
+    "bytes": 302318,
+    "fileCount": 182,
+    "distSha256": "a1081a59b739ef983420b461738265d69013863780d84663331a2877e1f6002a"
+  },
+  "verification": {
+    "sdkNodes": ["24.0.0", "24.21.0"],
+    "sdkTestsPassedPerNode": 399,
+    "sdkTestsSkippedPerNode": 13,
+    "skippedScope": "dedicated PostgreSQL tests; CI provides its own PostgreSQL",
+    "exports": 178,
+    "typeContracts": 136,
+    "frozenTarballConsumers": "passed on both Node versions",
+    "skillTestsPerNode": 7,
+    "coveragePercent": {
+      "lines": 95.37,
+      "statements": 95.37,
+      "functions": 93.14,
+      "branches": 89.94
+    },
+    "productionAuditVulnerabilities": 0,
+    "websiteAuditVulnerabilities": 0,
+    "exampleTests": 40,
+    "developmentProcessTests": 7,
+    "websiteTests": 23,
+    "browserTests": 24,
+    "consumerVersionBeforePublish": "1.0.0-rc.0",
+    "publishDryRun": "next/public passed"
+  },
+  "evidenceDirectory": "framework/work/release/1.0.0-rc.1",
+  "notes": [
+    "No real QQ or business database used.",
+    "Release requires the candidate commit CI to pass.",
+    "Examples, website and skill version will be synchronized after registry publication."
+  ]
+}

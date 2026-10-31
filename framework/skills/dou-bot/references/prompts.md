@@ -1,10 +1,10 @@
 # 向用户继续提问
 
-当一次操作需要补充信息或等待下一条附件时，在命令或附件处理器中使用 `await ctx.prompt(...)`。ButtonContext 和原始事件上下文没有 prompt。
+需要补充文字、选择或下一条附件时，在命令或附件处理器中调用 `await ctx.prompt(...)`。按钮和原始事件上下文没有 prompt。
 
-## 完成两轮输入
+## 两轮输入
 
-下面是已有控制器中的方法，ctx 使用 MessageContext 类型：
+下面是 Controller 的方法；从 `dou-bot` 导入 Command、Ctx 和 MessageContext 类型：
 
 ```ts
 @Command('登记')
@@ -24,21 +24,13 @@ async register(@Ctx() ctx: MessageContext): Promise<void> {
 }
 ```
 
-从 dou-bot 导入 Command、Ctx，以及 MessageContext 类型。每轮使用新回答的 message.prompt/message.reply，回复就能引用最近的输入。prompt 已发送问题，处理器最终返回 void，不再额外返回自动回复消息。
+- 每轮使用新回答的 `message.prompt()` 和 `message.reply()`，回复引用最近的输入。
+- 已手动回复的流程返回 void，避免再自动发送一条返回值消息。
+- 结果为 received、timeout 或 cancelled；只有 received 带 message。
+- 图片或文件的 content 可能为空，仍是 received；附件通过 `message.attachments` 读取。
+- 输入不符合要求时，回复后结束，或在有次数上限的流程里再次提问。文件筛选见 [附件指南](attachments-identity.md)。
 
-## 处理结果和业务校验
-
-结果有三种：received 带有 message，timeout 和 cancelled 没有。收到图片等附件时 content 可能为空，仍是 received；根据需求检查 message.content 或 message.attachments，不把空文字当作超时。
-
-prompt 只接收下一条输入。输入不符合业务要求时，明确选择回复提示后结束，或在有次数上限的流程中再次提问。文件筛选见 [附件与身份](attachments-identity.md)。
-
-等待绑定到同一应用、会话和用户，不同群或不同用户的消息不会成为回答。同一会话用户只能存在一个等待项；重复等待报 INVALID_STATE。成功作为回答的消息不会再触发普通命令、附件处理器或原始 On 观察器，即使它看起来像一条命令。
-
-原入口的 Guard 和冷却不会在回答时重新执行。确认付款、管理等敏感业务前，按最新回答的身份或业务权限服务再次核验；不能只依赖最初发起时的权限。
-
-## 设置超时和取消
-
-默认等待 60 秒，从问题发送成功后计时；默认取消词为“取消”。单次可以指定：
+## 超时与取消
 
 ```ts
 const answer = await ctx.prompt('请输入信息：', {
@@ -47,12 +39,20 @@ const answer = await ctx.prompt('请输入信息：', {
 });
 ```
 
-取消词去除首尾空白后精确匹配；空数组表示禁用取消词。应用级 prompts 可以设置 timeoutMs、maxTimeoutMs、maxPending 和 cancelWords。默认最大等待时间为 5 分钟，同时等待上限为 1,000；根据业务交互数量配置。
+- 默认等待 60 秒，从问题发送成功后计时；默认取消词为“取消”。
+- 取消词去掉首尾空白后精确匹配；空数组表示禁用取消词。
+- 应用级 `prompts` 可设置 timeoutMs、maxTimeoutMs、maxPending、cancelWords；默认最长 5 分钟，等待上限 1,000。
+- 必须 await 完整流程；处理器结束或应用关闭后，不再使用旧上下文。
 
-等待期间会释放执行名额，但仍占用会话及相关资源。必须 await 整个流程；处理器结束或应用关闭后，不能继续用旧上下文发送或等待。重启会清空对话状态。
+## 会话规则
 
-## 测试完整对话
+- 等待按机器人、会话和用户隔离；其他用户、群或机器人的消息不会成为回答。
+- 同一会话用户只能有一个等待项；重复等待报 `INVALID_STATE`。
+- 已被 prompt 接收的回答不再触发命令、附件处理器或原始 On，即使它形似命令。
+- 回答不会重新执行入口 Guard 或冷却；提交敏感操作前，按当前业务状态再核验权限。
+- 等待时释放执行名额，但仍占会话资源；重启会清空对话状态。
+- 群内是否需要 @ 机器人，以平台实际投递的事件为准。
 
-用 enqueue 发起命令，等问题出现在测试消息中，再 enqueue 回答；多轮流程在下一条问题出现后继续。最后等待整个流程完成，不能先等待首条命令的 dispatch 才发送回答。具体测试方法见 [测试与排错](testing.md)。
+## 测试对话
 
-群里不带 @ 的回答能否收到，取决于 QQ 是否向该机器人投递事件。离线测试验证业务流程，实际客户端收发需要另外确认。
+用 enqueue 发起命令 → 等问题出现 → enqueue 回答 → 等待流程完成。不要先 await 发起命令的 dispatch，它还在等待尚未发送的回答。具体示例见 [测试与排错](testing.md)。

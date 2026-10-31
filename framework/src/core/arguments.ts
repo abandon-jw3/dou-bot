@@ -458,10 +458,12 @@ export class CommandArguments {
     for (const slot of slots)
       if (!values.has(slot.index) && slot.required)
         throw new CommandInputError(`缺少必填参数：${slot.name}`);
-    const remaining = positional.filter((_, index) => !consumed.has(index));
     const rest = this.rest;
-    if (rest) values.set(rest.index, remaining);
-    else if (remaining.length) throw new CommandInputError('存在未识别的参数，请检查命令用法');
+    if (rest)
+      values.set(
+        rest.index,
+        positional.filter((_, index) => !consumed.has(index)),
+      );
     // Normalize only after every text error has been ruled out, in handler parameter order.
     for (const slot of slots) {
       const raw = values.get(slot.index) as string | undefined;
