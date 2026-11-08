@@ -1,6 +1,6 @@
 # 1.0.0-rc.2 候选发布
 
-准备日期为 2026-11-09（Asia/Shanghai），目标为 npm 的 `next` 标签。公开契约修订为 2.1。
+2026-11-09 01:11:52（Asia/Shanghai）已发布到 npm `next`，公开契约为 2.1。[发布记录](npm-release-1.0.0-rc.2.json)
 
 ## 按钮自动分行
 
@@ -16,12 +16,12 @@ const grid = keyboard(btns, 4); // 4、4、1
 
 已有的二维数组写法继续按指定行发送。多账号应用现在只解析一次共享配置，入站任务统一由共享执行池调度。随仓库提供的 dou-bot 技能已补充按钮布局示例。
 
-## 本地试用
+## 安装
 
-在仓库根目录准备固定安装包后，可在应用目录用 npm 安装对应的本地文件：
+在应用目录运行：
 
 ```sh
-npm install --save-exact /path/to/dou-bot/framework/work/release/1.0.0-rc.2/dou-bot-1.0.0-rc.2.tgz
+npm install --save-exact dou-bot@1.0.0-rc.2
 ```
 
 ## 候选验收

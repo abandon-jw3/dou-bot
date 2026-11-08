@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "1.0.0-rc.2",
+  "status": "published-and-registry-verified",
+  "publishedAt": "2026-11-08T17:11:52.732Z",
+  "publishedDate": "2026-11-09",
+  "timeZone": "Asia/Shanghai",
+  "publishedBy": "fine_wei",
+  "publicContract": "2.1",
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  },
+  "distTags": {
+    "latest": "0.8.0",
+    "next": "1.0.0-rc.2"
+  },
+  "source": {
+    "commit": "3f6e8552d7040cd009a28e8b4f733b3e339f9cc2",
+    "tag": "v1.0.0-rc.2"
+  },
+  "candidateRecord": "npm-release-1.0.0-rc.2-candidate.json",
+  "ci": {
+    "id": 42502962446,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/abandon-jw3/dou-bot/actions/runs/42502962446"
+  },
+  "artifact": {
+    "tarball": "https://registry.npmjs.org/dou-bot/-/dou-bot-1.0.0-rc.2.tgz",
+    "sha256": "ad37b8ec1f85349beba5066381d1b3670c1e65a531a9eb1fc111d8a186f405a7",
+    "integrity": "sha512-66TYAdJ9nBF1bYbYcyTv27rsBD6UX1FKHUA1vg0MLyxLxgmhf58z9hAuhljGeaLYAEjdAoEQBG6jN8FJpEtHMA==",
+    "fileCount": 182,
+    "bytes": 303010,
+    "identicalToCandidate": true
+  },
+  "verification": {
+    "anonymousDownload": "passed",
+    "registryConsumers": [
+      {
+        "node": "24.0.0",
+        "version": "1.0.0-rc.2",
+        "status": "passed",
+        "freshCache": true,
+        "integrity": "sha512-66TYAdJ9nBF1bYbYcyTv27rsBD6UX1FKHUA1vg0MLyxLxgmhf58z9hAuhljGeaLYAEjdAoEQBG6jN8FJpEtHMA=="
+      },
+      {
+        "node": "24.21.0",
+        "version": "1.0.0-rc.2",
+        "status": "passed",
+        "freshCache": true,
+        "integrity": "sha512-66TYAdJ9nBF1bYbYcyTv27rsBD6UX1FKHUA1vg0MLyxLxgmhf58z9hAuhljGeaLYAEjdAoEQBG6jN8FJpEtHMA=="
+      }
+    ],
+    "documentationSite": "https://abandon-jw3.github.io/dou-bot/",
+    "deployedVersion": "1.0.0-rc.2"
+  },
+  "synchronization": {
+    "exampleVersion": "1.0.0-rc.2",
+    "websiteVersion": "1.0.0-rc.2",
+    "source": "registry",
+    "cleanInstalls": true,
+    "exampleTests": 40,
+    "devProcessTests": 7,
+    "websiteTests": 23,
+    "browserTests": 24,
+    "htmlPages": 47,
+    "verifiedSiteLinksAndAssets": 2264
+  }
+}

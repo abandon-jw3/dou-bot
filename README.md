@@ -2,7 +2,7 @@
 
 面向 QQ 官方群聊和私聊的轻量 TypeScript 机器人框架，支持 WebSocket 与 Webhook。
 
-> 当前准备发布 1.0.0-rc.2。配套示例和文档站均安装同一份候选包。
+> 1.0.0-rc.2 已发布到 npm `next`。业务示例和文档站均精确安装此版本。
 
 ## 开始使用
 
@@ -16,7 +16,7 @@
 | 目录                              | 用途                                 |
 | --------------------------------- | ------------------------------------ |
 | [framework/](framework/README.md) | SDK、源码示例、测试和配套技能        |
-| [example/](example/README.md)     | 独立业务项目，使用 1.0.0-rc.2 候选包 |
+| [example/](example/README.md)     | 独立业务项目，使用 npm 包 1.0.0-rc.2 |
 | [website/](website/README.md)     | 新版本用户文档与可运行教程           |
 
 - 三个工程独立安装依赖，没有 workspaces 或源码链接。

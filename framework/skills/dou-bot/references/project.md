@@ -5,7 +5,7 @@
 - 新项目可复制 [业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example)，进入应用目录运行 `npm ci`。
 - 复制 `.env.example` 为 `.env`，填写 QQ 与 PostgreSQL 配置；先构建、执行数据库迁移，再启动应用。
 - 已有项目沿用自己的目录和脚本，只添加需要的模块。
-- 需要安装当前 SDK 时，在框架仓库的 `framework/` 目录运行 `npm ci` 和 `npm pack`，然后在应用目录用 `npm install <生成的 .tgz 路径>` 安装。
+- 在应用目录用 `npm install --save-exact dou-bot@1.0.0-rc.2` 安装 SDK。
 
 ## 编译配置
 

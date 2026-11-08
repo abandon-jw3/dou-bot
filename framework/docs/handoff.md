@@ -1,6 +1,6 @@
 # dou-bot 新设备开发交接
 
-更新于 **2026-11-09（Asia/Shanghai）**。已在本地准备 [1.0.0-rc.2 候选包](release-1.0.0-rc.2.md)，包含按钮自动分行。npm 的 `next` 当前指向 rc.1，业务示例与文档站在发布后同步精确依赖。
+更新于 **2026-11-09（Asia/Shanghai）**。[1.0.0-rc.2](release-1.0.0-rc.2.md) 已发布到 npm `next`，业务示例与文档站精确安装 registry 发行包。验收和来源见 [rc.2 发布记录](npm-release-1.0.0-rc.2.json)。
 
 ## 1.0.0-rc.1 已发布
 
