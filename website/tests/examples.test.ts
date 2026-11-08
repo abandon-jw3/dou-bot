@@ -196,6 +196,10 @@ await Promise.all([
       await bot.dispatch(message('/menu', scene));
       const payload = bot.messages[0]!.payload;
       assert.equal(payload.msg_type, 2);
+      assert.deepEqual(
+        payload.keyboard?.content.rows.map((row) => row.buttons.length),
+        [2, 1],
+      );
       const first = payload.keyboard?.content?.rows[0]?.buttons[0];
       assert.equal(first?.render_data.label, '确认');
       assert.equal(first?.render_data.visited_label, '确认');

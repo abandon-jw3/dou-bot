@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, readdir, realpath } from 'node:fs/promises';
-import { resolve, relative, isAbsolute } from 'node:path';
+import { resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -41,21 +41,13 @@ assert.equal(installed.version, metadata.version);
 const entry = await realpath(fileURLToPath(import.meta.resolve('dou-bot')));
 const local = relative(sdkRoot, entry);
 assert.ok(local && !local.startsWith('..') && !isAbsolute(local), 'SDK must use this installation');
-async function files(dir) {
-  const result = [];
-  for (const item of await readdir(dir, { withFileTypes: true })) {
-    const path = resolve(dir, item.name);
-    if (item.isDirectory()) result.push(...(await files(path)));
-    else if (item.isFile()) result.push(path);
-  }
-  return result.sort((left, right) => {
-    const a = left.replaceAll('\\', '/');
-    const b = right.replaceAll('\\', '/');
-    return a < b ? -1 : a > b ? 1 : 0;
-  });
-}
+const entries = await readdir(resolve(sdkRoot, 'dist'), { recursive: true, withFileTypes: true });
+const files = entries
+  .filter((entry) => entry.isFile())
+  .map((entry) => resolve(entry.parentPath, entry.name).replaceAll(sep, '/'))
+  .sort();
 const hash = createHash('sha256');
-for (const file of await files(resolve(sdkRoot, 'dist'))) {
+for (const file of files) {
   hash.update(relative(sdkRoot, file).replaceAll('\\', '/')).update('\0');
   hash.update(await readFile(file)).update('\0');
 }

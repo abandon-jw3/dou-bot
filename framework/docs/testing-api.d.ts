@@ -1,4 +1,4 @@
-/** dou-bot/testing public contract, revision 2.0. */
+/** dou-bot/testing public contract, revision 2.1. */
 import type {
   BotSnapshot,
   BotStatus,

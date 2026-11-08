@@ -1,6 +1,5 @@
-import type { SingleBotOptions } from './single-options.js';
+import type { AccountOptions, SharedOptions, SingleBotOptions } from './single-options.js';
 import type {
-  ContextOptions,
   ExecutionOptions,
   QQApiOptions,
   RetryOptions,
@@ -11,17 +10,11 @@ import { FrameworkError } from './errors.js';
 import { integer, keys } from './config-validation.js';
 import { callable, isRecord, nonempty } from './utils.js';
 import { resolvePrompts } from './prompts.js';
-import type { PromptSettings } from './prompts.js';
 
-export interface ResolvedOptions {
+export type ResolvedOptions = ReturnType<typeof resolveSharedOptions> & {
   appId: string;
   secret: string;
   api: Readonly<Required<QQApiOptions>>;
-  execution: Readonly<Required<ExecutionOptions>>;
-  context: Readonly<Required<ContextOptions>>;
-  prompts: PromptSettings;
-  prefix: string;
-  invalidInput: 'report' | 'reply';
   acknowledge: 'auto' | 'manual';
   transport:
     | {
@@ -45,9 +38,7 @@ export interface ResolvedOptions {
         maxConcurrentRequests: number;
         maxSignatureAgeMs: number;
       };
-  logger: SingleBotOptions['logger'];
-  onError: SingleBotOptions['onError'];
-}
+};
 
 const executionDefaults: Required<ExecutionOptions> = {
   concurrency: 8,
@@ -87,45 +78,7 @@ function address(value: string, originOnly = false): string {
   return originOnly ? url.origin : url.href;
 }
 
-export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
-  keys(
-    raw,
-    [
-      'appId',
-      'secret',
-      'api',
-      'transport',
-      'commands',
-      'execution',
-      'context',
-      'prompts',
-      'interactions',
-      'logger',
-      'onError',
-    ],
-    'options',
-  );
-  nonempty(raw.appId, 'appId');
-  nonempty(raw.secret, 'secret');
-  const api = raw.api ?? {};
-  keys(
-    api,
-    [
-      'baseUrl',
-      'tokenEndpoint',
-      'sandbox',
-      'requestTimeoutMs',
-      'maxUploadBytes',
-      'maxResponseBytes',
-    ],
-    'api',
-  );
-  const sandbox = boolean(api.sandbox, false, 'sandbox');
-  const baseUrl =
-    api.baseUrl ?? (sandbox ? 'https://sandbox.api.sgroup.qq.com' : 'https://api.sgroup.qq.com');
-  const tokenEndpoint = api.tokenEndpoint ?? 'https://bots.qq.com/app/getAppAccessToken';
-  nonempty(baseUrl, 'baseUrl');
-  nonempty(tokenEndpoint, 'tokenEndpoint');
+export function resolveSharedOptions(raw: SharedOptions) {
   const executionInput = raw.execution ?? {};
   keys(executionInput, Object.keys(executionDefaults), 'execution');
   const execution = { ...executionDefaults };
@@ -152,11 +105,6 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
     throw new FrameworkError('CONFIG', 'Command prefix must be a string');
   if (/\s/u.test(prefix))
     throw new FrameworkError('CONFIG', 'Command prefix cannot contain whitespace');
-  const interactions = raw.interactions ?? {};
-  keys(interactions, ['acknowledge'], 'interactions');
-  const acknowledge = interactions.acknowledge ?? 'auto';
-  if (acknowledge !== 'auto' && acknowledge !== 'manual')
-    throw new FrameworkError('CONFIG', 'Invalid acknowledgment mode');
   if (
     raw.logger !== undefined &&
     (!isRecord(raw.logger) ||
@@ -167,6 +115,72 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
     throw new FrameworkError('CONFIG', 'Invalid logger');
   if (raw.onError !== undefined && !callable(raw.onError))
     throw new FrameworkError('CONFIG', 'onError must be a function');
+  return Object.freeze({
+    prefix,
+    invalidInput,
+    logger: raw.logger,
+    onError: raw.onError,
+    execution: Object.freeze(execution),
+    context: Object.freeze({
+      prepareTimeoutMs: integer(context.prepareTimeoutMs, 10000, 'context.prepareTimeoutMs'),
+      loadTimeoutMs: integer(context.loadTimeoutMs, 10000, 'context.loadTimeoutMs'),
+      maxEntries: integer(context.maxEntries, 64, 'context.maxEntries'),
+    }),
+    prompts: resolvePrompts(raw.prompts),
+  });
+}
+
+export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
+  keys(
+    raw,
+    [
+      'appId',
+      'secret',
+      'api',
+      'transport',
+      'commands',
+      'execution',
+      'context',
+      'prompts',
+      'interactions',
+      'logger',
+      'onError',
+    ],
+    'options',
+  );
+  nonempty(raw.appId, 'appId');
+  return resolveBotOptions(raw, resolveSharedOptions(raw));
+}
+
+export function resolveBotOptions(
+  raw: AccountOptions,
+  shared: ReturnType<typeof resolveSharedOptions>,
+): ResolvedOptions {
+  nonempty(raw.secret, 'secret');
+  const api = raw.api ?? {};
+  keys(
+    api,
+    [
+      'baseUrl',
+      'tokenEndpoint',
+      'sandbox',
+      'requestTimeoutMs',
+      'maxUploadBytes',
+      'maxResponseBytes',
+    ],
+    'api',
+  );
+  const sandbox = boolean(api.sandbox, false, 'sandbox');
+  const baseUrl =
+    api.baseUrl ?? (sandbox ? 'https://sandbox.api.sgroup.qq.com' : 'https://api.sgroup.qq.com');
+  const tokenEndpoint = api.tokenEndpoint ?? 'https://bots.qq.com/app/getAppAccessToken';
+  nonempty(baseUrl, 'baseUrl');
+  nonempty(tokenEndpoint, 'tokenEndpoint');
+  const interactions = raw.interactions ?? {};
+  keys(interactions, ['acknowledge'], 'interactions');
+  const acknowledge = interactions.acknowledge ?? 'auto';
+  if (acknowledge !== 'auto' && acknowledge !== 'manual')
+    throw new FrameworkError('CONFIG', 'Invalid acknowledgment mode');
   const transport = raw.transport ?? { type: 'ws' };
   let resolvedTransport: ResolvedOptions['transport'];
   if (transport.type === 'ws') {
@@ -261,19 +275,9 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
   return Object.freeze({
     appId: raw.appId,
     secret: raw.secret,
-    prefix,
-    invalidInput,
+    ...shared,
     acknowledge,
-    logger: raw.logger,
-    onError: raw.onError,
     transport: Object.freeze(resolvedTransport),
-    execution: Object.freeze(execution),
-    context: Object.freeze({
-      prepareTimeoutMs: integer(context.prepareTimeoutMs, 10000, 'context.prepareTimeoutMs'),
-      loadTimeoutMs: integer(context.loadTimeoutMs, 10000, 'context.loadTimeoutMs'),
-      maxEntries: integer(context.maxEntries, 64, 'context.maxEntries'),
-    }),
-    prompts: resolvePrompts(raw.prompts),
     api: Object.freeze({
       sandbox,
       baseUrl: address(baseUrl, true),

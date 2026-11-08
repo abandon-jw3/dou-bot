@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "package": "dou-bot",
+  "version": "1.0.0-rc.2",
+  "status": "candidate-validated-locally",
+  "published": false,
+  "preparedDate": "2026-11-09",
+  "timeZone": "Asia/Shanghai",
+  "publicContract": "2.1",
+  "source": {
+    "baseCommit": "be79bf949e52efbc1f265c2740c9fbe97ba057a1",
+    "dirtyAtPack": true,
+    "runtimeFingerprint": "900002d8714fe9640ad2b797227b172234a1847e4e663ef2afb7382b04be15cd"
+  },
+  "target": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next",
+    "observedDistTags": {
+      "next": "1.0.0-rc.1",
+      "latest": "0.8.0"
+    }
+  },
+  "artifact": {
+    "filename": "dou-bot-1.0.0-rc.2.tgz",
+    "sha256": "ad37b8ec1f85349beba5066381d1b3670c1e65a531a9eb1fc111d8a186f405a7",
+    "integrity": "sha512-66TYAdJ9nBF1bYbYcyTv27rsBD6UX1FKHUA1vg0MLyxLxgmhf58z9hAuhljGeaLYAEjdAoEQBG6jN8FJpEtHMA==",
+    "bytes": 303010,
+    "fileCount": 182,
+    "distSha256": "3e4b684e7bb1d84866149173b858ca1f0d8e0ef183a488417605b77dc1de0e9d"
+  },
+  "verification": {
+    "sdkNodes": ["24.0.0", "24.21.0"],
+    "sdkTestsPassedPerNode": 413,
+    "sdkTestsSkippedPerNode": 0,
+    "postgresql": "17.11",
+    "dedicatedPostgresCasesPerNode": 13,
+    "exports": 178,
+    "typeContracts": 136,
+    "frozenTarballConsumers": "Both Node versions compiled and ran the same artifact, including sending both new keyboard layouts.",
+    "skillTestsPerNode": 7,
+    "coveragePercent": {
+      "lines": 95.59,
+      "statements": 95.59,
+      "functions": 93.3,
+      "branches": 90.02
+    },
+    "productionAuditVulnerabilities": 0,
+    "websiteAuditVulnerabilities": 0,
+    "exampleTests": 40,
+    "developmentProcessTests": 7,
+    "websiteTests": 23,
+    "browserTests": 24,
+    "websitePages": 47,
+    "verifiedSiteLinksAndAssets": 2264,
+    "consumerSource": "fixed candidate tarball",
+    "publishDryRun": "passed (next/public)",
+    "capacityVirtualMs": 7200000,
+    "soakDurationMs": 30044
+  },
+  "evidenceDirectory": "framework/work/release/1.0.0-rc.2"
+}

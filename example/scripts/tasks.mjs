@@ -25,41 +25,16 @@ async function clean(name) {
     throw new Error('Build path escaped workspace');
   await rm(directory, { recursive: true, force: true });
 }
-async function build() {
-  await clean('dist');
-  await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.build.json']);
-}
-async function test() {
-  await clean('.test-build');
-  await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json']);
-  await run(['--test', '.test-build/tests/**/*.test.js']);
-  await run(['--test', 'scripts/dev.test.mjs']);
-}
 switch (process.argv[2]) {
   case 'build':
-    await build();
+    await clean('dist');
+    await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.build.json']);
     break;
   case 'test':
-    await test();
-    break;
-  case 'check':
-    await run(['scripts/verify-sdk.mjs']);
-    await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.json', '--noEmit']);
-    await run(['node_modules/eslint/bin/eslint.js', 'src', 'tests', '--max-warnings', '0']);
-    await run([
-      'node_modules/prettier/bin/prettier.cjs',
-      '--check',
-      'src',
-      'tests',
-      'scripts',
-      'vendor/*.json',
-      'vendor/*.md',
-      '*.json',
-      '*.mjs',
-      '*.md',
-    ]);
-    await build();
-    await test();
+    await clean('.test-build');
+    await run(['node_modules/typescript/bin/tsc', '-p', 'tsconfig.test.json']);
+    await run(['--test', '.test-build/tests/**/*.test.js']);
+    await run(['--test', 'scripts/dev.test.mjs']);
     break;
   default:
     throw new Error('Unknown task');

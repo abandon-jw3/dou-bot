@@ -5,12 +5,13 @@
 
 ## 消息助手
 
-| API                         | 参数与默认                           | 返回            |
-| --------------------------- | ------------------------------------ | --------------- |
-| text(content)               | 文本字符串                           | TextMessage     |
-| image(source, options?)     | ImageSource；options.caption 可选    | ImageMessage    |
-| markdown(content, options?) | 原始 Markdown；options.keyboard 可选 | MarkdownMessage |
-| keyboard(rows)              | 非空二维按钮数组；每行 1～5 个按钮   | Keyboard        |
+| API                         | 参数与默认                             | 返回            |
+| --------------------------- | -------------------------------------- | --------------- |
+| text(content)               | 文本字符串                             | TextMessage     |
+| image(source, options?)     | ImageSource；options.caption 可选      | ImageMessage    |
+| markdown(content, options?) | 原始 Markdown；options.keyboard 可选   | MarkdownMessage |
+| keyboard(rows)              | 非空二维按钮数组；每行 1～5 个按钮     | Keyboard        |
+| keyboard(btns, perRow?)     | 一维按钮数组；行宽默认 1，也可按行指定 | Keyboard        |
 
 - MessageInput 是 string 或上述三类消息对象。
 - ImageSource 是 HTTP(S) URL、Uint8Array 或 UploadedImage；字符串不表示文件路径。

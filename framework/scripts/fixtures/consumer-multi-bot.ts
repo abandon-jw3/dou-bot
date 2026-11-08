@@ -12,6 +12,9 @@ import {
   Args,
   Slot,
   Injectable,
+  button,
+  keyboard,
+  markdown,
   migrateDatabase,
 } from 'dou-bot';
 import type { MessageContext, BotTarget, ApplicationSnapshot, AppOptions } from 'dou-bot';
@@ -64,6 +67,20 @@ try {
     h.messages.map((message) => message.appId),
     ['a', 'b', 'b'],
   );
+  const buttons = Array.from({ length: 9 }, (_, i) => button.callback(String(i), String(i)));
+  const client = h.app.bots.get('b').client;
+  for (const perRow of [4, [2, 3]] as const) {
+    await client.sendMessage(target, markdown('菜单', { keyboard: keyboard(buttons, perRow) }));
+    const rows = h.messages.at(-1)!.payload.keyboard!.content.rows;
+    assert.deepEqual(
+      rows.map((row) => row.buttons.length),
+      perRow === 4 ? [4, 4, 1] : [2, 3, 3, 1],
+    );
+    assert.deepEqual(
+      rows.flatMap((row) => row.buttons.map((item) => item.id)),
+      buttons.map((_, i) => String(i)),
+    );
+  }
   for (const group of [false, true]) {
     await h.dispatch('a', {
       op: 0,

@@ -65,7 +65,7 @@ export class ConfirmationController {
   @Command('确认')
   ask() {
     return markdown('是否确认？', {
-      keyboard: keyboard([[button.callback('confirm', '确认', 'continue')]]),
+      keyboard: keyboard([button.callback('confirm', '确认', 'continue')]),
     });
   }
 
@@ -84,6 +84,18 @@ export class ConfirmationController {
 - 默认自动确认只表示“收到点击”。manual 模式进入处理器后调用 `await ctx.ack()`；Guard/冷却拒绝时框架会补偿确认。
 - ButtonContext 有 send、ack，没有 reply、prompt；需要追问时用 command 按钮引导进入命令。
 - interactionId 用于确认点击，不能当作普通消息的 msg_id。
+
+### 一维按钮数组自动分行
+
+`keyboard(btns, perRow?)` 按传入顺序排列按钮。假设一维数组 `btns` 有 9 个按钮。
+
+| 调用                     | 从上到下每行的按钮数 |
+| ------------------------ | -------------------- |
+| `keyboard(btns, 4)`      | 4、4、1              |
+| `keyboard(btns, [2, 3])` | 2、3、3、1           |
+| `keyboard(btns)`         | 每行 1 个，共 9 行   |
+
+每个行宽都是 1～5 的整数。传入行宽数组时，最后一个宽度用于所有剩余行。
 
 ## 事件观察与错误
 

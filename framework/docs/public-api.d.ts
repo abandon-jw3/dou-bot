@@ -1,4 +1,4 @@
-/** Public API contract 2.0: shared application, account-scoped targets and PostgreSQL. Unreleased. */
+/** Public API contract 2.1: flat keyboard button layouts. */
 import type { RequestListener } from 'node:http';
 import type { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
@@ -1059,7 +1059,12 @@ export declare function markdown(
   options?: { keyboard?: Keyboard },
 ): MarkdownMessage;
 
-export declare function keyboard(rows: readonly (readonly KeyboardButton[])[]): Keyboard;
+/** A flat list defaults to one button per row. The last specified width repeats. */
+export declare function keyboard(
+  buttons: readonly KeyboardButton[],
+  perRow?: number | readonly number[],
+): Keyboard;
+export declare function keyboard(rows: Keyboard['rows']): Keyboard;
 
 export declare const button: {
   link(label: string, url: string, options?: ButtonOptions): KeyboardButton;

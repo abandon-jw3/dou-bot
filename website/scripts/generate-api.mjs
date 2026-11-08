@@ -40,7 +40,12 @@ for (let i = 0; i < entries.length; i++) {
       body +=
         '提供 app、messages、acknowledgments、errors、enqueue、dispatch 和 flush。接纳结果为结构化返回值，详情见 [测试入口 API](./testing.md#testharness)。\n\n';
     } else {
-      let text = declaration.getText();
+      let text = ts.isFunctionDeclaration(declaration)
+        ? actual.declarations
+            .filter(ts.isFunctionDeclaration)
+            .map((node) => node.getText())
+            .join('\n')
+        : declaration.getText();
       if (ts.isVariableDeclaration(declaration)) text = `export declare const ${text};`;
       body += '```ts\n' + text + '\n```\n\n';
     }

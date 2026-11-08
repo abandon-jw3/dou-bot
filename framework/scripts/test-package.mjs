@@ -337,5 +337,5 @@ console.log(
     ? 'Historical consumer verified against published dou-bot@0.6.0; this does not assert source compatibility.'
     : freshRegistry
       ? `Consumers verified against published dou-bot@${registryVersion} using empty npm configuration and fresh cache.`
-      : 'Contract 2.0 consumer verified against the current tarball.',
+      : 'Contract 2.1 consumer verified against the current tarball.',
 );

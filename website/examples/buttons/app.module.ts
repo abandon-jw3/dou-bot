@@ -5,13 +5,13 @@ import type { ButtonContext, MarkdownMessage } from 'dou-bot';
 export class ButtonController {
   @Command('menu')
   menu(): MarkdownMessage {
-    // 原始 Markdown 与内联键盘，不需要模板 ID。
+    const buttons = [
+      button.callback('docs:confirm', '确认', 'confirm'),
+      button.link('阅读文档', 'https://abandon-jw3.github.io/dou-bot/'),
+      button.command('再次打开', '/menu', { enter: true }),
+    ];
     return markdown('**请选择操作**', {
-      keyboard: keyboard([
-        [button.callback('docs:confirm', '确认', 'confirm')],
-        [button.link('阅读文档', 'https://abandon-jw3.github.io/dou-bot/')],
-        [button.command('再次打开', '/menu', { enter: true })],
-      ]),
+      keyboard: keyboard(buttons, [2, 3]),
     });
   }
   @OnButton('docs:confirm')

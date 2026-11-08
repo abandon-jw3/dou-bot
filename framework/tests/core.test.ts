@@ -459,6 +459,24 @@ await test('group normalization removes only leading self mentions and preserves
   }
 });
 
+await test('flat keyboard layouts preserve button order and repeat the last row width', () => {
+  const buttons = Array.from({ length: 9 }, (_, i) => button.callback(String(i), String(i)));
+  assert.deepEqual(keyboard(buttons, 4).rows, [
+    buttons.slice(0, 4),
+    buttons.slice(4, 8),
+    buttons.slice(8),
+  ]);
+  const rows = [buttons.slice(0, 2), buttons.slice(2, 5), buttons.slice(5, 8), buttons.slice(8)];
+  assert.deepEqual(encodeKeyboard(keyboard(buttons, [2, 3])), encodeKeyboard(keyboard(rows)));
+  assert.deepEqual(
+    keyboard(buttons).rows,
+    buttons.map((item) => [item]),
+  );
+  for (const width of [0, 6, 1.5, [], [2, 0]]) {
+    assert.throws(() => keyboard(buttons, width), /row width/);
+  }
+});
+
 await test('message snapshots isolate buffers and reject contradictory keyboard data', () => {
   const original = new Uint8Array([1, 2]);
   const captured = snapshotMessage(image(original));

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, readdir, realpath, copyFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve, relative } from 'node:path';
+import { dirname, resolve, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { root, repositoryRoot, runNode } from './paths.mjs';
 
@@ -39,29 +39,20 @@ if (packed.status !== 0) throw new Error(packed.stderr || 'npm pack failed');
 const [record] = JSON.parse(packed.stdout);
 const tarball = resolve(output, record.filename);
 const bytes = await readFile(tarball);
-async function files(dir) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const result = [];
-  for (const entry of entries) {
-    const path = resolve(dir, entry.name);
-    if (entry.isDirectory()) result.push(...(await files(path)));
-    else if (entry.isFile()) result.push(path);
-  }
-  return result.sort((left, right) => {
-    const a = left.replaceAll('\\', '/');
-    const b = right.replaceAll('\\', '/');
-    return a < b ? -1 : a > b ? 1 : 0;
-  });
-}
+const entries = await readdir(resolve(root, 'dist'), { recursive: true, withFileTypes: true });
+const files = entries
+  .filter((entry) => entry.isFile())
+  .map((entry) => resolve(entry.parentPath, entry.name).replaceAll(sep, '/'))
+  .sort();
 const distHash = createHash('sha256');
-for (const file of await files(resolve(root, 'dist'))) {
+for (const file of files) {
   distHash.update(relative(root, file).replaceAll('\\', '/')).update('\0');
   distHash.update(await readFile(file)).update('\0');
 }
 const metadata = {
   package: 'dou-bot',
   channel: 'source',
-  contract: '2.0',
+  contract: '2.1',
   version: record.version,
   dependency: 'file:vendor/dou-bot-source.tgz',
   sha256: createHash('sha256').update(bytes).digest('hex'),

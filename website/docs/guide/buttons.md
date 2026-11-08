@@ -12,10 +12,19 @@
 | button.command(label, command, options?)    | 填入命令；`enter: true` 直接发送 |
 | button.callback(id, label, data?, options?) | 触发对应 `@OnButton(id)`         |
 
-- `keyboard()` 接收二维数组，一行 1～5 个按钮。
 - `style`：secondary（默认）或 primary。
 - `visitedLabel`：点击后的文案，默认与 label 相同。
 - callback 的 ID 在首参指定，不能在 options 重复填写。
+
+`keyboard` 可以为一维按钮数组自动分行，也可以接收已排好行的二维数组。例如 `btns` 有 9 个按钮时：
+
+```ts
+keyboard(btns, 4); // 每行最多 4 个，排成 4、4、1
+keyboard(btns, [2, 3]); // 首行 2 个，之后每行最多 3 个，排成 2、3、3、1
+keyboard(btns); // 默认每行 1 个
+```
+
+每个行宽都是 1～5 的整数。传入多个行宽时按顺序使用，最后一个行宽用于所有剩余行。
 
 ## 回调确认与业务结果
 

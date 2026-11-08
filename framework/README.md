@@ -2,22 +2,23 @@
 
 一个轻量化的 TypeScript 机器人框架，面向 QQ 官方群聊和私聊，支持 WebSocket 与 Webhook。
 
-**本页面向 1.0.0-rc.1 候选试用版。** 请从配套示例开始使用。
+**本页面向 1.0.0-rc.2 候选试用版。**
 
 ## 功能
 
-| 功能         | 用法                                                                              |
-| ------------ | --------------------------------------------------------------------------------- |
-| 多机器人     | 一个应用共享业务服务，每个账号独立连接；[指南](docs/multi-bot.md)                 |
-| 命令与参数   | Arg、Slot、Option、Rest、别名归一化和自动帮助；[指南](docs/command-parameters.md) |
-| 图片与文件   | 同条图片、追问收附件、自动处理上传；[指南](docs/command-parameters.md#附件参数)   |
-| 用户与群信息 | User、UserId、Group、GroupId、Role；[指南](docs/command-parameters.md#身份参数)   |
-| 权限与冷却   | 内置限制、自定义 Guard、调用频率；[指南](docs/access-control.md)                  |
-| 多轮对话     | 等待下一条输入，支持超时与取消；[指南](docs/prompts.md)                           |
-| 上下文数据   | 异步准备、懒加载和类型化读取；[指南](docs/context-middleware.md)                  |
-| 数据库       | PostgreSQL、共享连接池、持久化群地址；[指南](docs/database.md)                    |
-| 运行监测     | 有界队列、取消、排空和容量快照；[指南](docs/capacity.md)                          |
-| 阶段性能     | 可选耗时指标、采样执行链和有界导出；[指南](docs/diagnostics.md)                   |
+| 功能         | 用法                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| 多机器人     | 一个应用共享业务服务，每个账号独立连接；[指南](docs/multi-bot.md)                        |
+| 命令与参数   | Arg、Slot、Option、Rest、别名归一化和自动帮助；[指南](docs/command-parameters.md)        |
+| 图片与文件   | 同条图片、追问收附件、自动处理上传；[指南](docs/command-parameters.md#附件参数)          |
+| 消息按钮     | `keyboard(btns, 4)` 每行最多 4 个；`keyboard(btns, [2, 3])` 首行 2 个、后续每行最多 3 个 |
+| 用户与群信息 | User、UserId、Group、GroupId、Role；[指南](docs/command-parameters.md#身份参数)          |
+| 权限与冷却   | 内置限制、自定义 Guard、调用频率；[指南](docs/access-control.md)                         |
+| 多轮对话     | 等待下一条输入，支持超时与取消；[指南](docs/prompts.md)                                  |
+| 上下文数据   | 异步准备、懒加载和类型化读取；[指南](docs/context-middleware.md)                         |
+| 数据库       | PostgreSQL、共享连接池、持久化群地址；[指南](docs/database.md)                           |
+| 运行监测     | 有界队列、取消、排空和容量快照；[指南](docs/capacity.md)                                 |
+| 阶段性能     | 可选耗时指标、采样执行链和有界导出；[指南](docs/diagnostics.md)                          |
 
 ## 运行第一个机器人
 

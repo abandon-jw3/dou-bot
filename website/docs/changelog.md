@@ -1,5 +1,10 @@
 # 更新日志
 
+## 1.0.0-rc.2 · 2026-11-09（本地候选）
+
+- `keyboard(btns, 4)` 将一维数组按每行最多 4 个按钮排列。`keyboard(btns, [2, 3])` 的首行最多 2 个，后续每行最多 3 个。省略行宽时每行一个。
+- 候选仓库中的示例已包含 SDK 安装包，在 `example/` 运行 `npm ci` 即可试用。[按钮指南](./guide/buttons.md) · [可运行的菜单示例](./examples/buttons.md)
+
 ## 1.0.0-rc.1 · 2026-11-01
 
 安装：`npm install --save-exact dou-bot@1.0.0-rc.1`，或使用 `dou-bot@next`。

@@ -1,6 +1,6 @@
 # 文档站维护
 
-面向新建机器人项目，介绍 **1.0.0-rc.1 候选试用版**：AppFactory、多账号、PostgreSQL 与性能观测。
+面向新建机器人项目，介绍 **1.0.0-rc.2 候选试用版**，包含按钮布局、AppFactory、多账号、PostgreSQL 与性能观测。
 
 ## 预览与检查
 
@@ -20,8 +20,7 @@ npm run test:browser
 
 ## SDK 来源
 
-- 精确安装 npm dou-bot@1.0.0-rc.1；[vendor](vendor/README.md) 记录来源与完整性，不链接 framework 源码。
-- 本站对应已发布的 1.0.0-rc.1 候选试用版；next 指向此版本，latest 仍为 0.8.0。
+- 本站安装随仓库提供的 rc.2 固定 tarball。[来源记录](vendor/README.md) 包含版本和完整性验证方式。
 - API 索引从实际安装的公开声明生成：`npm run api:generate`。
 - 验证尚未发布的新 API 时，才在 framework 执行 `node scripts/prepare-user-sdk.mjs`，在 example 执行 `npm install --save-exact --ignore-scripts ./vendor/dou-bot-source.tgz`，在 website 执行同一命令并加 `--save-dev`，更新索引并验证。
 - 更新时核对实际 registry 版本与完整性，再同步锁文件和页面版本。未发布功能的验证与正式依赖更新分开进行。

@@ -1126,7 +1126,11 @@ export type InjectionToken<T = unknown> = Type<T> | AbstractType<T> | string | s
 ### keyboard {#root-keyboard}
 
 ```ts
-export declare const keyboard: (rows: readonly (readonly KeyboardButton[])[]) => Keyboard;
+export declare function keyboard(
+  buttons: readonly KeyboardButton[],
+  perRow?: number | readonly number[],
+): Keyboard;
+export declare function keyboard(rows: Keyboard['rows']): Keyboard;
 ```
 
 ### Keyboard {#root-Keyboard}

@@ -8,7 +8,6 @@ import { normalize, isDispatch } from '../qq/normalize.js';
 import { errorOf, FrameworkError } from './errors.js';
 import { targetKey } from '../message/index.js';
 import { bounded } from './utils.js';
-import { systemClock } from './clock.js';
 import type { Clock } from './clock.js';
 import { PromptManager } from './prompts.js';
 import { EventTask } from './event-task.js';
@@ -89,12 +88,12 @@ export class Execution {
     private readonly client: ManagedQQClient,
     private readonly reporter: ErrorReporter,
     private readonly execute: (task: EventTask) => Promise<void>,
-    private readonly handles: (event: NormalizedEvent) => boolean | 'observe' = () => true,
-    private readonly clock: Clock = systemClock,
-    private readonly pool?: ExecutionPool,
+    private readonly handles: (event: NormalizedEvent) => boolean | 'observe',
+    private readonly clock: Clock,
+    private readonly pool: ExecutionPool,
     readonly observer?: Diagnostics,
   ) {
-    this.unregister = pool?.register({ pending: () => this.pending, step: () => this.pumpOne() });
+    this.unregister = pool.register({ pending: () => this.pending, step: () => this.pumpOne() });
     this.prompts = new PromptManager(options.prompts, clock, {
       suspend: (owner) => {
         if (owner.finished || !owner.running)
@@ -106,7 +105,7 @@ export class Execution {
           owner.task.controller.signal,
         );
         this.notify();
-        this.pump();
+        this.pool.pump();
       },
       resume: (owner, continuation, outcome) => {
         owner.diagnosticPrompt?.end(
@@ -123,7 +122,7 @@ export class Execution {
           continuation();
           return;
         }
-        this.pool?.enqueued();
+        this.pool.enqueued();
         this.waiting.push({
           queued: owner,
           enqueuedAt: this.clock.monotonic(),
@@ -138,7 +137,7 @@ export class Execution {
               }
             : {}),
         });
-        this.pump();
+        this.pool.pump();
       },
       abort: (owner, reason) => owner.task.controller.abort(reason),
       fallback: (input) => this.fallback(input),
@@ -196,7 +195,7 @@ export class Execution {
     queued.diagnosticRun = undefined;
     queued.running = false;
     this.active--;
-    this.pool?.leave();
+    this.pool.leave();
   }
 
   private promptKey(event: Extract<NormalizedEvent, { kind: 'message' }>): string {
@@ -237,7 +236,7 @@ export class Execution {
     }
     // Captured input has already reserved bytes, a dedup entry and a reply scope.
     // Requeue that same task, rather than re-admit it as a duplicate or lose the input.
-    this.pool?.enqueued();
+    this.pool.enqueued();
     this.waiting.push({
       queued: input,
       enqueuedAt: this.clock.monotonic(),
@@ -251,7 +250,7 @@ export class Execution {
           }
         : {}),
     });
-    this.pump();
+    this.pool.pump();
   }
 
   accept(payload: unknown, bytes: number, context?: ObservationContext): Admission {
@@ -348,18 +347,12 @@ export class Execution {
       let scope = scopeKey === undefined ? undefined : this.scopes.get(scopeKey);
       const autoAck = event.kind === 'button' && this.options.acknowledge === 'auto';
       const rejection =
-        this.pool?.rejection(bytes, Boolean(prompt)) ??
-        (!this.pool &&
-        !prompt &&
-        this.pending + this.active >= config.queueCapacity + config.concurrency
-          ? 'queueFull'
-          : !this.pool && this.retainedBytes + bytes > config.queueMaxBytes
-            ? 'bytesFull'
-            : autoAck && this.controls >= config.concurrency
-              ? 'acknowledgmentsFull'
-              : scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries
-                ? 'replyScopesFull'
-                : undefined);
+        this.pool.rejection(bytes, Boolean(prompt)) ??
+        (autoAck && this.controls >= config.concurrency
+          ? 'acknowledgmentsFull'
+          : scopeKey !== undefined && !scope && this.scopes.size >= config.replyScopeMaxEntries
+            ? 'replyScopesFull'
+            : undefined);
       if (rejection) {
         this.reject(rejection);
         return { status: 'overloaded' };
@@ -436,14 +429,14 @@ export class Execution {
       if (!observationOnly) this.events.accepted++;
       this.lastEventAt = event.receivedAt;
       this.retainedBytes += bytes;
-      this.pool?.retain(bytes);
+      this.pool.retain(bytes);
       this.managedSignals.add(task.controller.signal);
       this.tasks.add(queued);
       if (prompt && event.kind === 'message') {
         if (!this.prompts.claim(prompt, queued, event.content)) this.fallback(queued);
         return { status: 'accepted', done };
       }
-      this.pool?.enqueued();
+      this.pool.enqueued();
       this.waiting.push({
         queued,
         enqueuedAt: now,
@@ -464,7 +457,7 @@ export class Execution {
           () => this.controlFinished(),
         );
       }
-      this.pump();
+      this.pool.pump();
       return observationOnly ? { status: 'ignored' } : { status: 'accepted', done };
     } catch (error) {
       this.events.failed++;
@@ -502,27 +495,18 @@ export class Execution {
     this.nextExpiry = nextExpiry;
     observation?.end();
   }
-  private pump(): void {
-    if (this.pool) {
-      this.pool.pump();
-      return;
-    }
-    this.pumpOne(false);
-  }
-  private pumpOne(single = true): boolean {
-    let dispatched = false;
+  private pumpOne(): boolean {
     let didRun = false;
     while (
-      !dispatched &&
+      !didRun &&
       !this.terminated &&
       this.active < this.options.execution.concurrency &&
       this.pending > 0
     ) {
-      this.pool?.dequeued();
+      this.pool.dequeued();
       const item = this.waiting[this.head];
       this.waiting[this.head++] = undefined;
       if (!item || item.queued.finished) continue;
-      dispatched = single;
       didRun = true;
       const task = item.queued;
       item.observation?.end();
@@ -603,7 +587,7 @@ export class Execution {
     queued.children.clear();
     if (queued.task.failed) this.events.failed++;
     this.retainedBytes -= queued.bytes;
-    this.pool?.release(queued.bytes);
+    this.pool.release(queued.bytes);
     if (queued.entry && queued.key !== undefined) {
       queued.entry.active = false;
       queued.entry.expiresAt = this.clock.monotonic() + this.options.execution.dedupTtlMs;
@@ -624,7 +608,7 @@ export class Execution {
     this.tasks.delete(queued);
     queued.resolve();
     this.notify();
-    this.pump();
+    this.pool.pump();
   }
   private notify(): void {
     for (const callback of [...this.changed]) callback();
@@ -653,7 +637,7 @@ export class Execution {
       this.prune(this.clock.monotonic());
       const config = this.options.execution;
       if (
-        (this.pool?.canResume() ?? true) &&
+        this.pool.canResume() &&
         this.pending <= config.queueCapacity / 2 &&
         this.retainedBytes <= config.queueMaxBytes / 2 &&
         this.controls < config.concurrency &&
@@ -663,7 +647,7 @@ export class Execution {
       await new Promise<void>((resolve, reject) => {
         const cleanup = () => {
           this.changed.delete(wake);
-          stopWatching?.();
+          stopWatching();
           signal.removeEventListener('abort', abort);
           timer?.cancel();
         };
@@ -679,7 +663,7 @@ export class Execution {
         const timer = Number.isFinite(nextExpiry)
           ? this.clock.timeout(wake, Math.max(1, nextExpiry - this.clock.monotonic()))
           : undefined;
-        const stopWatching = this.pool?.onChange(wake);
+        const stopWatching = this.pool.onChange(wake);
         this.changed.add(wake);
         signal.addEventListener('abort', abort, { once: true });
         if (signal.aborted) abort();
@@ -694,7 +678,7 @@ export class Execution {
       new FrameworkError('SHUTDOWN_TIMEOUT', 'Application closed before the prompt completed'),
       true,
     );
-    this.pool?.dequeued(this.pending);
+    this.pool.dequeued(this.pending);
     this.waiting.length = 0;
     this.head = 0;
     for (const queued of [...this.tasks]) {

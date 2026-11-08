@@ -1,5 +1,6 @@
 import type { AppOptions, BotOptions, ExecutionOptions } from '../contracts.js';
-import { resolveOptions } from './config.js';
+import { resolveBotOptions, resolveSharedOptions } from './config.js';
+import type { AccountOptions } from './single-options.js';
 import { integer, keys } from './config-validation.js';
 import { FrameworkError } from './errors.js';
 import { hasControlCharacters } from './utils.js';
@@ -34,6 +35,7 @@ export function resolveApplication(options: AppOptions) {
     throw new FrameworkError('CONFIG', 'Invalid webhook.listen');
   if (webhook.host !== undefined && (typeof webhook.host !== 'string' || !webhook.host.trim()))
     throw new FrameworkError('CONFIG', 'Invalid webhook.host');
+  const shared = resolveSharedOptions(options);
   const appIds = new Set<string>();
   const paths = new Set<string>();
   const bots = Array.from(options.bots).map((bot: BotOptions) => {
@@ -45,33 +47,27 @@ export function resolveApplication(options: AppOptions) {
       hasControlCharacters(bot.appId, true)
     )
       throw new FrameworkError('CONFIG', 'Invalid bot appId');
-    const config = resolveOptions({
-      ...bot,
-      ...(options.commands !== undefined ? { commands: options.commands } : {}),
-      ...(options.execution !== undefined ? { execution: options.execution } : {}),
-      ...(options.context !== undefined ? { context: options.context } : {}),
-      ...(options.prompts !== undefined ? { prompts: options.prompts } : {}),
-      ...(options.logger !== undefined ? { logger: options.logger } : {}),
-      ...(options.onError !== undefined ? { onError: options.onError } : {}),
-      ...(bot.transport?.type === 'webhook'
-        ? {
-            transport: {
-              ...bot.transport,
-              listen: false,
-              path: bot.transport.path ?? `/qq/${encodeURIComponent(bot.appId)}`,
-            },
-          }
-        : {}),
-    });
+    let account: AccountOptions = bot;
+    if (bot.transport?.type === 'webhook') {
+      if (
+        bot.transport.listen !== undefined ||
+        bot.transport.host !== undefined ||
+        bot.transport.port !== undefined
+      )
+        throw new FrameworkError('CONFIG', 'Configure the shared listener in application.webhook');
+      account = {
+        ...bot,
+        transport: {
+          ...bot.transport,
+          listen: false,
+          path: bot.transport.path ?? `/qq/${encodeURIComponent(bot.appId)}`,
+        },
+      };
+    }
+    const config = resolveBotOptions(account, shared);
     if (appIds.has(config.appId)) throw new FrameworkError('CONFIG', 'Duplicate bot appId');
     appIds.add(config.appId);
     if (config.transport.type === 'webhook') {
-      if (
-        bot.transport?.listen !== undefined ||
-        bot.transport?.host !== undefined ||
-        bot.transport?.port !== undefined
-      )
-        throw new FrameworkError('CONFIG', 'Configure the shared listener in application.webhook');
       if (paths.has(config.transport.path))
         throw new FrameworkError('CONFIG', 'Duplicate Webhook path');
       paths.add(config.transport.path);
@@ -81,7 +77,7 @@ export function resolveApplication(options: AppOptions) {
   return Object.freeze({
     database,
     bots: Object.freeze(bots),
-    shared: bots[0]!,
+    shared,
     outbound: outboundSettings(options.outbound),
     diagnostics: diagnosticsSettings(options.diagnostics),
     webhook: Object.freeze({

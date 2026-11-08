@@ -51,10 +51,38 @@ export const image = (source: ImageSource, options: { caption?: string } = {}): 
   Object.freeze({ kind: 'image', source, ...options });
 export const markdown = (content: string, options: { keyboard?: Keyboard } = {}): MarkdownMessage =>
   Object.freeze({ kind: 'markdown', body: { content }, ...options });
-export const keyboard = (rows: readonly (readonly KeyboardButton[])[]): Keyboard => ({
-  kind: 'inline',
-  rows,
-});
+/** Lay out buttons in order. The last width repeats; the default is one button per row. */
+export function keyboard(
+  buttons: readonly KeyboardButton[],
+  perRow?: number | readonly number[],
+): Keyboard;
+export function keyboard(rows: Keyboard['rows']): Keyboard;
+export function keyboard(
+  buttons: readonly KeyboardButton[] | Keyboard['rows'],
+  perRow?: number | readonly number[],
+): Keyboard {
+  if (!Array.isArray(buttons)) bad('Keyboard requires an array of buttons or rows');
+  if (Array.isArray(buttons[0]) || (!buttons.length && perRow === undefined)) {
+    if (perRow !== undefined) bad('Specify row widths only for a flat button list');
+    return { kind: 'inline', rows: buttons as Keyboard['rows'] };
+  }
+  if (perRow !== undefined && typeof perRow !== 'number' && !Array.isArray(perRow))
+    bad('Keyboard row widths must be a number or an array');
+  const widths: readonly number[] = typeof perRow === 'number' ? [perRow] : (perRow ?? [1]);
+  if (!widths.length) bad('Keyboard requires at least one row width');
+  for (const width of widths) {
+    if (!Number.isInteger(width) || width < 1 || width > 5)
+      bad('A keyboard row width must be an integer from 1 to 5');
+  }
+  const flat = buttons as readonly KeyboardButton[];
+  const rows: KeyboardButton[][] = [];
+  for (let offset = 0; offset < flat.length;) {
+    const width = widths[Math.min(rows.length, widths.length - 1)]!;
+    rows.push(flat.slice(offset, offset + width));
+    offset += width;
+  }
+  return { kind: 'inline', rows };
+}
 export const button = {
   link: (label: string, url: string, options?: ButtonOptions): KeyboardButton => ({
     type: 'link',

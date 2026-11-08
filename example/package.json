@@ -17,14 +17,14 @@
     "format": "prettier --write src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md",
     "format:check": "prettier --check src tests scripts vendor/*.json vendor/*.md *.json *.mjs *.md",
     "test": "node scripts/tasks.mjs test",
-    "check": "node scripts/tasks.mjs check",
+    "check": "npm run verify:sdk && npm run typecheck && npm run lint && npm run format:check && npm run build && npm test",
     "verify:sdk": "node scripts/verify-sdk.mjs",
     "dev": "node scripts/dev.mjs",
     "test:dev": "node --test scripts/dev.test.mjs",
     "database:migrate": "node --env-file-if-exists=.env dist/migrate.js"
   },
   "dependencies": {
-    "dou-bot": "1.0.0-rc.1"
+    "dou-bot": "file:vendor/dou-bot-source.tgz"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
