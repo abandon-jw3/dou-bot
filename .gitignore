@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.test-build/
+coverage/
+work/
+*.tgz
+!example/vendor/dou-bot-source.tgz
+!website/vendor/dou-bot-source.tgz
+.env
+.env.*
+!.env.example

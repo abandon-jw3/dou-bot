@@ -1,0 +1,167 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  sdk:
+    name: SDK (${{ matrix.os }}, ${{ matrix.node.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node:
+          - label: minimum
+            version: 24.0.0
+          - label: development
+            versionFile: .nvmrc
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: framework
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node.version }}
+          node-version-file: ${{ matrix.node.versionFile }}
+          cache: npm
+          cache-dependency-path: framework/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci --ignore-scripts
+      - run: node scripts/check-repository.mjs
+      - run: npm run check
+      - run: npm run coverage
+      - name: Capacity and retention regression (two virtual hours)
+        run: npm run benchmark:capacity -- virtual 7200000 ci
+        timeout-minutes: 3
+      - name: Save capacity report
+        if: ${{ always() && hashFiles('framework/work/capacity-review/ci.json') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: capacity-${{ matrix.os }}-${{ matrix.node.label }}
+          path: framework/work/capacity-review/ci.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Sustained workload regression
+        run: npm run soak -- 30000
+        timeout-minutes: 2
+      - name: Save sustained workload report
+        if: ${{ always() && hashFiles('framework/work/soak-latest.json') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-${{ matrix.os }}-${{ matrix.node.label }}
+          path: framework/work/soak-latest.json
+          retention-days: 14
+          if-no-files-found: error
+  postgres:
+    name: PostgreSQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: dou_bot_test
+          POSTGRES_USER: dou_bot_test
+          POSTGRES_PASSWORD: offline-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dou_bot_test -d dou_bot_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_HOST: 127.0.0.1
+      TEST_DATABASE_PORT: 5432
+      TEST_DATABASE_USER: dou_bot_test
+      TEST_DATABASE_PASSWORD: offline-ci-only
+      TEST_DATABASE_NAME: dou_bot_test
+    defaults:
+      run:
+        working-directory: framework
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: framework/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run test:database
+  example:
+    name: Example (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: example
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: example/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+  docs:
+    name: Docs (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
+      - run: npm run check
+      - if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+      - if: runner.os == 'Linux'
+        run: npm run test:browser
+        env:
+          DOCS_QA_DIR: ${{ runner.temp }}/dou-bot-docs-qa
+      - if: runner.os == 'Linux' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: website/docs/.vitepress/dist
+  deploy:
+    name: Deploy documentation
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [sdk, postgres, example, docs]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

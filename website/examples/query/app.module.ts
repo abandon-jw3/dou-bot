@@ -1,0 +1,47 @@
+import { Arg, Args, Command, Controller, HelpModule, Module, Option, Rest, Slot } from 'dou-bot';
+import { City } from './city.decorator.ts';
+
+@Controller()
+export class QueryController {
+  @Command('查询', { aliases: ['查'], description: '演示无序参数解析，不查询实时天气' })
+  query(
+    @City() city: string,
+    @Slot('topic', { name: '主题', choices: ['天气', '空气质量'], required: true }) topic: string,
+    // Rest 收集未被位置参数、Slot 和 Option 消费的普通分词，保留顺序。
+    @Rest({ name: '备注' }) notes: string[],
+    @Option('page', { alias: 'p', type: 'integer', min: 1, default: 1 }) page: number,
+    @Option('detail', { alias: 'd', type: 'boolean', default: false }) detail: boolean,
+  ): string {
+    return JSON.stringify({ city, topic, notes, page, detail });
+  }
+
+  @Command('状态', { description: '将服务器别名统一为同一个名称' })
+  normalize(
+    @Slot('server', {
+      name: '服务器',
+      description: '双梦是梦江南的别名；不填时使用同一个默认服务器',
+      choices: ['梦江南', '双梦'],
+      default: '双梦',
+      normalize: (text) => (text === '双梦' ? '梦江南' : text),
+    })
+    server: string,
+  ): string {
+    return `服务器：${server}`;
+  }
+
+  @Command('echo', { description: '查看完整分词' })
+  echo(@Args() words: string[]): string {
+    return JSON.stringify(words);
+  }
+
+  @Command('repeat', { description: '演示显式数值转换' })
+  repeat(
+    @Arg(0, { required: true }) word: string,
+    @Arg(1, { type: 'integer', min: 1, max: 5, default: 1 }) count: number,
+  ): string {
+    // 仅声明 TypeScript 的 number 不会转换输入，转换由 type: integer 指定。
+    return Array.from({ length: count }, () => word).join(' ');
+  }
+}
+@Module({ imports: [HelpModule], controllers: [QueryController] })
+export class AppModule {}

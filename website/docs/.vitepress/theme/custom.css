@@ -1,0 +1,17 @@
+:root {
+  --vp-font-family-base:
+    'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+}
+
+.VPHero .text {
+  text-wrap: balance;
+}
+
+.VPHero .hero-phrase {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.VPHero .tagline {
+  text-wrap: pretty;
+}

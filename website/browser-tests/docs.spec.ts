@@ -1,0 +1,179 @@
+import { test, expect, type Page } from '@playwright/test';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+async function waitForClient(page: Page): Promise<void> {
+  // VitePress 在异步加载首个页面后才挂载 Vue；load 事件并不保证按钮已绑定事件。
+  // 等待锁定版本 Vue 的挂载标记，避免公网首次加载时点击到静态 HTML。
+  await page.waitForFunction(() => {
+    const app = document.querySelector('#app');
+    return app !== null && '__vue_app__' in app;
+  });
+}
+
+test('首页、快速开始、主题切换与手机导航', async ({ page, isMobile }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto('./');
+  await waitForClient(page);
+  await expect(page).toHaveTitle(/dou-bot/);
+  await expect(page.locator('h1')).toContainText('一个轻量化的机器人框架');
+  await page.locator('.VPHero').getByRole('link', { name: '快速开始', exact: true }).click();
+  await expect(page.locator('h1')).toHaveText('快速开始');
+  if (isMobile) {
+    await page.getByRole('button', { name: '目录', exact: true }).click();
+    await page.locator('.VPSidebar').getByRole('link', { name: '命令与帮助', exact: true }).click();
+    await expect(page.locator('h1')).toHaveText('命令与帮助');
+    await page.locator('.VPNavBarHamburger').click();
+  }
+  const appearance = page.getByRole('switch').filter({ visible: true }).first();
+  const initial = (await page.locator('html').getAttribute('class')) ?? '';
+  await appearance.click();
+  await expect
+    .poll(async () => (await page.locator('html').getAttribute('class')) ?? '')
+    .not.toBe(initial);
+  await page.reload();
+  await waitForClient(page);
+  await expect
+    .poll(async () => (await page.locator('html').getAttribute('class')) ?? '')
+    .not.toBe(initial);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth + 1,
+  );
+  expect(overflow).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+for (const query of [
+  '二次输入',
+  '管理员',
+  'UseGuards',
+  'Slot',
+  'OnAttachment',
+  'UseMiddleware',
+  'ContextValue',
+]) {
+  test(`本地搜索：${query}`, async ({ page }) => {
+    await page.goto('./');
+    await waitForClient(page);
+    await page.getByRole('button', { name: '搜索文档' }).click();
+    const input = page.locator('.VPLocalSearchBox input');
+    await input.fill(query);
+    const result = page.locator('.VPLocalSearchBox .result').first();
+    await expect(result).toBeVisible();
+    await expect(result).toContainText(new RegExp(query === '管理员' ? '管理' : query));
+    await result.click();
+    await expect(page).toHaveURL(/\/dou-bot\/(?:guide|api|examples)\//);
+    await expect(page.locator('h1')).toBeVisible();
+  });
+}
+
+test('附件和身份指南可以进入可运行示例', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto('guide/attachments.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('接收图片与文件');
+  await page.getByRole('link', { name: '运行完整附件示例', exact: true }).click();
+  await expect(page).toHaveURL(/examples\/attachments/);
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('h1')).toBeInViewport();
+  await expect(page.locator('.vp-doc')).toContainText('@OnAttachment');
+  await page.screenshot({
+    path: join(tmpdir(), `dou-bot-source-attachments-${info.project.name}.png`),
+    animations: 'disabled',
+  });
+  await page.goto('guide/identity.html');
+  await waitForClient(page);
+  await page.getByRole('link', { name: '运行身份与按钮示例', exact: true }).click();
+  await expect(page).toHaveURL(/examples\/identity/);
+  await expect(page.locator('.vp-doc')).toContainText('@UserId');
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('深层页面直接刷新、页内目录与代码复制', async ({ page, context, isMobile }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const response = await page.goto('guide/quick-start.html');
+  expect(response?.status()).toBe(200);
+  await page.reload();
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('快速开始');
+  await expect(page.getByRole('link', { name: '在 GitHub 上编辑此页' })).toHaveAttribute(
+    'href',
+    'https://github.com/abandon-jw3/dou-bot/edit/main/website/docs/guide/quick-start.md',
+  );
+  const code = page.locator('div[class*="language-sh"]').first();
+  if (!isMobile) await code.hover();
+  await code.locator('button.copy').click({ force: true });
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain('cd dou-bot/example');
+  await page.goto('guide/guards.html#模块统一配置');
+  await waitForClient(page);
+  await expect(page.locator('#模块统一配置')).toBeInViewport();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
+  await page.goto('guide/project.html');
+  await waitForClient(page);
+  await expect(page.getByRole('link', { name: '完整业务示例', exact: true })).toHaveAttribute(
+    'href',
+    'https://github.com/abandon-jw3/dou-bot/tree/main/example',
+  );
+});
+
+test('上下文与容量指南使用当前公开 API', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('guide/context.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('上下文中间件');
+  await page.getByRole('link', { name: '上下文示例', exact: true }).click();
+  await expect(page).toHaveURL(/examples\/context/);
+  await expect(page.locator('.vp-doc')).toContainText('@ContextValue');
+  await page.goto('guide/capacity.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('容量与运行监测');
+  await expect(page.locator('.vp-doc')).toContainText('snapshot.inbound');
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
+  await page.screenshot({
+    path: join(tmpdir(), `dou-bot-source-capacity-${info.project.name}.png`),
+    animations: 'disabled',
+  });
+  expect(errors).toEqual([]);
+});
+
+test('新版本导航、多机器人、数据库和诊断索引', async ({ page, isMobile }) => {
+  await page.goto('./');
+  await waitForClient(page);
+  await expect(page.locator('.vp-doc')).toContainText('1.0.0');
+  await page.goto('guide/multi-bot.html');
+  await waitForClient(page);
+  await expect(page.locator('h1')).toHaveText('多机器人与主动发送');
+  await page.getByRole('link', { name: '多机器人通知示例', exact: true }).click();
+  await expect(page).toHaveURL(/\/examples\/multi-bot\.html$/);
+  await expect(page.locator('.vp-doc')).toContainText('NotificationsModule');
+  await page.goto('guide/database.html');
+  await waitForClient(page);
+  await expect(page.locator('.vp-doc')).toContainText('migrateDatabase');
+  await page.goto('guide/diagnostics.html');
+  await waitForClient(page);
+  await expect(page.locator('.vp-doc')).toContainText('p95UpperMs');
+  await page.getByRole('link', { name: '类型索引', exact: true }).click();
+  await expect(page.locator('#root-DiagnosticsOptions')).toBeInViewport();
+  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('1.0.0');
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+  ).toBe(false);
+});

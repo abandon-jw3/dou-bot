@@ -1,0 +1,172 @@
+import { QQClient, QQApi } from '../contracts.js';
+import type {
+  BotUser,
+  MessageInput,
+  MessageTarget,
+  QQMessagePayload,
+  QQReplyFields,
+  QQUploadImagePayload,
+  RequestOptions,
+  SendOptions,
+  SendResult,
+  UploadedImage,
+} from '../contracts.js';
+import type { ResolvedOptions } from '../core/config.js';
+import { FrameworkError } from '../core/errors.js';
+import { isRecord } from '../core/utils.js';
+import { assertKeyboardScene, copyTarget, prepareMessage, targetKey } from '../message/index.js';
+import type { PreparedMessage } from '../message/index.js';
+import { HttpQQApi } from './api.js';
+import { systemClock } from '../core/clock.js';
+import type { Clock } from '../core/clock.js';
+
+export class DefaultQQClient extends QQClient {
+  constructor(
+    override readonly api: QQApi,
+    private readonly options: ResolvedOptions,
+    private readonly clock: Clock = systemClock,
+  ) {
+    super();
+  }
+  override getSelf(options?: RequestOptions): Promise<BotUser> {
+    return this.api.getSelf(options);
+  }
+  override async sendMessage(
+    targetInput: MessageTarget,
+    input: MessageInput,
+    options: SendOptions = {},
+  ): Promise<SendResult> {
+    if (!isRecord(options))
+      throw new FrameworkError('HANDLER_CONTRACT', 'Send options must be an object');
+    // Keep one cancellation source across upload and send, even if the caller reuses its object.
+    options = { ...options };
+    const target = copyTarget(targetInput);
+    const message = prepareMessage(input, this.options.api.maxUploadBytes);
+    return this.sendPreparedMessage(target, message, options);
+  }
+  /** Internal path: target/message/options are owned snapshots; preserve bytes through upload and send. */
+  async sendPreparedMessage(
+    target: MessageTarget,
+    message: PreparedMessage,
+    options: SendOptions = {},
+  ): Promise<SendResult> {
+    const reply: QQReplyFields = options.reply
+      ? { msg_id: options.reply.messageId, msg_seq: options.reply.sequence }
+      : {};
+    let payload: QQMessagePayload;
+    if (message.kind === 'text') payload = { ...reply, msg_type: 0, content: message.content };
+    else if (message.kind === 'markdown')
+      payload = {
+        ...reply,
+        msg_type: 2,
+        markdown: { content: message.content },
+        ...(message.keyboard === undefined ? {} : { keyboard: message.keyboard }),
+      };
+    else {
+      const source = message.source;
+      const uploaded =
+        typeof source === 'string' || source instanceof Uint8Array
+          ? await this.uploadPreparedImage(target, source, options)
+          : source;
+      if (
+        uploaded.appId !== this.options.appId ||
+        uploaded.apiOrigin !== this.options.api.baseUrl ||
+        targetKey(uploaded.target) !== targetKey(target)
+      )
+        throw new FrameworkError(
+          'HANDLER_CONTRACT',
+          'Uploaded image belongs to a different bot, origin or target',
+        );
+      if (uploaded.expiresAt !== undefined && uploaded.expiresAt <= this.clock.wallTime())
+        throw new FrameworkError('HANDLER_CONTRACT', 'Uploaded image has expired');
+      payload = {
+        ...reply,
+        msg_type: 7,
+        content: message.caption || ' ',
+        media: { file_info: uploaded.fileInfo },
+      };
+    }
+    if (this.api instanceof HttpQQApi) {
+      return this.api.sendPrepared(
+        target.scene,
+        target.scene === 'group' ? target.groupId : target.userId,
+        payload,
+        options,
+      );
+    }
+    assertKeyboardScene(payload.keyboard, target.scene);
+    return target.scene === 'group'
+      ? this.api.sendGroupMessage(target.groupId, payload, options)
+      : this.api.sendPrivateMessage(target.userId, payload, options);
+  }
+  override async uploadImage(
+    targetInput: MessageTarget,
+    sourceInput: string | Uint8Array,
+    options?: RequestOptions,
+  ): Promise<UploadedImage> {
+    const target = copyTarget(targetInput);
+    const prepared = prepareMessage(
+      { kind: 'image', source: sourceInput },
+      this.options.api.maxUploadBytes,
+    );
+    if (
+      prepared.kind !== 'image' ||
+      (typeof prepared.source !== 'string' && !(prepared.source instanceof Uint8Array))
+    )
+      throw new FrameworkError('HANDLER_CONTRACT', 'Expected image bytes or URL');
+    return this.uploadPreparedImage(target, prepared.source, options);
+  }
+  /** Inputs here already belong to the SDK snapshot; do not copy image bytes a second time. */
+  async uploadPreparedImage(
+    target: MessageTarget,
+    source: string | Uint8Array,
+    options?: RequestOptions,
+  ): Promise<UploadedImage> {
+    if (
+      source instanceof Uint8Array &&
+      (!source.length || source.length > this.options.api.maxUploadBytes)
+    )
+      throw new FrameworkError('RESOURCE_LIMIT', 'Image size is outside the configured limit');
+    const payload: QQUploadImagePayload =
+      typeof source === 'string'
+        ? { file_type: 1, srv_send_msg: false, url: source }
+        : {
+            file_type: 1,
+            srv_send_msg: false,
+            file_data: Buffer.from(source.buffer, source.byteOffset, source.byteLength).toString(
+              'base64',
+            ),
+          };
+    const started = this.clock.wallTime();
+    const file =
+      this.api instanceof HttpQQApi
+        ? await this.api.uploadPrepared(
+            target.scene,
+            target.scene === 'group' ? target.groupId : target.userId,
+            payload,
+            options,
+          )
+        : target.scene === 'group'
+          ? await this.api.uploadGroupImage(target.groupId, payload, options)
+          : await this.api.uploadPrivateImage(target.userId, payload, options);
+    return Object.freeze({
+      kind: 'uploaded-image',
+      appId: this.options.appId,
+      apiOrigin: this.options.api.baseUrl,
+      target: Object.freeze({ ...target }),
+      fileInfo: file.file_info,
+      ...(file.file_uuid === undefined ? {} : { fileUuid: file.file_uuid }),
+      ...(file.ttl === undefined ? {} : { expiresAt: started + file.ttl * 1000 }),
+    });
+  }
+  override deleteMessage(
+    targetInput: MessageTarget,
+    messageId: string,
+    options?: RequestOptions,
+  ): Promise<void> {
+    const target = copyTarget(targetInput);
+    return target.scene === 'group'
+      ? this.api.deleteGroupMessage(target.groupId, messageId, options)
+      : this.api.deletePrivateMessage(target.userId, messageId, options);
+  }
+}
