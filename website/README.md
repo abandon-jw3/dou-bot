@@ -20,7 +20,7 @@ npm run test:browser
 
 ## SDK 来源
 
-- 本站当前使用仓库源码打包的 `dou-bot@1.1.0` 快照包（`vendor/dou-bot-source.tgz`）。[来源记录](vendor/README.md) 包含版本和完整性验证方式。
+- 本站通过 npm registry 精确安装 `dou-bot@1.1.0`。[来源记录](vendor/README.md) 包含版本和完整性验证方式。
 - API 索引从实际安装的公开声明生成：`npm run api:generate`。
 - 验证尚未发布的新 API 时，在 framework 执行 `node scripts/prepare-user-sdk.mjs`，在 website 执行 `npm install --save-exact --save-dev --ignore-scripts ./vendor/dou-bot-source.tgz`，更新索引并验证。
 - 更新时核对实际 registry 版本与完整性，再同步锁文件和页面版本。未发布功能的验证与正式依赖更新分开进行。
