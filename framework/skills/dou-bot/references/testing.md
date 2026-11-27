@@ -46,17 +46,18 @@ await test('查询命令解析参数', async (t) => {
 
 每条新事件使用不同 ID，只在测试重复投递时复用。常用事件字段：
 
-| 场景     | 数据                                                                                                          |
-| -------- | ------------------------------------------------------------------------------------------------------------- |
-| 私聊     | C2C_MESSAGE_CREATE；d.id、d.author.user_openid、d.content                                                     |
-| 群聊     | GROUP_MESSAGE_CREATE 或 GROUP_AT_MESSAGE_CREATE；另带 d.group_openid、d.author.member_openid                  |
-| 群角色   | 当前消息 d.author.member_role：member/admin/owner，也覆盖缺失情况                                             |
-| 群按钮   | INTERACTION_CREATE；d.id、chat_type:1、group_openid、group_member_openid、data.resolved.button_id/button_data |
-| 私聊按钮 | INTERACTION_CREATE；chat_type:2、user_openid 及对应按钮数据                                                   |
+| 场景     | 数据                                                                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 私聊     | C2C_MESSAGE_CREATE；d.id、d.author.user_openid、d.content                                                                                       |
+| 群聊     | GROUP_MESSAGE_CREATE 或 GROUP_AT_MESSAGE_CREATE；另带 d.group_openid、d.author.member_openid                                                    |
+| 群角色   | 当前消息 d.author.member_role：member/admin/owner，也覆盖缺失情况                                                                               |
+| 群按钮   | INTERACTION_CREATE；顶层 `id`（被动回复 `event_id`）、d.id、chat_type:1、group_openid、group_member_openid、data.resolved.button_id/button_data |
+| 私聊按钮 | INTERACTION_CREATE；顶层 `id`（被动回复 `event_id`）、chat_type:2、user_openid 及对应按钮数据                                                   |
 
 ## 测试多账号和追问
 
 - 多账号用 `createMultiTestApplication(root, { bots: [{ appId: 'a' }, { appId: 'b' }] })`。
+- `createTestApplication` 与 `createMultiTestApplication` 同样支持 `providers`、`middlewares` 和 `onHandlerError`（与生产入口一致）。
 - dispatch/enqueue 的第一个参数为 appId；检查 messages 中的 appId 与 target，确保发送方正确。
 - 验证同事件 ID 按账号隔离，以及停止一个账号后另一个仍工作；见 [通知测试](../assets/notifications-module.test.ts)。
 - `createTestApplication` 是单账号测试视图；其中 app.client 是测试便利入口，不是生产 Application 的成员。
@@ -65,17 +66,17 @@ await test('查询命令解析参数', async (t) => {
 
 ## 按症状排查
 
-| 症状                        | 优先检查                                              |
-| --------------------------- | ----------------------------------------------------- |
-| 装饰器或注入失败            | 编译配置、值导入、providers/imports/exports           |
-| 命令没有回复                | Controller 注册、前缀、实际事件类型、Guard 和 onError |
-| 加 Slot/Option 后旧输入报错 | 正文是否需要 Rest，输入是否歧义或重复                 |
-| 管理员操作被拒绝            | 当前事件是否有角色；按钮权限不能当作角色资料          |
-| prompt 一直等待             | 账号、会话、用户是否一致，QQ 是否投递了回答           |
-| 按钮已确认但没有结果        | OnButton ID、Guard/冷却、业务发送和 QQ 错误           |
-| INVALID_STATE               | 重复等待、应用关闭或复用了已结束的上下文              |
-| RESOURCE_LIMIT 或排队增长   | 请求是否迟迟未结束、等待数量与配置容量                |
-| 导出或配置类型不存在        | `npm ls dou-bot`、锁文件与实际安装包声明              |
+| 症状                        | 优先检查                                                                           |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| 装饰器或注入失败            | 编译配置、值导入、providers/imports/exports                                        |
+| 命令没有回复                | Controller 注册、前缀、实际事件类型、Guard 和 onError                              |
+| 加 Slot/Option 后旧输入报错 | 正文是否需要 Rest，输入是否歧义或重复                                              |
+| 管理员操作被拒绝            | 当前事件是否有角色；按钮权限不能当作角色资料                                       |
+| prompt 一直等待             | 账号、会话、用户是否一致，QQ 是否投递了回答                                        |
+| 按钮已确认但没有结果        | OnButton 模式/ID、Guard/冷却、事件 `id`（`event_id`）、`onHandlerError` 和 QQ 错误 |
+| INVALID_STATE               | 重复等待、应用关闭、复用了已结束上下文，或按钮缺少 `event_id` 却调用 `reply()`     |
+| RESOURCE_LIMIT 或排队增长   | 请求是否迟迟未结束、等待数量与配置容量                                             |
+| 导出或配置类型不存在        | `npm ls dou-bot`、锁文件与实际安装包声明                                           |
 
 记录错误阶段、错误码和必要的 QQ trace；回复聊天用户时使用可理解的说明，不回显凭证、原始事件或堆栈。
 

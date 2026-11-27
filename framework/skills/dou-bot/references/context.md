@@ -16,10 +16,11 @@
 
 ## 注册中间件
 
-- 将中间件注册为 Provider，用 `@UseMiddleware(MiddlewareClass)` 挂到模块、控制器或方法；模块也可配置 `middlewares`。
+- 将中间件注册为 Provider，用 `@UseMiddleware(MiddlewareClass)` 挂到模块、控制器或方法；模块也可配置 `middlewares`；应用可通过 `AppOptions.middlewares` 为所有命令、按钮和附件路由统一挂载全局中间件（从根模块容器解析）。
 - `prepare(ctx)` 支持 `void` 或 `Promise<void>`。必需的数据可先 await 查询再 set；按需查询用 provide。
 - 支持命令、按钮、附件处理器；不作用于原始 `@On`。
-- 多层中间件累加：模块配置 → 模块类 → 控制器类 → 方法。模块只覆盖自己的 controllers。
+- 多层中间件累加：**应用全局配置 → 模块配置 → 模块类 → 控制器类 → 方法**。模块级配置只覆盖自己的 controllers。
+- 常见用法：在全局中间件中准备只读请求作用域（如 `appId/scene/groupId/userId/target`），并封装自定义 `@Scope()` 包装 `@ContextValue(SCOPE_KEY)` 注入控制器。
 - 中间件在 Guard 前运行；准备失败不会进入业务处理器。权限判断仍写在 Guard 中。
 - 中间件只准备数据，不返回消息，也不调用 `next()`。
 

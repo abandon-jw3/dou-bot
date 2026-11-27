@@ -34,7 +34,8 @@ description: '使用 dou-bot 开发 QQ 官方群聊和私聊机器人。在应�
 
 - 用传统装饰器和构造元数据；注入类保留值导入。新项目的编译配置见项目指南。
 - Provider 在多个账号和请求之间共享；当前账号、用户、群和 Context 通过方法参数传递。
-- 命令回复用返回值或 `ctx.reply()`；后台通知保存完整 `ctx.target`，通过 `MessageSender` 发送。
+- 命令、附件和按钮回复优先直接返回消息或调用 `ctx.reply()`（按钮使用 `event_id` 被动回复）；后台通知保存完整 `ctx.target`，通过 `MessageSender` 发送。
+- 全局基础设施模块使用 `@Module({ global: true })`，应用级配置、全局中间件和统一异常回复使用 `AppOptions.providers` / `middlewares` / `onHandlerError`，避免静态配置单例和逐方法 `try/catch`。
 - 同一真实群在不同机器人下的 OpenID 不能互换；业务记录按账号、场景和 OpenID 区分。
 - PostgreSQL 为必需配置，首次显式迁移；业务表和任务持久化由应用管理。
 - `Slot.match/normalize` 只做同步转换；异步查询放 Service 或 `prepare/provide`。

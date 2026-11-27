@@ -16,14 +16,16 @@
 
 ## 模块与服务
 
-| 内容                       | 放在哪里                                 |
-| -------------------------- | ---------------------------------------- |
-| 命令、按钮、文件接收入口   | Controller，并注册到模块的 `controllers` |
-| 查询、渲染、文件处理等业务 | Service，并注册到 `providers`            |
-| 跨模块共享服务             | 提供方 `exports`，使用方 `imports`       |
-| 接口配置或外部依赖         | Symbol 令牌、`@Inject()` 和 Provider     |
+| 内容                       | 放在哪里                                                        |
+| -------------------------- | --------------------------------------------------------------- |
+| 命令、按钮、文件接收入口   | Controller，并注册到模块的 `controllers`                        |
+| 查询、渲染、文件处理等业务 | Service，并注册到 `providers`                                   |
+| 跨模块共享服务             | 提供方 `exports`，使用方 `imports`；基础设施可用 `global: true` |
+| 启动前已就绪的配置或全局值 | `AppOptions.providers`（或模块内 Symbol 令牌、`@Inject()`）     |
+| 全路由上下文准备与异常转换 | `AppOptions.middlewares` 与 `AppOptions.onHandlerError`         |
 
 - 注入类用值导入，接口和其他类型用 `import type`。
+- 基础设施模块标记 `@Module({ global: true })` 并在根模块导入一次后，其导出项对全部业务模块可见，无需重复 `imports`。
 - Provider、Guard、中间件通常是共享单例；不要在字段上保存当前用户、群或 ctx。
 - 可注入 `BotManager`、`MessageSender`、`GroupRoutes`、`Database`、`LOGGER`。
 - 当前账号 API 用 `ctx.client`；后台选择账号用 `BotManager`，不直接注入 `QQClient/QQApi`。
@@ -47,6 +49,10 @@ const app = await AppFactory.create(AppModule, {
   },
   bots: [{ appId: process.env.QQ_APP_ID!, secret: process.env.QQ_APP_SECRET! }],
   commands: { invalidInput: 'reply' },
+  // 可选：注入应用级配置、全局上下文中间件和统一异常钩子
+  // providers: [{ provide: AppConfig, useValue: config }],
+  // middlewares: [ScopeMiddleware],
+  // onHandlerError: (error) => (error instanceof BusinessError ? { reply: error.message, report: false } : { reply: '操作失败，请稍后重试。' }),
 });
 const close = () => {
   app.close().catch(() => {

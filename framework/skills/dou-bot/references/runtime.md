@@ -48,8 +48,8 @@
 
 ## 发送回复和图片
 
-- 命令、附件处理器返回字符串或 MessageInput，自动引用当前消息回复。
-- 多步回复使用 `await ctx.reply(...)` 并返回 void；`ctx.send(...)` 为普通发送，受 QQ 权限和频控限制。
+- 命令、附件和按钮处理器返回字符串或 MessageInput，自动发送被动回复（命令/附件使用 `msg_id`，按钮使用 `event_id`）。
+- 多步回复使用 `await ctx.reply(...)` 并返回 void；`ctx.send(...)` 为普通主动发送，受 QQ 权限和频控限制。
 - 常用构建器：text、image、markdown、keyboard、button，均从 `dou-bot` 导入。
 - 图片可用 HTTP(S) URL、有效二进制或 UploadedImage。业务渲染服务返回图片后，用 `image(...)` 构造消息。
 - UploadedImage 受机器人和目标限制，不能直接跨账号或跨群复用。
@@ -57,7 +57,7 @@
 ## 添加确认按钮
 
 ```ts
-import { Command, Controller, Ctx, OnButton, button, keyboard, markdown } from 'dou-bot';
+import { Command, Controller, Ctx, OnButton, Route, button, keyboard, markdown } from 'dou-bot';
 import type { ButtonContext } from 'dou-bot';
 
 @Controller()
@@ -65,24 +65,25 @@ export class ConfirmationController {
   @Command('确认')
   ask() {
     return markdown('是否确认？', {
-      keyboard: keyboard([button.callback('confirm', '确认', 'continue')]),
+      keyboard: keyboard([button.callback('confirm-1', '确认', 'continue')]),
     });
   }
 
-  @OnButton('confirm')
-  async confirm(@Ctx() ctx: ButtonContext): Promise<void> {
+  @OnButton(/^confirm-/)
+  confirm(@Route() buttonId: string, @Ctx() ctx: ButtonContext): string | undefined {
     if (ctx.data !== 'continue') return;
-    await ctx.send('已确认。');
+    return `已确认（${buttonId}）。`;
   }
 }
 ```
 
 - 注册到模块的 controllers。真实订单或管理操作还需检查操作者、当前业务状态和授权。
-- callback 按钮匹配 OnButton 的 ID；`ctx.data` 是业务字符串，不自动解析 JSON，也不是权限凭证。
+- `@OnButton` 支持单个 ID、ID 数组或 `RegExp`（先匹配精确 ID，再按注册顺序匹配正则），可用 `@Route()` 读取实际 `buttonId`；`ctx.data` 是业务字符串，不自动解析 JSON，也不是权限凭证。
+- 按钮处理器直接返回消息或调用 `ctx.reply()` 会通过事件 `event_id` 发送被动回复（缺少 `event_id` 时报 `INVALID_STATE`）；需要主动发送时使用 `ctx.send()` 并返回 `void`。
 - link 打开链接；command 发送包含应用前缀的命令，不进入 OnButton。
 - 群管理者按钮用 `permission: { type: 'managers' }`，仅发到群聊；不据此推断操作者的 Role。
 - 默认自动确认只表示“收到点击”。manual 模式进入处理器后调用 `await ctx.ack()`；Guard/冷却拒绝时框架会补偿确认。
-- ButtonContext 有 send、ack，没有 reply、prompt；需要追问时用 command 按钮引导进入命令。
+- ButtonContext 有 `reply`、`send`、`ack`，没有 `prompt`；需要追问时用 command 按钮引导进入命令。
 - interactionId 用于确认点击，不能当作普通消息的 msg_id。
 
 ### 一维按钮数组自动分行
@@ -102,4 +103,5 @@ export class ConfirmationController {
 - `@On('事件名')` 适合观察 QQ 原始事件，参数使用 `@Ctx() ctx: QQEventContext`，返回 void。
 - 原始 On 不执行入口 Guard、中间件或冷却，也没有消息 reply；自动处理文件用 OnAttachment。
 - 外部请求传入 `ctx.signal` 并等待完成；执行结束后不再使用旧 Context。
-- 已知业务失败回复简短说明；未知异常交给 onError 或日志，不将凭证、完整响应或堆栈发到聊天中。
+- 异常处理推荐在应用入口配置 `AppOptions.onHandlerError(error, context)`：返回消息或 `{ reply?, report? }` 统一映射业务提示（`report: false`）与通用兜底文案，避免在每个控制器重复 `try/catch`；未知异常仍交给 `onError` 或日志，不将凭证、完整响应或堆栈发到聊天中。
+- 若处理器内已手动 `ctx.reply()`，框架不会再发送 `onHandlerError` 的 `reply` 避免重复回复。
