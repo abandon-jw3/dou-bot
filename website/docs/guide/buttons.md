@@ -6,11 +6,11 @@
 
 ## 三种按钮
 
-| 构建函数                                    | 行为                             |
-| ------------------------------------------- | -------------------------------- |
-| button.link(label, url, options?)           | 打开 HTTP(S) 链接                |
-| button.command(label, command, options?)    | 填入命令；`enter: true` 直接发送 |
-| button.callback(id, label, data?, options?) | 触发对应 `@OnButton(id)`         |
+| 构建函数                                    | 行为                                        |
+| ------------------------------------------- | ------------------------------------------- |
+| button.link(label, url, options?)           | 打开 HTTP(S) 链接                           |
+| button.command(label, command, options?)    | 填入命令；`enter: true` 直接发送            |
+| button.callback(id, label, data?, options?) | 触发匹配的 `@OnButton(id \| RegExp \| ids)` |
 
 - `style`：secondary（默认）或 primary。
 - `visitedLabel`：点击后的文案，默认与 label 相同。
@@ -31,7 +31,8 @@ keyboard(btns); // 默认每行 1 个
 - 默认自动 ACK，表示已收到点击。
 - 手动模式设置 `interactions.acknowledge: 'manual'`，处理器内 `await ctx.ack()`。
 - Guard 或冷却阻止手动模式的处理器时，框架补偿确认。
-- 处理器返回 `void`，回复使用 `ctx.send()`；按钮没有 reply/prompt。
+- `@OnButton` 支持单个 ID、ID 数组或 `RegExp`（先匹配精确 ID，再按注册顺序匹配正则），可通过 `@Route()` 读取实际 `buttonId`。
+- 处理器可直接返回字符串或消息对象，或调用 `ctx.reply()` 通过按钮事件 `event_id` 发送被动回复；也可返回 `void` 并按需使用 `ctx.send()` 主动发送。按钮不提供 `prompt()`。
 - ACK 不表示业务成功，interactionId 也不是可回复的消息 ID。
 
 ## 限制点击者

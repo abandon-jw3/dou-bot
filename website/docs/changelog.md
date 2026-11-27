@@ -1,5 +1,14 @@
 # 更新日志
 
+## 1.1.0
+
+面向大型多模块机器人应用的开发体验与架构精简升级：
+
+- **按钮被动回复与模式路由**：`ButtonContext.reply()` 与 `@OnButton` 返回值支持基于 `event_id` 的被动回复；`@OnButton` 支持 `string | RegExp | readonly string[]`；`@Command` 支持 `string | readonly string[]`；新增 `@Route()` 注入当前命中的规范命令名或按钮 ID。
+- **全局异常钩子**：`AppOptions.onHandlerError` 统一拦截命令、按钮和附件处理器异常，可按错误类型决定用户回复文案与是否上报。
+- **参数绑定顺序优化**：`@Slot()` 先于 `@Arg()` 与 `@Rest()` 匹配，剩余位置参数可直接按 `@Arg(0)` 取值。
+- **全局模块与应用级扩展**：新增 `@Module({ global: true })`、`AppOptions.providers` 与 `AppOptions.middlewares`，消除基础设施模块重复导入和静态配置单件。
+
 ## 1.0.0
 
 首个正式版本，提供面向 QQ 官方群聊和私聊的轻量 TypeScript 机器人框架：

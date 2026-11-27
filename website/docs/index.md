@@ -28,10 +28,10 @@ features:
 
 ## 创建你的第一个机器人
 
-**本手册适用于 dou-bot 1.0.0。** 在应用目录安装此版本，或从配套示例开始。
+**本手册适用于 dou-bot 1.1.0。** 在应用目录安装此版本即可开始。
 
 ```sh
-npm install --save-exact dou-bot@1.0.0
+npm install --save-exact dou-bot@1.1.0
 ```
 
 - 运行环境：Node.js **24.x**，最低 **24.0.0**。

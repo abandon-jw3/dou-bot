@@ -19,6 +19,8 @@
 
 - 模块统一权限用 `guards`，见 [Guard 指南](./guards.md#模块统一配置)。
 - 执行前的数据准备用 `middlewares`，见 [上下文中间件](./context.md)。
+- 基础设施模块可声明 `global: true`，在根模块 `imports` 中引入一次后，其 `exports` 对所有业务模块可见，无需重复导入。
+- 应用启动前已就绪的配置对象或全局依赖可直接通过 `AppOptions.providers` 注册到根容器。
 
 ## Provider 的几种写法
 

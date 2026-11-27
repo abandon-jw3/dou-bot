@@ -37,6 +37,7 @@ const required = [
   'Option',
   'Slot',
   'Rest',
+  'Route',
   'UseGuards',
   'UseMiddleware',
   'ContextValue',

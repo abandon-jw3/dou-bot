@@ -9,7 +9,7 @@ import { createAttachmentsProbe } from './attachments-probe.js';
 const appId = process.env.QQ_APP_ID;
 const secret = process.env.QQ_APP_SECRET;
 if (!appId || !secret)
-  throw new Error('Configure example/.env in the repository before the attachment probe.');
+  throw new Error('Configure framework/.env in the repository before the attachment probe.');
 const nonce = randomBytes(3).toString('hex');
 const output = resolve('work', 'live-attachments');
 mkdirSync(output, { recursive: true });

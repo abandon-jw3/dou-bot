@@ -17,6 +17,9 @@
 | diagnostics           | 默认关闭，见 [性能观测](./diagnostics.md)                     |
 | context / prompts     | 上下文数据与对话等待，见下表                                  |
 | logger / onError      | 日志实现与同步/异步错误回调                                   |
+| providers             | 应用级 Provider（如启动前加载的配置对象），对全部模块可见     |
+| middlewares           | 应用级全局上下文中间件，自动应用于全部命令、按钮和附件路由    |
+| onHandlerError        | 统一处理器异常钩子，返回消息或 `{ reply?, report? }`          |
 
 ## 账号配置
 

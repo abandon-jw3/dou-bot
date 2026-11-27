@@ -29,11 +29,11 @@
 ## 注册与作用范围
 
 - 中间件作为普通 Provider 注册，可注入业务 Service。
-- UseMiddleware 可放在模块类、控制器类或处理方法上；模块也可配置 middlewares。
-- 顺序：模块配置 → 模块类 → 控制器类 → 方法；规则不自动去重。
+- UseMiddleware 可放在模块类、控制器类或处理方法上；模块也可配置 middlewares；应用可通过 `AppOptions.middlewares` 为所有非事件路由统一挂载全局中间件（从根模块容器解析）。
+- 顺序：应用全局配置 → 模块配置 → 模块类 → 控制器类 → 方法；规则不自动去重。
 - 模块只覆盖自己的 controllers，不传播到 imports。
 - 支持 Command、OnButton、OnAttachment；原始 On 不执行中间件。
-- 中间件只准备数据；权限判断用 Guard，消息回复放在处理器中。
+- 中间件只准备数据；权限判断用 Guard，消息回复放在处理器中；统一异常转换使用 `AppOptions.onHandlerError`。
 
 ## 数据与生命周期
 

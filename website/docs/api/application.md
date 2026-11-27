@@ -40,7 +40,8 @@ AppFactory.create(root: Type, options: AppOptions): Promise<Application>
 
 ## Module 与 Provider
 
-- ModuleMetadata 支持 imports、providers、controllers、exports、guards、middlewares。
+- ModuleMetadata 支持 imports、providers、controllers、exports、guards、middlewares、global。
+- 设置 `global: true` 后，模块在根模块导入一次即可让导出项对全部模块可见；启动前已就绪的配置值或全局中间件也可直接通过 `AppOptions.providers` / `AppOptions.middlewares` 注册，异常可通过 `AppOptions.onHandlerError` 统一转为回复或上报决策。
 - 支持类、useValue、useClass、异步 useFactory；详见 [模块](../guide/modules.md)。
 - 内置令牌：BotManager、MessageSender、GroupRoutes、Database、LOGGER。
 - QQClient、QQApi 不作为共享注入令牌；通过选定账号获取。

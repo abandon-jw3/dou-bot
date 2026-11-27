@@ -116,7 +116,7 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   await code.locator('button.copy').click({ force: true });
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-    .toContain('cd dou-bot/example');
+    .toContain('dou-bot@1.1.0');
   await page.goto('guide/guards.html#模块统一配置');
   await waitForClient(page);
   await expect(page.locator('#模块统一配置')).toBeInViewport();
@@ -125,9 +125,9 @@ test('深层页面直接刷新、页内目录与代码复制', async ({ page, co
   ).toBe(false);
   await page.goto('guide/project.html');
   await waitForClient(page);
-  await expect(page.getByRole('link', { name: '完整业务示例', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: '完整 hello 示例', exact: true })).toHaveAttribute(
     'href',
-    'https://github.com/abandon-jw3/dou-bot/tree/main/example',
+    /examples\/hello\.html$/,
   );
 });
 
@@ -157,7 +157,7 @@ test('上下文与容量指南使用当前公开 API', async ({ page }, info) =>
 test('新版本导航、多机器人、数据库和诊断索引', async ({ page, isMobile }) => {
   await page.goto('./');
   await waitForClient(page);
-  await expect(page.locator('.vp-doc')).toContainText('1.0.0');
+  await expect(page.locator('.vp-doc')).toContainText('1.1.0');
   await page.goto('guide/multi-bot.html');
   await waitForClient(page);
   await expect(page.locator('h1')).toHaveText('多机器人与主动发送');
@@ -172,7 +172,7 @@ test('新版本导航、多机器人、数据库和诊断索引', async ({ page,
   await expect(page.locator('.vp-doc')).toContainText('p95UpperMs');
   await page.getByRole('link', { name: '类型索引', exact: true }).click();
   await expect(page.locator('#root-DiagnosticsOptions')).toBeInViewport();
-  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('1.0.0');
+  if (!isMobile) await expect(page.locator('.VPNavBar')).toContainText('1.1.0');
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
   ).toBe(false);

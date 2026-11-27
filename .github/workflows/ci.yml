@@ -94,27 +94,6 @@ jobs:
           cache-dependency-path: framework/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm run test:database
-  example:
-    name: Example (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: example
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: example/package-lock.json
-      - run: npm install --global npm@11.19.0
-      - run: npm ci --ignore-scripts
-      - run: npm run check
   docs:
     name: Docs (${{ matrix.os }})
     strategy:
@@ -152,7 +131,7 @@ jobs:
   deploy:
     name: Deploy documentation
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [sdk, postgres, example, docs]
+    needs: [sdk, postgres, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,6 +1,6 @@
 # 文档站维护
 
-面向新建机器人项目，介绍 **dou-bot 1.0.0**，包含按钮布局、AppFactory、多账号、PostgreSQL 与性能观测。
+面向新建机器人项目，介绍 **dou-bot 1.1.0**，包含命令/按钮路由、全局模块与异常钩子、AppFactory、多账号、PostgreSQL 与性能观测。
 
 ## 预览与检查
 
@@ -20,9 +20,9 @@ npm run test:browser
 
 ## SDK 来源
 
-- 本站通过 npm registry 精确安装 `dou-bot@1.0.0`。[来源记录](vendor/README.md) 包含版本和完整性验证方式。
+- 本站当前使用仓库源码打包的 `dou-bot@1.1.0` 快照包（`vendor/dou-bot-source.tgz`）。[来源记录](vendor/README.md) 包含版本和完整性验证方式。
 - API 索引从实际安装的公开声明生成：`npm run api:generate`。
-- 验证尚未发布的新 API 时，才在 framework 执行 `node scripts/prepare-user-sdk.mjs`，在 example 执行 `npm install --save-exact --ignore-scripts ./vendor/dou-bot-source.tgz`，在 website 执行同一命令并加 `--save-dev`，更新索引并验证。
+- 验证尚未发布的新 API 时，在 framework 执行 `node scripts/prepare-user-sdk.mjs`，在 website 执行 `npm install --save-exact --save-dev --ignore-scripts ./vendor/dou-bot-source.tgz`，更新索引并验证。
 - 更新时核对实际 registry 版本与完整性，再同步锁文件和页面版本。未发布功能的验证与正式依赖更新分开进行。
 
 ## 编写方式

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import { runNode, root, repositoryRoot } from './paths.mjs';
+import { runNode, root } from './paths.mjs';
 const name = process.argv[2];
 if (
   ![
@@ -59,9 +59,7 @@ await runNode([
     'soak',
   ].includes(name)
     ? []
-    : [
-        `--env-file=${name === 'live-attachments' ? resolve(repositoryRoot, 'example/.env') : resolve(root, '.env')}`,
-      ]),
+    : [`--env-file=${resolve(root, '.env')}`]),
   resolve(output, 'examples', `${name}.js`),
   ...process.argv.slice(3),
 ]);

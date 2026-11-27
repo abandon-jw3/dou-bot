@@ -19,21 +19,11 @@ for (const key of [
   assert.equal(key in manifest, false, `Repository root must not own ${key}`);
 assert.deepEqual(
   Object.keys(manifest.scripts).sort(),
-  [
-    'install:all',
-    'check:all',
-    'example:check',
-    'example:build',
-    'example:start',
-    'example:dev',
-    'docs:dev',
-    'docs:build',
-    'docs:check',
-    'docs:test:browser',
-  ].sort(),
+  ['install:all', 'check:all', 'docs:dev', 'docs:build', 'docs:check', 'docs:test:browser'].sort(),
 );
 for (const old of [
   'apps',
+  'example',
   'src',
   'tests',
   'examples',
@@ -52,7 +42,7 @@ for (const old of [
   assert.equal(exists, false, `Obsolete repository-root path: ${old}`);
 }
 const packages = await Promise.all(
-  ['framework', 'example', 'website'].map(async (name) => {
+  ['framework', 'website'].map(async (name) => {
     const path = resolve(repositoryRoot, name);
     await access(resolve(path, 'package-lock.json'));
     const pkg = JSON.parse(await readFile(resolve(path, 'package.json'), 'utf8'));
@@ -63,7 +53,6 @@ const packages = await Promise.all(
 assert.equal(packages[0].name, 'dou-bot');
 assert.equal(packages[0].repository.directory, 'framework');
 assert.equal(packages[1].private, true);
-assert.equal(packages[2].private, true);
 for (const name of ['LICENSE', 'NOTICE'])
   assert.equal(
     await readFile(resolve(root, name), 'utf8'),

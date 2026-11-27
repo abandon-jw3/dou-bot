@@ -12,8 +12,7 @@ npm run database:migrate
 npm start
 ```
 
-- 以上脚本由 [业务示例](https://github.com/abandon-jw3/dou-bot/tree/main/example) 提供；快速开始项目用 `node --env-file=.env dist/main.js --init-database` 迁移。
-- 首次部署先创建数据库，再显式迁移；普通启动不建表。
+- 首次部署先创建数据库，再调用 `migrateDatabase` 显式迁移；普通启动不建表。
 - 将完整应用目录、锁文件和 dist 一起部署，在目标环境运行 npm ci 安装依赖。
 - .env 只保存在部署环境。生产账号按业务所需权限配置。
 

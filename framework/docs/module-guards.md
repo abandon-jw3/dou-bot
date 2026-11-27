@@ -67,4 +67,4 @@ export class FeatureModule {}
 - prompt 回答不重新执行 Guard，敏感操作需复核业务权限。
 - 一个附件处理器被拒绝不影响其他匹配处理器。
 
-[自定义 Guard 与冷却](execution-controls.md) · [内置访问限制](access-control.md) · [可运行示例](https://github.com/abandon-jw3/dou-bot/tree/main/example/src/example/module-guards)
+[自定义 Guard 与冷却](execution-controls.md) · [内置访问限制](access-control.md) · [可运行示例](https://abandon-jw3.github.io/dou-bot/examples/guards.html)

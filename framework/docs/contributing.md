@@ -1,8 +1,8 @@
 # 源码开发与联调
 
-npm 包名为 `dou-bot`，框架、业务示例与文档站统一维护于公开的 `dou-bot` 仓库。安装及业务用法见 [README](../README.md)。以下命令在仓库的 `framework` 目录执行，不属于安装包中的消费者命令。
+npm 包名为 `dou-bot`，框架与文档站统一维护于公开的 `dou-bot` 仓库。安装及业务用法见 [README](../README.md)。以下命令在仓库的 `framework` 目录执行，不属于安装包中的消费者命令。
 
-业务示例与文档站也在本仓库中，分别位于 `example/`、`website/`。三工程安装、统一检查与 Pages 部署说明见 [仓库维护指南](repository.md)；下文聚焦 SDK 本身。
+文档站位于 `website/`。双工程安装、统一检查与 Pages 部署说明见 [仓库维护指南](repository.md)；下文聚焦 SDK 本身。
 
 ## 开发检查
 
@@ -36,7 +36,7 @@ npm run example:identity
 | `npm run probe:media`         | 图片、原始 Markdown、回调按钮；`-- --buttons-only --no-prefix` 验证空前缀按钮 |
 | `npm run probe:reconnect`     | 主动断开本探针的 WS，检查 RESUME 和心跳，不发送消息                           |
 | `npm run probe:controls`      | 随机命令验证 Guard、参数、冷却、按钮允许/拒绝与 manual 确认                   |
-| `npm run probe:attachments`   | 用当前源码验证图文同条和视频/音频/文件分条输入，读取 `example/.env`           |
+| `npm run probe:attachments`   | 用当前源码验证图文同条和视频/音频/文件分条输入，读取 `framework/.env`         |
 
 探针日志保存在被 Git 忽略的 `work/` 中；每次运行采用独立产物目录，测试重编译不会删除正在运行的例子。
 

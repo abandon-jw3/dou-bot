@@ -59,12 +59,12 @@ const metadata = {
   integrity: `sha512-${createHash('sha512').update(bytes).digest('base64')}`,
   distSha256: distHash.digest('hex'),
 };
-for (const project of ['example', 'website']) {
+for (const project of ['website']) {
   const vendor = resolve(repositoryRoot, project, 'vendor');
   await mkdir(vendor, { recursive: true });
   await copyFile(tarball, resolve(vendor, 'dou-bot-source.tgz'));
   await writeFile(resolve(vendor, 'sdk.json'), JSON.stringify(metadata, null, 2) + '\n');
 }
 console.log(
-  'Source SDK snapshots prepared. Reinstall ./vendor/dou-bot-source.tgz in both projects to update lockfiles (website: --save-dev).',
+  'Source SDK snapshot prepared. Reinstall ./vendor/dou-bot-source.tgz in website with --save-dev to update lockfile.',
 );

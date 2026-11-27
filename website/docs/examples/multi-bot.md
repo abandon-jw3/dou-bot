@@ -20,5 +20,5 @@
 ## 连接 QQ
 
 - 按 [快速开始](../guide/quick-start.md) 配置数据库和 AppFactory。
-- 在 bots 中添加账号；完整项目 [example](https://github.com/abandon-jw3/dou-bot/tree/main/example) 支持可选 QQ_APP_ID_B / QQ_APP_SECRET_B。
+- 在 `bots` 中添加多个账号配置，按账号读取对应环境变量。
 - 主动发送是否可用需要实际 QQ 账号权限验证；离线测试不代表平台收发通过。

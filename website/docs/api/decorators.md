@@ -6,7 +6,7 @@
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 组织业务   | [Module](#module)、[Controller](#controller)、[Injectable](#injectable)、[Inject](#inject)                                                                                 |
 | 接收输入   | [Command](#command)、[OnAttachment](#onattachment)、[OnButton](#onbutton)、[On](#on)                                                                                       |
-| 读取文字   | [Arg](#arg)、[Args](#args)、[Option](#option)、[Slot](#slot)、[Rest](#rest)                                                                                                |
+| 读取文字   | [Arg](#arg)、[Args](#args)、[Option](#option)、[Slot](#slot)、[Rest](#rest)、[Route](#route)                                                                               |
 | 读取附件   | [Attachments](#attachments)、[Images](#images)                                                                                                                             |
 | 读取身份   | [User](#user)、[UserId](#userid)、[Group](#group)、[GroupId](#groupid)、[Role](#role)                                                                                      |
 | 使用上下文 | [Ctx](#ctx)                                                                                                                                                                |
@@ -25,8 +25,8 @@
 Module(metadata: ModuleMetadata): ClassDecorator
 ```
 
-- 用于模块类，配置 imports、providers、controllers、exports、guards。
-- 模块类不自动实例化；guards 只保护本模块直接注册的控制器。
+- 用于模块类，配置 imports、providers、controllers、exports、guards、middlewares、global。
+- 设置 `global: true` 后，该模块在根模块导入一次即可让导出项对所有模块可见；模块类不自动实例化；guards 只保护本模块直接注册的控制器。
 
 [用法与示例](../guide/modules.md)。
 
@@ -184,10 +184,11 @@ Role(): ParameterDecorator
 注册命令处理器。
 
 ```ts
-Command(name: string, options?: CommandOptions): MethodDecorator
+Command(name: string | readonly string[], options?: CommandOptions): MethodDecorator
 ```
 
-- 用于控制器实例方法；name 不带前缀，options 可设 aliases、description。
+- 用于控制器实例方法；name 可为单个主命令名或非空主命令名数组（均不带前缀），options 可设 aliases、description。
+- 配合 `@Route()` 可在多命令处理器内读取本次命中的主命令名。
 - 返回字符串或消息对象自动回复；手动 reply 后返回 void。
 - 名称或别名冲突会导致应用创建失败。
 
@@ -212,11 +213,11 @@ On(eventName: string): MethodDecorator
 处理 callback 按钮点击。
 
 ```ts
-OnButton(buttonId: string): MethodDecorator
+OnButton(pattern: string | RegExp | readonly string[]): MethodDecorator
 ```
 
-- 用于控制器实例方法，buttonId 与 button.callback 的第一个参数一致。
-- 支持 Ctx 和身份参数；返回 void，业务回复使用 ctx.send。
+- 用于控制器实例方法；支持单个按钮 ID、按钮 ID 数组或 `RegExp`（先匹配精确 ID，再按注册顺序匹配正则）。
+- 支持 Ctx、Route、ContextValue 和身份参数；可直接返回字符串或消息对象，或调用 `ctx.reply()` 通过 `event_id` 发送被动回复，也可使用 `ctx.send()` 主动发送。
 - 不处理 link/command 按钮；确认方式见按钮指南。
 
 [用法与示例](../guide/buttons.md)。
@@ -230,7 +231,7 @@ Ctx(): ParameterDecorator
 ```
 
 - 用于 Command / OnAttachment：MessageContext；OnButton：ButtonContext；On：QQEventContext。
-- 无配置项；各上下文能力不同，例如按钮没有 reply/prompt。
+- 无配置项；各上下文能力不同，例如按钮提供基于 `event_id` 的 `reply()`，但不提供 `prompt()`。
 
 [用法与示例](./contexts.md)。
 
@@ -299,6 +300,20 @@ Rest(options?: RestOptions): ParameterDecorator
 
 - 用于命令参数，注入 string[]；无剩余时为 []，options 仅 name、description。
 - 每个命令最多一个，始终最后收集；不掩盖缺参、歧义或选项错误。
+
+[用法与示例](../guide/parameters.md)。
+
+## Route {#route}
+
+注入当前命中的规范命令名或按钮 ID。
+
+```ts
+Route(): ParameterDecorator
+```
+
+- 用于 Command、OnButton、OnAttachment 参数，注入 `string`，无配置项。
+- 单命令（含别名）注入规范主命令名；多命令 `@Command([...])` 注入命中的主命令名；按钮处理器注入实际 `buttonId`。
+- 不消费文字或附件，不出现在命令帮助中。
 
 [用法与示例](../guide/parameters.md)。
 

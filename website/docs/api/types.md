@@ -123,8 +123,11 @@ export interface AppOptions {
     host?: string;
     port?: number;
   };
+  providers?: readonly Provider[];
+  middlewares?: readonly InjectionToken<ContextMiddleware>[];
   logger?: Logger;
   onError?: ErrorHandler;
+  onHandlerError?: HandlerErrorHandler;
 }
 ```
 
@@ -414,6 +417,7 @@ export interface ButtonContextBase extends QQEventContext {
   readonly buttonId: string;
   readonly data: string;
   ack(code?: number): Promise<void>;
+  reply(message: MessageInput): Promise<SendResult>;
   send(message: MessageInput): Promise<SendResult>;
 }
 ```
@@ -475,7 +479,10 @@ export interface ClassProvider<T = unknown> {
 ### Command {#root-Command}
 
 ```ts
-export declare const Command: (name: string, options?: CommandOptions) => MethodDecorator;
+export declare function Command(
+  name: string | readonly string[],
+  options?: CommandOptions,
+): MethodDecorator;
 ```
 
 ### CommandOptions {#root-CommandOptions}
@@ -1060,6 +1067,43 @@ export type GuardResult =
     };
 ```
 
+### HandlerErrorContext {#root-HandlerErrorContext}
+
+```ts
+export interface HandlerErrorContext {
+  readonly phase: ErrorPhase;
+  readonly appId: string;
+  readonly scene: 'group' | 'private';
+  readonly userId: string;
+  readonly groupId?: string;
+  readonly controller: string;
+  readonly method: string;
+  readonly route: string;
+  readonly replied: boolean;
+}
+```
+
+### HandlerErrorHandler {#root-HandlerErrorHandler}
+
+```ts
+export type HandlerErrorHandler = (
+  error: Error,
+  context: HandlerErrorContext,
+) => Awaitable<HandlerErrorResult>;
+```
+
+### HandlerErrorResult {#root-HandlerErrorResult}
+
+```ts
+export type HandlerErrorResult =
+  | MessageInput
+  | {
+      readonly reply?: MessageInput;
+      readonly report?: boolean;
+    }
+  | void;
+```
+
 ### HelpModule {#root-HelpModule}
 
 ```ts
@@ -1298,6 +1342,8 @@ export interface ModuleMetadata {
   controllers?: readonly Type[];
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
+  /** Exported providers become visible to every module in the application. */
+  global?: boolean;
   /** Applied to this module's own controllers before class/method guards; imports are independent. */
   guards?: readonly InjectionToken<CanActivate>[];
   /** Applied to this module's own controllers; imports are independent. */
@@ -1347,7 +1393,7 @@ export interface OnAttachmentOptions {
 ### OnButton {#root-OnButton}
 
 ```ts
-export declare const OnButton: (buttonId: string) => MethodDecorator;
+export declare function OnButton(matcher: string | RegExp | readonly string[]): MethodDecorator;
 ```
 
 ### OnModuleDestroy {#root-OnModuleDestroy}
@@ -1783,10 +1829,17 @@ export interface QueueSnapshot {
 ### ReplyReference {#root-ReplyReference}
 
 ```ts
-export interface ReplyReference {
-  messageId: string;
-  sequence: number;
-}
+export type ReplyReference =
+  | {
+      messageId: string;
+      sequence: number;
+      eventId?: never;
+    }
+  | {
+      eventId: string;
+      messageId?: never;
+      sequence?: never;
+    };
 ```
 
 ### RequestOptions {#root-RequestOptions}
@@ -1827,6 +1880,12 @@ export interface RetryOptions {
 
 ```ts
 export declare const Role: () => ParameterDecorator;
+```
+
+### Route {#root-Route}
+
+```ts
+export declare const Route: () => ParameterDecorator;
 ```
 
 ### selectAttachments {#root-selectAttachments}

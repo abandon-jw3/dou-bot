@@ -58,10 +58,11 @@ content 是用于路由的正文；原始正文仍在 raw.d。只会移除明确
 
 ## ButtonContext
 
-- 提供 interactionId、userId、buttonId、data、scene、target，以及 ack(code?) 和 send(message)。
-- ack 默认 code=0，返回 Promise&lt;void&gt;；send 返回 Promise&lt;SendResult&gt;。
+- 提供 interactionId、userId、buttonId、data、scene、target，以及 `ack(code?)`、`reply(message)` 和 `send(message)`。
+- ack 默认 code=0，返回 Promise&lt;void&gt;；`reply(message)` 使用按钮事件的 `event_id` 发送被动回复（若事件缺少 `event_id` 报 `INVALID_STATE`）；`send(message)` 主动发送。
+- `@OnButton` 处理器也可直接返回字符串或消息对象，由框架自动通过 `event_id` 被动回复。
 - 群按钮的群标识读取 target.groupId。
-- ButtonContext 没有 reply、prompt，也没有保证可用的群成员角色字段。
+- ButtonContext 没有 prompt，也没有保证可用的群成员角色字段。
 - data 是未解释的字符串，需要业务校验。
 
 ## GuardContext

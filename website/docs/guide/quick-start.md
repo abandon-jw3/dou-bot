@@ -2,22 +2,24 @@
 
 运行一个 QQ 机器人，发送 `/hello 小明`，收到“你好，小明！”。
 
-## 1. 获取示例
+## 1. 创建项目并安装
 
 准备 Node.js **24.21.0**、PostgreSQL，以及机器人的 AppID 和 AppSecret。
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/example
-npm ci
+mkdir my-qq-bot && cd my-qq-bot
+npm init -y
+npm pkg set type=module
+npm install --save-exact dou-bot@1.1.0
+npm install --save-dev --save-exact typescript@5.9.3 @types/node@24.19.0
 ```
 
-- 以下命令都在 example 目录执行；你也可以将这个目录完整复制为自己的项目。
-- 示例已配好 TypeScript **5.9.3**、装饰器和保存后重启。
+- 按 [项目结构与编译](./project.md#typescript-配置) 创建 `tsconfig.json`，开启 `experimentalDecorators`、`emitDecoratorMetadata` 和 `rewriteRelativeImportExtensions`。
+- 完整可运行目录见 [完整 hello 示例](../examples/hello.md)。
 
 ## 2. 配置环境 {#环境配置}
 
-复制 `.env.example` 为 `.env`，填写自己的 QQ 和数据库配置：
+在项目根目录创建 `.env`，填写自己的 QQ 和数据库配置：
 
 ```dotenv
 QQ_APP_ID=your-qq-app-id
@@ -32,22 +34,9 @@ DATABASE_PASSWORD=your-database-password
 - 先在 PostgreSQL 中创建数据库和账号；填写已有的数据库名称。
 - `.env` 只保存在自己的运行环境，不提交凭证。
 
-## 3. 初始化并运行
+## 3. 编写入口与第一个指令
 
-```sh
-npm run build
-npm run database:migrate
-npm run dev
-```
-
-- 首次运行先初始化框架表；正常启动和保存后重启不自动迁移。
-- 看到启动提示后，私聊发送 `/hello 小明`；群聊先 @机器人再发送。
-- 保存代码后自动编译并重启；编译失败时保留上次成功版本。
-- 按 Ctrl+C 关闭；生产运行使用 `npm run build` 和 `npm start`。
-
-## 4. 修改第一个指令
-
-打开 `src/bot.controller.ts`：
+创建 `src/bot.controller.ts`：
 
 ```ts
 import { Arg, Command, Controller } from 'dou-bot';
@@ -63,13 +52,24 @@ export class BotController {
 
 - `@Command('hello')` 注册指令，默认用 `/hello` 触发。
 - `@Arg(0)` 读取第一个参数；没填写时使用“朋友”。
-- 返回字符串会自动回复。修改回复文字、保存，再发送指令即可看到变化。
-- 新增控制器时，在 `src/app.module.ts` 的 controllers 中注册。
+- 返回字符串会自动回复；新增控制器时注册到根模块的 `controllers`。
+- `src/app.module.ts` 与 `src/main.ts` 完整写法见 [完整 hello 示例](../examples/hello.md)。
+
+## 4. 初始化数据库并启动
+
+```sh
+npm run build
+node --env-file=.env dist/migrate.js
+npm start
+```
+
+- 首次运行先调用 `migrateDatabase(database)` 初始化框架表；正常启动不自动迁移。
+- 启动后私聊发送 `/hello 小明`；群聊先 @机器人再发送。
+- 按 Ctrl+C 优雅停机。
 
 ## 接下来做什么
 
-- `/example`：查看示例中的功能指令。
-- [命令参数](./parameters.md)：读取选项、无序关键词和附件。
+- [命令参数](./parameters.md)：读取选项、无序关键词、`@Route()` 和附件。
 - [完整 hello 示例](../examples/hello.md)：将业务拆为 Controller、Service 和 Module。
 - [多机器人](./multi-bot.md)：增加账号和后台通知。
 - [离线测试](./testing.md)：不连接 QQ 验证业务。

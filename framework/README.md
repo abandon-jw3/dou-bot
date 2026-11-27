@@ -23,15 +23,15 @@
 
 ## 运行第一个机器人
 
-准备 Node.js **24.21.0**、PostgreSQL、QQ AppID 和 AppSecret。示例已配置 TypeScript **5.9.3**、ESM 和装饰器。
+准备 Node.js **24.21.0**、PostgreSQL、QQ AppID 和 AppSecret。在新的 ESM TypeScript 项目中安装 SDK：
 
 ```sh
-git clone https://github.com/abandon-jw3/dou-bot.git
-cd dou-bot/example
-npm ci
+mkdir my-qq-bot && cd my-qq-bot
+npm init -y
+npm install --save-exact dou-bot@1.1.0
 ```
 
-复制 `.env.example` 为 `.env`，填写 QQ 与数据库配置：
+在项目根目录创建 `.env`，填写 QQ 与数据库配置：
 
 ```dotenv
 QQ_APP_ID=your-qq-app-id
@@ -43,20 +43,13 @@ DATABASE_NAME=bot
 DATABASE_PASSWORD=your-database-password
 ```
 
-```sh
-npm run build
-npm run database:migrate
-npm run dev
-```
-
-- 首次运行先初始化框架表；普通启动不自动迁移。
+- 首次运行前先调用 `migrateDatabase(database)` 初始化框架表；普通启动不自动迁移。
 - 私聊发送 `/hello 小明`，机器人回复“你好，小明！”。群聊先 @机器人。
-- 保存代码后自动编译并重启；按 Ctrl+C 关闭。
-- 生产环境用 npm run build、npm start。SDK 最低支持 Node 24.0.0，示例使用 24.21.0。
+- 生产环境用 `npm run build`、`npm start`。SDK 最低支持 Node 24.0.0，推荐 24.21.0。
 
 ## 添加指令
 
-修改示例中的 `src/bot.controller.ts`：
+创建控制器 `src/bot.controller.ts`：
 
 ```ts
 import { Arg, Command, Controller } from 'dou-bot';
