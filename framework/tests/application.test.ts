@@ -1010,8 +1010,8 @@ await test('illegal return values cannot turn observers or buttons into implicit
     @Command('invalid') invalid(): number {
       return 42;
     }
-    @OnButton('invalid') button(): string {
-      return 'invalid button return';
+    @OnButton('invalid') button(): number {
+      return 42;
     }
   }
   @Module({ controllers: [Commands] })
@@ -1023,6 +1023,7 @@ await test('illegal return values cannot turn observers or buttons into implicit
     await bot.dispatch({
       op: 0,
       t: 'INTERACTION_CREATE',
+      id: 'INTERACTION_CREATE:bad-button',
       d: {
         id: 'bad-button',
         chat_type: 2,
@@ -1034,8 +1035,8 @@ await test('illegal return values cannot turn observers or buttons into implicit
     assert.equal(bot.messages.length, 0);
     assert.equal(bot.acknowledgments.length, 1);
     assert.deepEqual(bot.errors.map((entry) => entry.context.phase).sort(), [
-      'button',
       'observer',
+      'send',
       'send',
     ]);
     assert.deepEqual(

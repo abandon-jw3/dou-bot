@@ -42,6 +42,7 @@ type ParameterDeclaration =
   | { kind: 'context' }
   | { kind: 'context-value'; key: ContextKey<unknown> }
   | { kind: 'identity'; selection: IdentitySelection }
+  | { kind: 'route' }
   | { kind: 'args' }
   | { kind: 'arg'; argument: number; options?: ArgumentOptions }
   | { kind: 'option'; key: string; options: OptionOptions }
@@ -53,6 +54,8 @@ export interface HandlerMetadata {
   method: string;
   kind: 'command' | 'event' | 'button' | 'attachment';
   name: string;
+  names?: readonly string[];
+  pattern?: RegExp;
   options: CommandOptions;
   attachment?: Readonly<OnAttachmentOptions>;
   parameters: readonly ParameterBinding[];
@@ -77,9 +80,11 @@ export function Module(data: ModuleMetadata): ClassDecorator {
   const input: unknown = data;
   keys(
     input,
-    ['imports', 'providers', 'controllers', 'exports', 'guards', 'middlewares'],
+    ['imports', 'providers', 'controllers', 'exports', 'global', 'guards', 'middlewares'],
     '@Module',
   );
+  if (data.global !== undefined && typeof data.global !== 'boolean')
+    throw new FrameworkError('CONFIG', 'Module global must be a boolean');
   for (const key of ['imports', 'providers', 'controllers', 'exports'] as const)
     if (input[key] !== undefined && !Array.isArray(input[key]))
       throw new FrameworkError('CONFIG', `Module ${key} must be an array`);
@@ -98,6 +103,7 @@ export function Module(data: ModuleMetadata): ClassDecorator {
     providers: Object.freeze((data.providers ?? []).map(snapshotProvider)),
     controllers: Object.freeze([...(data.controllers ?? [])]),
     exports: Object.freeze([...(data.exports ?? [])]),
+    global: data.global === true,
     guards: guardSnapshot,
     middlewares: middlewareSnapshot,
   });
@@ -143,6 +149,7 @@ function handler(
   name: string,
   options: CommandOptions = {},
   attachment?: Readonly<OnAttachmentOptions>,
+  extra?: { names?: readonly string[]; pattern?: RegExp },
 ): MethodDecorator {
   keys(options, ['aliases', 'description'], 'handler');
   if (
@@ -170,14 +177,26 @@ function handler(
       method: key,
       kind,
       name,
+      ...(extra?.names === undefined ? {} : { names: extra.names }),
+      ...(extra?.pattern === undefined ? {} : { pattern: extra.pattern }),
       options: declarationOptions,
       ...(attachment === undefined ? {} : { attachment }),
     });
     Reflect.defineMetadata(HANDLERS, entries, target);
   };
 }
-export const Command = (name: string, options?: CommandOptions): MethodDecorator =>
-  handler('command', name, options);
+export function Command(
+  name: string | readonly string[],
+  options?: CommandOptions,
+): MethodDecorator {
+  if (Array.isArray(name)) {
+    if (!name.length || name.some((item: unknown) => typeof item !== 'string'))
+      throw new FrameworkError('ROUTE_CONFLICT', 'Command names must be a nonempty string array');
+    const names = Object.freeze([...(name as readonly string[])]);
+    return handler('command', names[0]!, options, undefined, { names });
+  }
+  return handler('command', name as string, options);
+}
 export const On = (eventName: string): MethodDecorator => handler('event', eventName);
 export function OnAttachment(options: OnAttachmentOptions = {}): MethodDecorator {
   if (!isRecord(options)) throw new FrameworkError('CONFIG', 'Invalid attachment route options');
@@ -190,7 +209,19 @@ export function OnAttachment(options: OnAttachmentOptions = {}): MethodDecorator
   });
   return handler('attachment', 'attachment', {}, frozen);
 }
-export const OnButton = (buttonId: string): MethodDecorator => handler('button', buttonId);
+export function OnButton(matcher: string | RegExp | readonly string[]): MethodDecorator {
+  if (matcher instanceof RegExp) {
+    const pattern = new RegExp(matcher.source, matcher.flags.replace(/[gy]/gu, ''));
+    return handler('button', pattern.toString(), {}, undefined, { pattern });
+  }
+  if (Array.isArray(matcher)) {
+    if (!matcher.length || matcher.some((item: unknown) => typeof item !== 'string'))
+      throw new FrameworkError('ROUTE_CONFLICT', 'Button IDs must be a nonempty string array');
+    const names = Object.freeze([...(matcher as readonly string[])]);
+    return handler('button', names[0]!, {}, undefined, { names });
+  }
+  return handler('button', matcher as string);
+}
 
 function isGuardToken(token: unknown): token is InjectionToken<CanActivate> {
   return (
@@ -360,6 +391,7 @@ export const Group = (): ParameterDecorator => parameter({ kind: 'identity', sel
 export const GroupId = (): ParameterDecorator =>
   parameter({ kind: 'identity', selection: 'groupId' });
 export const Role = (): ParameterDecorator => parameter({ kind: 'identity', selection: 'role' });
+export const Route = (): ParameterDecorator => parameter({ kind: 'route' });
 export const Args = (): ParameterDecorator => parameter({ kind: 'args' });
 export const Arg = (index: number, options?: ArgumentOptions): ParameterDecorator =>
   parameter({
@@ -476,13 +508,13 @@ export function readHandlers(
         );
       if (
         metadata<ParameterBinding[]>(PARAMETERS, prototype, key)?.some(
-          (p) => p.kind === 'identity' || p.kind === 'context-value',
+          (p) => p.kind === 'identity' || p.kind === 'context-value' || p.kind === 'route',
         ) &&
         !declarations.some((entry) => entry.method === key && entry.kind !== 'event')
       )
         throw new FrameworkError(
           'CONFIG',
-          'Identity and context value parameters require @Command, @OnButton or @OnAttachment',
+          'Identity, route and context value parameters require @Command, @OnButton or @OnAttachment',
         );
     }
     for (const entry of declarations) {
@@ -502,7 +534,7 @@ export function readHandlers(
             p.index >= count ||
             (entry.kind !== 'command' &&
               p.kind !== 'context' &&
-              !(entry.kind !== 'event' && p.kind === 'context-value') &&
+              !(entry.kind !== 'event' && (p.kind === 'context-value' || p.kind === 'route')) &&
               !(
                 (entry.kind === 'button' || entry.kind === 'attachment') &&
                 p.kind === 'identity'

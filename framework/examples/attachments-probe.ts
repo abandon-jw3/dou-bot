@@ -179,7 +179,7 @@ export function createAttachmentsProbe(
       const send = client.sendPreparedMessage.bind(client);
       client.sendPreparedMessage = async (target, input, options) => {
         const result = await send(target, input, options);
-        const info = options?.reply ? messages.get(options.reply.messageId) : undefined;
+        const info = options?.reply?.messageId ? messages.get(options.reply.messageId) : undefined;
         if (info) note({ event: 'reply', ...info, status: result.status });
         return result;
       };

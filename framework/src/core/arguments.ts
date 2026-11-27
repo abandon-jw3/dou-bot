@@ -52,6 +52,7 @@ type CompiledParameter =
   | { kind: 'context'; index: number }
   | Extract<ParameterBinding, { kind: 'context-value' }>
   | Extract<ParameterBinding, { kind: 'identity' }>
+  | { kind: 'route'; index: number }
   | { kind: 'args'; index: number };
 
 function config(message: string): never {
@@ -198,7 +199,8 @@ function compile(binding: ParameterBinding): CompiledParameter {
     binding.kind === 'context' ||
     binding.kind === 'context-value' ||
     binding.kind === 'args' ||
-    binding.kind === 'identity'
+    binding.kind === 'identity' ||
+    binding.kind === 'route'
   )
     return binding;
   const options = binding.options ?? {};
@@ -429,17 +431,9 @@ export class CommandArguments {
       values.set(option.index, convert(raw, option));
     }
     const consumed = new Set<number>();
-    for (const parameter of this.scalars) {
-      if (parameter.kind === 'arg') {
-        values.set(parameter.index, convert(positional[parameter.argument], parameter));
-        if (parameter.argument < positional.length) consumed.add(parameter.argument);
-      } else if (parameter.kind === 'option' && !values.has(parameter.index))
-        values.set(parameter.index, convert(undefined, parameter));
-    }
     const slots = this.slots;
-    // Evaluate all slot rules for a token before selecting its owner.
+    // Match slots before positional @Arg so unordered slot tokens never shift positional indices.
     for (let i = 0; i < positional.length; i++) {
-      if (consumed.has(i)) continue;
       const value = positional[i]!;
       const candidates = slots.filter((slot) => matches(slot, value));
       if (candidates.length > 1)
@@ -456,11 +450,20 @@ export class CommandArguments {
     for (const slot of slots)
       if (!values.has(slot.index) && slot.required)
         throw new CommandInputError(`缺少必填参数：${slot.name}`);
+    const remaining = positional.filter((_, index) => !consumed.has(index));
+    const remainingConsumed = new Set<number>();
+    for (const parameter of this.scalars) {
+      if (parameter.kind === 'arg') {
+        values.set(parameter.index, convert(remaining[parameter.argument], parameter));
+        if (parameter.argument < remaining.length) remainingConsumed.add(parameter.argument);
+      } else if (parameter.kind === 'option' && !values.has(parameter.index))
+        values.set(parameter.index, convert(undefined, parameter));
+    }
     const rest = this.rest;
     if (rest)
       values.set(
         rest.index,
-        positional.filter((_, index) => !consumed.has(index)),
+        remaining.filter((_, index) => !remainingConsumed.has(index)),
       );
     // Normalize only after every text error has been ruled out, in handler parameter order.
     for (const slot of slots) {
@@ -499,7 +502,7 @@ export class CommandArguments {
 
   help(): { usage: string; details: string[] } {
     const rank = (p: CompiledParameter) =>
-      p.kind === 'arg' ? 0 : p.kind === 'slot' ? 1 : p.kind === 'option' ? 2 : 3;
+      p.kind === 'slot' ? 0 : p.kind === 'arg' ? 1 : p.kind === 'option' ? 2 : 3;
     const ordered = [...this.parameters].sort(
       (a, b) =>
         rank(a) - rank(b) ||
@@ -519,7 +522,8 @@ export class CommandArguments {
           parameter.kind === 'context' ||
           parameter.kind === 'context-value' ||
           parameter.kind === 'args' ||
-          parameter.kind === 'identity'
+          parameter.kind === 'identity' ||
+          parameter.kind === 'route'
         )
           return [];
         const parts = [

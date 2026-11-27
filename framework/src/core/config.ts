@@ -1,6 +1,9 @@
 import type { AccountOptions, SharedOptions, SingleBotOptions } from './single-options.js';
 import type {
+  ContextMiddleware,
   ExecutionOptions,
+  InjectionToken,
+  Provider,
   QQApiOptions,
   RetryOptions,
   WebhookTransportOptions,
@@ -118,11 +121,26 @@ export function resolveSharedOptions(raw: SharedOptions) {
     throw new FrameworkError('CONFIG', 'Invalid logger');
   if (raw.onError !== undefined && !callable(raw.onError))
     throw new FrameworkError('CONFIG', 'onError must be a function');
+  if (raw.onHandlerError !== undefined && !callable(raw.onHandlerError))
+    throw new FrameworkError('CONFIG', 'onHandlerError must be a function');
+  const rawProviders: unknown = raw.providers;
+  if (rawProviders !== undefined && !Array.isArray(rawProviders))
+    throw new FrameworkError('CONFIG', 'providers must be an array');
+  const rawMiddlewares: unknown = raw.middlewares;
+  if (rawMiddlewares !== undefined && !Array.isArray(rawMiddlewares))
+    throw new FrameworkError('CONFIG', 'middlewares must be an array');
+  const providers: readonly Provider[] = Object.freeze([...(raw.providers ?? [])]);
+  const middlewares: readonly InjectionToken<ContextMiddleware>[] = Object.freeze([
+    ...(raw.middlewares ?? []),
+  ]);
   return Object.freeze({
     prefix,
     invalidInput,
     logger: raw.logger,
     onError: raw.onError,
+    onHandlerError: raw.onHandlerError,
+    providers,
+    middlewares,
     execution: Object.freeze(execution),
     context: Object.freeze({
       prepareTimeoutMs: integer(context.prepareTimeoutMs, 10000, 'context.prepareTimeoutMs'),
@@ -146,8 +164,11 @@ export function resolveOptions(raw: SingleBotOptions): ResolvedOptions {
       'context',
       'prompts',
       'interactions',
+      'providers',
+      'middlewares',
       'logger',
       'onError',
+      'onHandlerError',
     ],
     'options',
   );

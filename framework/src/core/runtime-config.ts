@@ -21,8 +21,11 @@ export function resolveApplication(options: AppOptions) {
       'context',
       'prompts',
       'webhook',
+      'providers',
+      'middlewares',
       'logger',
       'onError',
+      'onHandlerError',
     ],
     'application',
   );

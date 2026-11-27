@@ -1,8 +1,8 @@
 import type { ControllerBinding, Container } from './container.js';
 import type { HandlerMetadata, ParameterBinding } from './metadata.js';
 import { readHandlers } from './metadata.js';
-import { FrameworkError } from './errors.js';
-import { callable } from './utils.js';
+import { errorOf, FrameworkError } from './errors.js';
+import { callable, isRecord } from './utils.js';
 import { tokenizeCommand } from './parser.js';
 import { AttachmentRoute } from './attachment-route.js';
 import { CommandArguments } from './arguments.js';
@@ -21,6 +21,9 @@ import type {
   CanActivate,
   ContextMiddleware,
   ErrorPhase,
+  HandlerErrorContext,
+  HandlerErrorHandler,
+  InjectionToken,
   MessageInput,
 } from '../contracts.js';
 import type { NormalizedEvent } from '../qq/normalize.js';
@@ -38,6 +41,7 @@ interface Route {
   middlewares: readonly (() => ContextMiddleware)[];
   needsContext: boolean;
   identities: readonly Extract<ParameterBinding, { kind: 'identity' }>[];
+  routes: readonly Extract<ParameterBinding, { kind: 'route' }>[];
   contextValues: readonly Extract<ParameterBinding, { kind: 'context-value' }>[];
   diagnosticName: string;
 }
@@ -45,9 +49,15 @@ const location = (route: Route): HandlerLocation => ({
   controller: route.binding.type.name || '(anonymous)',
   method: route.metadata.method,
 });
+function isMessageInput(value: unknown): value is MessageInput {
+  if (typeof value === 'string') return true;
+  if (!isRecord(value)) return false;
+  return value.kind === 'text' || value.kind === 'image' || value.kind === 'markdown';
+}
 export class Dispatcher {
   private readonly commands = new Map<string, Route>();
   private readonly buttons = new Map<string, Route>();
+  private readonly buttonPatterns: { pattern: RegExp; route: Route }[] = [];
   private readonly attachments: Route[] = [];
   private readonly events = new Map<string, Route[]>();
   private readonly moduleGuardChecks: (() => CanActivate)[] = [];
@@ -55,6 +65,7 @@ export class Dispatcher {
   private readonly clock: Clock;
   private readonly cooldowns: CooldownStore;
   private readonly acknowledge: 'auto' | 'manual' | ((appId: string) => 'auto' | 'manual');
+  private readonly onHandlerError: HandlerErrorHandler | undefined;
   constructor(
     container: Container,
     private readonly prefix: string,
@@ -64,11 +75,19 @@ export class Dispatcher {
       clock?: Clock;
       cooldownMaxEntries?: number;
       acknowledge?: 'auto' | 'manual' | ((appId: string) => 'auto' | 'manual');
+      middlewares?: readonly InjectionToken<ContextMiddleware>[];
+      onHandlerError?: HandlerErrorHandler | undefined;
     } = {},
   ) {
     this.clock = controls.clock ?? systemClock;
     this.cooldowns = new CooldownStore(controls.cooldownMaxEntries ?? 10000, this.clock);
     this.acknowledge = controls.acknowledge ?? 'auto';
+    this.onHandlerError = controls.onHandlerError;
+    const appMiddlewares = (controls.middlewares ?? []).map((declaration) => {
+      const reference = container.reference(declaration, container.rootModule);
+      this.middlewareChecks.push(reference);
+      return reference;
+    });
     // Validate all module declarations, even when a module currently has no command routes.
     for (const { module, guards } of container.moduleGuards())
       for (const declaration of guards)
@@ -92,14 +111,21 @@ export class Dispatcher {
             `${nextId - 1}:${binding.type.name || '(anonymous)'}.${metadata.method}`.slice(0, 256),
           needsContext: metadata.parameters.some((parameter) => parameter.kind === 'context'),
           identities: metadata.parameters.filter((parameter) => parameter.kind === 'identity'),
+          routes: metadata.parameters.filter((parameter) => parameter.kind === 'route'),
           contextValues: metadata.parameters.filter(
             (parameter) => parameter.kind === 'context-value',
           ),
-          middlewares: metadata.middlewares.map((declaration) => {
-            const reference = container.reference(declaration, binding.module);
-            this.middlewareChecks.push(reference);
-            return reference;
-          }),
+          middlewares:
+            metadata.kind === 'event'
+              ? []
+              : [
+                  ...appMiddlewares,
+                  ...metadata.middlewares.map((declaration) => {
+                    const reference = container.reference(declaration, binding.module);
+                    this.middlewareChecks.push(reference);
+                    return reference;
+                  }),
+                ],
           guards: metadata.guards.map((declaration) => {
             if (!isBuiltinGuard(declaration))
               return container.reference(declaration, binding.module);
@@ -125,12 +151,15 @@ export class Dispatcher {
           if (typeof metadata.name !== 'string' || !metadata.name)
             throw new FrameworkError('ROUTE_CONFLICT', 'Invalid route name');
           this.events.set(metadata.name, [...(this.events.get(metadata.name) ?? []), route]);
+        } else if (metadata.kind === 'button' && metadata.pattern) {
+          this.buttonPatterns.push({ pattern: metadata.pattern, route });
         } else {
           const routes = metadata.kind === 'command' ? this.commands : this.buttons;
+          const primaryNames = metadata.names ?? [metadata.name];
           const names =
             metadata.kind === 'command'
-              ? [metadata.name, ...(metadata.options.aliases ?? [])]
-              : [metadata.name];
+              ? [...primaryNames, ...(metadata.options.aliases ?? [])]
+              : [...primaryNames];
           for (const name of names) {
             if (typeof name !== 'string' || !name || /\s/u.test(name) || routes.has(name))
               throw new FrameworkError('ROUTE_CONFLICT', `Duplicate or invalid route ${name}`);
@@ -146,6 +175,7 @@ export class Dispatcher {
     for (const route of new Set([
       ...this.commands.values(),
       ...this.buttons.values(),
+      ...this.buttonPatterns.map((entry) => entry.route),
       ...this.attachments,
     ]))
       for (const reference of route.guards) assertGuard(reference());
@@ -166,9 +196,16 @@ export class Dispatcher {
     await task.send(message, task.event.kind === 'message', location(route));
   }
 
+  private matchButton(buttonId: string): Route | undefined {
+    const exact = this.buttons.get(buttonId);
+    if (exact) return exact;
+    return this.buttonPatterns.find(({ pattern }) => pattern.test(buttonId))?.route;
+  }
+
   private async controlled(
     task: EventTask,
     route: Route,
+    matchedName: string,
     matched?: readonly Attachment[],
   ): Promise<void> {
     const handler = location(route);
@@ -186,17 +223,15 @@ export class Dispatcher {
       task.diagnosticContext = total?.context ?? routeContext;
       task.observer?.bind(task.controller.signal, task.diagnosticContext);
     }
+    const canonicalRoute =
+      route.metadata.kind === 'command' && !route.metadata.names?.includes(matchedName)
+        ? route.metadata.name
+        : matchedName;
     try {
       const cooldown = route.metadata.cooldown;
       const info =
         route.middlewares.length || route.guards.length || cooldown
-          ? guardContext(
-              task,
-              route.binding.type,
-              route.metadata.method,
-              route.metadata.name,
-              matched,
-            )
+          ? guardContext(task, route.binding.type, route.metadata.method, canonicalRoute, matched)
           : undefined;
       if (info)
         for (let index = 0; index < route.middlewares.length; index++) {
@@ -252,6 +287,7 @@ export class Dispatcher {
       } else parameters = route.metadata.parameters.map(() => context);
       if (route.identities.length && task.event.kind !== 'event')
         bindIdentity(route.identities, parameters, task.event.identity);
+      for (const parameter of route.routes) parameters[parameter.index] = canonicalRoute;
       observation?.end();
       phase = 'context';
       observation = route.contextValues.length
@@ -286,10 +322,7 @@ export class Dispatcher {
       );
       const result = await this.invoke(route, context, parameters);
       observation?.end();
-      if (task.event.kind === 'button') {
-        if (result !== undefined)
-          throw new FrameworkError('HANDLER_CONTRACT', 'Button handlers must return void');
-      } else if (result !== undefined) {
+      if (result !== undefined) {
         if (task.manualReplies)
           throw new FrameworkError(
             'HANDLER_CONTRACT',
@@ -300,19 +333,54 @@ export class Dispatcher {
     } catch (error) {
       observation?.fail(error, task.controller.signal);
       if (total) outcome = diagnosticOutcome(error, task.controller.signal);
-      task.report(error, phase, handler);
-      if (
+      const isInputReply =
         parsing &&
         error instanceof CommandInputError &&
         (matched === undefined ? this.invalidInput : route.metadata.attachment?.invalidInput) ===
-          'reply'
-      ) {
+          'reply';
+      let shouldReport = true;
+      let errorReply: MessageInput | undefined;
+      if (!isInputReply && this.onHandlerError && task.event.kind !== 'event') {
+        const errorContext: HandlerErrorContext = Object.freeze({
+          phase,
+          appId: task.appId,
+          scene: task.event.target.scene,
+          userId: task.event.userId,
+          ...(task.event.target.scene === 'group' ? { groupId: task.event.target.groupId } : {}),
+          controller: handler.controller ?? '(anonymous)',
+          method: handler.method ?? '',
+          route: canonicalRoute,
+          replied: task.manualReplies > 0,
+        });
+        try {
+          const decision = await this.onHandlerError(errorOf(error), errorContext);
+          if (decision !== undefined) {
+            if (isMessageInput(decision)) {
+              errorReply = decision;
+            } else if (isRecord(decision)) {
+              if (decision.report === false) shouldReport = false;
+              if (isMessageInput(decision.reply)) errorReply = decision.reply;
+            }
+          }
+        } catch (handlerError) {
+          task.report(handlerError, phase, handler);
+        }
+      }
+      if (shouldReport) task.report(error, phase, handler);
+      if (errorReply !== undefined && !task.manualReplies && !task.controller.signal.aborted) {
+        try {
+          await task.send(errorReply, true, handler);
+        } catch (sendError) {
+          task.report(sendError, phase, handler);
+        }
+      }
+      if (isInputReply && error instanceof CommandInputError) {
         try {
           await this.hint(
             task,
             route,
             matched === undefined
-              ? `${error.message}\n${this.catalog.usage(route.metadata.name)}`
+              ? `${error.message}\n${this.catalog.usage(canonicalRoute)}`
               : error.message,
           );
         } catch (sendError) {
@@ -344,7 +412,7 @@ export class Dispatcher {
 
   handles(event: NormalizedEvent): boolean {
     if (this.events.has(event.raw.t)) return true;
-    if (event.kind === 'button') return this.buttons.has(event.buttonId);
+    if (event.kind === 'button') return this.matchButton(event.buttonId) !== undefined;
     if (event.kind !== 'message') return false;
     const content = event.content.trimStart();
     const name = content.startsWith(this.prefix)
@@ -387,8 +455,8 @@ export class Dispatcher {
     }
     if (task.controller.signal.aborted) return;
     if (task.event.kind === 'button') {
-      const route = this.buttons.get(task.event.buttonId);
-      if (route) await this.controlled(task, route);
+      const route = this.matchButton(task.event.buttonId);
+      if (route) await this.controlled(task, route, task.event.buttonId);
       return;
     }
     if (task.event.kind !== 'message') return;
@@ -397,8 +465,8 @@ export class Dispatcher {
       ? /^\S+/.exec(content.slice(this.prefix.length))?.[0]
       : undefined;
     const route = name === undefined ? undefined : this.commands.get(name);
-    if (route) {
-      await this.controlled(task, route);
+    if (route && name !== undefined) {
+      await this.controlled(task, route, name);
       return;
     }
     const attachments = task.event.attachments;
@@ -409,7 +477,7 @@ export class Dispatcher {
       if (task.controller.signal.aborted) break;
       const invocation = task.invocation();
       try {
-        await this.controlled(invocation, route, matched);
+        await this.controlled(invocation, route, route.metadata.name, matched);
       } finally {
         await invocation.endInvocation();
       }

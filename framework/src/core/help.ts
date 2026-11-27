@@ -13,9 +13,18 @@ export class CommandCatalog {
   private readonly entries = new Map<string, CommandEntry>();
   constructor(private readonly prefix: string) {}
   add(metadata: HandlerMetadata, arguments_: CommandArguments): void {
-    const entry = { metadata, arguments: arguments_ };
-    for (const name of [metadata.name, ...(metadata.options.aliases ?? [])])
-      this.entries.set(name, entry);
+    const primaryNames = metadata.names ?? [metadata.name];
+    for (const primary of primaryNames) {
+      const entry = { metadata: { ...metadata, name: primary }, arguments: arguments_ };
+      this.entries.set(primary, entry);
+      if (primaryNames.length === 1) {
+        for (const alias of metadata.options.aliases ?? []) this.entries.set(alias, entry);
+      }
+    }
+    if (primaryNames.length > 1) {
+      const first = this.entries.get(primaryNames[0]!)!;
+      for (const alias of metadata.options.aliases ?? []) this.entries.set(alias, first);
+    }
   }
   usage(name: string): string {
     const entry = this.entries.get(name);

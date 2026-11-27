@@ -90,6 +90,8 @@ function recipeOf(provider: Provider): { token: InjectionToken; recipe: Recipe }
 
 export class Container {
   private readonly modules = new Map<Type, ModuleNode>();
+  private readonly globals: ModuleNode[] = [];
+  private readonly appBindings = new Map<InjectionToken, Binding>();
   private readonly builtins = new Map<InjectionToken, Binding>();
   private readonly order: Binding[] = [];
   private readonly managed: object[] = [];
@@ -106,6 +108,7 @@ export class Container {
     root: Type,
     builtinValues: ReadonlyMap<InjectionToken, unknown> = new Map(),
     private readonly clock: Clock = systemClock,
+    extraProviders: readonly Provider[] = [],
   ) {
     const modulePath: Type[] = [];
     const visit = (type: Type): ModuleNode => {
@@ -168,6 +171,9 @@ export class Container {
       return node;
     };
     this.root = visit(root);
+    for (const node of this.modules.values()) {
+      if (node.metadata.global) this.globals.push(node);
+    }
     for (const [token, value] of builtinValues)
       this.builtins.set(token, {
         token,
@@ -178,6 +184,43 @@ export class Container {
         value,
         controller: false,
       });
+    for (const provider of extraProviders) {
+      const { token, recipe } = recipeOf(provider);
+      if (!(typeof token === 'string' || typeof token === 'symbol' || isType(token)))
+        throw new FrameworkError('DEPENDENCY', 'Invalid application provider token');
+      if (builtinValues.has(token) || this.appBindings.has(token))
+        throw new FrameworkError(
+          'DEPENDENCY',
+          `Duplicate or reserved application provider ${tokenName(token)}`,
+        );
+      this.appBindings.set(token, {
+        token,
+        owner: this.root,
+        recipe,
+        dependencies: [],
+        ready: false,
+        value: undefined,
+        controller: false,
+      });
+      if (recipe.kind === 'value' && isObject(recipe.value)) this.external.add(recipe.value);
+    }
+    const resolveDependencies = (binding: Binding, scope: ModuleNode) => {
+      const tokens =
+        binding.recipe.kind === 'class'
+          ? constructorTokens(binding.recipe.type, binding.controller)
+          : binding.recipe.kind === 'factory'
+            ? binding.recipe.tokens
+            : [];
+      binding.dependencies = tokens.map((token) => {
+        const dependency = this.find(token, scope);
+        if (dependency.controller)
+          throw new FrameworkError(
+            'DEPENDENCY',
+            `Inject a service instead of controller ${tokenName(token)}`,
+          );
+        return dependency;
+      });
+    };
     for (const node of this.modules.values()) {
       for (const token of node.metadata.exports ?? []) {
         const binding = this.find(token, node);
@@ -187,24 +230,9 @@ export class Container {
             `Controllers cannot be exported: ${tokenName(token)}`,
           );
       }
-      for (const binding of node.bindings.values()) {
-        const tokens =
-          binding.recipe.kind === 'class'
-            ? constructorTokens(binding.recipe.type, binding.controller)
-            : binding.recipe.kind === 'factory'
-              ? binding.recipe.tokens
-              : [];
-        binding.dependencies = tokens.map((token) => {
-          const dependency = this.find(token, node);
-          if (dependency.controller)
-            throw new FrameworkError(
-              'DEPENDENCY',
-              `Inject a service instead of controller ${tokenName(token)}`,
-            );
-          return dependency;
-        });
-      }
+      for (const binding of node.bindings.values()) resolveDependencies(binding, node);
     }
+    for (const binding of this.appBindings.values()) resolveDependencies(binding, this.root);
     const visited = new Set<Binding>();
     const path: Binding[] = [];
     const sort = (binding: Binding) => {
@@ -220,8 +248,13 @@ export class Container {
       visited.add(binding);
       this.order.push(binding);
     };
+    for (const binding of this.appBindings.values()) sort(binding);
     for (const node of this.modules.values())
       for (const binding of node.bindings.values()) sort(binding);
+  }
+
+  get rootModule(): Type {
+    return this.root.type;
   }
 
   private find(token: InjectionToken, node: ModuleNode): Binding {
@@ -235,6 +268,17 @@ export class Container {
       throw new FrameworkError('DEPENDENCY', `Ambiguous ${tokenName(token)} in ${node.type.name}`);
     const candidate = candidates.values().next().value;
     if (candidate) return candidate;
+    const globalCandidates = new Set<Binding>();
+    for (const globalModule of this.globals) {
+      if (globalModule !== node && globalModule.metadata.exports?.includes(token))
+        globalCandidates.add(this.find(token, globalModule));
+    }
+    if (globalCandidates.size > 1)
+      throw new FrameworkError('DEPENDENCY', `Ambiguous ${tokenName(token)} in ${node.type.name}`);
+    const globalCandidate = globalCandidates.values().next().value;
+    if (globalCandidate) return globalCandidate;
+    const appBinding = this.appBindings.get(token);
+    if (appBinding) return appBinding;
     const builtin = this.builtins.get(token);
     if (builtin) return builtin;
     throw new FrameworkError(

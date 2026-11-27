@@ -51,7 +51,9 @@ export class DefaultQQClient extends QQClient {
     options: SendOptions = {},
   ): Promise<SendResult> {
     const reply: QQReplyFields = options.reply
-      ? { msg_id: options.reply.messageId, msg_seq: options.reply.sequence }
+      ? 'eventId' in options.reply && options.reply.eventId !== undefined
+        ? { event_id: options.reply.eventId }
+        : { msg_id: options.reply.messageId, msg_seq: options.reply.sequence }
       : {};
     let payload: QQMessagePayload;
     if (message.kind === 'text') payload = { ...reply, msg_type: 0, content: message.content };

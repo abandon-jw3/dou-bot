@@ -139,11 +139,14 @@ export class Application implements ApplicationContract {
         [COMMAND_CATALOG, catalog],
       ]),
       this.clock,
+      shared.providers,
     );
     this.dispatcher = new Dispatcher(this.container, shared.prefix, shared.invalidInput, catalog, {
       clock: this.clock,
       cooldownMaxEntries: shared.execution.cooldownMaxEntries,
       acknowledge: (appId) => this.handles.get(appId)?.runtime.config.acknowledge ?? 'auto',
+      middlewares: shared.middlewares,
+      ...(shared.onHandlerError === undefined ? {} : { onHandlerError: shared.onHandlerError }),
     });
     for (const config of this.config.bots)
       this.handles.set(

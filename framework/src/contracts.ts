@@ -59,6 +59,8 @@ export interface ModuleMetadata {
   controllers?: readonly Type[];
   providers?: readonly Provider[];
   exports?: readonly InjectionToken[];
+  /** Exported providers become visible to every module in the application. */
+  global?: boolean;
   /** Applied to this module's own controllers before class/method guards; imports are independent. */
   guards?: readonly InjectionToken<CanActivate>[];
   /** Applied to this module's own controllers; imports are independent. */
@@ -337,8 +339,11 @@ export interface AppOptions {
   context?: ContextOptions;
   prompts?: PromptConfig;
   webhook?: { listen?: boolean; host?: string; port?: number };
+  providers?: readonly Provider[];
+  middlewares?: readonly InjectionToken<ContextMiddleware>[];
   logger?: Logger;
   onError?: ErrorHandler;
+  onHandlerError?: HandlerErrorHandler;
 }
 export interface OnApplicationReady {
   onApplicationReady(signal: AbortSignal): Awaitable<void>;
@@ -577,6 +582,7 @@ export interface ButtonContextBase extends QQEventContext {
   readonly buttonId: string;
   readonly data: string;
   ack(code?: number): Promise<void>;
+  reply(message: MessageInput): Promise<SendResult>;
   send(message: MessageInput): Promise<SendResult>;
 }
 
@@ -702,10 +708,17 @@ export interface RequestOptions {
   timeoutMs?: number;
 }
 
-export interface ReplyReference {
-  messageId: string;
-  sequence: number;
-}
+export type ReplyReference =
+  | {
+      messageId: string;
+      sequence: number;
+      eventId?: never;
+    }
+  | {
+      eventId: string;
+      messageId?: never;
+      sequence?: never;
+    };
 
 export interface SendOptions extends RequestOptions {
   reply?: ReplyReference;
@@ -949,6 +962,26 @@ export interface ErrorContext {
 }
 
 export type ErrorHandler = (error: Error, context: ErrorContext) => Awaitable<void>;
+
+export interface HandlerErrorContext {
+  readonly phase: ErrorPhase;
+  readonly appId: string;
+  readonly scene: 'group' | 'private';
+  readonly userId: string;
+  readonly groupId?: string;
+  readonly controller: string;
+  readonly method: string;
+  readonly route: string;
+  readonly replied: boolean;
+}
+
+export type HandlerErrorResult =
+  MessageInput | { readonly reply?: MessageInput; readonly report?: boolean } | void;
+
+export type HandlerErrorHandler = (
+  error: Error,
+  context: HandlerErrorContext,
+) => Awaitable<HandlerErrorResult>;
 
 export type FrameworkErrorCode =
   | 'DATABASE'

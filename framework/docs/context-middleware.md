@@ -43,7 +43,9 @@ class AppModule {}
 
 - 中间件作为普通 Provider 注册，可构造注入业务 Service。
 - `@UseMiddleware(A, B)` 可放在模块类、控制器类或处理方法上。
-- 模块也可配置 `@Module({ middlewares: [A, B] })`，仅覆盖自己直接注册的控制器。
+- 模块可配置 `@Module({ middlewares: [A, B] })` 覆盖本模块直接注册的控制器；应用也可配置 `AppOptions.middlewares` 为所有非事件路由统一挂载全局中间件（按根模块依赖解析，排在模块/控制器/方法中间件之前）。
+- 基础设施模块可声明 `@Module({ global: true })`，在根模块导入一次后导出内容全局可见；启动前已就绪的配置等值可通过 `AppOptions.providers` 直接注册到应用级容器。
+- 应用可配置 `AppOptions.onHandlerError(error, context)` 统一将命令、按钮或附件处理器抛出的异常映射为用户回复与上报策略（返回 `MessageInput` 或 `{ reply?, report? }`）。
 - 适用于 Command、OnButton、OnAttachment；原始 On 不执行中间件。
 - 创建应用时检查声明，匹配到处理器后才执行 prepare。
 - Provider 默认单例，不把当前执行的数据放入实例字段。
@@ -120,7 +122,7 @@ const label = await ctx.state.get(ROUTE_LABEL);
 
 **中间件 → Guard → 文字/归一化/附件/身份参数 → ContextValue → 冷却 → 处理器**。
 
-- 中间件顺序：模块配置 → 模块类 → 控制器类 → 方法。
+- 中间件顺序：应用全局配置（`AppOptions.middlewares`）→ 模块配置 → 模块类 → 控制器类 → 方法。
 - 列表从左到右，装饰器从上到下；类继承时基类在先，不自动去重。
 - 每个 prepare 结束立即撤销它的写权限。
 - 数据按一次处理器执行隔离，不同用户、调用、附件处理器不共享存储。

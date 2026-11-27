@@ -296,6 +296,10 @@ export class EventTask {
       data: event.data,
       userId: event.userId,
       ack: (code?: number) => this.ack(code, location),
+      reply: (message: MessageInput) => {
+        this.manualReplies++;
+        return this.send(message, true, location);
+      },
       send: (message: MessageInput) => this.send(message, false, location),
     };
     return event.target.scene === 'group'
@@ -356,6 +360,17 @@ export class EventTask {
         const target = event.target;
         const signal = this.controller.signal;
         if (!reply) return this.client.sendPreparedMessage(target, message, { signal });
+        if (event.kind === 'button') {
+          if (!event.raw.id)
+            throw new FrameworkError(
+              'INVALID_STATE',
+              'Interaction has no event_id for passive reply',
+            );
+          return this.client.sendPreparedMessage(target, message, {
+            signal,
+            reply: { eventId: event.raw.id },
+          });
+        }
         if (event.kind !== 'message' || !scope)
           throw new FrameworkError('INVALID_STATE', 'Interaction IDs cannot be message references');
         const reference = { messageId: event.messageId, sequence: ++scope.sequence };

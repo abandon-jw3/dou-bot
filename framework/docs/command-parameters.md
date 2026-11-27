@@ -4,15 +4,16 @@
 
 ## 参数 API
 
-| 装饰器                    | 用途                      | 注入值                 |
-| ------------------------- | ------------------------- | ---------------------- |
-| `@Arg(index)`             | 按位置取值，下标从 0 开始 | `string \| undefined`  |
-| `@Arg(index, options)`    | 按位置取值并校验          | 指定类型或 `undefined` |
-| `@Option(name, options?)` | 读取 `--page 2`、`-p 2`   | 指定类型或 `undefined` |
-| `@Slot(name, options)`    | 从任意位置匹配一个词      | `string \| undefined`  |
-| `@Rest(options?)`         | 收集剩余普通参数          | `string[]`             |
-| `@Args()`                 | 获取全部分词，不参与消费  | `string[]`             |
-| `@Ctx()`                  | 回复、提问或读取消息信息  | `MessageContext`       |
+| 装饰器                    | 用途                                   | 注入值                 |
+| ------------------------- | -------------------------------------- | ---------------------- |
+| `@Arg(index)`             | 按位置取值，下标从 0 开始（Slot 之后） | `string \| undefined`  |
+| `@Arg(index, options)`    | 按位置取值并校验                       | 指定类型或 `undefined` |
+| `@Option(name, options?)` | 读取 `--page 2`、`-p 2`                | 指定类型或 `undefined` |
+| `@Slot(name, options)`    | 从任意位置匹配一个词（先于 Arg）       | `string \| undefined`  |
+| `@Rest(options?)`         | 收集剩余普通参数                       | `string[]`             |
+| `@Args()`                 | 获取全部分词，不参与消费               | `string[]`             |
+| `@Route()`                | 注入本次命中的规范命令名或按钮 ID      | `string`               |
+| `@Ctx()`                  | 回复、提问或读取消息信息               | `MessageContext`       |
 
 ## 可运行示例
 
@@ -65,10 +66,13 @@ query(
 ## 解析与消费顺序
 
 1. **Option**：提取选项及其值。
-2. **Arg**：按剩余普通参数的固定下标取值。
-3. **Slot**：匹配未被消费的分词。
+2. **Slot**：从普通参数中匹配任意位置分词并消费。
+3. **Arg**：按剩余未被 Slot 消费的普通参数下标取值（从 0 开始）。
 4. **Rest**：按原顺序收集剩余分词。
 
+- `@Slot()` 先于 `@Arg()` 匹配：例如同时声明 `@Slot('server')` 和 `@Arg(0) name` 时，`/角色 梦江南 小明`、`/角色 小明 梦江南`、`/角色 小明` 都能直接通过 `@Arg(0)` 得到 `小明`。
+- `@Command(['名称1', '名称2'])` 可将多个主命令名绑定到同一个处理器，并通过 `@Route()` 读取本次命中的主命令名（单命令别名仍注入规范主命令名）。
+- `@OnButton(id | RegExp | readonly string[])` 支持精确按钮 ID、数组或正则模式（先匹配精确 ID，再按注册顺序匹配正则）；处理器可直接返回 `MessageInput` 或调用 `ctx.reply()` 通过 `event_id` 发送被动回复，并通过 `@Route()` 读取实际按钮 ID。
 - 每个命令最多一个 Rest，声明位置不影响收集顺序。
 - Rest 和 Args 使用普通数组参数，不写 `...rest`。
 - Args 保留完整分词，包括选项和 `--`；它不消费参数，也不能代替 Rest。
